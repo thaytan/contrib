@@ -13,6 +13,8 @@ class YASMConan(ConanFile):
     license = "https://github.com/yasm/yasm/blob/master/BSD.txt"
     exports_sources = ["LICENSE"]
     settings = "os", "arch", "compiler", "build_type"
+    options = {"shared": [True, False]}
+    default_options = "shared=False"
 
     def source(self):
         source_url = "http://www.tortall.net/projects/yasm/releases/yasm-%s.tar.gz" % self.version
@@ -39,6 +41,10 @@ class YASMConan(ConanFile):
 
         with tools.chdir('sources'):
             env_build = AutoToolsBuildEnvironment(self)
+            if self.options.shared:
+                args.extend(['--disable-static', '--enable-shared'])
+            else:
+                args.extend(['--enable-static', '--disable-shared'])
             env_build.configure(args=args)
             env_build.make()
             env_build.make(args=['install'])
