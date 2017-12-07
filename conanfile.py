@@ -34,6 +34,8 @@ class YASMConan(ConanFile):
     def build_vs(self):
         with tools.chdir(os.path.join('sources', 'Mkfiles', 'vc10')):
             command = tools.msvc_build_command(self.settings, 'yasm.sln', targets=['yasm'], upgrade_project=True)
+            if self.settings.arch == 'x86':
+                command = command.replace('/p:Platform="x86"', '/p:Platform="Win32"')
             self.run(command)
 
     def build_configure(self):
