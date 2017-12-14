@@ -30,6 +30,14 @@ class LibX265Conan(ConanFile):
     def build(self):
         cmake = CMake(self, generator='Ninja')
         cmake.definitions['ENABLE_SHARED'] = self.options.shared
+        # TODO : figure out how to properly set this on earlier stage, so CMAKE_SIZE_OF_VOID_P is correct
+        if self.settings.os == "Linux" and self.settings.arch == 'x86':
+            cmake.definitions['CMAKE_C_FLAGS'] = '-m32 -ldl'
+            cmake.definitions['CMAKE_CXX_FLAGS'] = '-m32 -ldl'
+        if self.settings.os == "Macos":
+            cmake.definitions['CMAKE_SHARED_LINKER_FLAGS'] = '-Wl,-read_only_relocs,suppress'
+            #cmake.definitions['CMAKE_CXX_FLAGS'] = '-Wl,-read_only_relocs,suppress'
+            #CMAKE_SHARED_LINKER_FLAGS
         cmake.configure()
         cmake.build()
         cmake.install()
