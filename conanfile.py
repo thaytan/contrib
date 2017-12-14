@@ -35,6 +35,7 @@ class LibX265Conan(ConanFile):
             cmake.definitions['CMAKE_C_FLAGS'] = '-m32'
             cmake.definitions['CMAKE_CXX_FLAGS'] = '-m32'
             cmake.definitions['CMAKE_SHARED_LINKER_FLAGS'] = '-ldl'
+            cmake.definitions['CMAKE_EXE_LINKER_FLAGS'] = '-ldl'
         if self.settings.os == "Macos":
             cmake.definitions['CMAKE_SHARED_LINKER_FLAGS'] = '-Wl,-read_only_relocs,suppress'
         cmake.configure()
