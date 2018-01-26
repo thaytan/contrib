@@ -28,6 +28,13 @@ class LibX265Conan(ConanFile):
         os.rename(extracted_dir, "sources")
 
     def build(self):
+        if self.settings.compiler == 'Visual Studio':
+            with tools.vcvars(self.settings, filter_known_paths=False):
+                self.build_cmake()
+        else:
+            self.build_cmake()
+
+    def build_cmake(self):
         cmake = CMake(self, generator='Ninja')
         cmake.definitions['ENABLE_SHARED'] = self.options.shared
         # TODO : figure out how to properly set this on earlier stage, so CMAKE_SIZE_OF_VOID_P is correct
