@@ -47,7 +47,7 @@ class LibX265Conan(ConanFile):
         cmake.install()
 
     def package(self):
-        self.copy(pattern="COPYING", src='sources')
+        self.copy(pattern="COPYING", src='sources', dst='licenses')
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
