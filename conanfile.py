@@ -17,10 +17,6 @@ class LibX265Conan(ConanFile):
     default_options = "shared=False"
     generators = ['cmake']
 
-    def build_requirements(self):
-        self.build_requires("yasm_installer/[>=1.3.0]@bincrafters/stable")
-        self.build_requires("ninja_installer/[>=1.8.2]@bincrafters/stable")
-
     def source(self):
         source_url = "https://bitbucket.org/multicoreware/x265/downloads/x265_%s.tar.gz" % self.version
         tools.get(source_url)
