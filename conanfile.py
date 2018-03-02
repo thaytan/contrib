@@ -14,8 +14,8 @@ class LibX265Conan(ConanFile):
     license = "https://github.com/someauthor/somelib/blob/master/LICENSES"
     exports_sources = ["CMakeLists.txt", "LICENSE"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    options = {"shared": [True, False], "fPIC": [True, False], "bit_depth": [8, 10, 12], "HDR10": [True, False]}
+    default_options = "shared=False", "fPIC=True", "bit_depth=8", "HDR10=False"
     generators = ['cmake']
 
     def config_options(self):
@@ -47,6 +47,9 @@ class LibX265Conan(ConanFile):
         if self.settings.os != 'Windows':
             cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = self.options.fPIC
             cmake.definitions['ENABLE_PIC'] = self.options.fPIC
+        cmake.definitions['HIGH_BIT_DEPTH'] = self.options.bit_depth != 8
+        cmake.definitions['MAIN12'] = self.options.bit_depth == 12
+        cmake.definitions['ENABLE_HDR10_PLUS'] = self.options.HDR10
         cmake.configure()
         cmake.build()
         cmake.install()
