@@ -14,9 +14,13 @@ class LibX265Conan(ConanFile):
     license = "https://github.com/someauthor/somelib/blob/master/LICENSES"
     exports_sources = ["CMakeLists.txt", "LICENSE"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = "shared=False", "fPIC=True"
     generators = ['cmake']
+
+    def config_options(self):
+        if self.settings.os == 'Windows':
+            del self.options.fPIC
 
     def source(self):
         source_url = "https://bitbucket.org/multicoreware/x265/downloads/x265_%s.tar.gz" % self.version
@@ -36,6 +40,8 @@ class LibX265Conan(ConanFile):
         cmake.definitions['ENABLE_SHARED'] = self.options.shared
         if self.settings.os == "Macos":
             cmake.definitions['CMAKE_SHARED_LINKER_FLAGS'] = '-Wl,-read_only_relocs,suppress'
+        if self.settings.os != 'Windows':
+            cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = self.options.fPIC
         cmake.configure()
         cmake.build()
         cmake.install()
