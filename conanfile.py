@@ -46,6 +46,7 @@ class LibX265Conan(ConanFile):
             cmake.definitions['CMAKE_SHARED_LINKER_FLAGS'] = '-Wl,-read_only_relocs,suppress'
         if self.settings.os != 'Windows':
             cmake.definitions['CMAKE_POSITION_INDEPENDENT_CODE'] = self.options.fPIC
+            cmake.definitions['ENABLE_PIC'] = self.options.fPIC
         cmake.configure()
         cmake.build()
         cmake.install()
