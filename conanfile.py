@@ -8,6 +8,7 @@ import os
 class LibX265Conan(ConanFile):
     name = "libx265"
     version = "2.6"
+    homepage = "http://x265.org"
     url = "https://github.com/bincrafters/conan-libx265"
     description = "x265 is the leading H.265 / HEVC encoder software library"
     license = "https://github.com/someauthor/somelib/blob/master/LICENSES"
