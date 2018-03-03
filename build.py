@@ -10,7 +10,7 @@ def add_build_requires(builds):
 
 
 def add_required_installers(build):
-    installers = ['ninja_installer/1.8.2@bincrafters/stable', 'yasm_installer/1.3.0@bincrafters/stable']
+    installers = ['ninja_installer/1.8.2@bincrafters/stable', 'nasm_installer/2.13.02@bincrafters/stable']
     build.build_requires.update({"*": installers})
     return build
 

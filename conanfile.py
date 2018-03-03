@@ -7,7 +7,7 @@ import os
 
 class LibX265Conan(ConanFile):
     name = "libx265"
-    version = "2.6"
+    version = "2.7"
     homepage = "http://x265.org"
     url = "https://github.com/bincrafters/conan-libx265"
     description = "x265 is the leading H.265 / HEVC encoder software library"
@@ -25,7 +25,7 @@ class LibX265Conan(ConanFile):
     def source(self):
         source_url = "https://bitbucket.org/multicoreware/x265/downloads/x265_%s.tar.gz" % self.version
         tools.get(source_url)
-        extracted_dir = 'x265_v%s' % self.version
+        extracted_dir = 'x265_%s' % self.version
         os.rename(extracted_dir, "sources")
 
     def build(self):
