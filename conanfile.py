@@ -40,6 +40,9 @@ class LibX265Conan(ConanFile):
             tools.replace_in_file(os.path.join('sources', 'source', 'CMakeLists.txt'),
                                   '${PROJECT_BINARY_DIR}/Debug/x265.pdb',
                                   '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/x265.pdb')
+            tools.replace_in_file(os.path.join('sources', 'source', 'CMakeLists.txt'),
+                                  '${PROJECT_BINARY_DIR}/x265.pdb',
+                                  '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/x265.pdb')
         cmake = CMake(self, generator='Ninja')
         cmake.definitions['ENABLE_SHARED'] = self.options.shared
         if self.settings.os == "Macos":
