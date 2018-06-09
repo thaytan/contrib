@@ -5,7 +5,7 @@ from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
 
 
-class YASMConan(ConanFile):
+class YASMInstallerConan(ConanFile):
     name = "yasm_installer"
     version = "1.3.0"
     url = "https://github.com/bincrafters/conan-yasm_installer"
