@@ -3,6 +3,7 @@
 
 from conans import ConanFile, CMake, tools
 import os
+import shutil
 
 
 class LibX265Conan(ConanFile):
@@ -60,8 +61,12 @@ class LibX265Conan(ConanFile):
 
     def package(self):
         self.copy(pattern="COPYING", src='sources', dst='licenses')
+        if self.settings.compiler == 'Visual Studio':
+            name = 'libx265.lib' if self.options.shared else 'x265-static.lib'
+            shutil.move(os.path.join(self.package_folder, 'lib', name),
+                        os.path.join(self.package_folder, 'lib', 'x265.lib'))
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.libs = ['x265']
         if self.settings.os == "Linux":
             self.cpp_info.libs.extend(['dl', 'pthread'])
