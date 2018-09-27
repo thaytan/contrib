@@ -12,7 +12,7 @@ class LibdrmConan(ConanFile):
     url             = 'https://github.com/kheaactua/conan-libdrm.git'
     description     = 'https://01.org/linuxgraphics'
     md5_hash        = '743c16109d91a2539dfc9cc56130d695'
-    requires        = 'helpers/[>=0.3]@ntc/stable',
+    requires        = 'helpers/[>=0.3]@ntc/stable'
 
     settings = {
         'compiler': None,
@@ -59,6 +59,7 @@ class LibdrmConan(ConanFile):
             tools.check_md5(archive_file, self.md5_hash)
         tools.unzip(archive_file)
         shutil.move(archive, self.name)
+        os.remove(archive_file)
 
     def build(self):
         args = []
