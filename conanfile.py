@@ -5,7 +5,7 @@ from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
 
 
-class YASMConan(ConanFile):
+class YASMInstallerConan(ConanFile):
     name = "yasm_installer"
     version = "1.3.0"
     url = "https://github.com/bincrafters/conan-yasm_installer"
@@ -13,24 +13,28 @@ class YASMConan(ConanFile):
     license = "https://github.com/yasm/yasm/blob/master/BSD.txt"
     exports_sources = ["LICENSE"]
     settings = "os_build", "arch_build", "compiler"
+    _source_subfolder = "sources"
+
+    def build_requirements(self):
+        if self.settings.os_build == 'Linux':
+            self.build_requires('glibc_version_header/0.1@bincrafters/stable')
 
     def source(self):
         source_url = "http://www.tortall.net/projects/yasm/releases/yasm-%s.tar.gz" % self.version
         tools.get(source_url)
         extracted_dir = 'yasm-%s' % self.version
-        os.rename(extracted_dir, "sources")
-        if self.settings.os_build == 'Windows':
-            tools.download('https://raw.githubusercontent.com/yasm/yasm/master/YASM-VERSION-GEN.bat',
-                           os.path.join('sources', 'YASM-VERSION-GEN.bat'))
+        os.rename(extracted_dir, self._source_subfolder)
+        tools.download('https://raw.githubusercontent.com/yasm/yasm/master/YASM-VERSION-GEN.bat',
+                       os.path.join('sources', 'YASM-VERSION-GEN.bat'))
 
     def build(self):
         if self.settings.os_build == 'Windows':
-            self.build_vs()
+            self._build_vs()
         else:
-            self.build_configure()
+            self._build_configure()
 
-    def build_vs(self):
-        with tools.chdir(os.path.join('sources', 'Mkfiles', 'vc10')):
+    def _build_vs(self):
+        with tools.chdir(os.path.join(self._source_subfolder, 'Mkfiles', 'vc10')):
             with tools.vcvars(self.settings, arch=str(self.settings.arch_build), force=True):
                 command = tools.build_sln_command(self.settings, 'yasm.sln', arch=self.settings.arch_build,
                                                   build_type='Release', targets=['yasm'], upgrade_project=True)
@@ -38,10 +42,8 @@ class YASMConan(ConanFile):
                     command = command.replace('/p:Platform="x86"', '/p:Platform="Win32"')
                 self.run(command)
 
-    def build_configure(self):
-        args = ['prefix=%s' % self.package_folder, ]
-
-        with tools.chdir('sources'):
+    def _build_configure(self):
+        with tools.chdir(self._source_subfolder):
             cc = os.environ.get('CC', 'gcc')
             cxx = os.environ.get('CXX', 'g++')
             # TODO : PR to AutoToolsBuildEnvironment
@@ -53,15 +55,15 @@ class YASMConan(ConanFile):
                 cxx = cxx + ' -m64'
             with tools.environment_append({'CC': cc, 'CXX': cxx}):
                 env_build = AutoToolsBuildEnvironment(self)
-                env_build.configure(args=args)
+                env_build.configure()
                 env_build.make()
-                env_build.make(args=['install'])
+                env_build.install()
 
     def package(self):
-        with tools.chdir("sources"):
-            self.copy(pattern="BSD.txt")
+        with tools.chdir(self._source_subfolder):
+            self.copy(pattern="BSD.txt", dst="licenses")
         if self.settings.os_build == 'Windows':
-            self.copy(pattern='*.exe', src='sources', dst='bin', keep_path=False)
+            self.copy(pattern='*.exe', src=self._source_subfolder, dst='bin', keep_path=False)
 
     def package_info(self):
         self.env_info.PATH.append(os.path.join(self.package_folder, 'bin'))
