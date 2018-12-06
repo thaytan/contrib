@@ -15,10 +15,6 @@ class YASMInstallerConan(ConanFile):
     settings = "os_build", "arch_build", "compiler"
     _source_subfolder = "sources"
 
-    def build_requirements(self):
-        if self.settings.os_build == 'Linux':
-            self.build_requires('glibc_version_header/0.1@bincrafters/stable')
-
     def source(self):
         source_url = "http://www.tortall.net/projects/yasm/releases/yasm-%s.tar.gz" % self.version
         tools.get(source_url)
