@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
 
 
@@ -31,12 +31,9 @@ class YASMInstallerConan(ConanFile):
 
     def _build_vs(self):
         with tools.chdir(os.path.join(self._source_subfolder, 'Mkfiles', 'vc10')):
-            with tools.vcvars(self.settings, arch=str(self.settings.arch_build), force=True):
-                command = tools.build_sln_command(self.settings, 'yasm.sln', arch=self.settings.arch_build,
-                                                  build_type='Release', targets=['yasm'], upgrade_project=True)
-                if self.settings.arch_build == 'x86':
-                    command = command.replace('/p:Platform="x86"', '/p:Platform="Win32"')
-                self.run(command)
+            msbuild = MSBuild(self)
+            msbuild.build(project_file="yasm.sln", arch=self.settings.arch_build, build_type="Release",
+                          targets=["yasm"], platforms={"x86": "Win32"})
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
