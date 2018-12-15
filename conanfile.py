@@ -33,7 +33,7 @@ class YASMInstallerConan(ConanFile):
         with tools.chdir(os.path.join(self._source_subfolder, 'Mkfiles', 'vc10')):
             msbuild = MSBuild(self)
             msbuild.build(project_file="yasm.sln", arch=self.settings.arch_build, build_type="Release",
-                          targets=["yasm"], platforms={"x86": "Win32"})
+                          targets=["yasm"], platforms={"x86": "Win32"}, force_vcvars=True)
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
