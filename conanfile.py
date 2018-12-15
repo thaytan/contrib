@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
 
 
@@ -32,28 +32,30 @@ class YASMInstallerConan(ConanFile):
     def _build_vs(self):
         with tools.chdir(os.path.join(self._source_subfolder, 'Mkfiles', 'vc10')):
             with tools.vcvars(self.settings, arch=str(self.settings.arch_build), force=True):
-                command = tools.build_sln_command(self.settings, 'yasm.sln', arch=self.settings.arch_build,
-                                                  build_type='Release', targets=['yasm'], upgrade_project=True)
-                if self.settings.arch_build == 'x86':
-                    command = command.replace('/p:Platform="x86"', '/p:Platform="Win32"')
-                self.run(command)
+                msbuild = MSBuild(self)
+                if self.settings.arch_build == "x86":
+                    msbuild.build_env.link_flags.append('/MACHINE:X86')
+                elif self.settings.arch_build == "x86_64":
+                    msbuild.build_env.link_flags.append('/SAFESEH:NO /MACHINE:X64')
+                msbuild.build(project_file="yasm.sln", arch=self.settings.arch_build, build_type="Release",
+                              targets=["yasm"], platforms={"x86": "Win32"}, force_vcvars=True)
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
             cc = os.environ.get('CC', 'gcc')
             cxx = os.environ.get('CXX', 'g++')
-            # TODO : PR to AutoToolsBuildEnvironment
             if self.settings.arch_build == 'x86':
-                cc = cc + ' -m32'
-                cxx = cxx + ' -m32'
+                cc += ' -m32'
+                cxx += ' -m32'
             elif self.settings.arch_build == 'x86_64':
-                cc = cc + ' -m64'
-                cxx = cxx + ' -m64'
-            with tools.environment_append({'CC': cc, 'CXX': cxx}):
-                env_build = AutoToolsBuildEnvironment(self)
-                env_build.configure()
-                env_build.make()
-                env_build.install()
+                cc += ' -m64'
+                cxx += ' -m64'
+            env_build = AutoToolsBuildEnvironment(self)
+            env_build_vars = env_build.vars
+            env_build_vars.update({'CC': cc, 'CXX': cxx})
+            env_build.configure(vars=env_build_vars)
+            env_build.make(vars=env_build_vars)
+            env_build.install(vars=env_build_vars)
 
     def package(self):
         with tools.chdir(self._source_subfolder):
@@ -65,4 +67,4 @@ class YASMInstallerConan(ConanFile):
         self.env_info.PATH.append(os.path.join(self.package_folder, 'bin'))
 
     def package_id(self):
-        self.info.settings.compiler = 'Any'
+        del self.info.settings.compiler
