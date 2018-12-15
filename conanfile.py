@@ -38,7 +38,7 @@ class YASMInstallerConan(ConanFile):
                 elif self.settings.arch_build == "x86_64":
                     msbuild.build_env.link_flags.append('/SAFESEH:NO /MACHINE:X64')
                 msbuild.build(project_file="yasm.sln", arch=self.settings.arch_build, build_type="Release",
-                              targets=["yasm"], platforms={"x86": "Win32"})
+                              targets=["yasm"], platforms={"x86": "Win32"}, force_vcvars=True)
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
