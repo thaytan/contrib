@@ -10,7 +10,7 @@ class YASMInstallerConan(ConanFile):
     version = "1.3.0"
     url = "https://github.com/bincrafters/conan-yasm_installer"
     description = "Yasm is a complete rewrite of the NASM assembler under the “new” BSD License"
-    license = "https://github.com/yasm/yasm/blob/master/BSD.txt"
+    license = "BSD"
     exports_sources = ["LICENSE"]
     settings = "os_build", "arch_build", "compiler"
     _source_subfolder = "sources"
@@ -58,8 +58,8 @@ class YASMInstallerConan(ConanFile):
             env_build.install(vars=env_build_vars)
 
     def package(self):
-        with tools.chdir(self._source_subfolder):
-            self.copy(pattern="BSD.txt", dst="licenses")
+        self.copy(pattern="BSD.txt", dst="licenses", src=self._source_subfolder)
+        self.copy(pattern="COPYING", dst="licenses", src=self._source_subfolder)
         if self.settings.os_build == 'Windows':
             self.copy(pattern='*.exe', src=self._source_subfolder, dst='bin', keep_path=False)
 
