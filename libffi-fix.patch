@@ -1,0 +1,12 @@
+diff -ur glib-2.58.1-old/gobject/meson.build glib-2.58.1-new/gobject/meson.build
+--- glib-2.58.1-old/gobject/meson.build	2018-09-21 16:21:06.000000000 +0200
++++ glib-2.58.1-new/gobject/meson.build	2018-12-20 13:07:48.881012796 +0100
+@@ -74,7 +74,7 @@
+ )
+ 
+ pkg.generate(libraries : libgobject,
+-  requires : ['glib-2.0'],
++  requires : ['glib-2.0', 'libffi'],
+   version : glib_version,
+   install_dir : glib_pkgconfigreldir,
+   filebase : 'gobject-2.0',
