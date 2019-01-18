@@ -10,9 +10,9 @@ class GStreamerConan(ConanFile):
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
     requires = (
-        "glib/2.58.1@bincrafters/stable",
-        "bison/3.0.4@bincrafters/stable",
-        "flex/2.6.4@bincrafters/stable"
+        ("glib/2.58.1@bincrafters/stable"),
+        ("bison/3.0.4@bincrafters/stable", "private"),
+        ("flex/2.6.4@bincrafters/stable", "private")
     )
 
     def source(self):
@@ -27,3 +27,5 @@ class GStreamerConan(ConanFile):
 
     def package_info(self):
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        self.cpp_info.includedirs = ["include/gstreamer-1.0"]
+        self.cpp_info.libs = ["gstbase-1.0", "gstcheck-1.0", "gstcontroller-1.0", "gstnet-1.0", "gstreamer-1.0"]
