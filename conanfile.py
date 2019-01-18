@@ -13,7 +13,7 @@ class LibRealsenseConan(ConanFile):
     generators = "pkg_config"
     requires = "libusb/1.0.22@bincrafters/stable"
     options = {"shared": [True, False]}
-    default_options = "shared=True", "libusb:enable_udev=False"
+    default_options = "shared=True", "libusb:enable_udev=False", "libusb:shared=True"
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v{0}.tar.gz".format(self.version))
