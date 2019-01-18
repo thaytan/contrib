@@ -42,3 +42,6 @@ class GLibConan(ConanFile):
     def package_info(self):
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
+        self.cpp_info.includedirs.append(os.path.join('include', 'glib-2.0'))
+        self.cpp_info.includedirs.append(os.path.join('lib', 'glib-2.0', 'include'))
+        self.cpp_info.includedirs.append(os.path.join('include', 'gio-unix-2.0'))
