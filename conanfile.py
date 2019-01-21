@@ -10,7 +10,6 @@ class LibRealsenseConan(ConanFile):
     description = "Intel RealSense SDK https://realsense.intel.com"
     url = "https://github.com/ulricheck/conan-librealsense"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "pkg_config"
     requires = "libusb/1.0.22@bincrafters/stable"
     options = {"shared": [True, False]}
     default_options = "shared=True", "libusb:enable_udev=False", "libusb:shared=True"
