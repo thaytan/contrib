@@ -4,7 +4,7 @@ import os
 
 class GStreamerVaapiConan(ConanFile):
     name = "gstreamer-vaapi"
-    version = "master"
+    version = "1.15.1"
     url = "https://github.com/bincrafters/conan-" + name
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
