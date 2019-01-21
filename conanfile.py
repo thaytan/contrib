@@ -20,7 +20,7 @@ class GLibConan(ConanFile):
         "zlib/1.2.11@conan/stable",
         "libffi/3.3-rc0@bincrafters/stable",
     )
-    exports_sources = "libffi-fix.patch"
+    exports_sources = "dep-fix.patch"
 
     def requirements(self):
         if self.options.with_pcre:
@@ -28,7 +28,7 @@ class GLibConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
-        tools.patch(patch_file="libffi-fix.patch", base_path="glib-" + self.version, strip=1)
+        tools.patch(patch_file="dep-fix.patch", base_path="glib-" + self.version, strip=1)
 
     def build(self):
         args = ["--default-library=shared", "--libdir=lib", "-Dman=False", "-Ddoc=False", "-Dlibmount=False", "-Dselinux=False"]

@@ -6,7 +6,7 @@ diff -ur glib-2.58.1-old/gobject/meson.build glib-2.58.1-new/gobject/meson.build
  
  pkg.generate(libraries : libgobject,
 -  requires : ['glib-2.0'],
-+  requires : ['glib-2.0', 'libffi'],
++  requires : ['glib-2.0', 'libffi', 'zlib'],
    version : glib_version,
    install_dir : glib_pkgconfigreldir,
    filebase : 'gobject-2.0',
