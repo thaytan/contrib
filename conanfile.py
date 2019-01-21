@@ -25,20 +25,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         meson.install()
 
     def package_info(self):
+        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.includedirs = ["include/gstreamer-1.0"]
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gsteamer-1.0"))
-        self.cpp_info.includedirs = ["include/gstreamer-1.0"]
-        self.cpp_info.libs = [
-            "gstallocators-1.0",
-            "gstaudio-1.0",
-            "gstgl-1.0",
-            "gstriff-1.0",
-            "gstrtsp-1.0",
-            "gsttag-1.0",
-            "gstapp-1.0",
-            "gstfft-1.0",
-            "gstpbutils-1.0",
-            "gstrtp-1.0",
-            "gstsdp-1.0",
-            "gstvideo-1.0",
-        ]
