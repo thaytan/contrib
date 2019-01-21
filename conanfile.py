@@ -2,7 +2,7 @@ from conans import ConanFile, Meson, tools
 
 import os
 
-class GStreamerPluginsBadConan(ConanFile):
+class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
     version = "1.15.1"
     url = "https://github.com/bincrafters/conan-" + name
