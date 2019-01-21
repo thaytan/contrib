@@ -31,17 +31,18 @@ class GLibConan(ConanFile):
         tools.patch(patch_file="libffi-fix.patch", base_path="glib-" + self.version, strip=1)
 
     def build(self):
-        args = ['--default-library=shared', '--libdir=lib', '-Dman=False', '-Ddoc=False', '-Dlibmount=False', '-Dselinux=False']
+        args = ["--default-library=shared", "--libdir=lib", "-Dman=False", "-Ddoc=False", "-Dlibmount=False", "-Dselinux=False"]
         meson = Meson(self)
         if not self.options.with_pcre:
-            args.append('-Dinternal_pcre=False')
-        meson.configure(source_folder="glib-" + self.version, args=args, pkg_config_paths=os.environ['PKG_CONFIG_PATH'].split(":"))
+            args.append("-Dinternal_pcre=False")
+        meson.configure(source_folder="glib-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
     def package_info(self):
+        self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
-        self.cpp_info.includedirs.append(os.path.join('include', 'glib-2.0'))
-        self.cpp_info.includedirs.append(os.path.join('lib', 'glib-2.0', 'include'))
-        self.cpp_info.includedirs.append(os.path.join('include', 'gio-unix-2.0'))
+        self.cpp_info.includedirs.append(os.path.join("include", "glib-2.0"))
+        self.cpp_info.includedirs.append(os.path.join("lib", "glib-2.0", "include"))
+        self.cpp_info.includedirs.append(os.path.join("include", "gio-unix-2.0"))
