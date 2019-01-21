@@ -4,7 +4,7 @@ import os
 
 class GStreamerPluginsBadConan(ConanFile):
     name = "gstreamer-plugins-bad"
-    version = "master"
+    version = "1.15.1"
     url = "https://github.com/bincrafters/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
