@@ -13,9 +13,12 @@ class LibRealsenseConan(ConanFile):
     requires = "libusb/1.0.22@bincrafters/stable"
     options = {"shared": [True, False]}
     default_options = "shared=True", "libusb:shared=True"
+    generators = "pkg_config",
+    exports_sources = "libusb-fix.patch"
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v{0}.tar.gz".format(self.version))
+        tools.patch(patch_file="libusb-fix.patch", base_path="librealsense-" + self.version)
 
     def build(self):
         cmake = CMake(self)
@@ -29,7 +32,7 @@ class LibRealsenseConan(ConanFile):
             cmake.definitions["BUILD_SHARED_LIBS"] = "ON"
         else:
             cmake.definitions["BUILD_SHARED_LIBS"] = "OFF"
-        cmake.configure(source_dir="librealsense-" + self.version, pkg_config_paths=os.environ['PKG_CONFIG_PATH'].split(":"))
+        cmake.configure(source_dir="librealsense-" + self.version)
         cmake.build()
         cmake.install()
 
