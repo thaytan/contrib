@@ -5,7 +5,7 @@ from conans import ConanFile, Meson, tools
 import os
 
 
-class GLibConan(ConanFile):
+class LibVaConan(ConanFile):
     name = "libva"
     version = "2.3.0"
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
@@ -23,7 +23,7 @@ class GLibConan(ConanFile):
     def build(self):
         args = ["--default-library=shared"]
         meson = Meson(self)
-        meson.configure(source_folder="libva-" + self.version, args=args)
+        meson.configure(source_folder="libva-" + self.version, args=args, pkg_config_paths=os.environ['PKG_CONFIG_PATH'].split(":"))
         meson.build()
         meson.install()
 
