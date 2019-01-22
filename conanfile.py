@@ -16,13 +16,14 @@ class GStreamerVaapiConan(ConanFile):
         "gstreamer/%s@bincrafters/stable" % version,
         "gstreamer-plugins-base/%s@bincrafters/stable" % version,
         "gstreamer-plugins-bad/%s@bincrafters/stable" % version,
+        "libva/2.3.0@bincrafters/stable"
     )
 
     def source(self):
         tools.get("https://github.com/GStreamer/gstreamer-vaapi/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--default-library=shared", "--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled"]
+        args = ["--libdir=lib", "-Dexamples=disabled"]
         meson = Meson(self)
         meson.configure(source_folder="gstreamer-vaapi-" + self.version, args=args, pkg_config_paths=os.environ['PKG_CONFIG_PATH'].split(":"))
         meson.build()
