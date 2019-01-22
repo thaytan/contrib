@@ -14,8 +14,7 @@ class LibVaConan(ConanFile):
     license = "MIT"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"fPIC": [True, False]}
-    default_options = "fPIC=True"
+    requires = "libdrm/2.4.96@bincrafters/stable",
 
     def source(self):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
@@ -23,7 +22,7 @@ class LibVaConan(ConanFile):
     def build(self):
         args = ["--default-library=shared"]
         meson = Meson(self)
-        meson.configure(source_folder="libva-" + self.version, args=args, pkg_config_paths=os.environ['PKG_CONFIG_PATH'].split(":"))
+        meson.configure(source_folder="libva-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
