@@ -23,13 +23,13 @@ class GStreamerPluginsGoodConan(ConanFile):
     def build(self):
         args = ["--default-library=shared", "--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled"]
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-good-" + self.version, args=args, pkg_config_paths=os.environ['PKG_CONFIG_PATH'].split(":"))
+        meson.configure(source_folder="gst-plugins-good-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gsteamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
 
 
