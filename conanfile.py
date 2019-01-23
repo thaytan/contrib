@@ -18,9 +18,9 @@ class GStreamerPluginsBaseConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--default-library=shared", "--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled"]
+        args = ["--default-library=shared", "--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled", "-Dgl=enabled"]
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ['PKG_CONFIG_PATH'].split(":"))
+        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
@@ -28,4 +28,4 @@ class GStreamerPluginsBaseConan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.includedirs = ["include/gstreamer-1.0"]
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gsteamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
