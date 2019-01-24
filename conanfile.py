@@ -19,7 +19,7 @@ class BisonConan(ConanFile):
 
     def source(self):
         source_url = "https://ftp.gnu.org/gnu/bison/"
-        tools.get("{0}/{1}-{2}.tar.gz".format(source_url, self.name,self.version))
+        tools.get("{0}/{1}-{2}.tar.gz".format(source_url, self.name, self.version))
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, "sources")
 
@@ -33,7 +33,9 @@ class BisonConan(ConanFile):
             tools.patch(base_path="sources", patch_file="secure_snprintf.patch")
         env_build = AutoToolsBuildEnvironment(self)
         env_build.fpic = True
-        configure_args = ['--prefix=%s' % self.package_folder]
+        configure_args = ["--enable-shared" if self.options.shared else "--disable-shared"]
+        configure_args.append("--enable-static" if not self.options.shared else "--disable-static")
+        configure_args.append("--prefix=%s" % self.package_folder)
         with tools.chdir("sources"):
             env_build.configure(args=configure_args)
             env_build.make(args=["all"])
