@@ -20,7 +20,7 @@ class LibVaConan(ConanFile):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--default-library=shared", "--libdir=lib"]
+        args = ["--libdir=lib"]
         meson = Meson(self)
         meson.configure(source_folder="libva-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
