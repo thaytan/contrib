@@ -14,7 +14,7 @@ class LibRealsenseConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=True", "libusb:shared=True"
     generators = "pkg_config",
-    exports_sources = "libusb-fix.patch"
+    exports = "libusb-fix.patch"
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v{0}.tar.gz".format(self.version))
