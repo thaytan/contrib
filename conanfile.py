@@ -8,19 +8,21 @@ import os
 class GLibConan(ConanFile):
     name = "glib"
     version = "2.58.1"
+    default_user = "bincrafters"
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     url = "https://github.com/bincrafters/conan-" + name
     author = "BinCrafters <bincrafters@gmail.com>"
     license = "LGPL-2.1"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"fPIC": [True, False], "with_pcre": [True, False]}
-    default_options = "fPIC=True", "with_pcre=False"
+    options = {"shared": [True, False], "fPIC": [True, False], "with_pcre": [True, False]}
+    default_options = "shared=False", "fPIC=True", "with_pcre=False"
     requires = (
-        "zlib/1.2.11@conan/stable",
-        "libffi/3.3-rc0@bincrafters/stable",
+        ("zlib/1.2.11@conan/stable", "private"),
+        ("libffi/3.3-rc0@%s/stable" % self.user, "private"),
     )
-    exports_sources = "dep-fix.patch"
+    #exports_sources = "dep-fix.patch"
+
 
     def requirements(self):
         if self.options.with_pcre:
@@ -28,7 +30,7 @@ class GLibConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
-        tools.patch(patch_file="dep-fix.patch", base_path="glib-" + self.version, strip=1)
+        #tools.patch(patch_file="dep-fix.patch", base_path="glib-" + self.version, strip=1)
 
     def build(self):
         args = ["--libdir=lib", "-Dman=False", "-Dlibmount=False", "-Dselinux=False"]
