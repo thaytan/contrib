@@ -5,6 +5,7 @@ import os
 class GStreamerVaapiConan(ConanFile):
     name = "gstreamer-vaapi"
     version = "1.15.1"
+    default_user = "bincrafters"
     url = "https://github.com/bincrafters/conan-" + name
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -12,11 +13,11 @@ class GStreamerVaapiConan(ConanFile):
     options = {}
     default_options = ()
     requires = (
-        "glib/2.58.1@bincrafters/stable",
-        "gstreamer/%s@bincrafters/stable" % version,
-        "gstreamer-plugins-base/%s@bincrafters/stable" % version,
-        "gstreamer-plugins-bad/%s@bincrafters/stable" % version,
-        "libva/2.3.0@bincrafters/stable"
+        "glib/2.58.1@%s/stable" % self.user,
+        "gstreamer/%s@%s/stable" % (version, self.user),
+        "gstreamer-plugins-base/%s@%s/stable" % (version, self.user),
+        "gstreamer-plugins-bad/%s@%s/stable" % (version, self.user),
+        "libva/2.3.0@%s/stable" % self.user
     )
 
     def source(self):
