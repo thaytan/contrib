@@ -8,10 +8,11 @@ class LibdrmConan(ConanFile):
     name            = "libdrm"
     version         = "2.4.96"
     license         = "MIT"
+    default_user = "bincrafters"
     url             = "https://github.com/prozum/conan-libdrm.git"
     description     = "Direct Rendering Manager headers and kernel modules"
     settings = "os", "arch", "compiler", "build_type"
-    requires = "libpciaccess/0.14@bincrafters/stable",
+    requires = "libpciaccess/0.14@%s/stable" % self.user,
 
     def source(self):
         tools.get("http://dri.freedesktop.org/libdrm/libdrm-%s.tar.gz" % self.version)
