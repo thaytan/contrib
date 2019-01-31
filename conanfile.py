@@ -11,13 +11,14 @@ class LibPciAccessConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False",
     homepage = "https://github.com/freedesktop/xorg-libpciaccess"
+    default_user = "bincrafters"
     url = "http://github.com/bincrafters/conan-libusb"
     author = "Bincrafters <bincrafters@gmail.com>"
     license = "MIT"
     description = "Generic PCI access library"
     source_subfolder = "source_subfolder"
     exports = ["LICENSE.md"]
-    requires = "xorg-util-macros/1.19.1@bincrafters/stable"
+    requires = "xorg-util-macros/1.19.1@%s/stable" % self.user
 
     def source(self):
         tools.get("https://github.com/freedesktop/xorg-libpciaccess/archive/libpciaccess-%s.tar.gz" % self.version)
