@@ -5,20 +5,28 @@ import os
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
     version = "1.15.1"
+    default_user = "bincrafters"
     url = "https://github.com/bincrafters/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
     requires = (
-        "glib/2.58.1@bincrafters/stable",
-        "gstreamer/%s@bincrafters/stable" % version,
+        "glib/2.58.1@%s/stable" % self.user,
+        "gstreamer/%s@%s/stable" % (version, self.user),
     )
+    options = {"shared": [True, False], "introspection": [True, False]}
+    default_options = ("shared=False", "introspection=True")
+
+    def requirements(self):
+        if self.options.introspection:
+            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--default-library=shared", "--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled", "-Dgl=enabled"]
+        args = ["--libdir=lib", "-Dtests=disabled", "-Dgl=enabled", "-Dgl_platform=egl"]
+        args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
