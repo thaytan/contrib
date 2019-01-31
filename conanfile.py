@@ -10,13 +10,14 @@ from conans import ConanFile, AutoToolsBuildEnvironment, tools
 class LibXorgUtilMacrosConan(ConanFile):
     name = "xorg-util-macros"
     version = "1.19.1"
-    settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=False",
+    default_user = "bincrafters"
     url = "https://github.com/freedesktop/xorg-macros"
     author = "Bincrafters <bincrafters@gmail.com>"
     license = "custom"
     description = "X.Org Autotools macros"
+    settings = "os", "compiler", "build_type", "arch"
+    options = {"shared": [True, False]}
+    default_options = "shared=False",
     source_subfolder = "source_subfolder"
     exports = ["LICENSE.md"]
 
