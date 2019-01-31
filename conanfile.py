@@ -9,12 +9,13 @@ class LibVaConan(ConanFile):
     name = "libva"
     version = "2.3.0"
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
+    default_user = "bincrafters"
     url = "https://github.com/bincrafters/conan-" + name
     author = "BinCrafters <bincrafters@gmail.com>"
     license = "MIT"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    requires = "libdrm/2.4.96@bincrafters/stable",
+    requires = "libdrm/2.4.96@%s/stable" % self.user,
 
     def source(self):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
