@@ -8,12 +8,12 @@ class LibRealsenseConan(ConanFile):
     name = "librealsense"
     license = "https://raw.githubusercontent.com/IntelRealSense/librealsense/master/LICENSE"
     description = "Intel RealSense SDK https://realsense.intel.com"
+    default_user = "bincrafters"
     url = "https://github.com/ulricheck/conan-librealsense"
     settings = "os", "compiler", "build_type", "arch"
-    requires = "libusb/1.0.22@bincrafters/stable"
+    requires = "libusb/1.0.22@%s/stable" % self.user
     options = {"shared": [True, False]}
     default_options = "shared=True", "libusb:shared=True"
-    generators = "pkg_config",
     exports = "libusb-fix.patch"
 
     def source(self):
