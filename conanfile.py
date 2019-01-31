@@ -5,6 +5,7 @@ import os
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
     version = "1.15.1"
+    default_user = "bincrafters"
     url = "https://github.com/bincrafters/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -12,16 +13,16 @@ class GStreamerPluginsGoodConan(ConanFile):
     options = {}
     default_options = ()
     requires = (
-        "glib/2.58.1@bincrafters/stable",
-        "gstreamer/%s@bincrafters/stable" % version,
-        "gstreamer-plugins-base/%s@bincrafters/stable" % version,
+        "glib/2.58.1@%s/stable" % self.user,
+        "gstreamer/%s@%s/stable" % (version, self.user),
+        "gstreamer-plugins-base/%s@%s/stable" % (version, self.user),
     )
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-good/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--default-library=shared", "--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled"]
+        args = ["--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled"]
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-good-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
