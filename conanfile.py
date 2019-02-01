@@ -20,7 +20,7 @@ class GLibConan(ConanFile):
 
     def requirements(self):
         self.requires("zlib/1.2.11@conan/stable", private=True)
-        self.requires("libffi/3.3-rc0@%s/stable" % self.user, private=True)
+        self.requires("libffi/3.3-rc0@%s/stable" % self.user)
         if self.options.with_pcre:
             self.requires.add("pcre/8.41@bincraftres/stable")
 
