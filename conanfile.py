@@ -12,11 +12,11 @@ class GStreamerLibavConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {}
     default_options = ()
-    requires = (
-        "glib/2.58.1@%s/stable" % self.user,
-        "ffmpeg/4.1@%s/stable" % self.user,
-        "gstreamer/%s@%s/stable" % (version, self.user),
-    )
+
+    def requirements(self):
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("ffmpeg/4.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (version, self.user))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-libav/archive/%s.tar.gz" % self.version)
