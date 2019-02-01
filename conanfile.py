@@ -10,15 +10,13 @@ class GStreamerConan(ConanFile):
     description = "A framework for streaming media"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    requires = (
-        ("glib/2.58.1@%s/stable" % self.user),
-        ("bison/3.0.4@%s/stable" % self.user, "private"),
-        ("flex/2.6.4@%s/stable" % self.user, "private")
-    )
     options = {"shared": [True, False], "introspection": [True, False]}
     default_options = ("shared=False", "introspection=True")
 
     def requirements(self):
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("bison/3.0.4@%s/stable" % self.user, private=True)
+        self.requires("flex/2.6.4@%s/stable" % self.user, private=True)
         if self.options.introspection:
             self.requires("gobject-introspection/1.59.3@%s/stable" % self.user,)
 
