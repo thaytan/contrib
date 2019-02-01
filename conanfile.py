@@ -11,11 +11,13 @@ class LibRealsenseConan(ConanFile):
     default_user = "bincrafters"
     url = "https://github.com/ulricheck/conan-librealsense"
     settings = "os", "compiler", "build_type", "arch"
-    requires = "libusb/1.0.22@%s/stable" % self.user
     options = {"shared": [True, False]}
     default_options = "shared=True", "libusb:shared=True"
     exports = "libusb-fix.patch"
 
+    def requirements(self):
+        self.requires("libusb/1.0.22@%s/stable" % self.user)
+    
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v{0}.tar.gz".format(self.version))
         tools.patch(patch_file="libusb-fix.patch", base_path="librealsense-" + self.version)
