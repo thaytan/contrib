@@ -15,7 +15,9 @@ class LibVaConan(ConanFile):
     license = "MIT"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    requires = "libdrm/2.4.96@%s/stable" % self.user,
+
+    def requirements(self):
+        self.requires("libdrm/2.4.96@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
