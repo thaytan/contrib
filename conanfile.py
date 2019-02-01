@@ -10,8 +10,8 @@ class LibffiConan(ConanFile):
     url = "https://github.com/prozum/conan-libffi"
     license = "https://github.com/libffi/libffi/blob/master/LICENSE"
     description = "A portable, high level programming interface to various calling conventions"
-    options = {"shared": [True, False]}
-    default_options = ("shared=False")
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = "shared=False", "fPIC=True"
 
     def source(self):
         tools.get("https://github.com/libffi/libffi/archive/v%s.tar.gz" % self.version)
