@@ -10,15 +10,13 @@ class GStreamerPluginsBaseConan(ConanFile):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    requires = (
-        "glib/2.58.1@%s/stable" % self.user,
-        "gstreamer/%s@%s/stable" % (version, self.user),
-    )
     options = {"shared": [True, False], "introspection": [True, False]}
     default_options = ("shared=False", "introspection=True")
 
     def requirements(self):
-        if self.options.introspection:
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (version) self.user)
+        if self.options.introspection
             self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
 
     def source(self):
