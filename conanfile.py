@@ -17,6 +17,8 @@ class BisonConan(ConanFile):
     exports = ["LICENSE.md"]
     exports_sources = ["secure_snprintf.patch"]
     settings = "os", "arch", "compiler", "build_type"
+    options = {"shared": [True, False]}
+    default_options = "shared=False"
 
     def source(self):
         source_url = "https://ftp.gnu.org/gnu/bison/"
