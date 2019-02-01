@@ -17,14 +17,10 @@ class GLibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "with_pcre": [True, False]}
     default_options = "shared=False", "fPIC=True", "with_pcre=False"
-    requires = (
-        ("zlib/1.2.11@conan/stable", "private"),
-        ("libffi/3.3-rc0@%s/stable" % self.user, "private"),
-    )
-    #exports_sources = "dep-fix.patch"
-
 
     def requirements(self):
+        self.requires("zlib/1.2.11@conan/stable", private=True)
+        self.requires("libffi/3.3-rc0@%s/stable" % self.user, private=True)
         if self.options.with_pcre:
             self.requires.add("pcre/8.41@bincraftres/stable")
 
