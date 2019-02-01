@@ -18,7 +18,9 @@ class LibPciAccessConan(ConanFile):
     description = "Generic PCI access library"
     source_subfolder = "source_subfolder"
     exports = ["LICENSE.md"]
-    requires = "xorg-util-macros/1.19.1@%s/stable" % self.user
+
+    def requirements(self):
+        self.requires("xorg-util-macros/1.19.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/freedesktop/xorg-libpciaccess/archive/libpciaccess-%s.tar.gz" % self.version)
