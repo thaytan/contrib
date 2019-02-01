@@ -15,8 +15,8 @@ class GStreamerPluginsBaseConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (version) self.user)
-        if self.options.introspection
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
+        if self.options.introspection:
             self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
 
     def source(self):
