@@ -12,11 +12,11 @@ class GStreamerPluginsBadConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {}
     default_options = ()
-    requires = (
-        "glib/2.58.1@%s/stable" % self.user,
-        "gstreamer/%s@%s/stable" % (version, self.user),
-        "gstreamer-plugins-base/%s@%s/stable" % (version, self.user),
-    )
+
+    def requirements(self):
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
