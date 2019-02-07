@@ -23,7 +23,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "-Dgtk_doc=disabled", "-Dtests=disabled", "-Dgl=enabled", "-Dgl_platform=egl"]
+        args = ["--libdir=lib", "--auto-features=disabled", "-Dgl=enabled", "-Dgl_platform=egl"]
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
