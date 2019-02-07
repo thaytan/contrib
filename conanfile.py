@@ -1,11 +1,11 @@
 from conans import ConanFile, Meson, tools
-
 import os
 
 class GStreamerVaapiConan(ConanFile):
     name = "gstreamer-vaapi"
     version = "1.15.1"
     default_user = "bincrafters"
+    default_channel = "stable"
     url = "https://github.com/bincrafters/conan-" + name
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -24,7 +24,7 @@ class GStreamerVaapiConan(ConanFile):
         tools.get("https://github.com/GStreamer/gstreamer-vaapi/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "-Dexamples=disabled"]
+        args = ["--libdir=lib", "--auto-features=disabled"]
         meson = Meson(self)
         meson.configure(source_folder="gstreamer-vaapi-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
