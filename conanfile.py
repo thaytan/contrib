@@ -29,7 +29,7 @@ class GLibConan(ConanFile):
         #tools.patch(patch_file="dep-fix.patch", base_path="glib-" + self.version, strip=1)
 
     def build(self):
-        args = ["--libdir=lib", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False"]
+        args = ["--libdir=lib", "--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False"]
         meson = Meson(self)
         if not self.options.with_pcre:
             args.append("-Dinternal_pcre=False")
