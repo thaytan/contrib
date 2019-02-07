@@ -22,7 +22,7 @@ class GStreamerPluginsBadConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "-Dintrospection=disabled", "-Dexamples=disabled", "-Dtests=disabled", "-Dgl_api=opengl"]
+        args = ["--libdir=lib", "--auto-features=disabled", "-Dgl_api=opengl"]
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-bad-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
