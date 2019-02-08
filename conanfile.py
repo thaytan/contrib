@@ -10,8 +10,24 @@ class GStreamerPluginsBaseConan(ConanFile):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "introspection": [True, False]}
-    default_options = ("shared=False", "introspection=True")
+    options = {
+        "shared": [True, False],
+        "introspection": [True, False],
+        "x11": [True, False],
+        "videotestsrc": [True, False],
+        "videoconvert": [True, False],
+        "app": [True, False],
+        "playback": [True, False],
+    }
+    default_options = (
+        "shared=False",
+        "introspection=True",
+        "x11=True",
+        "videotestsrc=True",
+        "videoconvert=True",
+        "app=True",
+        "playback=True",
+    )
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/stable" % self.user)
@@ -23,8 +39,14 @@ class GStreamerPluginsBaseConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=disabled", "-Dgl=enabled", "-Dgl_platform=egl"]
+        args = ["--libdir=lib", "--auto-features=auto", "-Dgl=enabled", "-Dgl_platform=egl"]
+        print(dir(self.options))
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
+        args.append("-Dx11=" + ("enabled" if self.options.x11 else "disabled"))
+        args.append("-Dvideotestsrc=" + ("enabled" if self.options.videotestsrc else "disabled"))
+        args.append("-Dvideoconvert=" + ("enabled" if self.options.videoconvert else "disabled"))
+        args.append("-Dapp=" + ("enabled" if self.options.app else "disabled"))
+        args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
