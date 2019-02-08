@@ -10,8 +10,14 @@ class GStreamerPluginsBadConan(ConanFile):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {}
-    default_options = ()
+    options = {
+        "shared": [True, False],
+        "videoparsersbad": [True, False],
+    }
+    default_options = (
+        "shared=False",
+        "videoparsersbad=True",
+    )
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/stable" % self.user)
@@ -23,6 +29,7 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def build(self):
         args = ["--libdir=lib", "--auto-features=disabled", "-Dgl_api=opengl"]
+        args.append("-Dvideoparsersbad=" + ("enabled" if self.options.videoparsersbad else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-bad-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
