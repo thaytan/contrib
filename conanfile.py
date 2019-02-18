@@ -9,6 +9,7 @@ class LibRealsenseConan(ConanFile):
     license = "https://raw.githubusercontent.com/IntelRealSense/librealsense/master/LICENSE"
     description = "Intel RealSense SDK https://realsense.intel.com"
     default_user = "bincrafters"
+    default_channel = "stable"
     url = "https://github.com/ulricheck/conan-librealsense"
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
@@ -16,7 +17,7 @@ class LibRealsenseConan(ConanFile):
     exports = "libusb-fix.patch"
 
     def requirements(self):
-        self.requires("libusb/1.0.22@%s/stable" % self.user)
+        self.requires("libusb/1.0.22@%s/%s" % (self.user, self.channel))
     
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v{0}.tar.gz".format(self.version))
