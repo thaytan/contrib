@@ -130,6 +130,7 @@ class LibUSBConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
+        self.env_info.PKG_CONFIG_LIBUSB_1_0_PREFIX = self.package_folder
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         if self.settings.os == "Linux":
             self.cpp_info.libs.append("pthread")
