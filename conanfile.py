@@ -5,6 +5,7 @@ class GObjectIntrospectionConan(ConanFile):
     name = "gobject-introspection"
     version = "1.59.3"
     default_user = "bincrafters"
+    default_channel = "stable"
     url = "https://github.com/prozum/conan-gobject-introspection"
     description = "A framework for streaming media"
     license = "https://github.com/GNOME/gobject-introspection/blob/master/COPYING"
@@ -13,10 +14,10 @@ class GObjectIntrospectionConan(ConanFile):
     default_options = "shared=False", "fPIC=True"
 
     def requirements(self):
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("libffi/3.3-rc0@%s/stable" % self.user, private=True)
-        self.requires("bison/3.0.4@%s/stable" % self.user, private=True)
-        self.requires("flex/2.6.4@%s/stable" % self.user, private=True)
+        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
+        self.requires("libffi/3.3-rc0@%s/%s" % (self.user, self.channel), private=True)
+        self.requires("bison/3.0.4@%s/%s" % (self.user, self.channel), private=True)
+        self.requires("flex/2.6.4@%s/%s" % (self.user, self.channel), private=True)
 
     def source(self):
         tools.get("https://github.com/GNOME/gobject-introspection/archive/%s.tar.gz" % self.version)
