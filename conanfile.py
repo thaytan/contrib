@@ -32,4 +32,9 @@ class ZlibConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.PKG_CONFIG_ZLIB_PREFIX = self.package_folder
+        self.env_info.PKG_CONFIG_ZLIB_EXEC_PREFIX = self.package_folder
+        self.env_info.PKG_CONFIG_ZLIB_LIBDIR = os.path.join(self.package_folder, "lib")
+        self.env_info.PKG_CONFIG_ZLIB_SHAREDLIBDIR = os.path.join(self.package_folder, "lib")
+        self.env_info.PKG_CONFIG_ZLIB_INCLUDEDIR = os.path.join(self.package_folder, "include")
+
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "share", "pkgconfig"))
