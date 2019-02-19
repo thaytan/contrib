@@ -37,4 +37,6 @@ class GStreamerConan(ConanFile):
         self.cpp_info.includedirs = ["include/gstreamer-1.0"]
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
+            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
