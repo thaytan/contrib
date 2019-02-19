@@ -24,12 +24,21 @@ class GObjectIntrospectionConan(ConanFile):
 
     def build(self):
         args = ["--libdir=lib", "--auto-features=disabled"]
-        meson = Meson(self)
-        meson.configure(source_folder="gobject-introspection-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.build()
-        meson.install()
+        print("buu: "+ os.environ["PKG_CONFIG_PATH"])
+        vars = {
+            'PKG_CONFIG_LIBFFI_PREFIX': self.deps_cpp_info["libffi"].rootpath,
+            'PKG_CONFIG_GLIB_2_0_PREFIX': self.deps_cpp_info["glib"].rootpath,
+            'PKG_CONFIG_GLIB_2_0_PREFIX': self.deps_cpp_info["glib"].rootpath,
+        }
+        with tools.environment_append(vars):
+            meson = Meson(self)
+            meson.configure(source_folder="gobject-introspection-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+            meson.build()
+            meson.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
+        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
+            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
