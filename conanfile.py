@@ -20,7 +20,7 @@ class GLibConan(ConanFile):
     default_options = "shared=False", "fPIC=True", "pcre=False"
 
     def requirements(self):
-        self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel), private=True)
+        self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel))
         self.requires("libffi/3.3-rc0@%s/%s" % (self.user, self.channel))
         if self.options.pcre:
             self.requires.add("pcre/8.41@bincraftres/stable")
