@@ -36,7 +36,7 @@ image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}
 .deploy-debug:
   stage: deploy-debug
   script:
-    - conan upload "*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
+    - conan upload "$(conan inspect . -a name | cut -c 7-)/*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
 
 .build-test-release:
   extends: .build-test-debug
