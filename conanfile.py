@@ -77,7 +77,7 @@ class ZlibConan(ConanFile):
 
                     if self.settings.os == "iOS":
                         tools.replace_in_file("../gzguts.h", '#ifdef _LARGEFILE64_SOURCE', '#include <unistd.h>\n\n#ifdef _LARGEFILE64_SOURCE')
-                    
+
                     # configure passes CFLAGS to linker, should be LDFLAGS
                     tools.replace_in_file("../configure", "$LDSHARED $SFLAGS", "$LDSHARED $LDFLAGS")
                     # same thing in Makefile.in, when building tests/example executables
@@ -200,6 +200,8 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
 
     def package_info(self):
+        self.env_info.PKG_CONFIG_ZLIB_PREFIX = self.package_folder
+        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         if self.options.minizip:
             self.cpp_info.libs.append('minizip')
             if self.options.shared:
