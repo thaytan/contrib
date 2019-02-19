@@ -33,15 +33,10 @@ class GLibConan(ConanFile):
         if not self.options.pcre:
             args.append("-Dinternal_pcre=False")
 
-        vars = {
-            'PKG_CONFIG_ZLIB_PREFIX': self.deps_cpp_info["zlib"].rootpath,
-            'PKG_CONFIG_LIBFFI_PREFIX': self.deps_cpp_info["libffi"].rootpath,
-        }
-        with tools.environment_append(vars):
-            meson = Meson(self)
-            meson.configure(source_folder="glib-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-            meson.build()
-            meson.install()
+        meson = Meson(self)
+        meson.configure(source_folder="glib-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.build()
+        meson.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
