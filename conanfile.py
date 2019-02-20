@@ -14,11 +14,11 @@ class GStreamerVaapiConan(ConanFile):
     default_options = ()
 
     def requirements(self):
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-bad/%s@%s/stable" % (self.version, self.user))
-        self.requires("libva/2.3.0@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
+        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("gstreamer-plugins-bad/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("libva/2.3.0@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gstreamer-vaapi/archive/%s.tar.gz" % self.version)
