@@ -8,14 +8,15 @@ class IntelVaapiDriverConan(ConanFile):
     name            = "intel-vaapi-driver"
     version         = "2.3.0"
     default_user    = "bincrafters"
+    default_channel = "stable"
     license         = "MIT"
     url             = "https://github.com/prozum/conan-intel-vaapi-driver.git"
     description     = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
 
     def requirements(self):
-        self.requires("libdrm/2.4.96@%s/stable" % self.user)
-        self.requires("libva/2.3.0@%s/stable" % self.user)
+        self.requires("libdrm/2.4.96@%s/%s" % (self.user, self.channel))
+        self.requires("libva/2.3.0@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/intel/intel-vaapi-driver/archive/%s.tar.gz" % self.version)
