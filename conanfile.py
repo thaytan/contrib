@@ -6,6 +6,7 @@ class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
     version = "1.15.1"
     default_user = "bincrafters"
+    default_channel = "bincrafters"
     url = "https://github.com/bincrafters/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -30,9 +31,9 @@ class GStreamerPluginsGoodConan(ConanFile):
     )
 
     def requirements(self):
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
+        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
+        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-good/archive/%s.tar.gz" % self.version)
