@@ -10,6 +10,7 @@ class LibVaConan(ConanFile):
     version = "2.3.0"
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
     default_user = "bincrafters"
+    default_channel = "stable"
     url = "https://github.com/bincrafters/conan-" + name
     author = "BinCrafters <bincrafters@gmail.com>"
     license = "MIT"
@@ -17,7 +18,7 @@ class LibVaConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
 
     def requirements(self):
-        self.requires("libdrm/2.4.96@%s/stable" % self.user)
+        self.requires("libdrm/2.4.96@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
