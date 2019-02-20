@@ -13,20 +13,24 @@ class GStreamerPluginsBaseConan(ConanFile):
     options = {
         "shared": [True, False],
         "introspection": [True, False],
+        "gl": [True, False],
         "x11": [True, False],
         "videotestsrc": [True, False],
         "videoconvert": [True, False],
         "app": [True, False],
         "playback": [True, False],
+        "typefind": [True, False],
     }
     default_options = (
         "shared=False",
         "introspection=True",
+        "gl=True",
         "x11=True",
         "videotestsrc=True",
         "videoconvert=True",
         "app=True",
         "playback=True",
+        "typefind=True",
     )
 
     def requirements(self):
@@ -39,14 +43,16 @@ class GStreamerPluginsBaseConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=auto", "-Dgl=enabled", "-Dgl_platform=egl"]
-        print(dir(self.options))
+        args = ["--libdir=lib", "--auto-features=disabled", "-Dgl_platform=egl"]
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
+        args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dx11=" + ("enabled" if self.options.x11 else "disabled"))
         args.append("-Dvideotestsrc=" + ("enabled" if self.options.videotestsrc else "disabled"))
         args.append("-Dvideoconvert=" + ("enabled" if self.options.videoconvert else "disabled"))
         args.append("-Dapp=" + ("enabled" if self.options.app else "disabled"))
         args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
+        args.append("-Dtypefind=" + ("enabled" if self.options.typefind else "disabled"))
+
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
