@@ -36,7 +36,7 @@ image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}
 .deploy-debug:
   stage: deploy-debug
   script:
-    - conan upload "*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
+    - conan upload "$(conan inspect . -a name | cut -c 7-)/*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
 
 .build-test-release:
   extends: .build-test-debug
@@ -62,7 +62,7 @@ test-debug-x86_64-bionic:
 test-debug-armv8-bionic:
   extends: .build-test-debug
   tags:
-    - qemu
+    - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
 
@@ -76,7 +76,7 @@ deploy-debug-x86_64-bionic:
 deploy-debug-armv8-bionic:
   extends: .deploy-debug
   tags:
-    - qemu
+    - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
 
@@ -90,7 +90,7 @@ test-release-x86_64-bionic:
 test-release-armv8-bionic:
   extends: .build-test-release
   tags:
-    - qemu
+    - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
 
@@ -104,6 +104,6 @@ deploy-release-x86_64-bionic:
 deploy-release-armv8-bionic:
   extends: .deploy-release
   tags:
-    - qemu
+    - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
