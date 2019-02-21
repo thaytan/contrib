@@ -11,8 +11,16 @@ class GStreamerConan(ConanFile):
     description = "A framework for streaming media"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "introspection": [True, False]}
-    default_options = ("shared=False", "introspection=True")
+    options = {
+        "shared": [True, False], 
+        "introspection": [True, False],
+        "check": [True, False]
+    }
+    default_options = (
+        "shared=False", 
+        "introspection=True",
+        "check=True"
+    )
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
@@ -27,6 +35,7 @@ class GStreamerConan(ConanFile):
     def build(self):
         args = ["--libdir=lib", "--auto-features=disabled"]
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
+        args.append("-Dcheck=" + ("enabled" if self.options.check else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gstreamer-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
