@@ -14,7 +14,7 @@ class LibRealsenseConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
     default_options = "shared=False"
-    exports = "libusb-fix.patch"
+    exports = "libusb-fix.patch", "pkgconfig-fix.patch"
 
     def requirements(self):
         self.requires("libusb/1.0.22@%s/%s" % (self.user, self.channel))
@@ -22,6 +22,7 @@ class LibRealsenseConan(ConanFile):
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v{0}.tar.gz".format(self.version))
         tools.patch(patch_file="libusb-fix.patch", base_path="librealsense-" + self.version)
+        tools.patch(patch_file="pkgconfig-fix.patch", base_path="librealsense-" + self.version)
 
     def build(self):
         os.system("pkg-config --cflags libusb-1.0")
