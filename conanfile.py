@@ -14,12 +14,14 @@ class GStreamerConan(ConanFile):
     options = {
         "shared": [True, False], 
         "introspection": [True, False],
-        "check": [True, False]
+        "check": [True, False],
+        "tools": [True, False],
     }
     default_options = (
         "shared=False", 
         "introspection=True",
-        "check=True"
+        "check=True",
+        "tools=True",
     )
 
     def requirements(self):
@@ -36,6 +38,7 @@ class GStreamerConan(ConanFile):
         args = ["--libdir=lib", "--auto-features=disabled"]
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         args.append("-Dcheck=" + ("enabled" if self.options.check else "disabled"))
+        args.append("-Dtools=" + ("enabled" if self.options.tools else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gstreamer-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
