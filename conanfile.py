@@ -12,6 +12,8 @@ class LibffiConan(ConanFile):
     description = "A portable, high level programming interface to various calling conventions"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = "shared=False", "fPIC=True"
+    folder_name = name + "-" + version
+    no_copy_source = True
 
     def source(self):
         tools.get("https://github.com/libffi/libffi/archive/v%s.tar.gz" % self.version)
@@ -27,12 +29,16 @@ class LibffiConan(ConanFile):
             args.extend(["--disable-static", "--enable-shared"])
         else:
             args.extend(["--disable-shared", "--enable-static"])
-        with tools.chdir("libffi-" + self.version):
+        with tools.chdir(os.path.join(self.source_folder, self.folder_name)):
             self.run("./autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+
+    def package(self):
+        if self.channel == "testing":
+            self.copy("*", "src", self.folder_name)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
