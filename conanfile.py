@@ -18,23 +18,28 @@ class ZlibConan(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False], "minizip": [True, False]}
     default_options = "shared=False", "fPIC=True", "minizip=False"
     exports_sources = ["CMakeLists.txt"]
-    generators = "cmake"
+    folder_name = name + "-" + version
+    no_copy_source = True
 
     def source(self):
         tools.get("https://github.com/madler/zlib/archive/v%s.tar.gz" % self.version)
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(source_dir="zlib-" + self.version)
+        cmake.configure(source_folder=self.folder_name)
         cmake.build()
         cmake.install()
 
+    def package(self):
+        if self.channel == "testing":
+            self.copy("*", "src", self.folder_name)
+
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.libs = ["z"]
         self.env_info.PKG_CONFIG_ZLIB_PREFIX = self.package_folder
         self.env_info.PKG_CONFIG_ZLIB_EXEC_PREFIX = self.package_folder
         self.env_info.PKG_CONFIG_ZLIB_LIBDIR = os.path.join(self.package_folder, "lib")
         self.env_info.PKG_CONFIG_ZLIB_SHAREDLIBDIR = os.path.join(self.package_folder, "lib")
         self.env_info.PKG_CONFIG_ZLIB_INCLUDEDIR = os.path.join(self.package_folder, "include")
-
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "share", "pkgconfig"))
+        self.cpp_info.srcdirs.append("src")
