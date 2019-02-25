@@ -16,27 +16,28 @@ class GLibConan(ConanFile):
     license = "LGPL-2.1"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False], "pcre": [True, False]}
-    default_options = "shared=False", "fPIC=True", "pcre=False"
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = "shared=False", "fPIC=True"
+    folder_name = name + "-" + version
+    no_copy_source = True
 
     def requirements(self):
         self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel))
         self.requires("libffi/3.3-rc0@%s/%s" % (self.user, self.channel))
-        if self.options.pcre:
-            self.requires.add("pcre/8.41@bincraftres/stable")
 
     def source(self):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False"]
-        if not self.options.pcre:
-            args.append("-Dinternal_pcre=False")
-
+        args = ["--libdir=lib", "--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False", "-Dinternal_pcre=False"]
         meson = Meson(self)
-        meson.configure(source_folder="glib-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
+
+    def package(self):
+        if self.channel == "testing":
+            self.copy("*", "src", self.folder_name)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
@@ -47,3 +48,4 @@ class GLibConan(ConanFile):
         self.cpp_info.includedirs.append(os.path.join("include", "glib-2.0"))
         self.cpp_info.includedirs.append(os.path.join("include", "gio-unix-2.0"))
         self.cpp_info.includedirs.append(os.path.join("lib", "glib-2.0", "include"))
+        self.cpp_info.srcdirs.append("src")
