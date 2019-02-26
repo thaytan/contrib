@@ -39,7 +39,10 @@ class GLibConan(ConanFile):
 
     def package(self):
         if self.channel == "testing":
-            self.copy("*", "src")
+            self.copy("*.c*", "src")
+            self.copy("*.h*", "src")
+            self.copy("*CMakeLists.txt", "src")
+            self.copy("*.cmake", "src")
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
