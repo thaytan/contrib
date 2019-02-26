@@ -32,7 +32,7 @@ class LibUSBConan(ConanFile):
         args.append('--enable-static' if not self.options.shared else '--disable-static')
         args.append('--enable-udev' if self.options.udev else '--disable-udev')
         with tools.chdir(os.path.join(self.source_folder, self.folder_name)):
-            self.run("./autogen.sh")
+            self.run("autoreconf -i")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
