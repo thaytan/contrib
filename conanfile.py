@@ -32,7 +32,11 @@ class ZlibConan(ConanFile):
 
     def package(self):
         if self.channel == "testing":
-            self.copy("*", "src", self.folder_name)
+            self.copy("*.c*", "src")
+            self.copy("*.h*", "src")
+            self.copy("*CMakeLists.txt", "src")
+            self.copy("*.cmake", "src")
+
 
     def package_info(self):
         self.cpp_info.libs = ["z"]
