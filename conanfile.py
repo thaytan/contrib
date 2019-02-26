@@ -30,14 +30,16 @@ class GLibConan(ConanFile):
 
     def build(self):
         args = ["--libdir=lib", "--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False", "-Dinternal_pcre=False"]
-        meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.build()
-        meson.install()
+        vars = {"CFLAGS": "-fdebug-prefix-map=%s=." % self.build_folder}
+        with tools.environment_append(vars):
+            meson = Meson(self)
+            meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+            meson.build()
+            meson.install()
 
     def package(self):
         if self.channel == "testing":
-            self.copy("*", "src", self.folder_name)
+            self.copy("*", "src")
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
@@ -45,6 +47,7 @@ class GLibConan(ConanFile):
             setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
+        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.includedirs.append(os.path.join("include", "glib-2.0"))
         self.cpp_info.includedirs.append(os.path.join("include", "gio-unix-2.0"))
         self.cpp_info.includedirs.append(os.path.join("lib", "glib-2.0", "include"))
