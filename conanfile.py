@@ -32,6 +32,8 @@ class GStreamerPluginsBaseConan(ConanFile):
         "playback=True",
         "typefind=True",
     )
+    folder_name = "gst-plugins-base-" + version
+    no_copy_source = True
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
@@ -54,14 +56,21 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dtypefind=" + ("enabled" if self.options.typefind else "disabled"))
 
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
+
+    def package(self):
+        if self.channel == "testing":
+            self.copy("*.c", "src")
+            self.copy("*.h", "src")
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.includedirs = ["include/gstreamer-1.0"]
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
             setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
+        self.cpp_info.srcdirs.append("src")
