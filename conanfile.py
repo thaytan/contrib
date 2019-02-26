@@ -15,9 +15,8 @@ class ZlibConan(ConanFile):
     description = ("A Massively Spiffy Yet Delicately Unobtrusive Compression Library "
                    "(Also Free, Not to Mention Unencumbered by Patents)")
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False], "minizip": [True, False]}
-    default_options = "shared=False", "fPIC=True", "minizip=False"
-    exports_sources = ["CMakeLists.txt"]
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = "shared=False", "fPIC=True"
     folder_name = name + "-" + version
     no_copy_source = True
 
@@ -26,7 +25,7 @@ class ZlibConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(source_folder=self.folder_name)
+        cmake.configure(source_folder=self.folder_name, build_folder="build")
         cmake.build()
         cmake.install()
 
