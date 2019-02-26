@@ -42,4 +42,5 @@ class ZlibConan(ConanFile):
         self.env_info.PKG_CONFIG_ZLIB_SHAREDLIBDIR = os.path.join(self.package_folder, "lib")
         self.env_info.PKG_CONFIG_ZLIB_INCLUDEDIR = os.path.join(self.package_folder, "include")
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "share", "pkgconfig"))
+        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.srcdirs.append("src")
