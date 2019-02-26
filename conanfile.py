@@ -30,7 +30,7 @@ class LibffiConan(ConanFile):
         else:
             args.extend(["--disable-shared", "--enable-static"])
         with tools.chdir(os.path.join(self.source_folder, self.folder_name)):
-            self.run("./autogen.sh")
+            self.run("autoreconf -i")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
