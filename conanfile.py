@@ -38,12 +38,8 @@ class LibffiConan(ConanFile):
 
     def package(self):
         if self.channel == "testing":
-            self.copy("*.c*", "src")
-            self.copy("*.h*", "src")
-            self.copy("*CMakeLists.txt", "src")
-            self.copy("*.cmake", "src")
-            self.copy("*.build", "src")
-            self.copy("*meson_options.txt", "src")
+            self.copy("*.c", "src")
+            self.copy("*.h", "src")
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
