@@ -55,7 +55,7 @@ test-debug-armv8-bionic:
     - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
-    CONAN_EXTRA_BUILD_OPTIONS: "-s nvenc=False -s nvdec=False"
+    CONAN_EXTRA_BUILD_OPTIONS: "-o nvenc=False -o nvdec=False"
 
 # #######
 # Build and test the Release version:
@@ -71,5 +71,5 @@ test-release-armv8-bionic:
     - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
-    CONAN_EXTRA_BUILD_OPTIONS: "-s nvenc=False -s nvdec=False"
+    CONAN_EXTRA_BUILD_OPTIONS: "-o nvenc=False -o nvdec=False"
 
