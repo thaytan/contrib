@@ -17,6 +17,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "gl": [True, False],
         "nvdec": [True, False],
         "nvenc": [True, False],
+        "pnm": [True, False],
     }
     default_options = (
         "shared=False",
@@ -24,6 +25,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "gl=True",
         "nvdec=True",
         "nvenc=True",
+        "pnm=True",
     )
     folder_name = "gst-plugins-bad-" + version
     no_copy_source = True
@@ -42,6 +44,7 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
         args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
+        args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
