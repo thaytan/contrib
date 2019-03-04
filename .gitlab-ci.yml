@@ -17,12 +17,15 @@ variables:
   CONAN_IMAGE_BASE: "registry.gitlab.com/aivero/public/conan/conan-docker"
   CONAN_IMAGE_ARCH: "x86_64"
   CONAN_IMAGE_TAG: "bionic"
+  CONAN_EXTRA_BUILD_OPTIONS: ""
 image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}
 
 .build-test-debug:
   stage: build-test-debug
+  tags:
+    - x86_64
   script:
-    - conan create . ${CONAN_USERNAME}/${CONAN_CHANNEL} -s build_type=$CONAN_BUILD_TYPE
+    - conan create . ${CONAN_USERNAME}/${CONAN_CHANNEL} -s build_type=$CONAN_BUILD_TYPE ${CONAN_EXTRA_BUILD_OPTIONS}
     - conan upload "$(conan inspect . -a name | cut -c 7-)/*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
   artifacts:
     expire_in: 1 month
@@ -43,6 +46,8 @@ image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}
 
 test-debug-x86_64-bionic:
   extends: .build-test-debug
+  image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}-cuda
+
 
 test-debug-armv8-bionic:
   extends: .build-test-debug
@@ -50,6 +55,7 @@ test-debug-armv8-bionic:
     - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
+    CONAN_EXTRA_BUILD_OPTIONS: "-s nvenc=False -s nvdec=False"
 
 # #######
 # Build and test the Release version:
@@ -57,6 +63,7 @@ test-debug-armv8-bionic:
 
 test-release-x86_64-bionic:
   extends: .build-test-release
+  image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}-cuda
 
 test-release-armv8-bionic:
   extends: .build-test-release
@@ -64,3 +71,5 @@ test-release-armv8-bionic:
     - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
+    CONAN_EXTRA_BUILD_OPTIONS: "-s nvenc=False -s nvdec=False"
+
