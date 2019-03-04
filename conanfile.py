@@ -14,12 +14,18 @@ class GStreamerPluginsBadConan(ConanFile):
     options = {
         "shared": [True, False],
         "videoparsersbad": [True, False],
+        "gl": [True, False],
+        "nvdec": [True, False],
+        "nvenc": [True, False],
     }
     default_options = (
         "shared=False",
         "videoparsersbad=True",
+        "gl=True",
+        "nvdec=True",
+        "nvenc=True",
     )
-    folder_name = "gst-plugins-base-" + version
+    folder_name = "gst-plugins-bad-" + version
     no_copy_source = True
 
     def requirements(self):
@@ -33,8 +39,11 @@ class GStreamerPluginsBadConan(ConanFile):
     def build(self):
         args = ["--libdir=lib", "--auto-features=disabled", "-Dgl_api=opengl"]
         args.append("-Dvideoparsersbad=" + ("enabled" if self.options.videoparsersbad else "disabled"))
+        args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
+        args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
+        args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
