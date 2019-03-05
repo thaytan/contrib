@@ -32,6 +32,11 @@ class GStreamerPluginsBadConan(ConanFile):
     folder_name = "gst-plugins-bad-" + version
     no_copy_source = True
 
+    def configure(self):
+        if self.settings.arch != "x86_64":
+            self.options.remove("nvdec")
+            self.options.remove("nvenc")
+
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
