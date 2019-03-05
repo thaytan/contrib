@@ -46,7 +46,7 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
@@ -57,9 +57,9 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
             setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
-        self.cpp_info.srcdirs.append("src")
