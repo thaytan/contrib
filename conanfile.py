@@ -13,6 +13,7 @@ class GStreamerPluginsBadConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
+        "introspection": [True, False],
         "videoparsersbad": [True, False],
         "gl": [True, False],
         "nvdec": [True, False],
@@ -21,6 +22,7 @@ class GStreamerPluginsBadConan(ConanFile):
     }
     default_options = (
         "shared=False",
+        "introspection=True",
         "videoparsersbad=True",
         "gl=True",
         "nvdec=True",
@@ -34,6 +36,8 @@ class GStreamerPluginsBadConan(ConanFile):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
+        if self.options.introspection:
+            self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
