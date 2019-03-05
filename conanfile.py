@@ -42,7 +42,7 @@ class GStreamerConan(ConanFile):
         args.append("-Dcheck=" + ("enabled" if self.options.check else "disabled"))
         args.append("-Dtools=" + ("enabled" if self.options.tools else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
