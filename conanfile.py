@@ -19,7 +19,6 @@ class GLibConan(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = "shared=False", "fPIC=True"
     folder_name = name + "-" + version
-    no_copy_source = True
 
     def requirements(self):
         self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel))
@@ -30,12 +29,10 @@ class GLibConan(ConanFile):
 
     def build(self):
         args = ["--libdir=lib", "--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False", "-Dinternal_pcre=False"]
-        vars = {"CFLAGS": "-fdebug-prefix-map=%s=." % self.build_folder}
-        with tools.environment_append(vars):
-            meson = Meson(self)
-            meson.configure(source_folder=self.folder_name, build_folder="build", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-            meson.build()
-            meson.install()
+        meson = Meson(self)
+        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.build()
+        meson.install()
 
     def package(self):
         if self.channel == "testing":
@@ -43,13 +40,13 @@ class GLibConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
+        self.cpp_info.includedirs.append(os.path.join("include", "gio-unix-2.0"))
+        self.cpp_info.includedirs.append(os.path.join("include", "glib-2.0"))
+        self.cpp_info.includedirs.append(os.path.join("lib", "glib-2.0", "include"))
         self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.srcdirs.append("src")
+        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
+        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
             setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
-        self.cpp_info.includedirs.append(os.path.join("include", "glib-2.0"))
-        self.cpp_info.includedirs.append(os.path.join("include", "gio-unix-2.0"))
-        self.cpp_info.includedirs.append(os.path.join("lib", "glib-2.0", "include"))
-        self.cpp_info.srcdirs.append("src")
