@@ -30,7 +30,6 @@ class GStreamerPluginsGoodConan(ConanFile):
         "videofilter=True",
     )
     folder_name = "gst-plugins-good" + version
-    no_copy_source = True
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
