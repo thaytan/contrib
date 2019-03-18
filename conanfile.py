@@ -14,7 +14,7 @@ class GStreamerPluginsBadConan(ConanFile):
     options = {
         "shared": [True, False],
         "introspection": [True, False],
-        "videoparsersbad": [True, False],
+        "videoparsers": [True, False],
         "gl": [True, False],
         "nvdec": [True, False],
         "nvenc": [True, False],
@@ -23,7 +23,7 @@ class GStreamerPluginsBadConan(ConanFile):
     default_options = (
         "shared=False",
         "introspection=True",
-        "videoparsersbad=True",
+        "videoparsers=True",
         "gl=True",
         "nvdec=True",
         "nvenc=True",
@@ -49,7 +49,7 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def build(self):
         args = ["--libdir=lib", "--auto-features=disabled", "-Dgl_api=opengl"]
-        args.append("-Dvideoparsersbad=" + ("enabled" if self.options.videoparsersbad else "disabled"))
+        args.append("-Dvideoparsers=" + ("enabled" if self.options.videoparsers else "disabled"))
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
         if self.settings.arch == "x86_64":
