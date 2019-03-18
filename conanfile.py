@@ -48,7 +48,7 @@ class GStreamerPluginsBadConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=disabled", "-Dgl_api=opengl"]
+        args = ["--auto-features=disabled", "-Dgl_api=opengl"]
         args.append("-Dvideoparsers=" + ("enabled" if self.options.videoparsers else "disabled"))
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
