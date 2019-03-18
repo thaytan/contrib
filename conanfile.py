@@ -12,7 +12,6 @@ class GStreamerPluginsBadConan(ConanFile):
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
     options = {
-        "shared": [True, False],
         "introspection": [True, False],
         "videoparsers": [True, False],
         "gl": [True, False],
@@ -21,7 +20,6 @@ class GStreamerPluginsBadConan(ConanFile):
         "pnm": [True, False],
     }
     default_options = (
-        "shared=False",
         "introspection=True",
         "videoparsers=True",
         "gl=True",
