@@ -10,8 +10,8 @@ class GObjectIntrospectionConan(ConanFile):
     description = "A framework for streaming media"
     license = "https://github.com/GNOME/gobject-introspection/blob/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    options = {"fPIC": [True, False]}
+    default_options = "fPIC=True"
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
