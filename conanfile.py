@@ -11,7 +11,6 @@ class GStreamerPluginsBaseConan(ConanFile):
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
     options = {
-        "shared": [True, False],
         "introspection": [True, False],
         "gl": [True, False],
         "x11": [True, False],
@@ -22,7 +21,6 @@ class GStreamerPluginsBaseConan(ConanFile):
         "typefind": [True, False],
     }
     default_options = (
-        "shared=False",
         "introspection=True",
         "gl=True",
         "x11=True",
