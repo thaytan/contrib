@@ -12,13 +12,11 @@ class GStreamerConan(ConanFile):
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
     options = {
-        "shared": [True, False],
         "introspection": [True, False],
         "check": [True, False],
         "tools": [True, False],
     }
     default_options = (
-        "shared=False",
         "introspection=True",
         "check=True",
         "tools=True",
