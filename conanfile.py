@@ -10,19 +10,20 @@ class GStreamerLibavConan(ConanFile):
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {}
-    default_options = ()
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = "shared=False", "fPIC=True"
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/stable" % self.user)
         self.requires("ffmpeg/4.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (version, self.user))
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-libav/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib"]
+        args = ["--auto-features=disabled"]
         meson = Meson(self)
         meson.configure(source_folder="gst-libav-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
