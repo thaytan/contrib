@@ -16,8 +16,8 @@ class GLibConan(ConanFile):
     license = "LGPL-2.1"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    options = {"fPIC": [True, False]}
+    default_options = "fPIC=True"
     folder_name = name + "-" + version
 
     def requirements(self):
