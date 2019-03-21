@@ -30,7 +30,7 @@ class JsonGlibBaseConan(ConanFile):
         tools.get("https://github.com/GNOME/json-glib/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=disabled"]
+        args = ["--auto-features=disabled"]
         args.append("-Dintrospection=" + ("true" if self.options.introspection else "false"))
 
         meson = Meson(self)
