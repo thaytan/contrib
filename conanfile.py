@@ -33,7 +33,6 @@ class GStreamerPluginsBaseConan(ConanFile):
         "typefind=True",
     )
     folder_name = "gst-plugins-base-" + version
-    no_copy_source = True
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
@@ -45,7 +44,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=disabled", "-Dgl_platform=egl"]
+        args = ["--auto-features=disabled", "-Dgl_platform=egl"]
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dx11=" + ("enabled" if self.options.x11 else "disabled"))
@@ -54,7 +53,6 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dapp=" + ("enabled" if self.options.app else "disabled"))
         args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
         args.append("-Dtypefind=" + ("enabled" if self.options.typefind else "disabled"))
-
         meson = Meson(self)
         meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
