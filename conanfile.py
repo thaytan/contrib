@@ -29,7 +29,7 @@ class GStreamerDevtoolsConan(ConanFile):
         tools.get("https://github.com/GStreamer/gst-devtools/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=disabled"]
+        args = ["--auto-features=disabled"]
         meson = Meson(self)
         meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
