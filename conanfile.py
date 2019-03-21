@@ -10,8 +10,8 @@ class GStreamerLibavConan(ConanFile):
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    options = {"fPIC": [True, False]}
+    default_options = "fPIC=True"
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/stable" % self.user)
