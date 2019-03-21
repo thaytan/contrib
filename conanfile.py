@@ -24,7 +24,6 @@ class GStreamerConan(ConanFile):
         "tools=True",
     )
     folder_name = name + "-" + version
-    no_copy_source = True
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
@@ -37,7 +36,7 @@ class GStreamerConan(ConanFile):
         tools.get("https://github.com/GStreamer/gstreamer/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--libdir=lib", "--auto-features=disabled"]
+        args = ["--auto-features=disabled"]
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         args.append("-Dcheck=" + ("enabled" if self.options.check else "disabled"))
         args.append("-Dtools=" + ("enabled" if self.options.tools else "disabled"))
@@ -52,12 +51,12 @@ class GStreamerConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.includedirs = ["include/gstreamer-1.0"]
+        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.srcdirs.append("src")
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
             setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
-        self.cpp_info.srcdirs.append("src")
