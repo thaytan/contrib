@@ -11,12 +11,8 @@ class GStreamerDevtoolsConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {
-        "shared": [True, False],
-    }
-    default_options = (
-        "shared=False",
-    )
+    options = {}
+    default_options = ()
     folder_name = "gst-devtools-" + version
 
     def requirements(self):
