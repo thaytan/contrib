@@ -53,6 +53,7 @@ class GStreamerConan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_SCANNER.append(os.path.join(self.package_folder, "bin", "gstreamer-1.0"))
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
