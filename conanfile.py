@@ -7,7 +7,7 @@ from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
 class BisonConan(ConanFile):
     name = "bison"
-    version = "3.0.4"
+    version = "3.3"
     default_user = "bincrafters"
     url = "https://github.com/bincrafters/conan-bison"
     homepage = "https://www.gnu.org/software/bison/"
@@ -26,14 +26,7 @@ class BisonConan(ConanFile):
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, "sources")
 
-    def configure(self):
-        if self.settings.os == "Windows":
-            raise Exception("Bison is not supported on Windows.")
-        del self.settings.compiler.libcxx
-
     def build(self):
-        if self.settings.os == "Macos" and float(self.settings.compiler.version.value) >= 9.1:
-            tools.patch(base_path="sources", patch_file="secure_snprintf.patch")
         env_build = AutoToolsBuildEnvironment(self)
         env_build.fpic = True
         configure_args = ["--enable-shared" if self.options.shared else "--disable-shared"]
