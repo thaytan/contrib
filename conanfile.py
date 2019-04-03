@@ -25,7 +25,7 @@ class GStreamerConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("bison/3.0.4@%s/%s" % (self.user, self.channel), private=True)
+        self.requires("bison/3.3@%s/%s" % (self.user, self.channel), private=True)
         self.requires("flex/2.6.4@%s/%s" % (self.user, self.channel), private=True)
         if self.options.introspection:
             self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel),)
