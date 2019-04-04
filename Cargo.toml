@@ -17,4 +17,3 @@ gstreamer-base = "0.13.0"
 
 [build-dependencies]
 pkg-config = "0.3.14"
-bindgen = "0.48.1"
