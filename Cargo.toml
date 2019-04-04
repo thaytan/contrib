@@ -1,0 +1,20 @@
+[package]
+name = "depth-meta"
+version = "0.1.0"
+authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
+description = "Rust bindings to depth-meta"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+glib = "0.7.1"
+glib-sys = "0.8.0"
+gstreamer = "0.13.0"
+gstreamer-sys = "0.7.0"
+gstreamer-video = "0.13.0"
+gstreamer-video-sys = "0.7.0"
+gstreamer-base = "0.13.0"
+
+[build-dependencies]
+pkg-config = "0.3.14"
+bindgen = "0.48.1"

@@ -1,0 +1,12 @@
+prefix=@DEST_DIR@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: depth-meta
+Description: Library with GStreamer Metadata for depth streaming
+Version: 0.1
+Requires: gstreamer-1.0, gstreamer-video-1.0
+
+Libs: -L${libdir} -ldepth-meta
+Cflags: -I${includedir}
