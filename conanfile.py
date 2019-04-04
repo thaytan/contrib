@@ -17,7 +17,7 @@ class GObjectIntrospectionConan(ConanFile):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
 
     def build_requirements(self):
-        self.build_requires("bison/3.0.4@%s/%s" % (self.user, self.channel))
+        self.build_requires("bison/3.3@%s/%s" % (self.user, self.channel))
         self.build_requires("flex/2.6.4@%s/%s" % (self.user, self.channel))
 
     def source(self):
