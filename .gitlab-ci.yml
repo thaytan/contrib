@@ -44,23 +44,9 @@ image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}
 test-debug-x86_64-bionic:
   extends: .build-test-debug
 
-test-debug-armv8-bionic:
-  extends: .build-test-debug
-  tags:
-    - armv8
-  variables:
-    CONAN_IMAGE_ARCH: "armv8"
-
 # #######
 # Build and test the Release version:
 # #######
 
 test-release-x86_64-bionic:
   extends: .build-test-release
-
-test-release-armv8-bionic:
-  extends: .build-test-release
-  tags:
-    - armv8
-  variables:
-    CONAN_IMAGE_ARCH: "armv8"
