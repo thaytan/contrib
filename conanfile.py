@@ -15,9 +15,8 @@ def get_version():
         return None
 
 class DepthMetaConan(ConanFile):
-    name = "depth-meta"
-    #version = get_version()
-    version = "master"
+    name = "gstreamer-depth-meta"
+    version = get_version()
     description = "Library to stream depth video"
     url = "https://aivero.com"
     default_user = "aivero"
