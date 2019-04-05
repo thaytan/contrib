@@ -9,19 +9,19 @@ extern crate gstreamer_video_sys as gst_video_sys;
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct ColorMeta {
+pub struct BufferMeta {
     pub meta: gst_sys::GstMeta,
-    pub color_buffer: *const gst_sys::GstBuffer,
+    pub buffer: *const gst_sys::GstBuffer,
 }
 extern "C" {
-    pub fn color_meta_api_get_type() -> glib_sys::GType;
+    pub fn buffer_meta_api_get_type() -> glib_sys::GType;
 }
 extern "C" {
-    pub fn color_meta_get_info() -> *const gst_sys::GstMetaInfo;
+    pub fn buffer_meta_get_info() -> *const gst_sys::GstMetaInfo;
 }
 extern "C" {
-    pub fn color_meta_get(buf: *mut gst_sys::GstBuffer) -> *mut ColorMeta;
+    pub fn buffer_meta_get(buf: *mut gst_sys::GstBuffer) -> *mut BufferMeta;
 }
 extern "C" {
-    pub fn color_meta_add(buf: *mut gst_sys::GstBuffer) -> *mut ColorMeta;
+    pub fn buffer_meta_add(buf: *mut gst_sys::GstBuffer) -> *mut BufferMeta;
 }

@@ -1,6 +1,6 @@
-set(HEADERS color-meta.h)
+set(HEADERS buffer-meta.h)
 
-add_library(depth-meta SHARED color-meta.c)
+add_library(depth-meta SHARED buffer-meta.c)
 target_link_libraries(depth-meta CONAN_PKG::gstreamer CONAN_PKG::gstreamer CONAN_PKG::gstreamer-plugins-base)
 
 set(DEST_DIR "${CMAKE_INSTALL_PREFIX}")
