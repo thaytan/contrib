@@ -42,8 +42,8 @@ class DepthMetaConan(ConanFile):
 
     def package(self):
         if self.channel == "testing":
-            self.copy("meta-*.c", "src")
-            self.copy("meta-*.h", "src")
+            self.copy("*-meta.c", "src")
+            self.copy("*-meta.h", "src")
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
