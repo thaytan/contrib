@@ -23,8 +23,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "introspection=True",
         "videoparsers=True",
         "gl=True",
-        "nvdec=True",
-        "nvenc=True",
+        "nvdec=False",
+        "nvenc=False",
         "pnm=True",
     )
     folder_name = "gst-plugins-bad-" + version
