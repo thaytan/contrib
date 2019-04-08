@@ -1,8 +1,8 @@
 [package]
-name = "depth-meta"
+name = "gstreamer-depth-meta"
 version = "0.1.0"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
-description = "Rust bindings to depth-meta"
+description = "Rust bindings to gstreamer-depth-meta"
 license = "MIT"
 edition = "2018"
 
