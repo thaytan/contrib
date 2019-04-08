@@ -16,7 +16,7 @@ impl BufferMetaApi for gst::buffer::Buffer {
     fn add_buffer_meta(&mut self, child_buf: &mut gst::Buffer) {
         unsafe {
             let meta_buffer = sys::buffer_meta_add(self.as_mut_ptr());
-            (*meta_buffer).buffer = child_buf.as_ptr();
+            (*meta_buffer).buffer = child_buf.as_mut_ptr();
         }
     }
 

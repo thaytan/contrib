@@ -7,21 +7,18 @@ extern crate glib_sys;
 extern crate gstreamer_sys as gst_sys;
 extern crate gstreamer_video_sys as gst_video_sys;
 
+pub type BufferMeta = _BufferMeta;
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct BufferMeta {
+pub struct _BufferMeta {
     pub meta: gst_sys::GstMeta,
-    pub buffer: *const gst_sys::GstBuffer,
+    pub buffer: *mut gst_sys::GstBuffer,
 }
+
 extern "C" {
     pub fn buffer_meta_api_get_type() -> glib_sys::GType;
-}
-extern "C" {
     pub fn buffer_meta_get_info() -> *const gst_sys::GstMetaInfo;
-}
-extern "C" {
     pub fn buffer_meta_get(buf: *mut gst_sys::GstBuffer) -> *mut BufferMeta;
-}
-extern "C" {
     pub fn buffer_meta_add(buf: *mut gst_sys::GstBuffer) -> *mut BufferMeta;
 }
