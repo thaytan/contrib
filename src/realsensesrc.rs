@@ -8,6 +8,8 @@ use gst_base;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 
+use meta::buffer::BufferMetaApi;
+
 use rs2;
 
 use std::sync::Mutex;
@@ -133,7 +135,8 @@ impl ObjectSubclass for RealsenseSrc {
         let caps = gst::Caps::new_simple(
             "video/x-raw",
             &[
-                ("format", &"RGB"),
+                //("format", &"RGB"),
+                ("format", &"GRAY16_LE"),
                 ("width", &1280),
                 ("height", &720),
                 ("framerate", &gst::Fraction::new(1, std::i32::MAX))
@@ -241,18 +244,25 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let settings = self.settings.lock().unwrap();
 
+
         rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
         let config = rs2::config::Config::new().unwrap();
 
         if let Some(location) = settings.location.as_ref() {
             config.enable_device_from_file_repeat_option(location.to_string(), true).unwrap();
-        } else if let Some(serial) = settings.serial.as_ref() {
+        };
+        if let Some(serial) = settings.serial.as_ref() {
+            if let Some(location) = settings.location.as_ref() {
+                config.enable_record_to_file(location.to_string()).unwrap();
+            };
             config.enable_stream(rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH, 1280, 720, rs2::pipeline::rs2_format::RS2_FORMAT_Z16, 30).unwrap();
             config.enable_stream(rs2::pipeline::rs2_stream::RS2_STREAM_COLOR, 1280, 720, rs2::pipeline::rs2_format::RS2_FORMAT_RGB8, 30).unwrap();
             config.enable_device(serial.to_string()).unwrap();
-        } else {
-            gst_error_msg!(gst::ResourceError::Settings, ["Neither the location or the serial properties are defined"]);
         };
+
+        if settings.location == None && settings.serial == None {
+            return Err(gst_error_msg!(gst::ResourceError::Settings, ["Neither the location or the serial properties are defined"]));
+        }
 
         let context = rs2::context::Context::new().unwrap();
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
@@ -301,15 +311,17 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let frames = pipeline.wait_for_frames(10000).unwrap();
 
-        let color_frame = frames.iter().find(|f| f.get_profile().unwrap().get_data().unwrap().stream == rs2::pipeline::rs2_stream::RS2_STREAM_COLOR).unwrap();
         let depth_frame = frames.iter().find(|f| f.get_profile().unwrap().get_data().unwrap().stream == rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH).unwrap();
+        let color_frame = frames.iter().find(|f| f.get_profile().unwrap().get_data().unwrap().stream == rs2::pipeline::rs2_stream::RS2_STREAM_COLOR).unwrap();
 
-        let buffer = gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
+        let mut depth_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
+        let mut color_buffer = gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
+        depth_buffer.add_buffer_meta(&mut color_buffer);
 
         color_frame.release();
         depth_frame.release();
 
-        Ok(buffer)
+        Ok(depth_buffer)
     }
 }
 

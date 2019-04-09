@@ -13,8 +13,6 @@ class RealsenseConan(ConanFile):
     default_channel = "stable"
     license = "Proprietary"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "intel": [True, False], "omx": [True, False], "openhevc": [True, False], "ffmpeg": [True, False]}
-    default_options = "shared=False", "intel=True", "omx=True", "openhevc=True", "ffmpeg=False"
     generators = "virtualenv", "virtualrunenv"
     exports_sources = [
         "Cargo.toml",
@@ -24,6 +22,7 @@ class RealsenseConan(ConanFile):
     def requirements(self):
         self.requires("gstreamer/1.15.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer-plugins-base/1.15.1@%s/%s" % (self.user, self.channel))
+        self.requires("gstreamer-depth-meta/master@%s/%s" % (self.user, self.channel))
         self.requires("librealsense/2.19.1@%s/%s" % (self.user, self.channel))
 
     def build(self):

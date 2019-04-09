@@ -6,6 +6,7 @@ extern crate glib;
 extern crate gstreamer as gst;
 extern crate gstreamer_base as gst_base;
 extern crate gstreamer_video as gst_video;
+extern crate gstreamer_depth_meta as meta;
 extern crate librealsense2 as rs2;
 
 mod realsensesrc;
