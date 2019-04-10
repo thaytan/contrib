@@ -45,7 +45,7 @@ class FFMpegConan(ConanFile):
 
         with tools.chdir(os.path.join(self.source_folder, "ffmpeg-" + self.version)):
             env_build = AutoToolsBuildEnvironment(self)
-            env_build.configure(args=args, build=False, host=False, target=False, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+            env_build.configure(args=args, build=False, host=False, target=False)
             env_build.make()
             env_build.make(args=['install'])
 
