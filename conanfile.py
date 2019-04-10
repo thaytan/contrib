@@ -19,11 +19,9 @@ class FFMpegConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "fPIC": [True, False],
-        "vaapi": [True, False],
     }
     default_options = (
         "fPIC=True",
-        "vaapi=True",
     )
 
     def source(self):
@@ -39,9 +37,6 @@ class FFMpegConan(ConanFile):
                 '--disable-programs']
         if self.settings.build_type == 'Debug':
             args.extend(['--disable-optimizations', '--disable-mmx', '--disable-stripping', '--enable-debug'])
-
-        if self.settings.os == "Linux":
-            args.append('--enable-vaapi' if self.options.vaapi else '--disable-vaapi')
 
         with tools.chdir(os.path.join(self.source_folder, "ffmpeg-" + self.version)):
             env_build = AutoToolsBuildEnvironment(self)
