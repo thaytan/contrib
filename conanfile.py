@@ -56,4 +56,7 @@ class FFMpegConan(ConanFile):
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
+            env_name = file[:-3].replace(".", "_").replace("-", "_").upper()
+            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % env_name, self.package_folder)
+            setattr(self.env_info, "PKG_CONFIG_%s_LIBDIR" % env_name, os.path.join(self.package_folder, "lib"))
+            setattr(self.env_info, "PKG_CONFIG_%s_INCLUDEDIR" % env_name, os.path.join(self.package_folder, "include"))
