@@ -43,5 +43,6 @@ class OrcConan(ConanFile):
         for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
             setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.srcdirs.append("src")
