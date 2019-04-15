@@ -19,6 +19,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "app": [True, False],
         "playback": [True, False],
         "typefind": [True, False],
+        "orc": [True, False],
     }
     default_options = (
         "introspection=True",
@@ -29,6 +30,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "app=True",
         "playback=True",
         "typefind=True",
+        "orc=True",
     )
     folder_name = "gst-plugins-base-" + version
 
@@ -51,6 +53,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dapp=" + ("enabled" if self.options.app else "disabled"))
         args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
         args.append("-Dtypefind=" + ("enabled" if self.options.typefind else "disabled"))
+        args.append("-Dorc=" + ("enabled" if self.options.orc else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
