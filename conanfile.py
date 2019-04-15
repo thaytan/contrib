@@ -39,6 +39,8 @@ class GStreamerPluginsBaseConan(ConanFile):
         self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
         if self.options.introspection:
             self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
+        if self.options.orc:
+            self.requires("orc/0.4.29@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
