@@ -13,8 +13,8 @@ class LibUSBConan(ConanFile):
     name = "libusb"
     version = "1.0.22"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "udev": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "udev=False", "fPIC=True"
+    options = {"udev": [True, False], "fPIC": [True, False]}
+    default_options = "udev=False", "fPIC=True"
     default_user = "bincrafters"
     url = "http://github.com/bincrafters/conan-libusb"
     author = "Bincrafters <bincrafters@gmail.com>"
@@ -22,21 +22,23 @@ class LibUSBConan(ConanFile):
     description = "A cross-platform library to access USB devices"
     exports = ["LICENSE.md"]
     folder_name = name + "-" + version
-    no_copy_source = True
 
     def source(self):
         tools.get("https://github.com/libusb/libusb/archive/v%s.tar.gz" % self.version)
 
     def build(self):
-        args = ['--enable-shared' if self.options.shared else '--disable-shared']
+        args = []
         args.append('--enable-static' if not self.options.shared else '--disable-static')
         args.append('--enable-udev' if self.options.udev else '--disable-udev')
-        with tools.chdir(os.path.join(self.source_folder, self.folder_name)):
-            self.run("autoreconf -i")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.make(args=["install"])
+        vars = {
+            "CFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
+        }
+        with tools.chdir(os.path.join(self.source_folder, self.folder_name)), tools.environment_append(vars):
+                self.run("./autogen.sh " + " ".join(args))
+                autotools = AutoToolsBuildEnvironment(self)
+                autotools.configure(args=args)
+                autotools.make()
+                autotools.make(args=["install"])
 
     def package(self):
         if self.channel == "testing":
