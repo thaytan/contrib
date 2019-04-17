@@ -42,7 +42,7 @@ class LibzmqConan(ConanFile):
             self.copy("*.hpp", "src")
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.libs = ["zmq"]
         self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
