@@ -15,10 +15,6 @@ class LibzmqConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
 
-    def requirements(self):
-        pass
-        #self.requires("libusb/1.0.22@%s/%s" % (self.user, self.channel))
-
     def source(self):
         tools.get("https://github.com/zeromq/libzmq/archive/v%s.tar.gz" % self.version)
 
@@ -43,9 +39,8 @@ class LibzmqConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ["zmq"]
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
         self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
+        self.env_info.PKG_CONFIG_LIBZMQ_LIBDIR = os.path.join(self.package_folder, "lib")
+        self.env_info.PKG_CONFIG_LIBZMQ_INCLUDEDIR = os.path.join(self.package_folder, "include")
         self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.srcdirs.append("src")
