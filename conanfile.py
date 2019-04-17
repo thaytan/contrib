@@ -14,10 +14,10 @@ class GStreamerLibavConan(ConanFile):
     default_options = "fPIC=True"
 
     def requirements(self):
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("ffmpeg/4.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
+        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
+        self.requires("ffmpeg/4.1@%s/%s" % (self.user, self.channel))
+        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-libav/archive/%s.tar.gz" % self.version)
