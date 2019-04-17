@@ -5,7 +5,7 @@ from conans.util import files
 
 class LibRealsenseConan(ConanFile):
     name = "librealsense"
-    version = "2.19.1"
+    version = "2.20.0"
     license = "https://raw.githubusercontent.com/IntelRealSense/librealsense/master/LICENSE"
     description = "Intel RealSense SDK https://realsense.intel.com"
     default_user = "bincrafters"
