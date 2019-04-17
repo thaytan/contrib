@@ -9,8 +9,6 @@ class OrcConan(ConanFile):
     name = "orc"
     version = "0.4.29"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "udev": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "udev=False", "fPIC=True"
     default_user = "bincrafters"
     url = "http://github.com/bincrafters/conan-orc"
     author = "Bincrafters <bincrafters@gmail.com>"
