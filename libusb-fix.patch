@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 78834fe..ad492fd 100644
+index 78834fe1..ad492fd7 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -20,6 +20,20 @@ os_set_flags()
@@ -10,7 +10,7 @@ index 78834fe..ad492fd 100644
 +if(NOT PKG_CONFIG_FOUND)
 +    message(FATAL_ERROR "\n\n PkgConfig package is missing!\n\n")
 +endif()
-
++
 +pkg_search_module(LIBUSB1 REQUIRED libusb-1.0)
 +if(LIBUSB1_FOUND)
 +    include_directories(SYSTEM ${LIBUSB1_INCLUDE_DIRS})
