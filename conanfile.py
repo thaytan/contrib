@@ -27,9 +27,8 @@ class LibUSBConan(ConanFile):
         tools.get("https://github.com/libusb/libusb/archive/v%s.tar.gz" % self.version)
 
     def build(self):
-        args = []
-        args.append('--enable-static' if not self.options.shared else '--disable-static')
-        args.append('--enable-udev' if self.options.udev else '--disable-udev')
+        args = ["--disable-static"]
+        args.append("--enable-udev" if self.options.udev else "--disable-udev")
         vars = {
             "CFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
         }
