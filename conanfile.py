@@ -18,6 +18,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "nvdec": [True, False],
         "nvenc": [True, False],
         "pnm": [True, False],
+        "webrtc": [True, False],
     }
     default_options = (
         "introspection=True",
@@ -26,9 +27,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "nvdec=False",
         "nvenc=False",
         "pnm=True",
+        "webrtc=True",
     )
-    folder_name = "gst-plugins-bad-" + version
-    no_copy_source = True
 
     def configure(self):
         if self.settings.arch != "x86_64":
@@ -41,6 +41,9 @@ class GStreamerPluginsBadConan(ConanFile):
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
         if self.options.introspection:
             self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
+        if self.options.webrtc:
+            self.requires("libnice/0.1.15@%s/%s" % (self.user, self.channel))
+
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
@@ -50,11 +53,12 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dvideoparsers=" + ("enabled" if self.options.videoparsers else "disabled"))
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
+        args.append("-Dwebrtc=" + ("enabled" if self.options.webrtc else "disabled"))
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder="gst-plugins-bad-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
