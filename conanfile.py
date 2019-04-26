@@ -11,22 +11,28 @@ class LibNiceConan(ConanFile):
     description = "An implementation of the IETF’s Interactive Connectivity Establishment (ICE) standard"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {}
-    default_options = ()
+    options = {
+        "gstreamer": [True, False],
+    }
+    default_options = (
+        "gstreamer=True",
+    )
 
     def configure(self):
         pass
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/1.15.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer-plugins-base/1.15.1@%s/%s" % (self.user, self.channel))
+        if self.options.gstreamer:
+            self.requires("gstreamer/1.15.1@%s/%s" % (self.user, self.channel))
+            self.requires("gstreamer-plugins-base/1.15.1@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/libnice/libnice/archive/%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--auto-features=disabled"]
+        args.append("-Dgstreamer=" + ("enabled" if self.options.gstreamer else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="libnice-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
