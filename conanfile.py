@@ -18,6 +18,9 @@ class LibVpxConan(ConanFile):
     def source(self):
         tools.get("https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version)
 
+    def build_requirements(self):
+        self.build_requires("yasm_installer/1.3.0@%s/%s" % (self.user, self.channel))
+
     def build(self):
         args = []
         with tools.chdir("libvpx-" + self.version):
