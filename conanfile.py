@@ -4,7 +4,7 @@ import os
 
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
-    version = "1.15.1"
+    version = "1.16.0"
     default_user = "bincrafters"
     default_channel = "stable"
     url = "https://github.com/bincrafters/conan-" + name
@@ -18,6 +18,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         "png": [True, False],
         "isomp4": [True, False],
         "videofilter": [True, False],
+        "vpx": [True, False],
     }
     default_options = (
         "autodetect=True",
@@ -26,13 +27,16 @@ class GStreamerPluginsGoodConan(ConanFile):
         "png=True",
         "isomp4=True",
         "videofilter=True",
+        "vpx=True",
     )
-    folder_name = "gst-plugins-good-" + version
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
+        if self.options.vpx:
+            self.requires("libvpx/1.8.0@%s/%s" % (self.user, self.channel))
+
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-good/archive/%s.tar.gz" % self.version)
@@ -46,8 +50,9 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
         args.append("-Disomp4=" + ("enabled" if self.options.isomp4 else "disabled"))
         args.append("-Dvideofilter=" + ("enabled" if self.options.videofilter else "disabled"))
+        args.append("-Dvpx=" + ("enabled" if self.options.videofilter else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder="gst-plugins-good-" + self.version , args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
