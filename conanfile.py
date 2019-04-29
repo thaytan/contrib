@@ -4,7 +4,7 @@ import os
 
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
-    version = "1.15.1"
+    version = "1.16.0"
     default_user = "bincrafters"
     url = "https://github.com/bincrafters/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
