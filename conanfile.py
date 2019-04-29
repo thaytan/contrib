@@ -4,7 +4,7 @@ import os
 
 class GStreamerPluginsBadConan(ConanFile):
     name = "gstreamer-plugins-bad"
-    version = "1.15.1"
+    version = "1.16.0"
     default_user = "bincrafters"
     default_channel = "stable"
     url = "https://github.com/bincrafters/conan-" + name
@@ -19,6 +19,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "nvenc": [True, False],
         "pnm": [True, False],
         "webrtc": [True, False],
+        "srtp": [True, False],
+        "dtls": [True, False],
     }
     default_options = (
         "introspection=True",
@@ -28,6 +30,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "nvenc=False",
         "pnm=True",
         "webrtc=True",
+        "srtp=True",
+        "dtls=True",
     )
 
     def configure(self):
@@ -43,6 +47,8 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
         if self.options.webrtc:
             self.requires("libnice/0.1.15@%s/%s" % (self.user, self.channel))
+        if self.options.srtp:
+            self.requires("libsrtp/2.2.0@%s/%s" % (self.user, self.channel))
 
 
     def source(self):
@@ -54,6 +60,8 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
         args.append("-Dwebrtc=" + ("enabled" if self.options.webrtc else "disabled"))
+        args.append("-Dsrtp=" + ("enabled" if self.options.srtp else "disabled"))
+        args.append("-Ddtls=" + ("enabled" if self.options.srtp else "disabled"))
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
