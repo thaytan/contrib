@@ -4,7 +4,7 @@ import os
 
 class GStreamerLibavConan(ConanFile):
     name = "gstreamer-libav"
-    version = "1.15.1"
+    version = "1.16.0"
     default_user = "bincrafters"
     url = "https://github.com/bincrafters/conan-" + name
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
