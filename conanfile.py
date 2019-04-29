@@ -20,6 +20,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "playback": [True, False],
         "typefind": [True, False],
         "orc": [True, False],
+        "opus": [True, False],
     }
     default_options = (
         "introspection=True",
@@ -31,8 +32,8 @@ class GStreamerPluginsBaseConan(ConanFile):
         "playback=True",
         "typefind=True",
         "orc=True",
+        "opus=True",
     )
-    folder_name = "gst-plugins-base-" + version
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
@@ -41,6 +42,8 @@ class GStreamerPluginsBaseConan(ConanFile):
             self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
         if self.options.orc:
             self.requires("orc/0.4.29@%s/%s" % (self.user, self.channel))
+        if self.options.opus:
+            self.requires("opus/1.3.1@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
@@ -56,8 +59,9 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
         args.append("-Dtypefind=" + ("enabled" if self.options.typefind else "disabled"))
         args.append("-Dorc=" + ("enabled" if self.options.orc else "disabled"))
+        args.append("-Dopus=" + ("enabled" if self.options.opus else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
