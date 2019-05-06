@@ -3,7 +3,7 @@ import os
 
 class GStreamerVaapiConan(ConanFile):
     name = "gstreamer-vaapi"
-    version = "1.15.1"
+    version = "1.16.0"
     default_user = "bincrafters"
     default_channel = "stable"
     url = "https://github.com/bincrafters/conan-" + name
