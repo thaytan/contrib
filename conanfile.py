@@ -16,12 +16,11 @@ class OpensslConan(ConanFile):
         tools.get("https://github.com/openssl/openssl/archive/OpenSSL_%s.tar.gz" % self.version.replace(".", "_"))
 
     def build(self):
-        arch_mapper = {
-            "x86_64": "x86_64",
-            "armv8": "ia64"
-        }
-        compiler = arch_mapper[str(self.settings.arch)]
-        args = ["linux-" + compiler]
+        args = ["shared", "no-ssl3-method"]
+        if self.settings.arch == "x86_64":
+            args += ["linux-x86_64", "enable-ec_nistp_64_gcc_128"]
+        elif self.settings.arch == "armv8":
+            args += ["linux-aarch64", "no-afalgeng"]
         with tools.chdir(os.path.join(self.source_folder, "openssl-OpenSSL_" + self.version.replace(".", "_"))):
             shutil.copy("Configure", "configure")
             autotools = AutoToolsBuildEnvironment(self)
