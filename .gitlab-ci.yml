@@ -1,0 +1,66 @@
+stages:
+  - build-test-debug
+  - integration-test-debug
+  - build-test-release
+  - integration-test-release
+
+before_script:
+  - conan remote add $CONAN_REMOTE_NAME $CONAN_REMOTE_URL
+  - conan user $CONAN_LOGIN_USERNAME -r $CONAN_REMOTE_NAME -p $CONAN_LOGIN_PASSWORD
+variables:
+  CONAN_USERNAME: "$CONAN_USERNAME"
+  CONAN_CHANNEL: "testing"
+  CONAN_LOGIN_USERNAME: "$CONAN_LOGIN_USERNAME"
+  CONAN_UPLOAD: "$CONAN_REMOTE_URL"
+  CONAN_USER_HOME: "$CI_PROJECT_DIR"
+  CONAN_BUILD_TYPE: "Debug"
+  CONAN_IMAGE_BASE: "registry.gitlab.com/aivero/public/conan/conan-docker"
+  CONAN_IMAGE_ARCH: "x86_64"
+  CONAN_IMAGE_TAG: "bionic"
+image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}
+
+.build-test-debug:
+  stage: build-test-debug
+  script:
+    - conan create . ${CONAN_USERNAME}/${CONAN_CHANNEL} -s build_type=$CONAN_BUILD_TYPE
+    - conan upload "$(conan inspect . -a name | cut -c 7-)/*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
+  artifacts:
+    expire_in: 1 month
+    reports:
+      junit:
+        - test_package/build/*/*_report.xml
+
+.build-test-release:
+  extends: .build-test-debug
+  stage: build-test-release
+  variables:
+    CONAN_CHANNEL: stable
+    CONAN_BUILD_TYPE: Release
+
+# #######
+# Build and test the Debug version:
+# #######
+
+test-debug-x86_64-bionic:
+  extends: .build-test-debug
+
+test-debug-armv8-bionic:
+  extends: .build-test-debug
+  tags:
+    - armv8
+  variables:
+    CONAN_IMAGE_ARCH: "armv8"
+
+# #######
+# Build and test the Release version:
+# #######
+
+test-release-x86_64-bionic:
+  extends: .build-test-release
+
+test-release-armv8-bionic:
+  extends: .build-test-release
+  tags:
+    - armv8
+  variables:
+    CONAN_IMAGE_ARCH: "armv8"
