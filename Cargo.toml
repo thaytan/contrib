@@ -1,5 +1,5 @@
 [package]
-name = "gstreamer-depth-meta"
+name = "gstreamer-depth-meta-rs"
 version = "0.1.0"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
 description = "Rust bindings to gstreamer-depth-meta"
