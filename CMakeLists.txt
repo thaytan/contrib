@@ -7,7 +7,7 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-If(CMAKE_BUILD_TYPE EQUAL "Release")
+If(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CONAN_REFERENCE "aivero/stable")
 else()
     set(CONAN_REFERENCE "aivero/testing")
