@@ -7,7 +7,6 @@ use gst::subclass::prelude::*;
 use gst_base;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
-
 use meta::buffer::BufferMetaApi;
 
 use rs2;
@@ -316,7 +315,9 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let mut depth_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
         let mut color_buffer = gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
-        depth_buffer.add_buffer_meta(&mut color_buffer);
+        let mut color_tags = gst::tags::TagList::new();
+        color_tags.get_mut().unwrap().add::<gst::tags::ExtendedComment>(&"data_type=RGB", gst::TagMergeMode::Append);
+        depth_buffer.add_buffer_meta(&mut color_buffer, &mut color_tags);
 
         color_frame.release();
         depth_frame.release();

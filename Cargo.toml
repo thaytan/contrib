@@ -11,7 +11,7 @@ glib = "0.7.1"
 gstreamer = { version = "0.13.0", features = ["subclassing"] }
 gstreamer-base = { version = "0.13.0", features = ["subclassing"] }
 gstreamer-video = "0.13.0"
-gstreamer-depth-meta = { path = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta.git" }
+gstreamer-depth-meta-rs = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs" }
 librealsense2 = "0.3.0"
 
 [lib]
