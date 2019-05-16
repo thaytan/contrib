@@ -1,0 +1,5 @@
+[requires]
+gstreamer-depth-meta/master@aivero/testing
+
+[generators]
+virtualenv
