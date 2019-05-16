@@ -3,7 +3,7 @@ name = "gstreamer-depth-meta-rs"
 version = "0.1.0"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
 description = "Rust bindings to gstreamer-depth-meta"
-license = "MIT"
+license = "Apache 2.0"
 edition = "2018"
 
 [dependencies]
