@@ -9,8 +9,10 @@ endif()
 
 If(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CONAN_REFERENCE "aivero/stable")
+    message(STATUS "CONAN_REFERENCE=${CONAN_REFERENCE}")
 else()
     set(CONAN_REFERENCE "aivero/testing")
+    message(STATUS "CONAN_REFERENCE=${CONAN_REFERENCE}")
 endif()
 
 execute_process(COMMAND conan install -s build_type=${CMAKE_BUILD_TYPE} -if ${CMAKE_BINARY_DIR} -g=cmake ${CMAKE_SOURCE_DIR} ${CONAN_REFERENCE})
