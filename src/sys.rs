@@ -14,6 +14,7 @@ pub type BufferMeta = _BufferMeta;
 pub struct _BufferMeta {
     pub meta: gst_sys::GstMeta,
     pub buffer: *mut gst_sys::GstBuffer,
+    pub tags: *mut gst_sys::GstTagList,
 }
 
 extern "C" {
