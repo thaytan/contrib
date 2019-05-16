@@ -16,6 +16,7 @@ def get_version():
 
 class DepthMetaConan(ConanFile):
     name = "gstreamer-depth-meta"
+    license = "Apache 2.0"
     version = get_version()
     description = "Library to stream depth video"
     url = "https://aivero.com"
