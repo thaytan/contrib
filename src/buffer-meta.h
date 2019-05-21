@@ -18,6 +18,6 @@ struct _BufferMeta {
 GType buffer_meta_api_get_type(void);
 const GstMetaInfo *buffer_meta_get_info(void);
 BufferMeta *buffer_meta_get(GstBuffer *buffer);
-BufferMeta *buffer_meta_add(GstBuffer *buffer, GstBuffer *meta_buffer);
+BufferMeta *buffer_meta_add(GstBuffer *buffer, GstBuffer *meta_buffer, GstTagList *tags);
 
 G_END_DECLS
