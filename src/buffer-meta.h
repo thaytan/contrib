@@ -12,12 +12,11 @@ typedef struct _BufferMeta BufferMeta;
 struct _BufferMeta {
   GstMeta meta;
   GstBuffer *buffer;
-  GstTagList *tags;
 };
 
 GType buffer_meta_api_get_type(void);
 const GstMetaInfo *buffer_meta_get_info(void);
 BufferMeta *buffer_meta_get(GstBuffer *buffer);
-BufferMeta *buffer_meta_add(GstBuffer *buffer, GstBuffer *meta_buffer, GstTagList *tags);
+BufferMeta *buffer_meta_add(GstBuffer *buffer, GstBuffer *meta_buffer);
 
 G_END_DECLS

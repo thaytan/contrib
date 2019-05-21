@@ -1,6 +1,6 @@
-set(HEADERS buffer-meta.h)
+set(HEADERS buffer-meta.h tags-meta.h)
 
-add_library(depth-meta SHARED buffer-meta.c)
+add_library(depth-meta SHARED buffer-meta.c tags-meta.c)
 target_link_libraries(depth-meta CONAN_PKG::gstreamer CONAN_PKG::gstreamer CONAN_PKG::gstreamer-plugins-base)
 
 set(DEST_DIR "${CMAKE_INSTALL_PREFIX}")
