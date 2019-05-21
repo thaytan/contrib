@@ -7,3 +7,4 @@ pub use gst::meta::{Meta, MetaAPI, MetaRef, MetaRefMut};
 
 mod sys;
 pub mod buffer;
+pub mod tags;
