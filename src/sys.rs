@@ -21,5 +21,5 @@ extern "C" {
     pub fn buffer_meta_api_get_type() -> glib_sys::GType;
     pub fn buffer_meta_get_info() -> *const gst_sys::GstMetaInfo;
     pub fn buffer_meta_get(buffer: *mut gst_sys::GstBuffer) -> *mut BufferMeta;
-    pub fn buffer_meta_add(buffer: *mut gst_sys::GstBuffer, buffer_meta: *mut gst_sys::GstBuffer) -> *mut BufferMeta;
+    pub fn buffer_meta_add(buffer: *mut gst_sys::GstBuffer, buffer_meta: *mut gst_sys::GstBuffer, buffer_tags: *mut gst_sys::GstTagList) -> *mut BufferMeta;
 }
