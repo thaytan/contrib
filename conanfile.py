@@ -19,6 +19,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         "isomp4": [True, False],
         "videofilter": [True, False],
         "vpx": [True, False],
+        "multifile": [True, False],
     }
     default_options = (
         "autodetect=True",
@@ -28,6 +29,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         "isomp4=True",
         "videofilter=True",
         "vpx=True",
+        "multifile=True",
     )
 
     def requirements(self):
@@ -51,7 +53,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
         args.append("-Disomp4=" + ("enabled" if self.options.isomp4 else "disabled"))
         args.append("-Dvideofilter=" + ("enabled" if self.options.videofilter else "disabled"))
-        args.append("-Dvpx=" + ("enabled" if self.options.videofilter else "disabled"))
+        args.append("-Dvpx=" + ("enabled" if self.options.vpx else "disabled"))
+        args.append("-Dmultifile=" + ("enabled" if self.options.multifile else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-good-" + self.version , args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
