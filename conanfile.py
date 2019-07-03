@@ -21,6 +21,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "webrtc": [True, False],
         "srtp": [True, False],
         "dtls": [True, False],
+        "mpegtsmux": [True, False],
+        "mpegtsdemux": [True, False]
     }
     default_options = (
         "introspection=True",
@@ -32,6 +34,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "webrtc=True",
         "srtp=True",
         "dtls=True",
+        "mpegtsmux=True",
+        "mpegtsdemux=True",
     )
 
     def configure(self):
@@ -62,6 +66,9 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dwebrtc=" + ("enabled" if self.options.webrtc else "disabled"))
         args.append("-Dsrtp=" + ("enabled" if self.options.srtp else "disabled"))
         args.append("-Ddtls=" + ("enabled" if self.options.srtp else "disabled"))
+        args.append("-Dmpegtsmux=" + ("enabled" if self.options.mpegtsmux else "disabled"))
+        args.append("-Dmpegtsdemux=" + ("enabled" if self.options.mpegtsdemux else "disabled"))
+
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
