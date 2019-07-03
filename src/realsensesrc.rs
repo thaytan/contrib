@@ -7,8 +7,8 @@ use gst::subclass::prelude::*;
 use gst_base;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
-
-use meta::buffer::BufferMetaApi;
+use meta::buffer::BufferMeta;
+use meta::tags::TagsMeta;
 
 use rs2;
 
@@ -47,14 +47,12 @@ static PROPERTIES: [subclass::Property; 2] = [
             None,
             glib::ParamFlags::READWRITE,
         )
-    })
+    }),
 ];
 
 enum State {
     Stopped,
-    Started {
-        pipeline: rs2::pipeline::Pipeline,
-    },
+    Started { pipeline: rs2::pipeline::Pipeline },
 }
 
 impl Default for State {
@@ -70,10 +68,7 @@ pub struct RealsenseSrc {
 }
 
 impl RealsenseSrc {
-    fn set_location(
-        &self,
-        location: Option<String>,
-    ) -> Result<(), glib::Error> {
+    fn set_location(&self, location: Option<String>) -> Result<(), glib::Error> {
         let state = self.state.lock().unwrap();
         if let State::Started { .. } = *state {
             return Err(gst::Error::new(
@@ -88,10 +83,7 @@ impl RealsenseSrc {
         Ok(())
     }
 
-    fn set_serial(
-        &self,
-        serial: Option<String>,
-    ) -> Result<(), glib::Error> {
+    fn set_serial(&self, serial: Option<String>) -> Result<(), glib::Error> {
         let state = self.state.lock().unwrap();
         if let State::Started { .. } = *state {
             return Err(gst::Error::new(
@@ -117,7 +109,11 @@ impl ObjectSubclass for RealsenseSrc {
 
     fn new() -> Self {
         Self {
-            cat: gst::DebugCategory::new("realsensesrc", gst::DebugColorFlags::empty(), "Realsense Source"),
+            cat: gst::DebugCategory::new(
+                "realsensesrc",
+                gst::DebugColorFlags::empty(),
+                "Realsense Source",
+            ),
             settings: Mutex::new(Default::default()),
             state: Mutex::new(Default::default()),
         }
@@ -131,7 +127,6 @@ impl ObjectSubclass for RealsenseSrc {
             "Niclas Moeslund Overby <noverby@prozum.dk>",
         );
 
-
         let caps = gst::Caps::new_simple(
             "video/x-raw",
             &[
@@ -139,7 +134,7 @@ impl ObjectSubclass for RealsenseSrc {
                 ("format", &"GRAY16_LE"),
                 ("width", &1280),
                 ("height", &720),
-                ("framerate", &gst::Fraction::new(1, std::i32::MAX))
+                ("framerate", &gst::Fraction::new(1, std::i32::MAX)),
             ],
         );
 
@@ -148,7 +143,8 @@ impl ObjectSubclass for RealsenseSrc {
             gst::PadDirection::Src,
             gst::PadPresence::Always,
             &caps,
-        ).unwrap();
+        )
+        .unwrap();
 
         klass.add_pad_template(src_pad_template);
 
@@ -244,24 +240,44 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let settings = self.settings.lock().unwrap();
 
-
         rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
         let config = rs2::config::Config::new().unwrap();
 
         if let Some(location) = settings.location.as_ref() {
-            config.enable_device_from_file_repeat_option(location.to_string(), true).unwrap();
+            config
+                .enable_device_from_file_repeat_option(location.to_string(), true)
+                .unwrap();
         };
         if let Some(serial) = settings.serial.as_ref() {
             if let Some(location) = settings.location.as_ref() {
                 config.enable_record_to_file(location.to_string()).unwrap();
             };
-            config.enable_stream(rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH, 1280, 720, rs2::pipeline::rs2_format::RS2_FORMAT_Z16, 30).unwrap();
-            config.enable_stream(rs2::pipeline::rs2_stream::RS2_STREAM_COLOR, 1280, 720, rs2::pipeline::rs2_format::RS2_FORMAT_RGB8, 30).unwrap();
+            config
+                .enable_stream(
+                    rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH,
+                    1280,
+                    720,
+                    rs2::pipeline::rs2_format::RS2_FORMAT_Z16,
+                    30,
+                )
+                .unwrap();
+            config
+                .enable_stream(
+                    rs2::pipeline::rs2_stream::RS2_STREAM_COLOR,
+                    1280,
+                    720,
+                    rs2::pipeline::rs2_format::RS2_FORMAT_RGB8,
+                    30,
+                )
+                .unwrap();
             config.enable_device(serial.to_string()).unwrap();
         };
 
         if settings.location == None && settings.serial == None {
-            return Err(gst_error_msg!(gst::ResourceError::Settings, ["Neither the location or the serial properties are defined"]));
+            return Err(gst_error_msg!(
+                gst::ResourceError::Settings,
+                ["Neither the location or the serial properties are defined"]
+            ));
         }
 
         let context = rs2::context::Context::new().unwrap();
@@ -300,9 +316,7 @@ impl BaseSrcImpl for RealsenseSrc {
         let mut state = self.state.lock().unwrap();
 
         let pipeline = match *state {
-            State::Started {
-                ref mut pipeline,
-            } => pipeline,
+            State::Started { ref mut pipeline } => pipeline,
             State::Stopped => {
                 gst_element_error!(element, gst::CoreError::Failed, ["Not started yet"]);
                 return Err(gst::FlowError::Error);
@@ -311,12 +325,48 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let frames = pipeline.wait_for_frames(10000).unwrap();
 
-        let depth_frame = frames.iter().find(|f| f.get_profile().unwrap().get_data().unwrap().stream == rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH).unwrap();
-        let color_frame = frames.iter().find(|f| f.get_profile().unwrap().get_data().unwrap().stream == rs2::pipeline::rs2_stream::RS2_STREAM_COLOR).unwrap();
+        let depth_frame = frames
+            .iter()
+            .find(|f| {
+                f.get_profile().unwrap().get_data().unwrap().stream
+                    == rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH
+            })
+            .unwrap();
+        let color_frame = frames
+            .iter()
+            .find(|f| {
+                f.get_profile().unwrap().get_data().unwrap().stream
+                    == rs2::pipeline::rs2_stream::RS2_STREAM_COLOR
+            })
+            .unwrap();
 
         let mut depth_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
         let mut color_buffer = gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
-        depth_buffer.add_buffer_meta(&mut color_buffer);
+        let mut depth_tags = gst::tags::TagList::new();
+        depth_tags
+            .get_mut()
+            .unwrap()
+            .add::<gst::tags::ExtendedComment>(&"data_type=D", gst::TagMergeMode::Append);
+        depth_tags
+            .get_mut()
+            .unwrap()
+            .add::<gst::tags::Title>(&"D", gst::TagMergeMode::Append);
+
+        let mut color_tags = gst::tags::TagList::new();
+        color_tags
+            .get_mut()
+            .unwrap()
+            .add::<gst::tags::ExtendedComment>(&"data_type=RGB", gst::TagMergeMode::Append);
+
+        color_tags
+            .get_mut()
+            .unwrap()
+            .add::<gst::tags::Title>(&"RGB", gst::TagMergeMode::Append);
+
+        TagsMeta::add(depth_buffer.get_mut().unwrap(), &mut depth_tags);
+
+        TagsMeta::add(color_buffer.get_mut().unwrap(), &mut color_tags);
+        BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut color_buffer);
 
         color_frame.release();
         depth_frame.release();
