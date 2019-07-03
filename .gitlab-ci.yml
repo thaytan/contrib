@@ -1,10 +1,8 @@
 stages:
   - build-test-debug
   - integration-test-debug
-  - deploy-debug
   - build-test-release
   - integration-test-release
-  - deploy-release
 
 before_script:
   - conan remote add $CONAN_REMOTE_NAME $CONAN_REMOTE_URL
@@ -25,29 +23,18 @@ image: ${CONAN_IMAGE_BASE}/${CONAN_IMAGE_ARCH}:${CONAN_IMAGE_TAG}
   stage: build-test-debug
   script:
     - conan create . ${CONAN_USERNAME}/${CONAN_CHANNEL} -s build_type=$CONAN_BUILD_TYPE
+    - conan upload "$(conan inspect . -a name | cut -c 7-)/*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
+  tags:
+    - x86_64
   artifacts:
     expire_in: 1 month
     reports:
       junit:
         - test_package/build/*/*_report.xml
-    paths:
-      - .conan/data
-
-.deploy-debug:
-  stage: deploy-debug
-  script:
-    - conan upload "*@${CONAN_USERNAME}/${CONAN_CHANNEL}" --all -r $CONAN_REMOTE_NAME -c
 
 .build-test-release:
   extends: .build-test-debug
   stage: build-test-release
-  variables:
-    CONAN_CHANNEL: stable
-    CONAN_BUILD_TYPE: Release
-
-.deploy-release:
-  extends: .deploy-debug
-  stage: deploy-release
   variables:
     CONAN_CHANNEL: stable
     CONAN_BUILD_TYPE: Release
@@ -62,21 +49,7 @@ test-debug-x86_64-bionic:
 test-debug-armv8-bionic:
   extends: .build-test-debug
   tags:
-    - qemu
-  variables:
-    CONAN_IMAGE_ARCH: "armv8"
-
-# #######
-# Deploy the Debug version:
-# #######
-
-deploy-debug-x86_64-bionic:
-  extends: .deploy-debug
-
-deploy-debug-armv8-bionic:
-  extends: .deploy-debug
-  tags:
-    - qemu
+    - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
 
@@ -90,20 +63,6 @@ test-release-x86_64-bionic:
 test-release-armv8-bionic:
   extends: .build-test-release
   tags:
-    - qemu
-  variables:
-    CONAN_IMAGE_ARCH: "armv8"
-
-# #######
-# Deploy the Release version:
-# #######
-
-deploy-release-x86_64-bionic:
-  extends: .deploy-release
-
-deploy-release-armv8-bionic:
-  extends: .deploy-release
-  tags:
-    - qemu
+    - armv8
   variables:
     CONAN_IMAGE_ARCH: "armv8"
