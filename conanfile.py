@@ -22,7 +22,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "srtp": [True, False],
         "dtls": [True, False],
         "mpegtsmux": [True, False],
-        "mpegtsdemux": [True, False]
+        "mpegtsdemux": [True, False],
+        "debugutils": [True, False]
     }
     default_options = (
         "introspection=True",
@@ -36,6 +37,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "dtls=True",
         "mpegtsmux=True",
         "mpegtsdemux=True",
+        "debugutils=True",
     )
 
     def configure(self):
@@ -68,6 +70,7 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Ddtls=" + ("enabled" if self.options.srtp else "disabled"))
         args.append("-Dmpegtsmux=" + ("enabled" if self.options.mpegtsmux else "disabled"))
         args.append("-Dmpegtsdemux=" + ("enabled" if self.options.mpegtsdemux else "disabled"))
+        args.append("-Ddebugutils=" + ("enabled" if self.options.debugutils else "disabled"))
 
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
