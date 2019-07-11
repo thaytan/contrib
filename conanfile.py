@@ -34,6 +34,7 @@ class DepthMetaConan(ConanFile):
         vars = {
             "CFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
             "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
+            "GIT_PKG_VER": "%s" % self.version,
         }
         with tools.environment_append(vars):
             cmake = CMake(self)
