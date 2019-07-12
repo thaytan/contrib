@@ -1,7 +1,7 @@
 // Framerate
-pub const MIN_FRAMERATE: f32 = 6.0;
-pub const MAX_FRAMERATE: f32 = 90.0;
-pub const DEFAULT_FRAMERATE: f32 = 30.0;
+pub const MIN_FRAMERATE: u32 = 6;
+pub const MAX_FRAMERATE: u32 = 90;
+pub const DEFAULT_FRAMERATE: u32 = 30;
 
 // Depth
 // This stream is always enabled
