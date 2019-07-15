@@ -86,6 +86,7 @@ class GStreamerPluginsBadConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
+        self.cpp_info.includedirs = ["include/gstreamer-1.0"]
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
