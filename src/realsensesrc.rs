@@ -251,7 +251,7 @@ impl ObjectSubclass for RealsenseSrc {
                     ),
                 ),
                 ("infra1", &properties::DEFAULT_ENABLE_INFRA_1),
-                ("infra2", &properties::DEFAULT_ENABLE_INFRA_1),
+                ("infra2", &properties::DEFAULT_ENABLE_INFRA_2),
                 ("color", &properties::DEFAULT_ENABLE_COLOR),
                 (
                     "color_width",
@@ -377,6 +377,28 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.depth.height = depth_height;
             }
+            subclass::Property("enable_infra1", ..) => {
+                let enable_infra1 = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `enable_infra1` from {} to {}",
+                    settings.infra.0,
+                    enable_infra1
+                );
+                settings.infra.0 = enable_infra1;
+            }
+            subclass::Property("enable_infra2", ..) => {
+                let enable_infra2 = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `enable_infra2` from {} to {}",
+                    settings.infra.1,
+                    enable_infra2
+                );
+                settings.infra.1 = enable_infra2;
+            }
             subclass::Property("enable_color", ..) => {
                 let enable_color = value.get().unwrap();
                 gst_info!(
@@ -410,28 +432,6 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.color.resolution.height = color_height;
             }
-            subclass::Property("enable_infra1", ..) => {
-                let enable_infra1 = value.get().unwrap();
-                gst_info!(
-                    self.cat,
-                    obj: element,
-                    "Changing property `enable_infra1` from {} to {}",
-                    settings.infra.0,
-                    enable_infra1
-                );
-                settings.infra.0 = enable_infra1;
-            }
-            subclass::Property("enable_infra2", ..) => {
-                let enable_infra2 = value.get().unwrap();
-                gst_info!(
-                    self.cat,
-                    obj: element,
-                    "Changing property `enable_infra2` from {} to {}",
-                    settings.infra.1,
-                    enable_infra2
-                );
-                settings.infra.1 = enable_infra2;
-            }
             _ => unimplemented!(),
         };
     }
@@ -457,13 +457,13 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("framerate", ..) => Ok(settings.framerate.to_value()),
             subclass::Property("depth_width", ..) => Ok(settings.depth.width.to_value()),
             subclass::Property("depth_height", ..) => Ok(settings.depth.height.to_value()),
+            subclass::Property("enable_infra1", ..) => Ok(settings.infra.0.to_value()),
+            subclass::Property("enable_infra2", ..) => Ok(settings.infra.1.to_value()),
             subclass::Property("enable_color", ..) => Ok(settings.color.enabled.to_value()),
             subclass::Property("color_width", ..) => Ok(settings.color.resolution.width.to_value()),
             subclass::Property("color_height", ..) => {
                 Ok(settings.color.resolution.height.to_value())
             }
-            subclass::Property("enable_infra1", ..) => Ok(settings.infra.0.to_value()),
-            subclass::Property("enable_infra2", ..) => Ok(settings.infra.1.to_value()),
             _ => unimplemented!(),
         }
     }
