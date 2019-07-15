@@ -250,6 +250,23 @@ impl ObjectSubclass for RealsenseSrc {
                         gst::Fraction::new(properties::MAX_FRAMERATE as i32, 1),
                     ),
                 ),
+                ("infra1", &properties::DEFAULT_ENABLE_INFRA_1),
+                ("infra2", &properties::DEFAULT_ENABLE_INFRA_1),
+                ("color", &properties::DEFAULT_ENABLE_COLOR),
+                (
+                    "color_width",
+                    &gst::IntRange::<i32>::new(
+                        properties::COLOR_MIN_WIDTH as i32,
+                        properties::COLOR_MAX_WIDTH as i32,
+                    ),
+                ),
+                (
+                    "color_height",
+                    &gst::IntRange::<i32>::new(
+                        properties::COLOR_MIN_WIDTH as i32,
+                        properties::COLOR_MAX_WIDTH as i32,
+                    ),
+                ),
             ],
         );
 
@@ -563,8 +580,12 @@ impl BaseSrcImpl for RealsenseSrc {
             s.fixate_field_nearest_int("width", settings.depth.width as i32);
             s.fixate_field_nearest_int("height", settings.depth.height as i32);
             s.fixate_field_nearest_fraction("framerate", settings.framerate as i32);
+            s.fixate_field_bool("infra1", settings.infra.0);
+            s.fixate_field_bool("infra2", settings.infra.1);
+            s.fixate_field_bool("color", settings.color.enabled);
+            s.fixate_field_nearest_int("color_width", settings.color.resolution.width as i32);
+            s.fixate_field_nearest_int("color_height", settings.color.resolution.height as i32);
         }
-
         self.parent_fixate(element, caps)
     }
 
