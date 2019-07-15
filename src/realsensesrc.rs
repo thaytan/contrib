@@ -12,10 +12,10 @@ use meta::tags::TagsMeta;
 
 use std::sync::Mutex;
 
-use crate::properties;
 use rs2;
 
-static PROPERTIES: [subclass::Property; 12] = [
+use crate::properties;
+static PROPERTIES: [subclass::Property; 10] = [
     subclass::Property("location", |name| {
         glib::ParamSpec::string(
             name,
@@ -49,7 +49,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::uint(
             name,
             "depth_width",
-            "Width of the depth frame",
+            "Width of the depth and IR frames",
             properties::DEPTH_MIN_WIDTH,
             properties::DEPTH_MAX_WIDTH,
             properties::DEFAULT_DEPTH_WIDTH,
@@ -60,7 +60,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::uint(
             name,
             "depth_height",
-            "Height of the depth frame",
+            "Height of the depth and IR frames",
             properties::DEPTH_MIN_HEIGHT,
             properties::DEPTH_MAX_HEIGHT,
             properties::DEFAULT_DEPTH_HEIGHT,
@@ -116,28 +116,6 @@ static PROPERTIES: [subclass::Property; 12] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("infra_width", |name| {
-        glib::ParamSpec::uint(
-            name,
-            "infra_width",
-            "Width of the IR frames",
-            properties::INFRA_MIN_WIDTH,
-            properties::INFRA_MAX_WIDTH,
-            properties::DEFAULT_INFRA_WIDTH,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("infra_height", |name| {
-        glib::ParamSpec::uint(
-            name,
-            "infra_height",
-            "Height of the IR frames",
-            properties::INFRA_MIN_HEIGHT,
-            properties::INFRA_MAX_HEIGHT,
-            properties::DEFAULT_INFRA_HEIGHT,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
 ];
 
 enum State {
@@ -155,9 +133,9 @@ struct Settings {
     location: Option<String>,
     serial: Option<String>,
     framerate: u32,
-    depth: StreamResolution,
-    color: Option<StreamResolution>,
-    infra: Option<StereoStream>,
+    depth: FrameResolution,
+    color: OptionalStream,
+    infra: (bool, bool),
 }
 
 impl Default for Settings {
@@ -166,40 +144,47 @@ impl Default for Settings {
             location: None,
             serial: None,
             framerate: properties::DEFAULT_FRAMERATE,
-            depth: StreamResolution::new(
+            depth: FrameResolution::new(
                 properties::DEFAULT_DEPTH_WIDTH,
+                properties::DEFAULT_DEPTH_HEIGHT,
+            ),
+            color: OptionalStream::new(
+                properties::DEFAULT_ENABLE_COLOR,
+                properties::DEFAULT_COLOR_WIDTH,
                 properties::DEFAULT_COLOR_HEIGHT,
             ),
-            color: None,
-            infra: None,
+            infra: (
+                properties::DEFAULT_ENABLE_INFRA_1,
+                properties::DEFAULT_ENABLE_INFRA_2,
+            ),
         }
     }
 }
 
-struct StreamResolution {
+struct FrameResolution {
     width: u32,
     height: u32,
 }
 
-impl StreamResolution {
+impl FrameResolution {
     fn new(width: u32, height: u32) -> Self {
-        StreamResolution {
+        FrameResolution {
             width: width,
             height: height,
         }
     }
 }
 
-struct StereoStream {
-    enabled: (bool, bool),
-    resolution: StreamResolution,
+struct OptionalStream {
+    enabled: bool,
+    resolution: FrameResolution,
 }
 
-impl StereoStream {
-    fn new(enable: (bool, bool), width: u32, height: u32) -> Self {
-        StereoStream {
+impl OptionalStream {
+    fn new(enable: bool, width: u32, height: u32) -> Self {
+        OptionalStream {
             enabled: enable,
-            resolution: StreamResolution::new(width, height),
+            resolution: FrameResolution::new(width, height),
         }
     }
 }
@@ -213,7 +198,7 @@ pub struct RealsenseSrc {
 impl RealsenseSrc {}
 
 impl ObjectSubclass for RealsenseSrc {
-    const NAME: &'static str = "RealsenseSrc";
+    const NAME: &'static str = "realsensesrc";
     type ParentType = gst_base::BaseSrc;
     type Instance = gst::subclass::ElementInstanceStruct<Self>;
     type Class = subclass::simple::ClassStruct<Self>;
@@ -244,14 +229,26 @@ impl ObjectSubclass for RealsenseSrc {
             "video/x-raw",
             &[
                 ("format", &"GRAY16_LE"),
-                // ("width", &1280),
-                // ("height", &720),
-                // ("framerate", &gst::Fraction::new(1, std::i32::MAX)),
-                ("width", &gst::IntRange::<i32>::new(1, 1280)),
-                ("height", &gst::IntRange::<i32>::new(1, 720)),
+                (
+                    "width",
+                    &gst::IntRange::<i32>::new(
+                        properties::DEPTH_MIN_WIDTH as i32,
+                        properties::DEPTH_MAX_WIDTH as i32,
+                    ),
+                ),
+                (
+                    "height",
+                    &gst::IntRange::<i32>::new(
+                        properties::DEPTH_MIN_HEIGHT as i32,
+                        properties::DEPTH_MAX_HEIGHT as i32,
+                    ),
+                ),
                 (
                     "framerate",
-                    &gst::FractionRange::new(gst::Fraction::new(0, 1), gst::Fraction::new(90, 1)),
+                    &gst::FractionRange::new(
+                        gst::Fraction::new(properties::MIN_FRAMERATE as i32, 1),
+                        gst::Fraction::new(properties::MAX_FRAMERATE as i32, 1),
+                    ),
                 ),
             ],
         );
@@ -365,221 +362,59 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("enable_color", ..) => {
                 let enable_color = value.get().unwrap();
-                let is_enabled = match settings.color {
-                    Some(..) => true,
-                    None => false,
-                };
-                if enable_color == is_enabled {
-                    return;
-                }
-                settings.color = match enable_color {
-                    true => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_color` to enabled with default resolution"
-                        );
-                        Some(StreamResolution::new(
-                            properties::DEFAULT_COLOR_WIDTH,
-                            properties::DEFAULT_COLOR_HEIGHT,
-                        ))
-                    }
-                    false => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_color` to disabled"
-                        );
-                        None
-                    }
-                }
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `enable_color` from {} to {}",
+                    settings.color.enabled,
+                    enable_color
+                );
+                settings.color.enabled = enable_color;
             }
-            subclass::Property("color_width", ..) => match &mut settings.color {
-                None => {
-                    gst_warning!(
-                        self.cat,
-                        obj: element,
-                        "Cannot change property `color_width` as `color` stream is not enabled"
-                    );
-                }
-                Some(current_resolution) => {
-                    let color_width: u32 = value.get().unwrap();
-                    gst_info!(
-                        self.cat,
-                        obj: element,
-                        "Changing property `color_width` from {} to {}",
-                        current_resolution.width,
-                        color_width
-                    );
-                    current_resolution.width = color_width;
-                }
-            },
-            subclass::Property("color_height", ..) => match &mut settings.color {
-                None => {
-                    gst_warning!(
-                        self.cat,
-                        obj: element,
-                        "Cannot change property `color_height` as `color` stream is not enabled"
-                    );
-                }
-                Some(current_resolution) => {
-                    let color_height: u32 = value.get().unwrap();
-                    gst_info!(
-                        self.cat,
-                        obj: element,
-                        "Changing property `color_height` from {} to {}",
-                        current_resolution.width,
-                        color_height
-                    );
-                    current_resolution.width = color_height;
-                }
-            },
+            subclass::Property("color_width", ..) => {
+                let color_width = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `color_width` from {} to {}",
+                    settings.color.resolution.width,
+                    color_width
+                );
+                settings.color.resolution.width = color_width;
+            }
+            subclass::Property("color_height", ..) => {
+                let color_height = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `color_height` from {} to {}",
+                    settings.color.resolution.height,
+                    color_height
+                );
+                settings.color.resolution.height = color_height;
+            }
             subclass::Property("enable_infra1", ..) => {
                 let enable_infra1 = value.get().unwrap();
-                let currently_enabled_units = match &settings.infra {
-                    Some(stereo_stream) => stereo_stream.enabled,
-                    None => (false, false),
-                };
-                if enable_infra1 == currently_enabled_units.0 {
-                    return;
-                }
-
-                match (enable_infra1, currently_enabled_units.1) {
-                    (false, false) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra1` to disabled while `enable_infra2` is also disabled"
-                        );
-                        settings.infra = None;
-                    }
-                    (false, true) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra1` to disabled while `enable_infra2` is enabled"
-                        );
-                        if let Some(infra) = &mut settings.infra {
-                            infra.enabled.0 = false;
-                        }
-                    }
-                    (true, false) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra1` to enabled with default resolution"
-                        );
-                        settings.infra = Some(StereoStream::new(
-                            (true, false),
-                            properties::DEFAULT_INFRA_WIDTH,
-                            properties::DEFAULT_INFRA_HEIGHT,
-                        ));
-                    }
-                    (true, true) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra1` to enabled while `enable_infra2` is also enabled"
-                        );
-                        if let Some(infra) = &mut settings.infra {
-                            infra.enabled.0 = true;
-                        }
-                    }
-                }
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `enable_infra1` from {} to {}",
+                    settings.infra.0,
+                    enable_infra1
+                );
+                settings.infra.0 = enable_infra1;
             }
             subclass::Property("enable_infra2", ..) => {
                 let enable_infra2 = value.get().unwrap();
-                let currently_enabled_units = match &settings.infra {
-                    Some(stereo_stream) => stereo_stream.enabled,
-                    None => (false, false),
-                };
-                if enable_infra2 == currently_enabled_units.1 {
-                    return;
-                }
-
-                match (currently_enabled_units.0, enable_infra2) {
-                    (false, false) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra2` to disabled while `enable_infra1` is also disabled"
-                        );
-                        settings.infra = None;
-                    }
-                    (true, false) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra2` to disabled while `enable_infra1` is enabled"
-                        );
-                        if let Some(infra) = &mut settings.infra {
-                            infra.enabled.1 = false;
-                        }
-                    }
-                    (false, true) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra2` to enabled with default resolution"
-                        );
-                        settings.infra = Some(StereoStream::new(
-                            (true, false),
-                            properties::DEFAULT_INFRA_WIDTH,
-                            properties::DEFAULT_INFRA_HEIGHT,
-                        ));
-                    }
-                    (true, true) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `enable_infra2` to enabled while `enable_infra1` is also enabled"
-                        );
-                        if let Some(infra) = &mut settings.infra {
-                            infra.enabled.1 = true;
-                        }
-                    }
-                }
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `enable_infra2` from {} to {}",
+                    settings.infra.1,
+                    enable_infra2
+                );
+                settings.infra.1 = enable_infra2;
             }
-            subclass::Property("infra_width", ..) => match &mut settings.infra {
-                None => {
-                    gst_warning!(
-                        self.cat,
-                        obj: element,
-                        "Cannot change property `infra_width` as neither `infra1` or `infra2` stream is not enabled"
-                    );
-                }
-                Some(current_resolution) => {
-                    let infra_width: u32 = value.get().unwrap();
-                    gst_info!(
-                        self.cat,
-                        obj: element,
-                        "Changing property `infra_width` from {} to {}",
-                        current_resolution.resolution.width,
-                        infra_width
-                    );
-                    current_resolution.resolution.width = infra_width;
-                }
-            },
-            subclass::Property("infra_height", ..) => match &mut settings.infra {
-                None => {
-                    gst_warning!(
-                        self.cat,
-                        obj: element,
-                        "Cannot change property `infra_height` as neither `infra1` or `infra2` stream is not enabled"
-                    );
-                }
-                Some(current_resolution) => {
-                    let infra_height: u32 = value.get().unwrap();
-                    gst_info!(
-                        self.cat,
-                        obj: element,
-                        "Changing property `infra_height` from {} to {}",
-                        current_resolution.resolution.width,
-                        infra_height
-                    );
-                    current_resolution.resolution.width = infra_height;
-                }
-            },
             _ => unimplemented!(),
         };
     }
@@ -605,34 +440,13 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("framerate", ..) => Ok(settings.framerate.to_value()),
             subclass::Property("depth_width", ..) => Ok(settings.depth.width.to_value()),
             subclass::Property("depth_height", ..) => Ok(settings.depth.height.to_value()),
-            subclass::Property("enable_color", ..) => match settings.color {
-                Some(..) => Ok(true.to_value()),
-                None => Ok(false.to_value()),
-            },
-            subclass::Property("color_width", ..) => match &settings.color {
-                Some(resolution) => Ok(resolution.width.to_value()),
-                None => Ok(properties::DEFAULT_COLOR_WIDTH.to_value()),
-            },
-            subclass::Property("color_height", ..) => match &settings.color {
-                Some(resolution) => Ok(resolution.height.to_value()),
-                None => Ok(properties::DEFAULT_COLOR_HEIGHT.to_value()),
-            },
-            subclass::Property("enable_infra1", ..) => match settings.infra {
-                Some(..) => Ok(true.to_value()),
-                None => Ok(false.to_value()),
-            },
-            subclass::Property("enable_infra2", ..) => match settings.infra {
-                Some(..) => Ok(true.to_value()),
-                None => Ok(false.to_value()),
-            },
-            subclass::Property("infra_width", ..) => match &settings.infra {
-                Some(infra) => Ok(infra.resolution.width.to_value()),
-                None => Ok(properties::DEFAULT_INFRA_WIDTH.to_value()),
-            },
-            subclass::Property("infra_height", ..) => match &settings.infra {
-                Some(infra) => Ok(infra.resolution.height.to_value()),
-                None => Ok(properties::DEFAULT_INFRA_HEIGHT.to_value()),
-            },
+            subclass::Property("enable_color", ..) => Ok(settings.color.enabled.to_value()),
+            subclass::Property("color_width", ..) => Ok(settings.color.resolution.width.to_value()),
+            subclass::Property("color_height", ..) => {
+                Ok(settings.color.resolution.height.to_value())
+            }
+            subclass::Property("enable_infra1", ..) => Ok(settings.infra.0.to_value()),
+            subclass::Property("enable_infra2", ..) => Ok(settings.infra.1.to_value()),
             _ => unimplemented!(),
         }
     }
@@ -685,26 +499,25 @@ impl BaseSrcImpl for RealsenseSrc {
                 )
                 .unwrap();
 
-            if let Some(color_resolution) = &settings.color {
+            if settings.color.enabled == true {
                 config
                     .enable_stream(
                         rs2::pipeline::rs2_stream::RS2_STREAM_COLOR,
-                        color_resolution.width as i32,
-                        color_resolution.height as i32,
+                        settings.color.resolution.width as i32,
+                        settings.color.resolution.height as i32,
                         rs2::pipeline::rs2_format::RS2_FORMAT_RGB8,
                         settings.framerate as i32,
                     )
                     .unwrap();
             }
 
-            // TODO: add option to have infra1 || infra2 || (infra1 && infra2)
-            if let Some(infra) = &settings.infra {
+            // TODO: add option to support infra2 stream
+            if settings.infra.0 == true {
                 config
                     .enable_stream(
                         rs2::pipeline::rs2_stream::RS2_STREAM_INFRARED,
-                        infra.resolution.width as i32,
-                        infra.resolution.height as i32,
-                        // TODO: check whether format is correct
+                        settings.depth.width as i32,
+                        settings.depth.height as i32,
                         rs2::pipeline::rs2_format::RS2_FORMAT_Y8,
                         settings.framerate as i32,
                     )
@@ -739,6 +552,20 @@ impl BaseSrcImpl for RealsenseSrc {
         gst_info!(self.cat, obj: element, "Stopped");
 
         Ok(())
+    }
+
+    fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
+        let settings = self.settings.lock().unwrap();
+        let mut caps = gst::Caps::truncate(caps);
+        {
+            let caps = caps.make_mut();
+            let s = caps.get_mut_structure(0).unwrap();
+            s.fixate_field_nearest_int("width", settings.depth.width as i32);
+            s.fixate_field_nearest_int("height", settings.depth.height as i32);
+            s.fixate_field_nearest_fraction("framerate", settings.framerate as i32);
+        }
+
+        self.parent_fixate(element, caps)
     }
 
     fn create(
@@ -783,7 +610,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let settings = self.settings.lock().unwrap();
 
-        if let Some(..) = settings.color {
+        if settings.color.enabled == true {
             let color_frame = frames
                 .iter()
                 .find(|f| {
@@ -810,7 +637,7 @@ impl BaseSrcImpl for RealsenseSrc {
             color_frame.release();
         }
 
-        if let Some(..) = settings.infra {
+        if settings.infra.0 == true {
             let infra_frame = frames
                 .iter()
                 .find(|f| {
@@ -825,11 +652,11 @@ impl BaseSrcImpl for RealsenseSrc {
             infra_tags
                 .get_mut()
                 .unwrap()
-                .add::<gst::tags::ExtendedComment>(&"data_type=IR", gst::TagMergeMode::Append);
+                .add::<gst::tags::ExtendedComment>(&"data_type=IR1", gst::TagMergeMode::Append);
             infra_tags
                 .get_mut()
                 .unwrap()
-                .add::<gst::tags::Title>(&"IR", gst::TagMergeMode::Append);
+                .add::<gst::tags::Title>(&"IR1", gst::TagMergeMode::Append);
             TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
 
             BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
