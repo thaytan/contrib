@@ -250,9 +250,9 @@ impl ObjectSubclass for RealsenseSrc {
                         gst::Fraction::new(properties::MAX_FRAMERATE as i32, 1),
                     ),
                 ),
-                ("infra1", &properties::DEFAULT_ENABLE_INFRA_1),
-                ("infra2", &properties::DEFAULT_ENABLE_INFRA_2),
-                ("color", &properties::DEFAULT_ENABLE_COLOR),
+                ("infra1", &gst::List::new(&[&false, &true])),
+                ("infra2", &gst::List::new(&[&false, &true])),
+                ("color", &gst::List::new(&[&false, &true])),
                 (
                     "color_width",
                     &gst::IntRange::<i32>::new(
@@ -263,8 +263,8 @@ impl ObjectSubclass for RealsenseSrc {
                 (
                     "color_height",
                     &gst::IntRange::<i32>::new(
-                        properties::COLOR_MIN_WIDTH as i32,
-                        properties::COLOR_MAX_WIDTH as i32,
+                        properties::COLOR_MIN_HEIGHT as i32,
+                        properties::COLOR_MAX_HEIGHT as i32,
                     ),
                 ),
             ],
