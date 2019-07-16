@@ -19,7 +19,7 @@ pub const DEFAULT_ENABLE_INFRA_2: bool = false;
 // Resolution is identical with depth stream
 
 // Color
-pub const DEFAULT_ENABLE_COLOR: bool = true;
+pub const DEFAULT_ENABLE_COLOR: bool = false;
 
 pub const COLOR_MIN_WIDTH: u32 = 320;
 pub const COLOR_MAX_WIDTH: u32 = 1920;

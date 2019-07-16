@@ -14,6 +14,8 @@ use std::sync::Mutex;
 
 use rs2;
 
+//TODO: fix "gst_segment_to_stream_time: assertion 'segment->format == format' failed" error that might affect something in the future
+
 use crate::properties;
 static PROPERTIES: [subclass::Property; 10] = [
     subclass::Property("location", |name| {
