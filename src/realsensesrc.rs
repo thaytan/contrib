@@ -482,7 +482,7 @@ impl BaseSrcImpl for RealsenseSrc {
     fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
         let mut state = self.state.lock().unwrap();
         if let State::Started { .. } = *state {
-            unreachable!("RealsenseSrc already started");
+            unreachable!("realsensesrc already started");
         }
 
         let settings = self.settings.lock().unwrap();
@@ -497,11 +497,6 @@ impl BaseSrcImpl for RealsenseSrc {
         rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
         let config = rs2::config::Config::new().unwrap();
 
-        if let Some(location) = settings.location.as_ref() {
-            config
-                .enable_device_from_file_repeat_option(location.to_string(), true)
-                .unwrap();
-        };
         if let Some(serial) = settings.serial.as_ref() {
             if let Some(location) = settings.location.as_ref() {
                 config.enable_record_to_file(location.to_string()).unwrap();
@@ -542,7 +537,13 @@ impl BaseSrcImpl for RealsenseSrc {
             }
 
             config.enable_device(serial.to_string()).unwrap();
-        };
+        } else {
+            if let Some(location) = settings.location.as_ref() {
+                config
+                    .enable_device_from_file_repeat_option(location.to_string(), true)
+                    .unwrap();
+            };
+        }
 
         let context = rs2::context::Context::new().unwrap();
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
@@ -615,7 +616,7 @@ impl BaseSrcImpl for RealsenseSrc {
             })
             .unwrap();
         let mut depth_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
-
+        depth_frame.release();
         let mut depth_tags = gst::tags::TagList::new();
         depth_tags
             .get_mut()
@@ -626,8 +627,6 @@ impl BaseSrcImpl for RealsenseSrc {
             .unwrap()
             .add::<gst::tags::Title>(&"D", gst::TagMergeMode::Append);
         TagsMeta::add(depth_buffer.get_mut().unwrap(), &mut depth_tags);
-
-        depth_frame.release();
 
         let settings = self.settings.lock().unwrap();
 
@@ -641,7 +640,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .unwrap();
             let mut color_buffer =
                 gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
-
+            color_frame.release();
             let mut color_tags = gst::tags::TagList::new();
             color_tags
                 .get_mut()
@@ -652,10 +651,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .unwrap()
                 .add::<gst::tags::Title>(&"RGB", gst::TagMergeMode::Append);
             TagsMeta::add(color_buffer.get_mut().unwrap(), &mut color_tags);
-
             BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut color_buffer);
-
-            color_frame.release();
         }
 
         if settings.infra.0 == true {
@@ -668,7 +664,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .unwrap();
             let mut infra_buffer =
                 gst::buffer::Buffer::from_mut_slice(infra_frame.get_data().unwrap());
-
+            infra_frame.release();
             let mut infra_tags = gst::tags::TagList::new();
             infra_tags
                 .get_mut()
@@ -679,10 +675,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .unwrap()
                 .add::<gst::tags::Title>(&"IR1", gst::TagMergeMode::Append);
             TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
-
             BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
-
-            infra_frame.release();
         }
 
         Ok(depth_buffer)
