@@ -14,8 +14,6 @@ use std::sync::Mutex;
 
 use rs2;
 
-//TODO: fix "gst_segment_to_stream_time: assertion 'segment->format == format' failed" error that might affect something in the future
-
 use crate::properties;
 static PROPERTIES: [subclass::Property; 10] = [
     subclass::Property("location", |name| {
@@ -487,6 +485,8 @@ impl BaseSrcImpl for RealsenseSrc {
             unreachable!("realsensesrc already started");
         }
 
+        element.set_format(gst::Format::Time);
+
         let settings = self.settings.lock().unwrap();
 
         if settings.location == None && settings.serial == None {
@@ -595,6 +595,10 @@ impl BaseSrcImpl for RealsenseSrc {
             s.fixate_field_nearest_int("color_height", settings.color.resolution.height as i32);
         }
         self.parent_fixate(element, caps)
+    }
+
+    fn is_seekable(&self, _element: &gst_base::BaseSrc) -> bool {
+        false
     }
 
     fn create(
