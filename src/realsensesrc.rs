@@ -526,6 +526,11 @@ impl BaseSrcImpl for RealsenseSrc {
             }
 
             // TODO: add option to support infra2 stream
+            // I believe to accomplish this, function 'enable_stream'
+            // (on line 58 in https://github.com/prozum/librealsense2-rs/blob/master/src/config.rs)
+            // must be modified to allow changing the index, which is now always set to -1
+            // We would also need to find a way of extracting the separate infra frames,
+            // just like 'get_infrared_frame(index)' provides in C++.
             if settings.infra.0 == true {
                 config
                     .enable_stream(
