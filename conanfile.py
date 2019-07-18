@@ -11,15 +11,8 @@ class JsonGlibBaseConan(ConanFile):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {
-        "shared": [True, False],
-        "introspection": [True, False],
-    }
-    default_options = (
-        "shared=False",
-        "introspection=True",
-    )
-    folder_name = "json-glib-" + version
+    options = { "introspection": [True, False] }
+    default_options = "introspection=True",
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
@@ -34,7 +27,7 @@ class JsonGlibBaseConan(ConanFile):
         args.append("-Dintrospection=" + ("true" if self.options.introspection else "false"))
 
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder="json-glib-" + version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
