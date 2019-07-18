@@ -632,11 +632,11 @@ impl BaseSrcImpl for RealsenseSrc {
         depth_tags
             .get_mut()
             .unwrap()
-            .add::<gst::tags::ExtendedComment>(&"data_type=D", gst::TagMergeMode::Append);
+            .add::<gst::tags::ExtendedComment>(&"data_type=MAIN", gst::TagMergeMode::Append);
         depth_tags
             .get_mut()
             .unwrap()
-            .add::<gst::tags::Title>(&"D", gst::TagMergeMode::Append);
+            .add::<gst::tags::Title>(&"MAIN", gst::TagMergeMode::Append);
         TagsMeta::add(depth_buffer.get_mut().unwrap(), &mut depth_tags);
 
         let settings = self.settings.lock().unwrap();
