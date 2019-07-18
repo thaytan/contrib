@@ -27,7 +27,7 @@ class JsonGlibBaseConan(ConanFile):
         args.append("-Dintrospection=" + ("true" if self.options.introspection else "false"))
 
         meson = Meson(self)
-        meson.configure(source_folder="json-glib-" + version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder="json-glib-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
 
