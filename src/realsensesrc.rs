@@ -67,6 +67,24 @@ static PROPERTIES: [subclass::Property; 10] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    subclass::Property("enable_infra1", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "enable_infra1",
+            "Enables infra1 stream",
+            properties::DEFAULT_ENABLE_INFRA_1,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("enable_infra2", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "enable_infra2",
+            "Enables infra2 stream",
+            properties::DEFAULT_ENABLE_INFRA_2,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
     subclass::Property("enable_color", |name| {
         glib::ParamSpec::boolean(
             name,
@@ -98,24 +116,6 @@ static PROPERTIES: [subclass::Property; 10] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("enable_infra1", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "enable_infra1",
-            "Enables infra1 stream",
-            properties::DEFAULT_ENABLE_INFRA_1,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("enable_infra2", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "enable_infra2",
-            "Enables infra2 stream",
-            properties::DEFAULT_ENABLE_INFRA_2,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
 ];
 
 enum State {
@@ -134,8 +134,8 @@ struct Settings {
     serial: Option<String>,
     framerate: u32,
     depth: FrameResolution,
-    color: OptionalStream,
     infra: (bool, bool),
+    color: OptionalStream,
 }
 
 impl Default for Settings {
@@ -148,14 +148,14 @@ impl Default for Settings {
                 properties::DEFAULT_DEPTH_WIDTH,
                 properties::DEFAULT_DEPTH_HEIGHT,
             ),
+            infra: (
+                properties::DEFAULT_ENABLE_INFRA_1,
+                properties::DEFAULT_ENABLE_INFRA_2,
+            ),
             color: OptionalStream::new(
                 properties::DEFAULT_ENABLE_COLOR,
                 properties::DEFAULT_COLOR_WIDTH,
                 properties::DEFAULT_COLOR_HEIGHT,
-            ),
-            infra: (
-                properties::DEFAULT_ENABLE_INFRA_1,
-                properties::DEFAULT_ENABLE_INFRA_2,
             ),
         }
     }

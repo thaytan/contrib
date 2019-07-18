@@ -1,3 +1,5 @@
+// Properties and their corresponding ranges are currently based on D435
+
 // Framerate
 pub const MIN_FRAMERATE: u32 = 6;
 pub const MAX_FRAMERATE: u32 = 90;
