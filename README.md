@@ -4,7 +4,7 @@ GStreamer element providing librealsense2 capabilities
 
 > Note: If you want to play from rosbag file, make sure that you enable all streams this file contains. Otherwise, it usually does not play the entire file if contained streams are disabled. And it usually panics at unwrap() if there are streams enabled that the file does not contain.
 
-> Note: Only infra1 stream is currently supported
+> Note: Stream infra2 is currently not supported
 
 > Note: All streams, i.e. depth, color and infra, must share the same framerate in the current implementation
 
