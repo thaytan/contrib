@@ -25,8 +25,8 @@ pub const DEFAULT_ENABLE_COLOR: bool = false;
 
 pub const COLOR_MIN_WIDTH: u32 = 320;
 pub const COLOR_MAX_WIDTH: u32 = 1920;
-pub const DEFAULT_COLOR_WIDTH: u32 = 1920;
+pub const DEFAULT_COLOR_WIDTH: u32 = 1280;
 
 pub const COLOR_MIN_HEIGHT: u32 = 180;
 pub const COLOR_MAX_HEIGHT: u32 = 1080;
-pub const DEFAULT_COLOR_HEIGHT: u32 = 1080;
+pub const DEFAULT_COLOR_HEIGHT: u32 = 720;

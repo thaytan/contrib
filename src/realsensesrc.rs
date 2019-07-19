@@ -228,7 +228,7 @@ impl ObjectSubclass for RealsenseSrc {
         let caps = gst::Caps::new_simple(
             "video/x-raw",
             &[
-                ("format", &"GRAY16_LE"),
+                ("format", &gst_video::VideoFormat::Gray16Le.to_string()),
                 (
                     "width",
                     &gst::IntRange::<i32>::new(
@@ -252,7 +252,9 @@ impl ObjectSubclass for RealsenseSrc {
                 ),
                 ("infra1", &gst::List::new(&[&false, &true])),
                 ("infra2", &gst::List::new(&[&false, &true])),
+                ("infra_format", &gst_video::VideoFormat::Gray8.to_string()),
                 ("color", &gst::List::new(&[&false, &true])),
+                ("color_format", &gst_video::VideoFormat::Rgb.to_string()),
                 (
                     "color_width",
                     &gst::IntRange::<i32>::new(
