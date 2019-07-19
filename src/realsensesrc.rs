@@ -14,7 +14,7 @@ use std::sync::Mutex;
 
 use rs2;
 
-use crate::properties;
+use crate::properties_d435;
 static PROPERTIES: [subclass::Property; 10] = [
     subclass::Property("location", |name| {
         glib::ParamSpec::string(
@@ -39,9 +39,9 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "framerate",
             "Framerate of the stream",
-            properties::MIN_FRAMERATE,
-            properties::MAX_FRAMERATE,
-            properties::DEFAULT_FRAMERATE,
+            properties_d435::MIN_FRAMERATE,
+            properties_d435::MAX_FRAMERATE,
+            properties_d435::DEFAULT_FRAMERATE,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -50,9 +50,9 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "depth_width",
             "Width of the depth and IR frames",
-            properties::DEPTH_MIN_WIDTH,
-            properties::DEPTH_MAX_WIDTH,
-            properties::DEFAULT_DEPTH_WIDTH,
+            properties_d435::DEPTH_MIN_WIDTH,
+            properties_d435::DEPTH_MAX_WIDTH,
+            properties_d435::DEFAULT_DEPTH_WIDTH,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -61,9 +61,9 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "depth_height",
             "Height of the depth and IR frames",
-            properties::DEPTH_MIN_HEIGHT,
-            properties::DEPTH_MAX_HEIGHT,
-            properties::DEFAULT_DEPTH_HEIGHT,
+            properties_d435::DEPTH_MIN_HEIGHT,
+            properties_d435::DEPTH_MAX_HEIGHT,
+            properties_d435::DEFAULT_DEPTH_HEIGHT,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -72,7 +72,7 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "enable_infra1",
             "Enables infra1 stream",
-            properties::DEFAULT_ENABLE_INFRA_1,
+            properties_d435::DEFAULT_ENABLE_INFRA_1,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -81,7 +81,7 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "enable_infra2",
             "Enables infra2 stream",
-            properties::DEFAULT_ENABLE_INFRA_2,
+            properties_d435::DEFAULT_ENABLE_INFRA_2,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -90,7 +90,7 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "enable_color",
             "Enables color stream",
-            properties::DEFAULT_ENABLE_COLOR,
+            properties_d435::DEFAULT_ENABLE_COLOR,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -99,9 +99,9 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "color_width",
             "Width of the color frame",
-            properties::COLOR_MIN_WIDTH,
-            properties::COLOR_MAX_WIDTH,
-            properties::DEFAULT_COLOR_WIDTH,
+            properties_d435::COLOR_MIN_WIDTH,
+            properties_d435::COLOR_MAX_WIDTH,
+            properties_d435::DEFAULT_COLOR_WIDTH,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -110,9 +110,9 @@ static PROPERTIES: [subclass::Property; 10] = [
             name,
             "color_height",
             "Height of the color frame",
-            properties::COLOR_MIN_HEIGHT,
-            properties::COLOR_MAX_HEIGHT,
-            properties::DEFAULT_COLOR_HEIGHT,
+            properties_d435::COLOR_MIN_HEIGHT,
+            properties_d435::COLOR_MAX_HEIGHT,
+            properties_d435::DEFAULT_COLOR_HEIGHT,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -143,19 +143,19 @@ impl Default for Settings {
         Settings {
             location: None,
             serial: None,
-            framerate: properties::DEFAULT_FRAMERATE,
+            framerate: properties_d435::DEFAULT_FRAMERATE,
             depth: FrameResolution::new(
-                properties::DEFAULT_DEPTH_WIDTH,
-                properties::DEFAULT_DEPTH_HEIGHT,
+                properties_d435::DEFAULT_DEPTH_WIDTH,
+                properties_d435::DEFAULT_DEPTH_HEIGHT,
             ),
             infra: (
-                properties::DEFAULT_ENABLE_INFRA_1,
-                properties::DEFAULT_ENABLE_INFRA_2,
+                properties_d435::DEFAULT_ENABLE_INFRA_1,
+                properties_d435::DEFAULT_ENABLE_INFRA_2,
             ),
             color: OptionalStream::new(
-                properties::DEFAULT_ENABLE_COLOR,
-                properties::DEFAULT_COLOR_WIDTH,
-                properties::DEFAULT_COLOR_HEIGHT,
+                properties_d435::DEFAULT_ENABLE_COLOR,
+                properties_d435::DEFAULT_COLOR_WIDTH,
+                properties_d435::DEFAULT_COLOR_HEIGHT,
             ),
         }
     }
@@ -232,22 +232,22 @@ impl ObjectSubclass for RealsenseSrc {
                 (
                     "width",
                     &gst::IntRange::<i32>::new(
-                        properties::DEPTH_MIN_WIDTH as i32,
-                        properties::DEPTH_MAX_WIDTH as i32,
+                        properties_d435::DEPTH_MIN_WIDTH as i32,
+                        properties_d435::DEPTH_MAX_WIDTH as i32,
                     ),
                 ),
                 (
                     "height",
                     &gst::IntRange::<i32>::new(
-                        properties::DEPTH_MIN_HEIGHT as i32,
-                        properties::DEPTH_MAX_HEIGHT as i32,
+                        properties_d435::DEPTH_MIN_HEIGHT as i32,
+                        properties_d435::DEPTH_MAX_HEIGHT as i32,
                     ),
                 ),
                 (
                     "framerate",
                     &gst::FractionRange::new(
-                        gst::Fraction::new(properties::MIN_FRAMERATE as i32, 1),
-                        gst::Fraction::new(properties::MAX_FRAMERATE as i32, 1),
+                        gst::Fraction::new(properties_d435::MIN_FRAMERATE as i32, 1),
+                        gst::Fraction::new(properties_d435::MAX_FRAMERATE as i32, 1),
                     ),
                 ),
                 ("infra1", &gst::List::new(&[&false, &true])),
@@ -258,15 +258,15 @@ impl ObjectSubclass for RealsenseSrc {
                 (
                     "color_width",
                     &gst::IntRange::<i32>::new(
-                        properties::COLOR_MIN_WIDTH as i32,
-                        properties::COLOR_MAX_WIDTH as i32,
+                        properties_d435::COLOR_MIN_WIDTH as i32,
+                        properties_d435::COLOR_MAX_WIDTH as i32,
                     ),
                 ),
                 (
                     "color_height",
                     &gst::IntRange::<i32>::new(
-                        properties::COLOR_MIN_HEIGHT as i32,
-                        properties::COLOR_MAX_HEIGHT as i32,
+                        properties_d435::COLOR_MIN_HEIGHT as i32,
+                        properties_d435::COLOR_MAX_HEIGHT as i32,
                     ),
                 ),
             ],
