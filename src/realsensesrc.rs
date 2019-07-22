@@ -291,20 +291,21 @@ impl ObjectImpl for RealsenseSrc {
 
     fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
         let element = obj.downcast_ref::<gst_base::BaseSrc>().unwrap();
-        if let State::Started { .. } = *self.state.lock().unwrap() {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Changing a property on a started `realsensesrc` is not supported"
-            );
-            return;
-        }
-
         let property = &PROPERTIES[id];
         let mut settings = self.settings.lock().unwrap();
 
         match *property {
             subclass::Property("location", ..) => {
+                if let State::Started { .. } = *self.state.lock().unwrap() {
+                    if let Some(..) = settings.serial {
+                        gst_error!(
+                        self.cat,
+                        obj: element,
+                        "Changing a property `location` while receiving data from `serial` is not supported"
+                    );
+                        return;
+                    }
+                }
                 settings.location = match value.get::<String>() {
                     Some(location) => {
                         gst_info!(
@@ -326,6 +327,16 @@ impl ObjectImpl for RealsenseSrc {
                 };
             }
             subclass::Property("serial", ..) => {
+                if let State::Started { .. } = *self.state.lock().unwrap() {
+                    if let Some(..) = settings.serial {
+                        gst_error!(
+                        self.cat,
+                        obj: element,
+                        "Changing a property `serial` while reading from `location` is not supported"
+                        );
+                        return;
+                    }
+                }
                 settings.serial = match value.get::<String>() {
                     Some(serial) => {
                         gst_info!(
@@ -508,6 +519,7 @@ impl BaseSrcImpl for RealsenseSrc {
             config
                 .enable_stream(
                     rs2::rs2_stream::RS2_STREAM_DEPTH,
+                    -1,
                     settings.depth.width as i32,
                     settings.depth.height as i32,
                     rs2::rs2_format::RS2_FORMAT_Z16,
@@ -519,6 +531,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 config
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_COLOR,
+                        -1,
                         settings.color.resolution.width as i32,
                         settings.color.resolution.height as i32,
                         rs2::rs2_format::RS2_FORMAT_RGB8,
@@ -527,16 +540,24 @@ impl BaseSrcImpl for RealsenseSrc {
                     .unwrap();
             }
 
-            // TODO: add option to support infra2 stream
-            // I believe to accomplish this, function 'enable_stream'
-            // (on line 58 in https://github.com/prozum/librealsense2-rs/blob/master/src/config.rs)
-            // must be modified to allow changing the index, which is now always set to -1
-            // We would also need to find a way of extracting the separate infra frames,
-            // just like 'get_infrared_frame(index)' provides in C++.
             if settings.infra.0 == true {
                 config
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_INFRARED,
+                        1,
+                        settings.depth.width as i32,
+                        settings.depth.height as i32,
+                        rs2::rs2_format::RS2_FORMAT_Y8,
+                        settings.framerate as i32,
+                    )
+                    .unwrap();
+            }
+
+            if settings.infra.1 == true {
+                config
+                    .enable_stream(
+                        rs2::rs2_stream::RS2_STREAM_INFRARED,
+                        2,
                         settings.depth.width as i32,
                         settings.depth.height as i32,
                         rs2::rs2_format::RS2_FORMAT_Y8,
@@ -673,6 +694,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .find(|f| {
                     f.get_profile().unwrap().get_data().unwrap().stream
                         == rs2::rs2_stream::RS2_STREAM_INFRARED
+                        && f.get_profile().unwrap().get_data().unwrap().index == 1
                 })
                 .unwrap();
             let mut infra_buffer =
@@ -687,6 +709,31 @@ impl BaseSrcImpl for RealsenseSrc {
                 .get_mut()
                 .unwrap()
                 .add::<gst::tags::Title>(&"IR1", gst::TagMergeMode::Append);
+            TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
+            BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
+        }
+
+        if settings.infra.1 == true {
+            let infra_frame = frames
+                .iter()
+                .find(|f| {
+                    f.get_profile().unwrap().get_data().unwrap().stream
+                        == rs2::rs2_stream::RS2_STREAM_INFRARED
+                        && f.get_profile().unwrap().get_data().unwrap().index == 2
+                })
+                .unwrap();
+            let mut infra_buffer =
+                gst::buffer::Buffer::from_mut_slice(infra_frame.get_data().unwrap());
+            infra_frame.release();
+            let mut infra_tags = gst::tags::TagList::new();
+            infra_tags
+                .get_mut()
+                .unwrap()
+                .add::<gst::tags::ExtendedComment>(&"data_type=IR2", gst::TagMergeMode::Append);
+            infra_tags
+                .get_mut()
+                .unwrap()
+                .add::<gst::tags::Title>(&"IR2", gst::TagMergeMode::Append);
             TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
             BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
         }
