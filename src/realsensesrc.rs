@@ -507,10 +507,10 @@ impl BaseSrcImpl for RealsenseSrc {
             };
             config
                 .enable_stream(
-                    rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH,
+                    rs2::rs2_stream::RS2_STREAM_DEPTH,
                     settings.depth.width as i32,
                     settings.depth.height as i32,
-                    rs2::pipeline::rs2_format::RS2_FORMAT_Z16,
+                    rs2::rs2_format::RS2_FORMAT_Z16,
                     settings.framerate as i32,
                 )
                 .unwrap();
@@ -518,10 +518,10 @@ impl BaseSrcImpl for RealsenseSrc {
             if settings.color.enabled == true {
                 config
                     .enable_stream(
-                        rs2::pipeline::rs2_stream::RS2_STREAM_COLOR,
+                        rs2::rs2_stream::RS2_STREAM_COLOR,
                         settings.color.resolution.width as i32,
                         settings.color.resolution.height as i32,
-                        rs2::pipeline::rs2_format::RS2_FORMAT_RGB8,
+                        rs2::rs2_format::RS2_FORMAT_RGB8,
                         settings.framerate as i32,
                     )
                     .unwrap();
@@ -536,10 +536,10 @@ impl BaseSrcImpl for RealsenseSrc {
             if settings.infra.0 == true {
                 config
                     .enable_stream(
-                        rs2::pipeline::rs2_stream::RS2_STREAM_INFRARED,
+                        rs2::rs2_stream::RS2_STREAM_INFRARED,
                         settings.depth.width as i32,
                         settings.depth.height as i32,
-                        rs2::pipeline::rs2_format::RS2_FORMAT_Y8,
+                        rs2::rs2_format::RS2_FORMAT_Y8,
                         settings.framerate as i32,
                     )
                     .unwrap();
@@ -625,7 +625,7 @@ impl BaseSrcImpl for RealsenseSrc {
             .iter()
             .find(|f| {
                 f.get_profile().unwrap().get_data().unwrap().stream
-                    == rs2::pipeline::rs2_stream::RS2_STREAM_DEPTH
+                    == rs2::rs2_stream::RS2_STREAM_DEPTH
             })
             .unwrap();
         let mut depth_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
@@ -648,7 +648,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .iter()
                 .find(|f| {
                     f.get_profile().unwrap().get_data().unwrap().stream
-                        == rs2::pipeline::rs2_stream::RS2_STREAM_COLOR
+                        == rs2::rs2_stream::RS2_STREAM_COLOR
                 })
                 .unwrap();
             let mut color_buffer =
@@ -672,7 +672,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .iter()
                 .find(|f| {
                     f.get_profile().unwrap().get_data().unwrap().stream
-                        == rs2::pipeline::rs2_stream::RS2_STREAM_INFRARED
+                        == rs2::rs2_stream::RS2_STREAM_INFRARED
                 })
                 .unwrap();
             let mut infra_buffer =
