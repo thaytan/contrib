@@ -35,7 +35,7 @@ const GstMetaInfo *tags_meta_get_info(void) {
         const GstMetaInfo *meta = gst_meta_register(
                 tags_meta_api_get_type(), "TagsMeta", sizeof(TagsMeta),
                 (GstMetaInitFunction) tags_meta_init,
-                (GstMetaFreeFunction) NULL,
+                (GstMetaFreeFunction) tags_meta_free,
                 (GstMetaTransformFunction) tags_meta_transform);
         g_once_init_leave(&meta_info, meta);
     }
