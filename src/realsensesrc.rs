@@ -15,12 +15,12 @@ use std::sync::Mutex;
 use rs2;
 
 use crate::properties_d435;
-static PROPERTIES: [subclass::Property; 10] = [
-    subclass::Property("location", |name| {
+static PROPERTIES: [subclass::Property; 11] = [
+    subclass::Property("rosbag_location", |name| {
         glib::ParamSpec::string(
             name,
-            "File Location",
-            "Location of the file to read from",
+            "Rosbag File Location",
+            "Location of the rosbag file to read from. If unchanged or empty, physical device specified by `serial` is used. If both `rosbag_location and `serial` are selected, the stream of the physical device will be recorded.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -29,7 +29,16 @@ static PROPERTIES: [subclass::Property; 10] = [
         glib::ParamSpec::string(
             name,
             "Serial Number",
-            "Serial number of realsense device",
+            "Serial number of realsense device. If unchanged or empty, `rosbag_location` is used to locate file to play from.",
+            None,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("json_location", |name| {
+        glib::ParamSpec::string(
+            name,
+            "JSON File Location",
+            "Location of the JSON file to use that applies only if `serial` is specified. If unchanged or empty, previous JSON configuration is used. If no previous configuration is present due to hardware reset, default configuration is used.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -130,8 +139,9 @@ impl Default for State {
 }
 
 struct Settings {
-    location: Option<String>,
+    rosbag_location: Option<String>,
     serial: Option<String>,
+    json_location: Option<String>,
     framerate: u32,
     depth: FrameResolution,
     infra: (bool, bool),
@@ -141,8 +151,9 @@ struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            location: None,
+            rosbag_location: None,
             serial: None,
+            json_location: None,
             framerate: properties_d435::DEFAULT_FRAMERATE,
             depth: FrameResolution::new(
                 properties_d435::DEFAULT_DEPTH_WIDTH,
@@ -295,63 +306,76 @@ impl ObjectImpl for RealsenseSrc {
         let mut settings = self.settings.lock().unwrap();
 
         match *property {
-            subclass::Property("location", ..) => {
-                if let State::Started { .. } = *self.state.lock().unwrap() {
-                    if let Some(..) = settings.serial {
-                        gst_error!(
-                        self.cat,
-                        obj: element,
-                        "Changing a property `location` while receiving data from `serial` is not supported"
-                    );
-                        return;
-                    }
-                }
-                settings.location = match value.get::<String>() {
-                    Some(location) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `location` to {}",
-                            location
-                        );
-                        (Some(location))
+            subclass::Property("rosbag_location", ..) => {
+                settings.rosbag_location = match value.get::<String>() {
+                    Some(rosbag_location) => {
+                        if rosbag_location.is_empty() {
+                            None
+                        } else {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Changing property `rosbag_location` to {}",
+                                rosbag_location
+                            );
+                            Some(rosbag_location)
+                        }
                     }
                     None => {
                         gst_info!(
                             self.cat,
                             obj: element,
-                            "Changing property `location` to `None`"
+                            "Changing property `rosbag_location` to `None`"
                         );
                         None
                     }
                 };
             }
             subclass::Property("serial", ..) => {
-                if let State::Started { .. } = *self.state.lock().unwrap() {
-                    if let Some(..) = settings.serial {
-                        gst_error!(
-                        self.cat,
-                        obj: element,
-                        "Changing a property `serial` while reading from `location` is not supported"
-                        );
-                        return;
-                    }
-                }
                 settings.serial = match value.get::<String>() {
                     Some(serial) => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `serial` to {}",
-                            serial
-                        );
-                        (Some(serial))
+                        if serial.is_empty() {
+                            None
+                        } else {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Changing property `serial` to {}",
+                                serial
+                            );
+                            Some(serial)
+                        }
                     }
                     None => {
                         gst_info!(
                             self.cat,
                             obj: element,
                             "Changing property `serial` to `None`"
+                        );
+                        None
+                    }
+                };
+            }
+            subclass::Property("json_location", ..) => {
+                settings.json_location = match value.get::<String>() {
+                    Some(json_location) => {
+                        if json_location.is_empty() {
+                            None
+                        } else {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Changing property `json_location` to {}",
+                                json_location
+                            );
+                            Some(json_location)
+                        }
+                    }
+                    None => {
+                        gst_info!(
+                            self.cat,
+                            obj: element,
+                            "Changing property `json_location` to `None`"
                         );
                         None
                     }
@@ -453,19 +477,26 @@ impl ObjectImpl for RealsenseSrc {
         let prop = &PROPERTIES[id];
         let settings = &self.settings.lock().unwrap();
         match *prop {
-            subclass::Property("location", ..) => {
-                let location = settings
-                    .location
+            subclass::Property("rosbag_location", ..) => {
+                let rosbag_location = settings
+                    .rosbag_location
                     .as_ref()
-                    .map(|location| location.to_string());
-                Ok(location.to_value())
+                    .map(|rosbag_location| rosbag_location.to_string());
+                Ok(rosbag_location.to_value())
             }
             subclass::Property("serial", ..) => {
                 let serial = settings
                     .serial
                     .as_ref()
-                    .map(|location| location.to_string());
+                    .map(|rosbag_location| rosbag_location.to_string());
                 Ok(serial.to_value())
+            }
+            subclass::Property("json_location", ..) => {
+                let json_location = settings
+                    .json_location
+                    .as_ref()
+                    .map(|json_location| json_location.to_string());
+                Ok(json_location.to_value())
             }
             subclass::Property("framerate", ..) => Ok(settings.framerate.to_value()),
             subclass::Property("depth_width", ..) => Ok(settings.depth.width.to_value()),
@@ -502,19 +533,26 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let settings = self.settings.lock().unwrap();
 
-        if settings.location == None && settings.serial == None {
+        if settings.rosbag_location == None && settings.serial == None {
+            gst_error!(
+                self.cat,
+                obj: element,
+                "Neither the rosbag_location or the serial properties are defined"
+            );
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
-                ["Neither the location or the serial properties are defined"]
+                ["Neither the rosbag_location or the serial properties are defined"]
             ));
         }
 
-        rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
+        rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_WARN);
         let config = rs2::config::Config::new().unwrap();
 
         if let Some(serial) = settings.serial.as_ref() {
-            if let Some(location) = settings.location.as_ref() {
-                config.enable_record_to_file(location.to_string()).unwrap();
+            if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
+                config
+                    .enable_record_to_file(rosbag_location.to_string())
+                    .unwrap();
             };
             config
                 .enable_stream(
@@ -568,17 +606,62 @@ impl BaseSrcImpl for RealsenseSrc {
 
             config.enable_device(serial.to_string()).unwrap();
         } else {
-            if let Some(location) = settings.location.as_ref() {
+            if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 config
-                    .enable_device_from_file_repeat_option(location.to_string(), true)
+                    .enable_device_from_file_repeat_option(rosbag_location.to_string(), true)
                     .unwrap();
             };
         }
 
         let context = rs2::context::Context::new().unwrap();
+        let devices = context.get_devices().unwrap();
+
+        // Make sure the selected serial is connected
+        if let Some(serial) = settings.serial.as_ref() {
+            let mut index_of_used_device: usize = 0;
+            let mut found_matching_serial = false;
+            for device in devices.iter() {
+                let serial_number = device
+                    .get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER)
+                    .unwrap();
+                if *serial == serial_number {
+                    found_matching_serial = true;
+                    break;
+                }
+                index_of_used_device += 1;
+            }
+            if !found_matching_serial {
+                gst_error!(
+                    self.cat,
+                    obj: element,
+                    "No device with serial {} is detected",
+                    serial
+                );
+                return Err(gst_error_msg!(
+                    gst::ResourceError::Settings,
+                    [&format!("No device with serial {} is detected", serial)]
+                ));
+            }
+
+            // Load JSON file
+            if let Some(json_location) = settings.json_location.as_ref() {
+                if !devices[index_of_used_device]
+                    .is_advanced_mode_enabled()
+                    .unwrap()
+                {
+                    devices[index_of_used_device]
+                        .set_advanced_mode(true)
+                        .unwrap();
+                }
+                let json_content = std::fs::read_to_string(json_location).unwrap();
+                devices[index_of_used_device]
+                    .load_json(json_content)
+                    .unwrap();
+            }
+        }
+
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
         pipeline.start_with_config(&config).unwrap();
-
         *state = State::Started { pipeline };
 
         gst_info!(self.cat, obj: element, "Started");
@@ -589,10 +672,7 @@ impl BaseSrcImpl for RealsenseSrc {
     fn stop(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
         let mut state = self.state.lock().unwrap();
         if let State::Stopped = *state {
-            return Err(gst_error_msg!(
-                gst::ResourceError::Settings,
-                ["RealsenseSrc not started"]
-            ));
+            unreachable!("realsensesrc not yet started");
         }
 
         *state = State::Stopped;
@@ -640,7 +720,7 @@ impl BaseSrcImpl for RealsenseSrc {
             }
         };
 
-        let frames = pipeline.wait_for_frames(10000).unwrap();
+        let frames = pipeline.wait_for_frames(1000).unwrap();
 
         let depth_frame = frames
             .iter()
