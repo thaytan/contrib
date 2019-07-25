@@ -60,6 +60,8 @@ struct _GstColorizer {
   /* < private > */
   GstColorizerPreset preset;
   guint8 *table;
+  guint16 near_cut;
+  guint16 far_cut;
 
   /* video format */
   GstVideoFormat format;

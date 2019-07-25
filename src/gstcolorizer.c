@@ -7,7 +7,7 @@
 GST_DEBUG_CATEGORY_STATIC(colorizer_debug);
 #define GST_CAT_DEFAULT (colorizer_debug)
 
-enum { PROP_0, PROP_PRESET };
+enum { PROP_0, PROP_PRESET, PROP_NEAR_CUT, PROP_FAR_CUT };
 
 #define gst_colorizer_parent_class parent_class
 G_DEFINE_TYPE(GstColorizer, gst_colorizer, GST_TYPE_VIDEO_FILTER);
@@ -26,7 +26,6 @@ static GType gst_colorizer_preset_get_type(void) {
   static GType preset_type = 0;
 
   static const GEnumValue presets[] = {
-      {GST_COLORIZER_PRESET_NONE, "Do not apply anything", "none"},
       {GST_COLORIZER_PRESET_JET, "Apply jet color map to image", "jet"},
       {0, NULL, NULL},
   };
@@ -40,10 +39,6 @@ static GType gst_colorizer_preset_get_type(void) {
 static GstFlowReturn gst_colorizer_transform_gray16(GstColorizer *filter,
                                                     GstVideoFrame *inframe,
                                                     GstVideoFrame *outframe) {
-  if (!filter->table) {
-    return GST_FLOW_OK;
-  }
-
   gint width = GST_VIDEO_FRAME_WIDTH(outframe);
   gint height = GST_VIDEO_FRAME_HEIGHT(outframe);
 
@@ -95,19 +90,24 @@ double clamp(double v) {
   return t > 1.0 ? 1.0 : t;
 }
 
-guint8 *generate_map(GstColorizer *filter, GstColorizerPreset preset) {
-  if (!preset) {
-    return NULL;
-  } else if (preset == GST_COLORIZER_PRESET_JET) {
-    filter->table = malloc(sizeof(guint8) * 3 * 65536);
-    for (guint16 i = 0; i < 65535; i++) {
-      double t = (i * 2.0 / 65535) - 1;
-      double red = clamp(1.5 - ABS(2.0 * t - 1.0));
-      double green = clamp(1.5 - ABS(2.0 * t));
-      double blue = clamp(1.5 - ABS(2.0 * t + 1.0));
-      filter->table[i * 3 + 0] = red * 255;
-      filter->table[i * 3 + 1] = green * 255;
-      filter->table[i * 3 + 2] = blue * 255;
+void generate_map(GstColorizer *filter, GstColorizerPreset preset) {
+  if (filter->table) {
+    free(filter->table);
+    filter->table = NULL;
+  }
+
+  if (preset == GST_COLORIZER_PRESET_JET) {
+    filter->table = calloc(3 * filter->far_cut, sizeof(guint8));
+    for (guint16 i = filter->near_cut; i < filter->far_cut; i++) {
+      double t = ((i - filter->near_cut) * 2.0 /
+                  (filter->far_cut - filter->near_cut - 1)) -
+                 1;
+      guint8 red = clamp(1.5 - ABS(2.0 * t - 1.0)) * 255;
+      guint8 green = clamp(1.5 - ABS(2.0 * t)) * 255;
+      guint8 blue = clamp(1.5 - ABS(2.0 * t + 1.0)) * 255;
+      filter->table[i * 3 + 0] = red;
+      filter->table[i * 3 + 1] = green;
+      filter->table[i * 3 + 2] = blue;
     }
   } else {
     g_assert_not_reached();
@@ -122,8 +122,16 @@ static void gst_colorizer_set_property(GObject *object, guint prop_id,
     case PROP_PRESET:
       GST_OBJECT_LOCK(filter);
       filter->preset = g_value_get_enum(value);
-      filter->table = generate_map(filter, filter->preset);
+      generate_map(filter, filter->preset);
       GST_OBJECT_UNLOCK(filter);
+      break;
+    case PROP_NEAR_CUT:
+      filter->near_cut = g_value_get_uint(value);
+      generate_map(filter, filter->preset);
+      break;
+    case PROP_FAR_CUT:
+      filter->far_cut = g_value_get_uint(value);
+      generate_map(filter, filter->preset);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -198,6 +206,18 @@ static void gst_colorizer_class_init(GstColorizerClass *klass) {
                         GST_TYPE_COLORIZER_PRESET, DEFAULT_PROP_PRESET,
                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property(
+      G_OBJECT_CLASS(klass), PROP_NEAR_CUT,
+      g_param_spec_uint(
+          "near-cut", "Near cut", "Near cut off", 0, 65535, 0,
+          G_PARAM_READWRITE | GST_PARAM_CONTROLLABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property(
+      G_OBJECT_CLASS(klass), PROP_FAR_CUT,
+      g_param_spec_uint(
+          "far-cut", "Far cut", "Far cut off", 0, 65535, 65535,
+          G_PARAM_READWRITE | GST_PARAM_CONTROLLABLE | G_PARAM_STATIC_STRINGS));
+
   vfilter_class->set_info = GST_DEBUG_FUNCPTR(gst_colorizer_set_info);
   vfilter_class->transform_frame =
       GST_DEBUG_FUNCPTR(gst_colorizer_transform_gray16);
@@ -214,11 +234,13 @@ static void gst_colorizer_class_init(GstColorizerClass *klass) {
 
 static void gst_colorizer_init(GstColorizer *filter) {
   filter->preset = GST_COLORIZER_PRESET_JET;
+  filter->near_cut = 0;
+  filter->far_cut = 65535;
   filter->table = NULL;
 }
 
 static gboolean plugin_init(GstPlugin *plugin) {
   gst_element_register(plugin, "gstcolorizer", GST_RANK_NONE,
-                       gst_colorizer_preset_get_type());
+                       gst_colorizer_get_type());
   return TRUE;
 }
