@@ -235,7 +235,6 @@ static void gst_colorizer_init(GstColorizer *filter) {
   filter->near_cut = 0;
   filter->far_cut = 65535;
   generate_map(filter, filter->preset);
-  filter->table = NULL;
 }
 
 static gboolean plugin_init(GstPlugin *plugin) {
