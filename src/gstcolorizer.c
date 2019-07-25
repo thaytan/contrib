@@ -2,8 +2,6 @@
 
 #include <gst/video/video.h>
 
-#define DEFAULT_PROP_PRESET GST_COLORIZER_PRESET_JET
-
 GST_DEBUG_CATEGORY_STATIC(colorizer_debug);
 #define GST_CAT_DEFAULT (colorizer_debug)
 
@@ -203,7 +201,7 @@ static void gst_colorizer_class_init(GstColorizerClass *klass) {
   g_object_class_install_property(
       gobject_class, PROP_PRESET,
       g_param_spec_enum("preset", "Preset", "Color effect preset to use",
-                        GST_TYPE_COLORIZER_PRESET, DEFAULT_PROP_PRESET,
+                        GST_TYPE_COLORIZER_PRESET, GST_COLORIZER_PRESET_JET,
                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property(
@@ -236,6 +234,7 @@ static void gst_colorizer_init(GstColorizer *filter) {
   filter->preset = GST_COLORIZER_PRESET_JET;
   filter->near_cut = 0;
   filter->far_cut = 65535;
+  generate_map(filter, filter->preset);
   filter->table = NULL;
 }
 
