@@ -516,7 +516,9 @@ impl ObjectImpl for RealsenseSrc {
         self.parent_constructed(obj);
 
         let element = obj.downcast_ref::<gst_base::BaseSrc>().unwrap();
-        element.set_format(gst::Format::Bytes);
+        element.set_format(gst::Format::Time);
+        element.set_live(true);
+        element.set_async(false);
     }
 }
 
@@ -528,8 +530,6 @@ impl BaseSrcImpl for RealsenseSrc {
         if let State::Started { .. } = *state {
             unreachable!("realsensesrc already started");
         }
-
-        element.set_format(gst::Format::Time);
 
         let settings = self.settings.lock().unwrap();
 
@@ -731,16 +731,12 @@ impl BaseSrcImpl for RealsenseSrc {
             .unwrap();
         let mut depth_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
         depth_frame.release();
-        let mut depth_tags = gst::tags::TagList::new();
-        depth_tags
-            .get_mut()
-            .unwrap()
-            .add::<gst::tags::ExtendedComment>(&"data_type=MAIN", gst::TagMergeMode::Append);
-        depth_tags
-            .get_mut()
-            .unwrap()
-            .add::<gst::tags::Title>(&"MAIN", gst::TagMergeMode::Append);
-        TagsMeta::add(depth_buffer.get_mut().unwrap(), &mut depth_tags);
+        // let mut depth_tags = gst::tags::TagList::new();
+        // depth_tags
+        //     .get_mut()
+        //     .unwrap()
+        //     .add::<gst::tags::Title>(&"MAIN", gst::TagMergeMode::Append);
+        // TagsMeta::add(depth_buffer.get_mut().unwrap(), &mut depth_tags);
 
         let settings = self.settings.lock().unwrap();
 
@@ -759,11 +755,7 @@ impl BaseSrcImpl for RealsenseSrc {
             color_tags
                 .get_mut()
                 .unwrap()
-                .add::<gst::tags::ExtendedComment>(&"data_type=RGB", gst::TagMergeMode::Append);
-            color_tags
-                .get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&"RGB", gst::TagMergeMode::Append);
+                .add::<gst::tags::Title>(&"color", gst::TagMergeMode::Append);
             TagsMeta::add(color_buffer.get_mut().unwrap(), &mut color_tags);
             BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut color_buffer);
         }
@@ -784,11 +776,7 @@ impl BaseSrcImpl for RealsenseSrc {
             infra_tags
                 .get_mut()
                 .unwrap()
-                .add::<gst::tags::ExtendedComment>(&"data_type=IR1", gst::TagMergeMode::Append);
-            infra_tags
-                .get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&"IR1", gst::TagMergeMode::Append);
+                .add::<gst::tags::Title>(&"infra1", gst::TagMergeMode::Append);
             TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
             BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
         }
@@ -809,11 +797,7 @@ impl BaseSrcImpl for RealsenseSrc {
             infra_tags
                 .get_mut()
                 .unwrap()
-                .add::<gst::tags::ExtendedComment>(&"data_type=IR2", gst::TagMergeMode::Append);
-            infra_tags
-                .get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&"IR2", gst::TagMergeMode::Append);
+                .add::<gst::tags::Title>(&"infra2", gst::TagMergeMode::Append);
             TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
             BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
         }
