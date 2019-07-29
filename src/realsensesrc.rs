@@ -112,7 +112,7 @@ impl ObjectSubclass for RealsenseSrc {
             cat: gst::DebugCategory::new(
                 "realsensesrc",
                 gst::DebugColorFlags::empty(),
-                "Realsense Source",
+                Some("Realsense Source"),
             ),
             settings: Mutex::new(Default::default()),
             state: Mutex::new(Default::default()),
@@ -376,5 +376,5 @@ impl BaseSrcImpl for RealsenseSrc {
 }
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    gst::Element::register(plugin, "realsensesrc", 256 + 100, RealsenseSrc::get_type())
+    gst::Element::register(Some(plugin), "realsensesrc", gst::Rank::None, RealsenseSrc::get_type())
 }
