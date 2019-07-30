@@ -9,6 +9,7 @@ extern crate gstreamer_depth_meta as meta;
 extern crate gstreamer_video as gst_video;
 extern crate librealsense2 as rs2;
 
+mod properties_d435;
 mod realsensesrc;
 
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
