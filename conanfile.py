@@ -19,6 +19,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "app": [True, False],
         "playback": [True, False],
         "typefind": [True, False],
+        "timeoverlay": [True, False],
         "orc": [True, False],
         "opus": [True, False],
     }
@@ -31,6 +32,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "app=True",
         "playback=True",
         "typefind=True",
+        "timeoverlay=True",
         "orc=True",
         "opus=True",
     )
@@ -58,6 +60,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dapp=" + ("enabled" if self.options.app else "disabled"))
         args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
         args.append("-Dtypefind=" + ("enabled" if self.options.typefind else "disabled"))
+        args.append("-Dtimeoverlay=" + ("enabled" if self.options.timeoverlay else "disabled"))
         args.append("-Dorc=" + ("enabled" if self.options.orc else "disabled"))
         args.append("-Dopus=" + ("enabled" if self.options.opus else "disabled"))
         meson = Meson(self)
