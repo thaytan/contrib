@@ -238,7 +238,24 @@ static void gst_colorizer_init(GstColorizer *filter) {
 }
 
 static gboolean plugin_init(GstPlugin *plugin) {
-  gst_element_register(plugin, "gstcolorizer", GST_RANK_NONE,
+  gst_element_register(plugin, "colorizer", GST_RANK_NONE,
                        gst_colorizer_get_type());
   return TRUE;
 }
+
+#ifndef VERSION
+#define VERSION "0.1"
+#endif
+#ifndef PACKAGE
+#define PACKAGE "colorizer"
+#endif
+#ifndef PACKAGE_NAME
+#define PACKAGE_NAME "colorizer"
+#endif
+#ifndef GST_PACKAGE_ORIGIN
+#define GST_PACKAGE_ORIGIN "https://aivero.com"
+#endif
+
+GST_PLUGIN_DEFINE(GST_VERSION_MAJOR, GST_VERSION_MINOR, colorizer,
+                  "Depth image colorizer", plugin_init, VERSION, "LGPL",
+                  PACKAGE_NAME, GST_PACKAGE_ORIGIN)
