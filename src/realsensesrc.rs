@@ -231,8 +231,8 @@ impl ObjectSubclass for RealsenseSrc {
     fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
         klass.set_metadata(
             "Realsense Source",
-            "Source/Realsense",
-            "Read stream from a Realsense device or file",
+            "Source/Depth/Realsense",
+            "Stream from a Realsense device or rosbag file",
             "Niclas Moeslund Overby <noverby@prozum.dk>",
         );
 
@@ -522,7 +522,19 @@ impl ObjectImpl for RealsenseSrc {
     }
 }
 
-impl ElementImpl for RealsenseSrc {}
+impl ElementImpl for RealsenseSrc {
+    fn change_state(
+        &self,
+        element: &gst::Element,
+        transition: gst::StateChange,
+    ) -> Result<gst::StateChangeSuccess, gst::StateChangeError> {
+        match transition {
+            // gst::StateChange::X => {},
+            _ => {}
+        }
+        self.parent_change_state(element, transition)
+    }
+}
 
 impl BaseSrcImpl for RealsenseSrc {
     fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
@@ -545,7 +557,7 @@ impl BaseSrcImpl for RealsenseSrc {
             ));
         }
 
-        rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_WARN);
+        rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
         let config = rs2::config::Config::new().unwrap();
 
         if let Some(serial) = settings.serial.as_ref() {
