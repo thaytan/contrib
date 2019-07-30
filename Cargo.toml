@@ -1,0 +1,11 @@
+[package]
+name = "librealsense2-sys"
+version = "0.2.0"
+authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
+description = "FFI bindings to librealsense2"
+license = "MIT"
+edition = "2018"
+
+[build-dependencies]
+pkg-config = "0.3.14"
+bindgen = "0.48.1"
