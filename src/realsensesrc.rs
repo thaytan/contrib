@@ -227,6 +227,7 @@ impl ObjectSubclass for RealsenseSrc {
             state: Mutex::new(Default::default()),
         }
     }
+    // 
 
     fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
         klass.set_metadata(
