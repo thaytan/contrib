@@ -20,8 +20,8 @@ class RealsenseConan(ConanFile):
     ]
 
     def requirements(self):
-        self.requires("gstreamer/1.16.0@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer-plugins-base/1.16.0@%s/%s" % (self.user, self.channel))
+        # self.requires("gstreamer/1.16.0@%s/%s" % (self.user, self.channel))
+        # self.requires("gstreamer-plugins-base/1.16.0@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer-depth-meta/0.2.0@%s/%s" % (self.user, self.channel))
         self.requires("librealsense/2.20.0@%s/%s" % (self.user, self.channel))
 
