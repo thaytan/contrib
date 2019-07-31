@@ -4,8 +4,6 @@ GStreamer element providing librealsense2 capabilities
 
 > Note: If you want to play from rosbag file, make sure that you enable all streams this file contains. Otherwise, it usually does not play the entire file if contained streams are disabled. And it usually panics at unwrap() if there are streams enabled that the file does not contain.
 
-> Note: Stream infra2 is currently not supported
-
 > Note: All streams, i.e. depth, color and infra, must share the same framerate in the current implementation
 
 ## Building
@@ -44,5 +42,5 @@ gst-launch-1.0 realsensesrc serial=728312070031 ! glimagesink
 
 You can also change the properties, see `gst-inspect-1.0 realsensesrc`, as such:
 ```
-gst-launch-1.0 realsensesrc location=/ABSOLUTE_PATH/20190322_123122.bag framerate=6 depth_width=848 depth_height=480 enable_infra1=true enable_infra2=false enable_color=true color_width=320 color_height=180 ! glimagesink
+gst-launch-1.0 realsensesrc rosbag_location=/ABSOLUTE_PATH/20190322_123122.bag json_location=/ABSOLUTE_PATH/HighAccuracy.json framerate=30 depth_width=1280 depth_height=720 enable_infra1=false enable_infra2=false enable_color=true color_width=1280 color_height=720 ! glimagesink
 ```
