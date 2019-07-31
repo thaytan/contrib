@@ -24,11 +24,11 @@ class RealsenseConan(ConanFile):
         self.requires("librealsense/2.20.0@%s/%s" % (self.user, self.channel))
 
     def build(self):
-        if self.build_type == 'Release'
+        if self.build_type == 'Release':
             self.run("cargo build --release")
-        if else self.build_type == 'Debug'
+        elif self.build_type == 'Debug':
             self.run("cargo build")
-        else
+        else:
             print('Invalid build_type selected')
 
     def package(self):
