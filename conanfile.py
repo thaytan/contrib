@@ -10,6 +10,7 @@ class GStreamerPluginsBadConan(ConanFile):
     url = "https://github.com/bincrafters/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
+    exports = "reduce_latency.patch"
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "introspection": [True, False],
@@ -59,6 +60,7 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
+        tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad-" + self.version))
 
     def build(self):
         args = ["--auto-features=disabled", "-Dgl_api=opengl"]
