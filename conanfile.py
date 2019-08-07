@@ -7,37 +7,29 @@ class OpusConan(ConanFile):
     version = "1.3.1"
     license = "https://raw.githubusercontent.com/xiph/opus/master/COPYING"
     description = "Modern audio compression for the internet"
-    default_user = "bincrafters"
-    default_channel = "stable"
-    url = "https://github.com/ulricheck/conan-librealsense"
+    url = "https://gitlab.com/aivero/public/conan/conan-librealsense"
     settings = "os", "compiler", "build_type", "arch"
+    generators = "env"
+
+    def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://archive.mozilla.org/pub/opus/opus-%s.tar.gz" % self.version)
 
     def build(self):
-        env_vars = {
-            "CFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
-            "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
-        }
-        with tools.chdir(os.path.join(self.source_folder, "opus-" + self.version)), tools.environment_append(env_vars):
+        with tools.chdir("opus-" + self.version):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()
             autotools.make(args=["install"])
 
-
     def package(self):
-        if self.channel == "testing":
+        if self.settings.build_type == "Debug":
             self.copy("*.cpp", "src")
             self.copy("*.hpp", "src")
             self.copy("*.h", "src")
 
     def package_info(self):
         self.cpp_info.libs = ["opus"]
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        for pc in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % pc[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.srcdirs.append("src")
