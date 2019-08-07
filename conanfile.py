@@ -47,13 +47,13 @@ class V4l2(ConanFile):
         vars = {
         }
         with tools.environment_append(vars):
-            self.run("cd libv4l && make")
+            self.run("cd libv4l2 && make")
 
     def package(self):
         self.copy("*.so*")
 
     def package_info(self):
-        self.cpp_info.libdirs = ["libv4"]
+        self.cpp_info.libdirs = ["libv42"]
         self.cpp_info.libs = tools.collect_libs(self)
         for lib_path in self.cpp_info.lib_paths:
             self.env_info.LD_LIBRARY_PATH.append(lib_path)
