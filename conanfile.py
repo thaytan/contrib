@@ -42,7 +42,7 @@ class GStreamerPluginsGoodConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)
-        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-request-muxerpad-signal-1.16.0")
+        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0")
 
     def build(self):
         args = ["--auto-features=disabled"]
