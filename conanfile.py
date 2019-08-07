@@ -8,12 +8,12 @@ class OpenCVConan(ConanFile):
     version = "3.4.6"
     license = "https://raw.githubusercontent.com/IntelRealSense/librealsense/master/LICENSE"
     description = "OpenCV is an open source computer vision and machine learning software library."
-    default_user = "bincrafters"
-    default_channel = "stable"
-    url = "https://github.com/conan-community/conan-opencv"
+    url = "https://gitlab.com/aivero/public/conan/conan-opencv"
     settings = "os", "compiler", "build_type", "arch"
+    generators = "env"
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel))
 
     def source(self):
@@ -33,26 +33,16 @@ class OpenCVConan(ConanFile):
         cmake.definitions['BUILD_ITT'] = False
         cmake.definitions['BUILD_JPEG_TURBO_DISABLE'] = True
 
-        vars = {
-            "CFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
-            "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
-        }
-        with tools.environment_append(vars):
-            cmake.configure(source_folder="opencv-" + self.version)
-            cmake.build()
-            cmake.install()
+        cmake.configure(source_folder="opencv-" + self.version)
+        cmake.build()
+        cmake.install()
 
     def package(self):
-        if self.channel == "testing":
+        if self.settings.build_type == "Debug":
             self.copy("*.cpp", "src")
             self.copy("*.hpp", "src")
             self.copy("*.h", "src")
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.srcdirs.append("src")
