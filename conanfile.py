@@ -19,7 +19,7 @@ class V4l2(ConanFile):
     default_channel = "stable"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
     settings = "os", "compiler", "build_type", "arch"
-    exports_sources= ["public_sources.tbz2"]
+    exports_sources= ["public_sources.tbz2", "conanbuildfileinfo.patch"]
     options = {
     "jetson": ["Nano", "TX2", "Xavier"]
     }
@@ -42,11 +42,10 @@ class V4l2(ConanFile):
         tools.untargz("public_sources.tbz2")
         tools.untargz("public_sources/v4l2_libs_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
+        tools.patch(base_path="libv4l2/", patch_file="conanbuildfileinfo.patch")
 
     def build(self):
-        vars = {
-        }
-        with tools.environment_append(vars):
+        with tools.environment_append({}):
             self.run("cd libv4l2 && make")
 
     def package(self):
