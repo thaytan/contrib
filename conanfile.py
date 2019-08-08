@@ -30,11 +30,15 @@ class env(Generator):
     @property
     def content(self):
         pc_output_path = self.output_path
-        paths = []
+        bin_paths = []
+        lib_paths = []
         for _, cpp_info in self.deps_build_info.dependencies:
+            lib_path = path.join(cpp_info.rootpath, "lib")
+            if path.exists(lib_path):
+                lib_paths.append(lib_path)
             bin_path = path.join(cpp_info.rootpath, "bin")
             if path.exists(bin_path):
-                paths.append(bin_path)
+                bin_paths.append(bin_path)
             pc_lib_path = path.join(cpp_info.rootpath, "lib", "pkgconfig")
             pc_share_path = path.join(cpp_info.rootpath, "share", "pkgconfig")
             if path.exists(pc_lib_path):
@@ -48,10 +52,11 @@ class env(Generator):
 
         environ.update({
             "PKG_CONFIG_PATH": pc_output_path,
+            "LD_LIBRARY_PATH": pathsep.join(lib_paths),
             "CFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
             "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
         })
-        environ["PATH"] += pathsep + pathsep.join(paths)
+        environ["PATH"] += pathsep + pathsep.join(bin_paths)
 
         content = "export PKG_CONFIG_PATH=\"$PKG_CONFIG_PATH\":\"%s\"\n" % pc_output_path
         for var, val in self.env.items():
