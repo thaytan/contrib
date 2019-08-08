@@ -12,57 +12,24 @@ class FlexConan(ConanFile):
     homepage = "https://github.com/westes/flex"
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD 2-Clause"
-    author = "Bincrafters <bincrafters@gmail.com>"
-    exports_sources = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
+    generators = "env"
 
+    def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("bison/3.3@%s/%s" % (self.user, self.channel), private=True)
 
     def source(self):
-        source_url = "https://github.com/westes/flex"
-        tools.get("{0}/releases/download/v{1}/{2}-{3}.tar.gz".format(source_url, self.version,self.name, self.version))
-        extracted_dir = self.name + "-" + self.version
-        os.rename(extracted_dir, "sources")
-
-    def configure(self):
-        del self.settings.compiler.libcxx
-        if self.settings.os == "Windows":
-            raise Exception("Flex is not supported on Windows.")
+        tools.get("https://github.com/westes/flex/releases/download/v{0}/flex-{0}.tar.gz".format(self.version))
 
     def build(self):
-        env_build = AutoToolsBuildEnvironment(self)
-        env_build.fpic = True
-        configure_args = ['--prefix=%s' % self.package_folder]
-        configure_args.append("--enable-shared" if self.options.shared else "--disable-shared")
-        configure_args.append("--disable-static" if self.options.shared else "--enable-static")
-        configure_args.append("--disable-nls")
-        if str(self.settings.compiler) == "gcc" and float(str(self.settings.compiler.version)) >= 6:
-            configure_args.append("ac_cv_func_reallocarray=no")
-        with tools.chdir("sources"):
-            if tools.cross_building(self.settings):
-                # stage1flex must be built on native arch: https://github.com/westes/flex/issues/78
-                self.run("./configure %s" % " ".join(configure_args))
-                env_build.make(args=["-C", "src", "stage1flex"])
-                self.run("mv src/stage1flex src/stage1flex.build")
-                env_build.make(args=["distclean"])
-                with tools.environment_append(env_build.vars):
-                    env_build.configure(args=configure_args)
-                    cpu_count_option = "-j%s" % tools.cpu_count()
-                    self.run("make -C src %s || true" % cpu_count_option)
-                    self.run("mv src/stage1flex.build src/stage1flex")
-                    self.run("touch src/stage1flex")
-                    env_build.make(args=["-C", "src"])
-            else:
-                with tools.environment_append(env_build.vars):
-                    env_build.configure(args=configure_args)
-                    env_build.make()
-            env_build.make(args=["install"])
-
-    def package(self):
-        with tools.chdir("sources"):
-            self.copy(pattern="COPYING", dst="licenses")
+        args = ["--enable-shared", "--disable-nls", "ac_cv_func_reallocarray=no"]
+        autotools = AutoToolsBuildEnvironment(self)
+        with tools.chdir("%s-%s" % (self.name, self.version)):
+            self.run("./autogen.sh")
+            autotools.configure(args=args)
+            autotools.make()
+            autotools.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
