@@ -4,23 +4,18 @@
 from conans import ConanFile, Meson, tools
 import os
 
-
 class GLibConan(ConanFile):
     name = "glib"
     version = "2.58.1"
-    default_user = "bincrafters"
-    default_channel = "stable"
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     url = "https://github.com/bincrafters/conan-" + name
-    author = "BinCrafters <bincrafters@gmail.com>"
     license = "LGPL-2.1"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"fPIC": [True, False]}
-    default_options = "fPIC=True"
-    folder_name = name + "-" + version
+    generators = "env"
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel))
         self.requires("libffi/3.3-rc0@%s/%s" % (self.user, self.channel))
 
@@ -30,12 +25,11 @@ class GLibConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False", "-Dinternal_pcre=False"]
         meson = Meson(self)
-        meson.configure(source_folder=self.folder_name, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.build()
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
 
     def package(self):
-        if self.channel == "testing":
+        if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
 
@@ -45,8 +39,3 @@ class GLibConan(ConanFile):
         self.cpp_info.includedirs.append(os.path.join("lib", "glib-2.0", "include"))
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.srcdirs.append("src")
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
-        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
