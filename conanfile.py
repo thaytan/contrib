@@ -25,8 +25,7 @@ class LibVaConan(ConanFile):
 
     def build(self):
         meson = Meson(self)
-        meson.configure(source_folder="libva-" + self.version)
-        meson.build()
+        meson.configure(source_folder="%s-%s" % (self.name, self.version))
         meson.install()
 
     def package_info(self):
