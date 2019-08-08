@@ -56,7 +56,6 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Dmultifile=" + ("enabled" if self.options.multifile else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-good-" + self.version , args=args)
-        meson.build()
         meson.install()
 
     def package(self):
