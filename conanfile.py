@@ -9,17 +9,16 @@ class RealsenseConan(ConanFile):
     version = "0.1.0"
     description = "Realsense gstreamer source element"
     url = "https://aivero.com"
-    default_user = "aivero"
-    default_channel = "stable"
     license = "Proprietary"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "virtualenv", "virtualrunenv"
     exports_sources = [
         "Cargo.toml",
         "src/*",
     ]
+    generators = "env"
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer-depth-meta/0.2.0@%s/%s" % (self.user, self.channel))
         self.requires("librealsense/2.20.0@%s/%s" % (self.user, self.channel))
 
@@ -36,5 +35,4 @@ class RealsenseConan(ConanFile):
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.srcdirs.append("src")
