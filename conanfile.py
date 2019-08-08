@@ -22,7 +22,7 @@ class GObjectIntrospectionConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(source_folder="gobject-introspection-" + self.version, args=args)
+        meson.configure(source_folder="%s-%s" % (self.name,  self.version), args=args)
         meson.build()
         meson.install()
 
