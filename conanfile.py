@@ -5,8 +5,7 @@ import os
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
     version = "1.16.0"
-    default_user = "bincrafters"
-    url = "https://github.com/bincrafters/conan-" + name
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
@@ -36,8 +35,10 @@ class GStreamerPluginsBaseConan(ConanFile):
         "orc=True",
         "opus=True",
     )
+    generators = "env"
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
         if self.options.introspection:
@@ -64,12 +65,12 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dorc=" + ("enabled" if self.options.orc else "disabled"))
         args.append("-Dopus=" + ("enabled" if self.options.opus else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args)
         meson.build()
         meson.install()
 
     def package(self):
-        if self.channel == "testing":
+        if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
 
@@ -78,7 +79,3 @@ class GStreamerPluginsBaseConan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
-        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
