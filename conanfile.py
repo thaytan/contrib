@@ -5,9 +5,7 @@ import os
 class GStreamerPluginsBadConan(ConanFile):
     name = "gstreamer-plugins-bad"
     version = "1.16.0"
-    default_user = "bincrafters"
-    default_channel = "stable"
-    url = "https://github.com/bincrafters/conan-" + name
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     exports = "reduce_latency.patch"
@@ -40,6 +38,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "mpegtsdemux=True",
         "debugutils=True",
     )
+    generators = "env"
 
     def configure(self):
         if self.settings.arch != "x86_64":
@@ -47,6 +46,7 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvenc")
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
@@ -56,7 +56,6 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("libnice/0.1.15@%s/%s" % (self.user, self.channel))
         if self.options.srtp:
             self.requires("libsrtp/2.2.0@%s/%s" % (self.user, self.channel))
-
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
@@ -78,12 +77,11 @@ class GStreamerPluginsBadConan(ConanFile):
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-bad-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.build()
+        meson.configure(source_folder="gst-plugins-bad-" + self.version, args=args)
         meson.install()
 
     def package(self):
-        if self.channel == "testing":
+        if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
 
@@ -92,7 +90,3 @@ class GStreamerPluginsBadConan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
-        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" % file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)
