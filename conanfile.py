@@ -5,15 +5,16 @@ import os
 
 
 class LibvaMesaDriverConan(ConanFile):
-    name            = "libva-mesa-driver"
-    version         = "2.3.0"
-    default_user    = "bincrafters"
-    license         = "MIT"
-    url             = "https://github.com/prozum/conan-intel-vaapi-driver.git"
-    description     = "VA-API user mode driver for Intel GEN Graphics family"
+    name = "libva-mesa-driver"
+    version = "2.3.0"
+    license = "MIT"
+    url = "https://github.com/prozum/conan-intel-vaapi-driver.git"
+    description = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
+    generators = "env"
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("libdrm/2.4.96@%s/stable" % self.user)
         self.requires("libva/2.3.0@%s/stable" % self.user)
 
@@ -23,8 +24,7 @@ class LibvaMesaDriverConan(ConanFile):
     def build(self):
         args = ["-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri")]
         meson = Meson(self)
-        meson.configure(source_folder="intel-vaapi-driver-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.build()
+        meson.configure(source_folder="intel-vaapi-driver-" + self.version, args=args)
         meson.install()
 
     def package_info(self):
