@@ -38,7 +38,6 @@ class GStreamerConan(ConanFile):
         args.append("-Dtools=" + ("enabled" if self.options.tools else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
-        meson.build()
         meson.install()
 
     def package(self):
