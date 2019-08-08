@@ -1,6 +1,6 @@
 from conans.model import Generator
 from conans import ConanFile
-from os import path, pathsep, listdir, mkdir, environ
+from os import path, pathsep, listdir, environ
 from shutil import copy
 
 
@@ -30,7 +30,11 @@ class env(Generator):
     @property
     def content(self):
         pc_output_path = self.output_path
+        paths = []
         for _, cpp_info in self.deps_build_info.dependencies:
+            lib_path = path.join(cpp_info.rootpath, "lib")
+            if path.exists(lib_path):
+                paths.append(lib_path)
             pc_lib_path = path.join(cpp_info.rootpath, "lib", "pkgconfig")
             pc_share_path = path.join(cpp_info.rootpath, "share", "pkgconfig")
             if path.exists(pc_lib_path):
@@ -41,14 +45,18 @@ class env(Generator):
                 for pc in listdir(pc_share_path):
                     copy(path.join(pc_share_path, pc), pc_output_path)
                     replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
+
         environ.update({
             "PKG_CONFIG_PATH": pc_output_path,
+            "CFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
+            "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
         })
+        environ["PATH"] += pathsep + pathsep.join(paths)
 
         content = "export PKG_CONFIG_PATH=\"$PKG_CONFIG_PATH\":\"%s\"\n" % pc_output_path
         for var, val in self.env.items():
-            if type(val) is list: 
-                content += "export {0}=\"${0}\":{1}\n".format(var, ":".join(map(lambda x: "\"%s\"" % x, val)))
+            if type(val) is list:
+                content += "export {0}=\"${0}\":{1}\n".format(var, pathsep.join(map(lambda x: "\"%s\"" % x, val)))
             else:
                 content += "export {0}={1}\n".format(var, "\"%s\"" % val)
 
