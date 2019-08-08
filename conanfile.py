@@ -16,30 +16,27 @@ def get_version():
         return None
 
 
-class DepthMetaConan(ConanFile):
+class GstreamerColorizerConan(ConanFile):
     name = "gstreamer-colorizer"
     license = "LGPL"
     version = get_version()
     description = "Plugin to colorize 16 bit grayscale depth images with a color map"
     url = "https://aivero.com"
-    default_user = "aivero"
-    default_channel = "stable"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "cmake", "virtualenv", "virtualrunenv"
     exports_sources = ["CMakeLists.txt", "src/*"]
+    generators = "env"
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/1.16.0@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer-plugins-base/1.16.0@%s/%s" %
                       (self.user, self.channel))
 
     def build(self):
-        vars = {
-            "CFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
-            "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
+        env = {
             "GIT_PKG_VER": "%s" % self.version,
         }
-        with tools.environment_append(vars):
+        with tools.environment_append(env):
             cmake = CMake(self)
             cmake.configure()
             cmake.build()
@@ -58,10 +55,3 @@ class DepthMetaConan(ConanFile):
         self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(
             self.package_folder, "lib", "gstreamer-1.0"))
-        self.env_info.PKG_CONFIG_PATH.append(
-            os.path.join(self.package_folder, "lib", "pkgconfig"))
-        self.env_info.SOURCE_PATH.append(
-            os.path.join(self.package_folder, "src"))
-        for file in os.listdir(os.path.join(self.package_folder, "lib", "pkgconfig")):
-            setattr(self.env_info, "PKG_CONFIG_%s_PREFIX" %
-                    file[:-3].replace(".", "_").replace("-", "_").upper(), self.package_folder)

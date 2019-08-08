@@ -1,4 +1,4 @@
-#include "gstcolorizer.h"
+#include "gst-colorizer.h"
 
 #include <gst/video/video.h>
 
