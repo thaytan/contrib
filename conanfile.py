@@ -32,9 +32,9 @@ class env(Generator):
         pc_output_path = self.output_path
         paths = []
         for _, cpp_info in self.deps_build_info.dependencies:
-            lib_path = path.join(cpp_info.rootpath, "lib")
-            if path.exists(lib_path):
-                paths.append(lib_path)
+            bin_path = path.join(cpp_info.rootpath, "bin")
+            if path.exists(bin_path):
+                paths.append(bin_path)
             pc_lib_path = path.join(cpp_info.rootpath, "lib", "pkgconfig")
             pc_share_path = path.join(cpp_info.rootpath, "share", "pkgconfig")
             if path.exists(pc_lib_path):
