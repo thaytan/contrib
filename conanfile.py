@@ -64,9 +64,9 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dtimeoverlay=" + ("enabled" if self.options.timeoverlay else "disabled"))
         args.append("-Dorc=" + ("enabled" if self.options.orc else "disabled"))
         args.append("-Dopus=" + ("enabled" if self.options.opus else "disabled"))
+        self.run("env")
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-base-" + self.version, args=args)
-        meson.build()
         meson.install()
 
     def package(self):
