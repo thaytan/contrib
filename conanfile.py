@@ -10,32 +10,24 @@ from conans import ConanFile, AutoToolsBuildEnvironment, tools
 class LibXorgUtilMacrosConan(ConanFile):
     name = "xorg-util-macros"
     version = "1.19.1"
-    default_user = "bincrafters"
-    url = "https://github.com/freedesktop/xorg-macros"
-    author = "Bincrafters <bincrafters@gmail.com>"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "X.Org Autotools macros"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=False",
-    source_subfolder = "source_subfolder"
-    exports = ["LICENSE.md"]
+    generators = "env"
+
+    def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://github.com/freedesktop/xorg-macros/archive/util-macros-%s.tar.gz" % self.version)
-        os.rename("xorg-macros-util-macros-%s" % self.version, self.source_subfolder)
 
     def build(self):
-        env_build = AutoToolsBuildEnvironment(self)
-        with tools.chdir(self.source_subfolder):
+        autotools = AutoToolsBuildEnvironment(self)
+        with tools.chdir("xorg-macros-util-macros-" + self.version):
             self.run("autoreconf -i")
-            env_build.configure()
-            env_build.make()
-            env_build.make(args=["install"])
-
-    def package(self):
-        self.copy("COPYING", src=self.source_subfolder, dst="licenses", keep_path=False)
+            autotools.configure()
+            autotools.install()
 
     def package_info(self):
-        self.env_info.PKG_CONFIG_PATH.append(os.path.join(self.package_folder, "lib", "pkgconfig"))
         self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
