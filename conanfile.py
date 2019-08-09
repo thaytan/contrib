@@ -53,9 +53,12 @@ class env(Generator):
         environ.update({
             "PKG_CONFIG_PATH": pc_output_path,
             "LD_LIBRARY_PATH": pathsep.join(lib_paths),
-            "CFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
-            "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
         })
+        if hasattr(self.conanfile, "source_folder"):
+            environ.update({
+                "CFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
+                "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
+            })
         environ["PATH"] += pathsep + pathsep.join(bin_paths)
 
         content = "export PKG_CONFIG_PATH=\"$PKG_CONFIG_PATH\":\"%s\"\n" % pc_output_path
