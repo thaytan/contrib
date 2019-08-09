@@ -8,7 +8,7 @@ class LibPciAccessConan(ConanFile):
     name = "libpciaccess"
     version = "0.14"
     description = "Generic PCI access library"
-    url = "http://github.com/bincrafters/conan-libusb"
+    url = "https://gitlab.com/aivero/public/conan/conan-libusb"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
