@@ -10,9 +10,7 @@ class LibVaConan(ConanFile):
     version = "2.3.0"
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    author = "BinCrafters <bincrafters@gmail.com>"
     license = "MIT"
-    exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
