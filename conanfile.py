@@ -4,13 +4,11 @@ from conans.util import files
 
 
 class GstreamerSharkConan(ConanFile):
-    version = "0.6.1"
     name = "gstreamer-shark"
-    license = "https://raw.githubusercontent.com/strukturag/libde265/master/COPYING"
+    version = "0.6.1"
     description = "GstShark is a front-end for GStreamer traces "
-    default_user = "bincrafters"
-    default_channel = "stable"
-    url = "https://github.com/RidgeRun/gst-shark"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
+    license = "https://raw.githubusercontent.com/strukturag/libde265/master/COPYING"
     settings = "os", "compiler", "build_type", "arch"
     scm = {
         "type": "git",
@@ -18,21 +16,18 @@ class GstreamerSharkConan(ConanFile):
         "revision": "master",
         "recursive": True
     }
+    generators = "env"
 
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/1.16.0@%s/%s" % (self.user, self.channel))
         self.requires("graphviz/2.40.1@%s/%s" % (self.user, self.channel))
 
     def build(self):
-        vars = {
-            "CFLAGS": "-fdebug-prefix-map=%s=." % self.source_folder,
-        }
-        with tools.environment_append(vars):
-                self.run("./autogen.sh --disable-gtk-doc")
-                autotools = AutoToolsBuildEnvironment(self)
-                autotools.configure()
-                autotools.make()
-                autotools.make(args=["install"])
+        self.run("./autogen.sh --disable-gtk-doc")
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure()
+        autotools.install()
 
     def package(self):
         if self.channel == "testing":
@@ -41,5 +36,4 @@ class GstreamerSharkConan(ConanFile):
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
-        self.env_info.SOURCE_PATH.append(os.path.join(self.package_folder, "src"))
         self.cpp_info.srcdirs.append("src")
