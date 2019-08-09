@@ -5,7 +5,7 @@ import os
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
     version = "1.16.0"
-    url = "https://github.com/bincrafters/conan-" + name
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Development and debugging tools for GStreamer"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
