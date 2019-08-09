@@ -1,20 +1,19 @@
 from conans import ConanFile, Meson, tools
-
 import os
 
 class JsonGlibBaseConan(ConanFile):
     name = "json-glib"
     version = "1.4.4"
-    url = "https://github.com/bincrafters/conan-" + name
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {
-        "introspection": [True, False],
-    }
-    default_options = (
-        "introspection=True",
-    )
+    options = {"introspection": [True, False]}
+    default_options = "introspection=True"
+    generators = "env"
+
+    def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
 
     def requirements(self):
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
@@ -29,7 +28,7 @@ class JsonGlibBaseConan(ConanFile):
         args.append("-Dintrospection=" + ("true" if self.options.introspection else "false"))
 
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
+        meson.configure(args=args, source_folder="%s-%s" % (self.name, self.version))
         meson.install()
 
     def package(self):
