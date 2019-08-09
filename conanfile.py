@@ -5,18 +5,12 @@ import os
 class LibNiceConan(ConanFile):
     name = "libnice"
     version = "0.1.15"
-    default_user = "bincrafters"
-    default_channel = "stable"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "An implementation of the IETF’s Interactive Connectivity Establishment (ICE) standard"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
-    options = {
-        "gstreamer": [True, False],
-    }
-    default_options = (
-        "gstreamer=True",
-    )
+    options = {"gstreamer": [True, False]}
+    default_options = "gstreamer=True"
     generators = "env"
 
     def requirements(self):
@@ -38,7 +32,7 @@ class LibNiceConan(ConanFile):
         meson.install()
 
     def package(self):
-        if self.channel == "testing":
+        if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
 
