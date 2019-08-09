@@ -20,7 +20,7 @@ class FFMpegConan(ConanFile):
         self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
 
     def build_requirements(self):
-        self.build_requires("yasm_installer/1.3.0@%s/%s" % (self.user, self.channel))
+        self.build_requires("yasm/1.3.0@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("http://ffmpeg.org/releases/ffmpeg-%s.tar.bz2" % self.version)
@@ -38,7 +38,7 @@ class FFMpegConan(ConanFile):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args, build=False, host=False, target=False)
             autotools.make()
-            autotools.make(args=['install'])
+            autotools.install()
 
     def package(self):
         if self.settings.build_type == "Debug":
