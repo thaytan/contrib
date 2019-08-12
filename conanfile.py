@@ -22,11 +22,11 @@ class OrcConan(ConanFile):
 
     def build(self):
         args = ['--disable-gtk-doc']
-        with tools.chdir("%s-%s" % (self.name, self.version):
+        with tools.chdir("%s-%s" % (self.name, self.version)):
                 self.run("./autogen.sh " + " ".join(args))
                 autotools = AutoToolsBuildEnvironment(self)
                 autotools.configure(args=args)
-                autotools.install())
+                autotools.install()
 
     def package(self):
         if self.settings.build_type == "Debug":
