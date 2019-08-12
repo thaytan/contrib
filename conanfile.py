@@ -28,6 +28,7 @@ class OpensslConan(ConanFile):
             shutil.copy("Configure", "configure")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
+            autotools.make()
             autotools.install()
 
     def package(self):
