@@ -10,6 +10,8 @@ class GlfwcConan(ConanFile):
     description = "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop."
     license = "https://github.com/prozum/openhevc/blob/master/LICENSE"
     settings = "os", "compiler", "build_type", "arch"
+    options = {"shared": [True, False]}
+    default_options = "shared=True"
     generators = "env"
 
     def requirements(self):
