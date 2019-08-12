@@ -9,7 +9,7 @@ class OrcConan(ConanFile):
     name = "orc"
     version = "0.4.29"
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-orc"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
     description = "Optimized Inner Loop Runtime Compiler"
     generators = "env"
@@ -22,12 +22,11 @@ class OrcConan(ConanFile):
 
     def build(self):
         args = ['--disable-gtk-doc']
-        with tools.chdir("orc-" + self.version):
+        with tools.chdir("%s-%s" % (self.name, self.version):
                 self.run("./autogen.sh " + " ".join(args))
                 autotools = AutoToolsBuildEnvironment(self)
                 autotools.configure(args=args)
-                autotools.make()
-                autotools.make(args=["install"])
+                autotools.install())
 
     def package(self):
         if self.settings.build_type == "Debug":
