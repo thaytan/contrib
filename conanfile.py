@@ -7,7 +7,7 @@ class GTestConan(ConanFile):
     name = "gtest"
     version = "1.8.1"
     description = "Google's C++ test framework"
-    url = "http://github.com/bincrafters/conan-gtest"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD-3-Clause"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
