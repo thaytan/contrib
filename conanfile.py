@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import os
-from conans import ConanFile, AutoToolsBuildEnvironment, MSBuild, tools
+from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
 
 class LibUSBConan(ConanFile):
     name = "libusb"
     version = "1.0.22"
-    url = "http://github.com/bincrafters/conan-libusb"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
     description = "A cross-platform library to access USB devices"
     settings = "os", "compiler", "build_type", "arch"
