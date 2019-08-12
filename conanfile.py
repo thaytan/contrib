@@ -9,7 +9,7 @@ import shutil
 class X265Conan(ConanFile):
     name = "x265"
     version = "2.7"
-    url = "https://github.com/bincrafters/conan-libx265"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "x265 is the leading H.265 / HEVC encoder software library"
     license = "https://github.com/someauthor/somelib/blob/master/LICENSES"
     settings = "os", "arch", "compiler", "build_type"
@@ -31,7 +31,7 @@ class X265Conan(ConanFile):
         cmake.definitions['HIGH_BIT_DEPTH'] = self.options.bit_depth != 8
         cmake.definitions['MAIN12'] = self.options.bit_depth == 12
         cmake.definitions['ENABLE_HDR10_PLUS'] = self.options.HDR10
-        cmake.configure(source_folder=os.path.join("x265-" + self.version, "source"))
+        cmake.configure(source_folder=os.path.join("%s-%s" % (self.name, self.version), "source"))
         cmake.install()
 
     def package(self):
