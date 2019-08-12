@@ -8,9 +8,8 @@ class GLibConan(ConanFile):
     name = "glib"
     version = "2.58.1"
     description = "GLib provides the core application building blocks for libraries and applications written in C"
-    url = "https://github.com/bincrafters/conan-" + name
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
-    exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
