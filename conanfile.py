@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
-import os
 
 
 class YasmConan(ConanFile):
