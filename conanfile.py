@@ -5,9 +5,9 @@ from conans import ConanFile, AutoToolsBuildEnvironment, tools
 class OpusConan(ConanFile):
     name = "opus"
     version = "1.3.1"
-    license = "https://raw.githubusercontent.com/xiph/opus/master/COPYING"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Modern audio compression for the internet"
-    url = "https://gitlab.com/aivero/public/conan/conan-librealsense"
+    license = "https://raw.githubusercontent.com/xiph/opus/master/COPYING"
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
 
@@ -18,11 +18,10 @@ class OpusConan(ConanFile):
         tools.get("https://archive.mozilla.org/pub/opus/opus-%s.tar.gz" % self.version)
 
     def build(self):
-        with tools.chdir("opus-" + self.version):
+        with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
-            autotools.make()
-            autotools.make(args=["install"])
+            autotools.install()
 
     def package(self):
         if self.settings.build_type == "Debug":
