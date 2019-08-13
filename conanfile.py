@@ -1,4 +1,5 @@
 from conans import ConanFile, tools
+from os import path
 
 def get_version():
     git = tools.Git()
@@ -15,44 +16,35 @@ class V4l2(ConanFile):
     version = get_version()
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
-    default_user = "aivero"
-    default_channel = "stable"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
     settings = "os", "compiler", "build_type", "arch"
-    exports_sources= ["public_sources.tbz2", "conanbuildfileinfo.patch"]
-    options = {
-    "jetson": ["Nano", "TX2", "Xavier"]
-    }
-    default_options = (
-    "jetson=TX2",
-    )
-    generators = ["virtualenv", "virtualrunenv", "make"]
+    options = {"jetson": ["Nano", "TX2", "Xavier"]}
+    default_options = ("jetson=TX2",)
+    generators = "env"
+
     def requirements(self):
+        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("nv-v4lconvert/%s@%s/%s" % (self.version, self.user, self.channel))
 
     def source(self):
-
-        if (self.options.jetson in ["TX2", "Xavier"]):
-            tools.download("https://developer.download.nvidia.com/embedded/L4T/r" + self.version + "_Release_v1.0/TX2-AGX/public_sources.tbz2", filename="public_sources.tbz2")
-        elif (self.options.jetson in ["Nano"]):
-            tools.download("https://developer.download.nvidia.com/embedded/L4T/r" + self.version + "_Release_v1.0/Nano-TX1/public_sources.tbz2", filename="public_sources.tbz2")
+        if self.options.jetson in ("TX2", "Xavier"):
+            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/TX2-AGX/public_sources.tbz2" % self.version)
+        elif self.options.jetson == "Nano":
+            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/Nano-TX1/public_sources.tbz2" % self.version)
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
 
-        tools.untargz("public_sources.tbz2")
         tools.untargz("public_sources/v4l2_libs_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
-        tools.patch(base_path="libv4l2/", patch_file="conanbuildfileinfo.patch")
 
     def build(self):
-        with tools.environment_append({}):
-            self.run("cd libv4l2 && make")
+        # Hack to workaround hardcoded library path
+        env = {"DEST_DIR": path.join(self.deps_cpp_info["nv-v4lconvert"].rootpath, "lib")}
+        with tools.chdir("libv4l2"), tools.environment_append(env):
+                self.run("make")
 
     def package(self):
-        self.copy("*.so*")
+        self.copy("*.so*", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libdirs = ["libv42"]
         self.cpp_info.libs = tools.collect_libs(self)
-        for lib_path in self.cpp_info.lib_paths:
-            self.env_info.LD_LIBRARY_PATH.append(lib_path)
