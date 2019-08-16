@@ -9,6 +9,7 @@ class LibSrtpConan(ConanFile):
     name = "libsrtp"
     version = "2.2.0"
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
+    license = "BSD"
     description = "Library for SRTP (Secure Realtime Transport Protocol)"
     settings = "os", "arch", "compiler", "build_type"
 
@@ -19,6 +20,7 @@ class LibSrtpConan(ConanFile):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
+            autotools.make(args=["shared_library"])
             autotools.install()
 
     def package(self):
