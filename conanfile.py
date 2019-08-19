@@ -24,7 +24,7 @@ class GstreamerColorizerConan(ConanFile):
     url = "https://aivero.com"
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = ["CMakeLists.txt", "src/*"]
-    generators = "env"
+    generators = "cmake", "env"
 
     def requirements(self):
         self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
