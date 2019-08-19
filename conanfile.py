@@ -1,6 +1,6 @@
 from conans.model import Generator
 from conans import ConanFile
-from os import path, pathsep, listdir, environ
+from os import path, pathsep, listdir, environ, mkdir
 from shutil import copy
 
 
@@ -30,6 +30,8 @@ class env(Generator):
     @property
     def content(self):
         pc_output_path = self.output_path
+        if not path.exists(pc_output_path):
+            mkdir(pc_output_path)
         bin_paths = []
         lib_paths = []
         for _, cpp_info in self.deps_build_info.dependencies:
