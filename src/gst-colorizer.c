@@ -147,6 +147,16 @@ static void gst_colorizer_get_property(GObject *object, guint prop_id,
       g_value_set_enum(value, filter->preset);
       GST_OBJECT_UNLOCK(filter);
       break;
+    case PROP_NEAR_CUT:
+      GST_OBJECT_LOCK(filter);
+      g_value_set_uint(value, filter->near_cut);
+      GST_OBJECT_UNLOCK(filter);
+      break;
+    case PROP_FAR_CUT:
+      GST_OBJECT_LOCK(filter);
+      g_value_set_uint(value, filter->far_cut);
+      GST_OBJECT_UNLOCK(filter);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
       break;
