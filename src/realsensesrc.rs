@@ -9,27 +9,25 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use meta::buffer::BufferMeta;
 use meta::tags::TagsMeta;
-
+use rs2;
 use std::sync::Mutex;
 
-use rs2;
-
 use crate::properties_d435;
-static PROPERTIES: [subclass::Property; 11] = [
-    subclass::Property("rosbag_location", |name| {
-        glib::ParamSpec::string(
-            name,
-            "Rosbag File Location",
-            "Location of the rosbag file to read from. If unchanged or empty, physical device specified by `serial` is used. If both `rosbag_location and `serial` are selected, the stream of the physical device will be recorded.",
-            None,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
+static PROPERTIES: [subclass::Property; 12] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
             "Serial Number",
             "Serial number of realsense device. If unchanged or empty, `rosbag_location` is used to locate file to play from.",
+            None,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("rosbag_location", |name| {
+        glib::ParamSpec::string(
+            name,
+            "Rosbag File Location",
+            "Location of the rosbag file to read from. If unchanged or empty, physical device specified by `serial` is used. If both `rosbag_location and `serial` are selected, the stream of the physical device will be recorded.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -43,14 +41,39 @@ static PROPERTIES: [subclass::Property; 11] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("framerate", |name| {
-        glib::ParamSpec::uint(
+    subclass::Property("enable_depth", |name| {
+        glib::ParamSpec::boolean(
             name,
-            "framerate",
-            "Framerate of the stream",
-            properties_d435::MIN_FRAMERATE,
-            properties_d435::MAX_FRAMERATE,
-            properties_d435::DEFAULT_FRAMERATE,
+            "enable_depth",
+            "Enables depth stream",
+            properties_d435::DEFAULT_ENABLE_DEPTH,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("enable_infra1", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "enable_infra1",
+            "Enables infra1 stream",
+            properties_d435::DEFAULT_ENABLE_INFRA1,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("enable_infra2", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "enable_infra2",
+            "Enables infra2 stream",
+            properties_d435::DEFAULT_ENABLE_INFRA2,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("enable_color", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "enable_color",
+            "Enables color stream",
+            properties_d435::DEFAULT_ENABLE_COLOR,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -76,33 +99,6 @@ static PROPERTIES: [subclass::Property; 11] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("enable_infra1", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "enable_infra1",
-            "Enables infra1 stream",
-            properties_d435::DEFAULT_ENABLE_INFRA_1,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("enable_infra2", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "enable_infra2",
-            "Enables infra2 stream",
-            properties_d435::DEFAULT_ENABLE_INFRA_2,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("enable_color", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "enable_color",
-            "Enables color stream",
-            properties_d435::DEFAULT_ENABLE_COLOR,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
     subclass::Property("color_width", |name| {
         glib::ParamSpec::uint(
             name,
@@ -125,7 +121,65 @@ static PROPERTIES: [subclass::Property; 11] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    subclass::Property("framerate", |name| {
+        glib::ParamSpec::uint(
+            name,
+            "framerate",
+            "Framerate of the stream",
+            properties_d435::MIN_FRAMERATE,
+            properties_d435::MAX_FRAMERATE,
+            properties_d435::DEFAULT_FRAMERATE,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
 ];
+
+struct Settings {
+    serial: Option<String>,
+    rosbag_location: Option<String>,
+    json_location: Option<String>,
+    streams: Streams,
+}
+
+struct Streams {
+    enable_depth: bool,
+    enable_infra1: bool,
+    enable_infra2: bool,
+    enable_color: bool,
+    depth_resolution: StreamResolution,
+    color_resolution: StreamResolution,
+    framerate: u32,
+}
+
+struct StreamResolution {
+    width: u32,
+    height: u32,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Settings {
+            rosbag_location: None,
+            serial: None,
+            json_location: None,
+            streams: Streams {
+                enable_depth: properties_d435::DEFAULT_ENABLE_DEPTH,
+                enable_infra1: properties_d435::DEFAULT_ENABLE_INFRA1,
+                enable_infra2: properties_d435::DEFAULT_ENABLE_INFRA2,
+                enable_color: properties_d435::DEFAULT_ENABLE_COLOR,
+                depth_resolution: StreamResolution {
+                    width: properties_d435::DEFAULT_DEPTH_WIDTH,
+                    height: properties_d435::DEFAULT_DEPTH_HEIGHT,
+                },
+                color_resolution: StreamResolution {
+                    width: properties_d435::DEFAULT_COLOR_WIDTH,
+                    height: properties_d435::DEFAULT_COLOR_HEIGHT,
+                },
+                framerate: properties_d435::DEFAULT_FRAMERATE,
+            },
+        }
+    }
+}
 
 enum State {
     Stopped,
@@ -138,75 +192,11 @@ impl Default for State {
     }
 }
 
-struct Settings {
-    rosbag_location: Option<String>,
-    serial: Option<String>,
-    json_location: Option<String>,
-    framerate: u32,
-    depth: FrameResolution,
-    infra: (bool, bool),
-    color: OptionalStream,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Settings {
-            rosbag_location: None,
-            serial: None,
-            json_location: None,
-            framerate: properties_d435::DEFAULT_FRAMERATE,
-            depth: FrameResolution::new(
-                properties_d435::DEFAULT_DEPTH_WIDTH,
-                properties_d435::DEFAULT_DEPTH_HEIGHT,
-            ),
-            infra: (
-                properties_d435::DEFAULT_ENABLE_INFRA_1,
-                properties_d435::DEFAULT_ENABLE_INFRA_2,
-            ),
-            color: OptionalStream::new(
-                properties_d435::DEFAULT_ENABLE_COLOR,
-                properties_d435::DEFAULT_COLOR_WIDTH,
-                properties_d435::DEFAULT_COLOR_HEIGHT,
-            ),
-        }
-    }
-}
-
-struct FrameResolution {
-    width: u32,
-    height: u32,
-}
-
-impl FrameResolution {
-    fn new(width: u32, height: u32) -> Self {
-        FrameResolution {
-            width: width,
-            height: height,
-        }
-    }
-}
-
-struct OptionalStream {
-    enabled: bool,
-    resolution: FrameResolution,
-}
-
-impl OptionalStream {
-    fn new(enable: bool, width: u32, height: u32) -> Self {
-        OptionalStream {
-            enabled: enable,
-            resolution: FrameResolution::new(width, height),
-        }
-    }
-}
-
 pub struct RealsenseSrc {
     cat: gst::DebugCategory,
     settings: Mutex<Settings>,
     state: Mutex<State>,
 }
-
-impl RealsenseSrc {}
 
 impl ObjectSubclass for RealsenseSrc {
     const NAME: &'static str = "realsensesrc";
@@ -223,11 +213,10 @@ impl ObjectSubclass for RealsenseSrc {
                 gst::DebugColorFlags::empty(),
                 Some("Realsense Source"),
             ),
-            settings: Mutex::new(Default::default()),
-            state: Mutex::new(Default::default()),
+            settings: Mutex::new(Settings::default()),
+            state: Mutex::new(State::default()),
         }
     }
-    //
 
     fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
         klass.set_metadata(
@@ -238,7 +227,7 @@ impl ObjectSubclass for RealsenseSrc {
         );
 
         let caps = gst::Caps::new_simple(
-            "video/x-raw",
+            "video/rgbd-rs",
             &[
                 ("format", &gst_video::VideoFormat::Gray16Le.to_string()),
                 (
@@ -307,31 +296,6 @@ impl ObjectImpl for RealsenseSrc {
         let mut settings = self.settings.lock().unwrap();
 
         match *property {
-            subclass::Property("rosbag_location", ..) => {
-                settings.rosbag_location = match value.get::<String>() {
-                    Some(rosbag_location) => {
-                        if rosbag_location.is_empty() {
-                            None
-                        } else {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Changing property `rosbag_location` to {}",
-                                rosbag_location
-                            );
-                            Some(rosbag_location)
-                        }
-                    }
-                    None => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Changing property `rosbag_location` to `None`"
-                        );
-                        None
-                    }
-                };
-            }
             subclass::Property("serial", ..) => {
                 settings.serial = match value.get::<String>() {
                     Some(serial) => {
@@ -352,6 +316,31 @@ impl ObjectImpl for RealsenseSrc {
                             self.cat,
                             obj: element,
                             "Changing property `serial` to `None`"
+                        );
+                        None
+                    }
+                };
+            }
+            subclass::Property("rosbag_location", ..) => {
+                settings.rosbag_location = match value.get::<String>() {
+                    Some(rosbag_location) => {
+                        if rosbag_location.is_empty() {
+                            None
+                        } else {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Changing property `rosbag_location` to {}",
+                                rosbag_location
+                            );
+                            Some(rosbag_location)
+                        }
+                    }
+                    None => {
+                        gst_info!(
+                            self.cat,
+                            obj: element,
+                            "Changing property `rosbag_location` to `None`"
                         );
                         None
                     }
@@ -382,39 +371,16 @@ impl ObjectImpl for RealsenseSrc {
                     }
                 };
             }
-            subclass::Property("framerate", ..) => {
-                let framerate = value.get().unwrap();
+            subclass::Property("enable_depth", ..) => {
+                let enable_depth = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `framerate` from {} to {}",
-                    settings.framerate,
-                    framerate
+                    "Changing property `enable_depth` from {} to {}",
+                    settings.streams.enable_depth,
+                    enable_depth
                 );
-                settings.framerate = framerate;
-                // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
-            }
-            subclass::Property("depth_width", ..) => {
-                let depth_width = value.get().unwrap();
-                gst_info!(
-                    self.cat,
-                    obj: element,
-                    "Changing property `depth_width` from {} to {}",
-                    settings.depth.width,
-                    depth_width
-                );
-                settings.depth.width = depth_width;
-            }
-            subclass::Property("depth_height", ..) => {
-                let depth_height = value.get().unwrap();
-                gst_info!(
-                    self.cat,
-                    obj: element,
-                    "Changing property `depth_height` from {} to {}",
-                    settings.depth.height,
-                    depth_height
-                );
-                settings.depth.height = depth_height;
+                settings.streams.enable_depth = enable_depth;
             }
             subclass::Property("enable_infra1", ..) => {
                 let enable_infra1 = value.get().unwrap();
@@ -422,10 +388,10 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `enable_infra1` from {} to {}",
-                    settings.infra.0,
+                    settings.streams.enable_infra1,
                     enable_infra1
                 );
-                settings.infra.0 = enable_infra1;
+                settings.streams.enable_infra1 = enable_infra1;
             }
             subclass::Property("enable_infra2", ..) => {
                 let enable_infra2 = value.get().unwrap();
@@ -433,10 +399,10 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `enable_infra2` from {} to {}",
-                    settings.infra.1,
+                    settings.streams.enable_infra2,
                     enable_infra2
                 );
-                settings.infra.1 = enable_infra2;
+                settings.streams.enable_infra2 = enable_infra2;
             }
             subclass::Property("enable_color", ..) => {
                 let enable_color = value.get().unwrap();
@@ -444,10 +410,32 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `enable_color` from {} to {}",
-                    settings.color.enabled,
+                    settings.streams.enable_color,
                     enable_color
                 );
-                settings.color.enabled = enable_color;
+                settings.streams.enable_color = enable_color;
+            }
+            subclass::Property("depth_width", ..) => {
+                let depth_width = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `depth_width` from {} to {}",
+                    settings.streams.depth_resolution.width,
+                    depth_width
+                );
+                settings.streams.depth_resolution.width = depth_width;
+            }
+            subclass::Property("depth_height", ..) => {
+                let depth_height = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `depth_height` from {} to {}",
+                    settings.streams.depth_resolution.height,
+                    depth_height
+                );
+                settings.streams.depth_resolution.height = depth_height;
             }
             subclass::Property("color_width", ..) => {
                 let color_width = value.get().unwrap();
@@ -455,10 +443,10 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `color_width` from {} to {}",
-                    settings.color.resolution.width,
+                    settings.streams.color_resolution.width,
                     color_width
                 );
-                settings.color.resolution.width = color_width;
+                settings.streams.color_resolution.width = color_width;
             }
             subclass::Property("color_height", ..) => {
                 let color_height = value.get().unwrap();
@@ -466,12 +454,24 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `color_height` from {} to {}",
-                    settings.color.resolution.height,
+                    settings.streams.color_resolution.height,
                     color_height
                 );
-                settings.color.resolution.height = color_height;
+                settings.streams.color_resolution.height = color_height;
             }
-            _ => unimplemented!(),
+            subclass::Property("framerate", ..) => {
+                let framerate = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `framerate` from {} to {}",
+                    settings.streams.framerate,
+                    framerate
+                );
+                settings.streams.framerate = framerate;
+                // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
+            }
+            _ => unimplemented!("Property is not implemented"),
         };
     }
 
@@ -479,19 +479,19 @@ impl ObjectImpl for RealsenseSrc {
         let prop = &PROPERTIES[id];
         let settings = &self.settings.lock().unwrap();
         match *prop {
-            subclass::Property("rosbag_location", ..) => {
-                let rosbag_location = settings
-                    .rosbag_location
-                    .as_ref()
-                    .map(|rosbag_location| rosbag_location.to_string());
-                Ok(rosbag_location.to_value())
-            }
             subclass::Property("serial", ..) => {
                 let serial = settings
                     .serial
                     .as_ref()
                     .map(|rosbag_location| rosbag_location.to_string());
                 Ok(serial.to_value())
+            }
+            subclass::Property("rosbag_location", ..) => {
+                let rosbag_location = settings
+                    .rosbag_location
+                    .as_ref()
+                    .map(|rosbag_location| rosbag_location.to_string());
+                Ok(rosbag_location.to_value())
             }
             subclass::Property("json_location", ..) => {
                 let json_location = settings
@@ -500,17 +500,28 @@ impl ObjectImpl for RealsenseSrc {
                     .map(|json_location| json_location.to_string());
                 Ok(json_location.to_value())
             }
-            subclass::Property("framerate", ..) => Ok(settings.framerate.to_value()),
-            subclass::Property("depth_width", ..) => Ok(settings.depth.width.to_value()),
-            subclass::Property("depth_height", ..) => Ok(settings.depth.height.to_value()),
-            subclass::Property("enable_infra1", ..) => Ok(settings.infra.0.to_value()),
-            subclass::Property("enable_infra2", ..) => Ok(settings.infra.1.to_value()),
-            subclass::Property("enable_color", ..) => Ok(settings.color.enabled.to_value()),
-            subclass::Property("color_width", ..) => Ok(settings.color.resolution.width.to_value()),
-            subclass::Property("color_height", ..) => {
-                Ok(settings.color.resolution.height.to_value())
+            subclass::Property("enable_depth", ..) => Ok(settings.streams.enable_depth.to_value()),
+            subclass::Property("enable_infra1", ..) => {
+                Ok(settings.streams.enable_infra1.to_value())
             }
-            _ => unimplemented!(),
+            subclass::Property("enable_infra2", ..) => {
+                Ok(settings.streams.enable_infra2.to_value())
+            }
+            subclass::Property("enable_color", ..) => Ok(settings.streams.enable_color.to_value()),
+            subclass::Property("depth_width", ..) => {
+                Ok(settings.streams.depth_resolution.width.to_value())
+            }
+            subclass::Property("depth_height", ..) => {
+                Ok(settings.streams.depth_resolution.height.to_value())
+            }
+            subclass::Property("color_width", ..) => {
+                Ok(settings.streams.color_resolution.width.to_value())
+            }
+            subclass::Property("color_height", ..) => {
+                Ok(settings.streams.color_resolution.height.to_value())
+            }
+            subclass::Property("framerate", ..) => Ok(settings.streams.framerate.to_value()),
+            _ => unimplemented!("Property is not implemented"),
         }
     }
 
@@ -523,25 +534,13 @@ impl ObjectImpl for RealsenseSrc {
     }
 }
 
-impl ElementImpl for RealsenseSrc {
-    fn change_state(
-        &self,
-        element: &gst::Element,
-        transition: gst::StateChange,
-    ) -> Result<gst::StateChangeSuccess, gst::StateChangeError> {
-        match transition {
-            // gst::StateChange::X => {},
-            _ => {}
-        }
-        self.parent_change_state(element, transition)
-    }
-}
+impl ElementImpl for RealsenseSrc {}
 
 impl BaseSrcImpl for RealsenseSrc {
     fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
         let mut state = self.state.lock().unwrap();
         if let State::Started { .. } = *state {
-            unreachable!("realsensesrc already started");
+            unreachable!("Element realsensesrc has already started");
         }
 
         let settings = self.settings.lock().unwrap();
@@ -550,11 +549,27 @@ impl BaseSrcImpl for RealsenseSrc {
             gst_error!(
                 self.cat,
                 obj: element,
-                "Neither the rosbag_location or the serial properties are defined"
+                "Neither the `serial` or `rosbag_location` properties are defined. At least one of these must be defined!"
             );
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
-                ["Neither the rosbag_location or the serial properties are defined"]
+                ["Neither the `serial` or `rosbag_location` properties are defined. At least one of these must be defined!"]
+            ));
+        }
+
+        if !settings.streams.enable_depth
+            && !settings.streams.enable_infra1
+            && !settings.streams.enable_infra2
+            && !settings.streams.enable_color
+        {
+            gst_error!(
+                self.cat,
+                obj: element,
+                "No stream is enabled. At least one stream must be enabled!"
+            );
+            return Err(gst_error_msg!(
+                gst::ResourceError::Settings,
+                ["No stream is enabled. At least one stream must be enabled!"]
             ));
         }
 
@@ -567,52 +582,54 @@ impl BaseSrcImpl for RealsenseSrc {
                     .enable_record_to_file(rosbag_location.to_string())
                     .unwrap();
             };
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_DEPTH,
-                    -1,
-                    settings.depth.width as i32,
-                    settings.depth.height as i32,
-                    rs2::rs2_format::RS2_FORMAT_Z16,
-                    settings.framerate as i32,
-                )
-                .unwrap();
-
-            if settings.color.enabled == true {
+            if settings.streams.enable_depth {
                 config
                     .enable_stream(
-                        rs2::rs2_stream::RS2_STREAM_COLOR,
+                        rs2::rs2_stream::RS2_STREAM_DEPTH,
                         -1,
-                        settings.color.resolution.width as i32,
-                        settings.color.resolution.height as i32,
-                        rs2::rs2_format::RS2_FORMAT_RGB8,
-                        settings.framerate as i32,
+                        settings.streams.depth_resolution.width as i32,
+                        settings.streams.depth_resolution.height as i32,
+                        rs2::rs2_format::RS2_FORMAT_Z16,
+                        settings.streams.framerate as i32,
                     )
                     .unwrap();
             }
 
-            if settings.infra.0 == true {
+            if settings.streams.enable_infra1 {
                 config
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_INFRARED,
                         1,
-                        settings.depth.width as i32,
-                        settings.depth.height as i32,
+                        settings.streams.depth_resolution.width as i32,
+                        settings.streams.depth_resolution.height as i32,
                         rs2::rs2_format::RS2_FORMAT_Y8,
-                        settings.framerate as i32,
+                        settings.streams.framerate as i32,
                     )
                     .unwrap();
             }
 
-            if settings.infra.1 == true {
+            if settings.streams.enable_infra2 {
                 config
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_INFRARED,
                         2,
-                        settings.depth.width as i32,
-                        settings.depth.height as i32,
+                        settings.streams.depth_resolution.width as i32,
+                        settings.streams.depth_resolution.height as i32,
                         rs2::rs2_format::RS2_FORMAT_Y8,
-                        settings.framerate as i32,
+                        settings.streams.framerate as i32,
+                    )
+                    .unwrap();
+            }
+
+            if settings.streams.enable_color {
+                config
+                    .enable_stream(
+                        rs2::rs2_stream::RS2_STREAM_COLOR,
+                        -1,
+                        settings.streams.color_resolution.width as i32,
+                        settings.streams.color_resolution.height as i32,
+                        rs2::rs2_format::RS2_FORMAT_RGB8,
+                        settings.streams.framerate as i32,
                     )
                     .unwrap();
             }
@@ -647,12 +664,12 @@ impl BaseSrcImpl for RealsenseSrc {
                 gst_error!(
                     self.cat,
                     obj: element,
-                    "No device with serial {} is detected",
+                    "No device with serial `{}` is detected",
                     serial
                 );
                 return Err(gst_error_msg!(
                     gst::ResourceError::Settings,
-                    [&format!("No device with serial {} is detected", serial)]
+                    [&format!("No device with serial `{}` is detected", serial)]
                 ));
             }
 
@@ -685,7 +702,7 @@ impl BaseSrcImpl for RealsenseSrc {
     fn stop(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
         let mut state = self.state.lock().unwrap();
         if let State::Stopped = *state {
-            unreachable!("realsensesrc not yet started");
+            unreachable!("realsensesrc is not yet started");
         }
 
         *state = State::Stopped;
@@ -701,14 +718,21 @@ impl BaseSrcImpl for RealsenseSrc {
         {
             let caps = caps.make_mut();
             let s = caps.get_mut_structure(0).unwrap();
-            s.fixate_field_nearest_int("width", settings.depth.width as i32);
-            s.fixate_field_nearest_int("height", settings.depth.height as i32);
-            s.fixate_field_nearest_fraction("framerate", settings.framerate as i32);
-            s.fixate_field_bool("infra1", settings.infra.0);
-            s.fixate_field_bool("infra2", settings.infra.1);
-            s.fixate_field_bool("color", settings.color.enabled);
-            s.fixate_field_nearest_int("color_width", settings.color.resolution.width as i32);
-            s.fixate_field_nearest_int("color_height", settings.color.resolution.height as i32);
+            // TODO: fixate to new caps
+            s.fixate_field_bool("color", settings.streams.enable_color);
+            s.fixate_field_bool("infra1", settings.streams.enable_infra1);
+            s.fixate_field_bool("infra2", settings.streams.enable_infra2);
+            s.fixate_field_nearest_int("width", settings.streams.depth_resolution.width as i32);
+            s.fixate_field_nearest_int("height", settings.streams.depth_resolution.height as i32);
+            s.fixate_field_nearest_int(
+                "color_width",
+                settings.streams.color_resolution.width as i32,
+            );
+            s.fixate_field_nearest_int(
+                "color_height",
+                settings.streams.color_resolution.height as i32,
+            );
+            s.fixate_field_nearest_fraction("framerate", settings.streams.framerate as i32);
         }
         self.parent_fixate(element, caps)
     }
@@ -723,58 +747,49 @@ impl BaseSrcImpl for RealsenseSrc {
         _: u64,
         _: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
+        let settings = self.settings.lock().unwrap();
         let mut state = self.state.lock().unwrap();
-
         let pipeline = match *state {
             State::Started { ref mut pipeline } => pipeline,
             State::Stopped => {
-                gst_element_error!(element, gst::CoreError::Failed, ["Not started yet"]);
+                gst_error!(self.cat, obj: element, "Pipeline is not yet started");
                 return Err(gst::FlowError::Error);
             }
         };
 
+        // Get frames
         let frames = pipeline.wait_for_frames(1000).unwrap();
 
-        let depth_frame = frames
-            .iter()
-            .find(|f| {
-                f.get_profile().unwrap().get_data().unwrap().stream
-                    == rs2::rs2_stream::RS2_STREAM_DEPTH
-            })
-            .unwrap();
-        let mut depth_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
-        depth_frame.release();
-        // let mut depth_tags = gst::tags::TagList::new();
-        // depth_tags
-        //     .get_mut()
-        //     .unwrap()
-        //     .add::<gst::tags::Title>(&"MAIN", gst::TagMergeMode::Append);
-        // TagsMeta::add(depth_buffer.get_mut().unwrap(), &mut depth_tags);
+        // Create the output buffer
+        let mut output_buffer = gst::buffer::Buffer::new();
 
-        let settings = self.settings.lock().unwrap();
-
-        if settings.color.enabled == true {
-            let color_frame = frames
+        // Attach depth frame if enabled
+        if settings.streams.enable_depth {
+            // Extract the frame
+            let depth_frame = frames
                 .iter()
                 .find(|f| {
                     f.get_profile().unwrap().get_data().unwrap().stream
-                        == rs2::rs2_stream::RS2_STREAM_COLOR
+                        == rs2::rs2_stream::RS2_STREAM_DEPTH
                 })
                 .unwrap();
-            let mut color_buffer =
-                gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
-            color_frame.release();
-            let mut color_tags = gst::tags::TagList::new();
-            color_tags
+            // Put this frame into the output buffer
+            output_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
+            // Release the frame
+            depth_frame.release();
+            // Add the appropriate tag
+            let mut depth_tags = gst::tags::TagList::new();
+            depth_tags
                 .get_mut()
                 .unwrap()
-                .add::<gst::tags::Title>(&"color", gst::TagMergeMode::Append);
-            TagsMeta::add(color_buffer.get_mut().unwrap(), &mut color_tags);
-            BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut color_buffer);
+                .add::<gst::tags::Title>(&"depth", gst::TagMergeMode::Append);
+            TagsMeta::add(output_buffer.get_mut().unwrap(), &mut depth_tags);
         }
 
-        if settings.infra.0 == true {
-            let infra_frame = frames
+        // Attach infra1 frame if enabled
+        if settings.streams.enable_infra1 {
+            // Extract the frame
+            let infra1_frame = frames
                 .iter()
                 .find(|f| {
                     f.get_profile().unwrap().get_data().unwrap().stream
@@ -782,20 +797,35 @@ impl BaseSrcImpl for RealsenseSrc {
                         && f.get_profile().unwrap().get_data().unwrap().index == 1
                 })
                 .unwrap();
-            let mut infra_buffer =
-                gst::buffer::Buffer::from_mut_slice(infra_frame.get_data().unwrap());
-            infra_frame.release();
-            let mut infra_tags = gst::tags::TagList::new();
-            infra_tags
+            // Create the appropriate tag
+            let mut infra1_tags = gst::tags::TagList::new();
+            infra1_tags
                 .get_mut()
                 .unwrap()
                 .add::<gst::tags::Title>(&"infra1", gst::TagMergeMode::Append);
-            TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
-            BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
+            if settings.streams.enable_depth {
+                // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
+                let mut infra1_buffer =
+                    gst::buffer::Buffer::from_mut_slice(infra1_frame.get_data().unwrap());
+                // Add tag to this new buffer
+                TagsMeta::add(infra1_buffer.get_mut().unwrap(), &mut infra1_tags);
+                // Attach this new buffer as meta to the output buffer
+                BufferMeta::add(output_buffer.get_mut().unwrap(), &mut infra1_buffer);
+            } else {
+                // Else put this frame into the output buffer
+                output_buffer =
+                    gst::buffer::Buffer::from_mut_slice(infra1_frame.get_data().unwrap());
+                // Add the tag
+                TagsMeta::add(output_buffer.get_mut().unwrap(), &mut infra1_tags);
+            }
+            // Release the frame
+            infra1_frame.release();
         }
 
-        if settings.infra.1 == true {
-            let infra_frame = frames
+        // Attach infra2 frame if enabled
+        if settings.streams.enable_infra2 {
+            // Extract the frame
+            let infra2_frame = frames
                 .iter()
                 .find(|f| {
                     f.get_profile().unwrap().get_data().unwrap().stream
@@ -803,19 +833,67 @@ impl BaseSrcImpl for RealsenseSrc {
                         && f.get_profile().unwrap().get_data().unwrap().index == 2
                 })
                 .unwrap();
-            let mut infra_buffer =
-                gst::buffer::Buffer::from_mut_slice(infra_frame.get_data().unwrap());
-            infra_frame.release();
-            let mut infra_tags = gst::tags::TagList::new();
-            infra_tags
+            // Create the appropriate tag
+            let mut infra2_tags = gst::tags::TagList::new();
+            infra2_tags
                 .get_mut()
                 .unwrap()
                 .add::<gst::tags::Title>(&"infra2", gst::TagMergeMode::Append);
-            TagsMeta::add(infra_buffer.get_mut().unwrap(), &mut infra_tags);
-            BufferMeta::add(depth_buffer.get_mut().unwrap(), &mut infra_buffer);
+            if settings.streams.enable_depth || settings.streams.enable_infra1 {
+                // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
+                let mut infra2_buffer =
+                    gst::buffer::Buffer::from_mut_slice(infra2_frame.get_data().unwrap());
+                // Add tag to this new buffer
+                TagsMeta::add(infra2_buffer.get_mut().unwrap(), &mut infra2_tags);
+                // Attach this new buffer as meta to the output buffer
+                BufferMeta::add(output_buffer.get_mut().unwrap(), &mut infra2_buffer);
+            } else {
+                // Else put this frame into the output buffer
+                output_buffer =
+                    gst::buffer::Buffer::from_mut_slice(infra2_frame.get_data().unwrap());
+                // Add the tag
+                TagsMeta::add(output_buffer.get_mut().unwrap(), &mut infra2_tags);
+            }
+            // Release the frame
+            infra2_frame.release();
         }
 
-        Ok(depth_buffer)
+        // Attach color frame if enabled
+        if settings.streams.enable_color {
+            // Extract the frame
+            let color_frame = frames
+                .iter()
+                .find(|f| {
+                    f.get_profile().unwrap().get_data().unwrap().stream
+                        == rs2::rs2_stream::RS2_STREAM_COLOR
+                })
+                .unwrap();
+            // Create the appropriate tag
+            let mut color_tags = gst::tags::TagList::new();
+            color_tags
+                .get_mut()
+                .unwrap()
+                .add::<gst::tags::Title>(&"color", gst::TagMergeMode::Append);
+            if settings.streams.enable_depth || settings.streams.enable_infra1 || settings.streams.enable_infra2 {
+                // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
+                let mut color_buffer =
+                    gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
+                // Add tag to this new buffer
+                TagsMeta::add(color_buffer.get_mut().unwrap(), &mut color_tags);
+                // Attach this new buffer as meta to the output buffer
+                BufferMeta::add(output_buffer.get_mut().unwrap(), &mut color_buffer);
+            } else {
+                // Else put this frame into the output buffer
+                output_buffer =
+                    gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
+                // Add the tag
+                TagsMeta::add(output_buffer.get_mut().unwrap(), &mut color_tags);
+            }
+            // Release the frame
+            color_frame.release();
+        }
+
+        Ok(output_buffer)
     }
 
     // fn query(&self, element: &gst_base::BaseSrc, query: &mut gst::QueryRef) -> bool {
@@ -831,7 +909,7 @@ impl BaseSrcImpl for RealsenseSrc {
     //             // TODO: Determine the actual latency caused by system buffering and gstreamer copying
     //             let settings = self.settings.lock().unwrap();
     //             let latency = gst::SECOND
-    //                 .mul_div_floor(1, settings.framerate.into())
+    //                 .mul_div_floor(1, settings.streams.framerate.into())
     //                 .unwrap();
     //             gst_debug!(self.cat, obj: element, "Returning latency {}", latency);
     //             q.set(true, latency, gst::CLOCK_TIME_NONE);
