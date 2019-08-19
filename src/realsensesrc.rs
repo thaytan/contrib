@@ -392,6 +392,7 @@ impl ObjectImpl for RealsenseSrc {
                     framerate
                 );
                 settings.framerate = framerate;
+                // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             }
             subclass::Property("depth_width", ..) => {
                 let depth_width = value.get().unwrap();
@@ -519,7 +520,6 @@ impl ObjectImpl for RealsenseSrc {
         let element = obj.downcast_ref::<gst_base::BaseSrc>().unwrap();
         element.set_format(gst::Format::Time);
         element.set_live(true);
-        element.set_async(false);
     }
 }
 
@@ -817,6 +817,29 @@ impl BaseSrcImpl for RealsenseSrc {
 
         Ok(depth_buffer)
     }
+
+    // fn query(&self, element: &gst_base::BaseSrc, query: &mut gst::QueryRef) -> bool {
+    //     use gst::QueryView;
+
+    //     match query.view_mut() {
+    //         QueryView::Scheduling(ref mut q) => {
+    //             q.set(gst::SchedulingFlags::SEQUENTIAL, 1, -1, 0);
+    //             q.add_scheduling_modes(&[gst::PadMode::Push]);
+    //             true
+    //         }
+    //         QueryView::Latency(ref mut q) => {
+    //             // TODO: Determine the actual latency caused by system buffering and gstreamer copying
+    //             let settings = self.settings.lock().unwrap();
+    //             let latency = gst::SECOND
+    //                 .mul_div_floor(1, settings.framerate.into())
+    //                 .unwrap();
+    //             gst_debug!(self.cat, obj: element, "Returning latency {}", latency);
+    //             q.set(true, latency, gst::CLOCK_TIME_NONE);
+    //             true
+    //         }
+    //         _ => BaseSrcImplExt::parent_query(self, element, query),
+    //     }
+    // }
 }
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {

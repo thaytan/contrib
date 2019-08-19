@@ -2,11 +2,14 @@
 name = "gst-realsense"
 version = "0.1.0"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
-edition = "2018"
 license = "Apache-2.0"
+description = "Realsense GStreamer Plugin"
+keywords = ["Realsense", "GStreamer", "Rust"]
+repository = "https://gitlab.com/aivero/public/gstreamer/gst-realsense"
+edition = "2018"
+readme = "README.md"
 
 [dependencies]
-libc = "0.2"
 glib = "0.8"
 gstreamer = { version = "0.14", features = ["subclassing"] }
 gstreamer-base = { version = "0.14", features = ["subclassing"] }

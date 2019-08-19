@@ -1,5 +1,3 @@
-#![crate_type = "cdylib"]
-
 #[macro_use]
 extern crate glib;
 #[macro_use]
@@ -19,12 +17,12 @@ fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
 
 gst_plugin_define!(
     realsense,
-    "Rust HTTP Plugin",
+    env!("CARGO_PKG_DESCRIPTION"),
     plugin_init,
-    "1.0",
+    env!("CARGO_PKG_VERSION"),
     "MIT/X11",
-    "realsense",
-    "realsense",
-    "https://gitlab.freedesktop.org/gstreamer/gst-plugin-realsense",
+    env!("CARGO_PKG_NAME"),
+    env!("CARGO_PKG_NAME"),
+    env!("CARGO_PKG_REPOSITORY"),
     "2019-03-25"
 );
