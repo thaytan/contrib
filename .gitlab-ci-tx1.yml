@@ -1,0 +1,9 @@
+tx1-debug-armv8-bionic:
+  extends: test-debug-armv8-bionic
+  variables:
+    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
+
+tx1-release-armv8-bionic:
+  extends: test-release-armv8-bionic
+  variables:
+    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
