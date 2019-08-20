@@ -12,6 +12,8 @@ use meta::tags::TagsMeta;
 use rs2;
 use std::sync::Mutex;
 
+const PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500; // ms
+
 use crate::properties_d435;
 static PROPERTIES: [subclass::Property; 12] = [
     subclass::Property("serial", |name| {
@@ -221,53 +223,21 @@ impl ObjectSubclass for RealsenseSrc {
     fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
         klass.set_metadata(
             "Realsense Source",
-            "Source/Depth/Realsense",
-            "Stream from a Realsense device or rosbag file",
+            "Source/RGB-D/Realsense",
+            "Stream `video/rgbd` from a RealSense device",
             "Niclas Moeslund Overby <noverby@prozum.dk>",
         );
 
         let caps = gst::Caps::new_simple(
-            "video/rgbd-rs",
+            "video/rgbd",
             &[
-                ("format", &gst_video::VideoFormat::Gray16Le.to_string()),
-                (
-                    "width",
-                    &gst::IntRange::<i32>::new(
-                        properties_d435::DEPTH_MIN_WIDTH as i32,
-                        properties_d435::DEPTH_MAX_WIDTH as i32,
-                    ),
-                ),
-                (
-                    "height",
-                    &gst::IntRange::<i32>::new(
-                        properties_d435::DEPTH_MIN_HEIGHT as i32,
-                        properties_d435::DEPTH_MAX_HEIGHT as i32,
-                    ),
-                ),
+                // List of the available streams
+                ("streams", &"depth,infra1,infra2,color"),
                 (
                     "framerate",
                     &gst::FractionRange::new(
                         gst::Fraction::new(properties_d435::MIN_FRAMERATE as i32, 1),
                         gst::Fraction::new(properties_d435::MAX_FRAMERATE as i32, 1),
-                    ),
-                ),
-                ("infra1", &gst::List::new(&[&false, &true])),
-                ("infra2", &gst::List::new(&[&false, &true])),
-                ("infra_format", &gst_video::VideoFormat::Gray8.to_string()),
-                ("color", &gst::List::new(&[&false, &true])),
-                ("color_format", &gst_video::VideoFormat::Rgb.to_string()),
-                (
-                    "color_width",
-                    &gst::IntRange::<i32>::new(
-                        properties_d435::COLOR_MIN_WIDTH as i32,
-                        properties_d435::COLOR_MAX_WIDTH as i32,
-                    ),
-                ),
-                (
-                    "color_height",
-                    &gst::IntRange::<i32>::new(
-                        properties_d435::COLOR_MIN_HEIGHT as i32,
-                        properties_d435::COLOR_MAX_HEIGHT as i32,
                     ),
                 ),
             ],
@@ -582,6 +552,7 @@ impl BaseSrcImpl for RealsenseSrc {
                     .enable_record_to_file(rosbag_location.to_string())
                     .unwrap();
             };
+
             if settings.streams.enable_depth {
                 config
                     .enable_stream(
@@ -594,7 +565,6 @@ impl BaseSrcImpl for RealsenseSrc {
                     )
                     .unwrap();
             }
-
             if settings.streams.enable_infra1 {
                 config
                     .enable_stream(
@@ -607,7 +577,6 @@ impl BaseSrcImpl for RealsenseSrc {
                     )
                     .unwrap();
             }
-
             if settings.streams.enable_infra2 {
                 config
                     .enable_stream(
@@ -620,7 +589,6 @@ impl BaseSrcImpl for RealsenseSrc {
                     )
                     .unwrap();
             }
-
             if settings.streams.enable_color {
                 config
                     .enable_stream(
@@ -718,20 +686,50 @@ impl BaseSrcImpl for RealsenseSrc {
         {
             let caps = caps.make_mut();
             let s = caps.get_mut_structure(0).unwrap();
-            // TODO: fixate to new caps
-            s.fixate_field_bool("color", settings.streams.enable_color);
-            s.fixate_field_bool("infra1", settings.streams.enable_infra1);
-            s.fixate_field_bool("infra2", settings.streams.enable_infra2);
-            s.fixate_field_nearest_int("width", settings.streams.depth_resolution.width as i32);
-            s.fixate_field_nearest_int("height", settings.streams.depth_resolution.height as i32);
-            s.fixate_field_nearest_int(
-                "color_width",
-                settings.streams.color_resolution.width as i32,
-            );
-            s.fixate_field_nearest_int(
-                "color_height",
-                settings.streams.color_resolution.height as i32,
-            );
+
+            // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
+            // The first stream in this string is contained in the main buffer
+            let mut selected_streams = String::new();
+
+            if settings.streams.enable_depth {
+                // Add `depth` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"depth,");
+                s.set(
+                    "depth_format",
+                    &gst_video::VideoFormat::Gray16Le.to_string(),
+                );
+                s.set("depth_width", &settings.streams.depth_resolution.width);
+                s.set("depth_height", &settings.streams.depth_resolution.height);
+            }
+            if settings.streams.enable_infra1 {
+                // Add `infra1` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"infra1,");
+                s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_string());
+                s.set("infra1_width", &settings.streams.depth_resolution.width);
+                s.set("infra1_height", &settings.streams.depth_resolution.height);
+            }
+            if settings.streams.enable_infra2 {
+                // Add `infra2` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"infra2,");
+                s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_string());
+                s.set("infra2_width", &settings.streams.depth_resolution.width);
+                s.set("infra2_height", &settings.streams.depth_resolution.height);
+            }
+            if settings.streams.enable_color {
+                // Add `color` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"color,");
+                s.set("color_format", &gst_video::VideoFormat::Rgb.to_string());
+                s.set("color_width", &settings.streams.color_resolution.width);
+                s.set("color_height", &settings.streams.color_resolution.height);
+            }
+
+            // Pop the last ',' contained in streams
+            selected_streams.pop();
+
+            // Finally add the streams to the caps
+            s.set("streams", &selected_streams.as_str());
+
+            // Fixate the framerate
             s.fixate_field_nearest_fraction("framerate", settings.streams.framerate as i32);
         }
         self.parent_fixate(element, caps)
@@ -758,7 +756,9 @@ impl BaseSrcImpl for RealsenseSrc {
         };
 
         // Get frames
-        let frames = pipeline.wait_for_frames(1000).unwrap();
+        let frames = pipeline
+            .wait_for_frames(PIPELINE_WAIT_FOR_FRAMES_TIMEOUT)
+            .unwrap();
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
@@ -874,7 +874,10 @@ impl BaseSrcImpl for RealsenseSrc {
                 .get_mut()
                 .unwrap()
                 .add::<gst::tags::Title>(&"color", gst::TagMergeMode::Append);
-            if settings.streams.enable_depth || settings.streams.enable_infra1 || settings.streams.enable_infra2 {
+            if settings.streams.enable_depth
+                || settings.streams.enable_infra1
+                || settings.streams.enable_infra2
+            {
                 // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
                 let mut color_buffer =
                     gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
