@@ -1,8 +1,0 @@
---- a/Makefile.am
-+++ b/Makefile.am
-@@ -1,3 +1,5 @@
-+include conanbuildinfo.mak
-+
- if WITH_LIBV4L
- lib_LTLIBRARIES = libv4l2.la
- include_HEADERS = ../include/libv4l2.h ../include/libv4l-plugin.h

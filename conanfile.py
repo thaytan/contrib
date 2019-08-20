@@ -1,5 +1,5 @@
 from conans import ConanFile, tools
-from os import path
+from os import symlink, path
 
 def get_version():
     git = tools.Git()
@@ -57,13 +57,14 @@ class V4l2(ConanFile):
         env = {"DEST_DIR": path.join(self.deps_cpp_info["nv-v4lconvert"].rootpath, "lib")}
         with tools.chdir("libv4l2"), tools.environment_append(env):
             self.run("make")
+            symlink("libnvv4l2.so", "libv4l2.so")
         with open("libv4l2.pc", "w") as pc:
             pc.write(pc_content % (self.package_folder, self.version))
 
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
         self.copy("*.h", dst="include", keep_path=False)
-        self.copy("*.pc", dst="lib/pkgconfig", keep_path=False)
+        self.copy("libv4l2.pc", dst="lib/pkgconfig", keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
