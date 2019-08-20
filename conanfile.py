@@ -7,9 +7,24 @@ def get_version():
         if git.get_tag() and not git.get_branch():
             return git.get_tag()
         else:
-            return "32-2"
+            return "32.2"
     except:
         return None
+
+pc_content = """
+prefix=%s
+exec_prefix=${prefix}/bin
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: libv4l2
+Description: v4l2 device access library
+Version: %s
+Requires.private: libv4lconvert
+Libs: -L${libdir} -lv4l2
+Libs.private: -lpthread
+Cflags: -I${includedir}
+"""
 
 class V4l2(ConanFile):
     name = "nv-v4l2"
@@ -28,9 +43,9 @@ class V4l2(ConanFile):
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/TX2-AGX/public_sources.tbz2" % self.version)
+            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/TX2-AGX/public_sources.tbz2" % self.version.replace(".", "-"))
         elif self.options.jetson == "Nano":
-            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/Nano-TX1/public_sources.tbz2" % self.version)
+            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/Nano-TX1/public_sources.tbz2" % self.version.replace(".", "-"))
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
 
@@ -41,10 +56,14 @@ class V4l2(ConanFile):
         # Hack to workaround hardcoded library path
         env = {"DEST_DIR": path.join(self.deps_cpp_info["nv-v4lconvert"].rootpath, "lib")}
         with tools.chdir("libv4l2"), tools.environment_append(env):
-                self.run("make")
+            self.run("make")
+        with open("libv4l2.pc", "w") as pc:
+            pc.write(pc_content % (self.package_folder, self.version))
 
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
+        self.copy("*.h", dst="include", keep_path=False)
+        self.copy("*.pc", dst="lib/pkgconfig", keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
