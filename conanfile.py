@@ -26,6 +26,7 @@ class GstreamerNvV4l2(ConanFile):
     def requirements(self):
         self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("nv-v4l2/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("deepstream/%s@%s/%s" % (self.version, self.user, self.channel))
         self.requires("gstreamer/%s@%s/%s" % (self.gst_version, self.user, self.channel))
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.gst_version, self.user, self.channel))
 
@@ -41,9 +42,11 @@ class GstreamerNvV4l2(ConanFile):
         tools.rmdir("public_sources")
 
     def build(self):
-        env = {"DEST_DIR": path.join(self.deps_cpp_info["nv-v4l2"].rootpath, "lib")}
+        env = {
+            "LIB_INSTALL_DIR": path.join(self.deps_cpp_info["deepstream"].rootpath, "lib")
+        }
         with tools.chdir("gst-v4l2"), tools.environment_append(env):
-                self.run("make")
+            self.run("make")
 
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
