@@ -9,6 +9,4 @@ endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 
-execute_process(COMMAND conan install -g=cmake -s build_type=${CMAKE_BUILD_TYPE} -if ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR})
-
 add_subdirectory(src)
