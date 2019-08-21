@@ -26,19 +26,26 @@ Now you should see the plugin's element `realsensesrc`.
 gst-inspect-1.0 realsensesrc
 ```
 
-## Running in combination with `depthdemux`
+## Running in combination with [`depthdemux`](https://gitlab.com/aivero/streaming/gst-depth-demux)
 
-Source and export `GST_PLUGIN_PATH` in a single terminal (if not done before).
+Source and export `GST_PLUGIN_PATH` in a single terminal for both `realsensesrc` and `depthdemux` (if not done before).
 ```
-cd gst-realsense
-source build/env.sh 
-export GST_PLUGIN_PATH=`pwd`/target/release:${GST_PLUGIN_PATH}
+source gst-realsense/build/env.sh --extend
+export GST_PLUGIN_PATH=gst-realsense/target/release:${GST_PLUGIN_PATH}
+
+source gst-depth-demux/build/env.sh --extend
+export GST_PLUGIN_PATH=gst-depth-demux/target/release:${GST_PLUGIN_PATH}
 ```
 
-Example of a pipeline in combination with `depthdemux`:
+An example of a pipeline:
 
 ```
-TODO
+gst-launch-1.0 \
+realsensesrc serial=XXXXXXXXXXXX json_location=configuration.json enable_depth=true enable_infra1=false enable_infra2=true enable_color=true depth_width=1280 depth_height=720 color_width=848 color_height=480 framerate=30 ! \
+depthdemux name=realsense_demux \
+realsense_demux.src_depth ! queue ! glimagesink  \
+realsense_demux.src_infra2 ! queue ! glimagesink \
+realsense_demux.src_color ! queue ! glimagesink 
 ```
 
 ## Troubleshooting

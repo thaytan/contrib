@@ -1,18 +1,14 @@
-use glib;
 use glib::subclass;
-use glib::subclass::prelude::*;
-use gst;
-use gst::prelude::*;
 use gst::subclass::prelude::*;
-use gst_base;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
-use meta::buffer::BufferMeta;
-use meta::tags::TagsMeta;
+use gst_depth_meta::buffer::BufferMeta;
+use gst_depth_meta::tags::TagsMeta;
 use rs2;
 use std::sync::Mutex;
 
-const PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500; // ms
+// Timeout used while waiting for frames from a realsense device in milliseconds
+const PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500;
 
 use crate::properties_d435;
 static PROPERTIES: [subclass::Property; 12] = [
@@ -20,7 +16,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::string(
             name,
             "Serial Number",
-            "Serial number of realsense device. If unchanged or empty, `rosbag_location` is used to locate file to play from.",
+            "Serial number of a realsense device. If unchanged or empty, `rosbag_location` is used to locate a file to play from.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -29,7 +25,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::string(
             name,
             "Rosbag File Location",
-            "Location of the rosbag file to read from. If unchanged or empty, physical device specified by `serial` is used. If both `rosbag_location and `serial` are selected, the stream of the physical device will be recorded.",
+            "Location of a rosbag file to play from. If unchanged or empty, physical device specified by `serial` is used. If both `serial` and `rosbag_location` are selected, the selected streams are recorded into a file specified by this property.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -38,7 +34,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::string(
             name,
             "JSON File Location",
-            "Location of the JSON file to use that applies only if `serial` is specified. If unchanged or empty, previous JSON configuration is used. If no previous configuration is present due to hardware reset, default configuration is used.",
+            "Location of a JSON file to load the RealSense device configuration from. This property applies only if `serial` is specified. If unchanged or empty, previous JSON configuration is used. If no previous configuration is present due to hardware reset, default configuration is used.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -47,7 +43,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::boolean(
             name,
             "enable_depth",
-            "Enables depth stream",
+            "Enables depth stream.",
             properties_d435::DEFAULT_ENABLE_DEPTH,
             glib::ParamFlags::READWRITE,
         )
@@ -56,7 +52,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::boolean(
             name,
             "enable_infra1",
-            "Enables infra1 stream",
+            "Enables infra1 stream.",
             properties_d435::DEFAULT_ENABLE_INFRA1,
             glib::ParamFlags::READWRITE,
         )
@@ -65,7 +61,7 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::boolean(
             name,
             "enable_infra2",
-            "Enables infra2 stream",
+            "Enables infra2 stream.",
             properties_d435::DEFAULT_ENABLE_INFRA2,
             glib::ParamFlags::READWRITE,
         )
@@ -74,16 +70,16 @@ static PROPERTIES: [subclass::Property; 12] = [
         glib::ParamSpec::boolean(
             name,
             "enable_color",
-            "Enables color stream",
+            "Enables color stream.",
             properties_d435::DEFAULT_ENABLE_COLOR,
             glib::ParamFlags::READWRITE,
         )
     }),
     subclass::Property("depth_width", |name| {
-        glib::ParamSpec::uint(
+        glib::ParamSpec::int(
             name,
             "depth_width",
-            "Width of the depth and IR frames",
+            "Width of the depth and IR frames.",
             properties_d435::DEPTH_MIN_WIDTH,
             properties_d435::DEPTH_MAX_WIDTH,
             properties_d435::DEFAULT_DEPTH_WIDTH,
@@ -91,10 +87,10 @@ static PROPERTIES: [subclass::Property; 12] = [
         )
     }),
     subclass::Property("depth_height", |name| {
-        glib::ParamSpec::uint(
+        glib::ParamSpec::int(
             name,
             "depth_height",
-            "Height of the depth and IR frames",
+            "Height of the depth and IR frames.",
             properties_d435::DEPTH_MIN_HEIGHT,
             properties_d435::DEPTH_MAX_HEIGHT,
             properties_d435::DEFAULT_DEPTH_HEIGHT,
@@ -102,10 +98,10 @@ static PROPERTIES: [subclass::Property; 12] = [
         )
     }),
     subclass::Property("color_width", |name| {
-        glib::ParamSpec::uint(
+        glib::ParamSpec::int(
             name,
             "color_width",
-            "Width of the color frame",
+            "Width of the color frame.",
             properties_d435::COLOR_MIN_WIDTH,
             properties_d435::COLOR_MAX_WIDTH,
             properties_d435::DEFAULT_COLOR_WIDTH,
@@ -113,10 +109,10 @@ static PROPERTIES: [subclass::Property; 12] = [
         )
     }),
     subclass::Property("color_height", |name| {
-        glib::ParamSpec::uint(
+        glib::ParamSpec::int(
             name,
             "color_height",
-            "Height of the color frame",
+            "Height of the color frame.",
             properties_d435::COLOR_MIN_HEIGHT,
             properties_d435::COLOR_MAX_HEIGHT,
             properties_d435::DEFAULT_COLOR_HEIGHT,
@@ -124,10 +120,10 @@ static PROPERTIES: [subclass::Property; 12] = [
         )
     }),
     subclass::Property("framerate", |name| {
-        glib::ParamSpec::uint(
+        glib::ParamSpec::int(
             name,
             "framerate",
-            "Framerate of the stream",
+            "Common framerate of the selected streams.",
             properties_d435::MIN_FRAMERATE,
             properties_d435::MAX_FRAMERATE,
             properties_d435::DEFAULT_FRAMERATE,
@@ -136,6 +132,7 @@ static PROPERTIES: [subclass::Property; 12] = [
     }),
 ];
 
+// A struct containing properties
 struct Settings {
     serial: Option<String>,
     rosbag_location: Option<String>,
@@ -150,12 +147,12 @@ struct Streams {
     enable_color: bool,
     depth_resolution: StreamResolution,
     color_resolution: StreamResolution,
-    framerate: u32,
+    framerate: i32,
 }
 
 struct StreamResolution {
-    width: u32,
-    height: u32,
+    width: i32,
+    height: i32,
 }
 
 impl Default for Settings {
@@ -183,6 +180,7 @@ impl Default for Settings {
     }
 }
 
+// An enum containing the current state of the RealSense pipeline
 enum State {
     Stopped,
     Started { pipeline: rs2::pipeline::Pipeline },
@@ -194,6 +192,7 @@ impl Default for State {
     }
 }
 
+// A struct representation of the `realsensesrc` element
 pub struct RealsenseSrc {
     cat: gst::DebugCategory,
     settings: Mutex<Settings>,
@@ -228,32 +227,32 @@ impl ObjectSubclass for RealsenseSrc {
             "Niclas Moeslund Overby <noverby@prozum.dk>",
         );
 
-        let caps = gst::Caps::new_simple(
+        klass.install_properties(&PROPERTIES);
+
+        // Create src pad template with `video/rgbd` caps
+        let src_caps = gst::Caps::new_simple(
             "video/rgbd",
             &[
-                // List of the available streams
+                // List of available streams meant for indicating their respective priority
                 ("streams", &"depth,infra1,infra2,color"),
                 (
                     "framerate",
                     &gst::FractionRange::new(
-                        gst::Fraction::new(properties_d435::MIN_FRAMERATE as i32, 1),
-                        gst::Fraction::new(properties_d435::MAX_FRAMERATE as i32, 1),
+                        gst::Fraction::new(properties_d435::MIN_FRAMERATE, 1),
+                        gst::Fraction::new(properties_d435::MAX_FRAMERATE, 1),
                     ),
                 ),
             ],
         );
-
-        let src_pad_template = gst::PadTemplate::new(
-            "src",
-            gst::PadDirection::Src,
-            gst::PadPresence::Always,
-            &caps,
-        )
-        .unwrap();
-
-        klass.add_pad_template(src_pad_template);
-
-        klass.install_properties(&PROPERTIES);
+        klass.add_pad_template(
+            gst::PadTemplate::new(
+                "src",
+                gst::PadDirection::Src,
+                gst::PadPresence::Always,
+                &src_caps,
+            )
+            .unwrap(),
+        );
     }
 }
 
@@ -262,14 +261,19 @@ impl ObjectImpl for RealsenseSrc {
 
     fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
         let element = obj.downcast_ref::<gst_base::BaseSrc>().unwrap();
-        let property = &PROPERTIES[id];
         let mut settings = self.settings.lock().unwrap();
 
+        let property = &PROPERTIES[id];
         match *property {
             subclass::Property("serial", ..) => {
                 settings.serial = match value.get::<String>() {
                     Some(serial) => {
                         if serial.is_empty() {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Removing content of property `serial`"
+                            );
                             None
                         } else {
                             gst_info!(
@@ -285,7 +289,7 @@ impl ObjectImpl for RealsenseSrc {
                         gst_info!(
                             self.cat,
                             obj: element,
-                            "Changing property `serial` to `None`"
+                            "Removing content of property `serial`"
                         );
                         None
                     }
@@ -295,6 +299,11 @@ impl ObjectImpl for RealsenseSrc {
                 settings.rosbag_location = match value.get::<String>() {
                     Some(rosbag_location) => {
                         if rosbag_location.is_empty() {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Removing content of property `rosbag_location`"
+                            );
                             None
                         } else {
                             gst_info!(
@@ -310,7 +319,7 @@ impl ObjectImpl for RealsenseSrc {
                         gst_info!(
                             self.cat,
                             obj: element,
-                            "Changing property `rosbag_location` to `None`"
+                            "Removing content of property `rosbag_location`"
                         );
                         None
                     }
@@ -320,6 +329,11 @@ impl ObjectImpl for RealsenseSrc {
                 settings.json_location = match value.get::<String>() {
                     Some(json_location) => {
                         if json_location.is_empty() {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Removing content of property `json_location`"
+                            );
                             None
                         } else {
                             gst_info!(
@@ -335,7 +349,7 @@ impl ObjectImpl for RealsenseSrc {
                         gst_info!(
                             self.cat,
                             obj: element,
-                            "Changing property `json_location` to `None`"
+                            "Removing content of property `json_location`"
                         );
                         None
                     }
@@ -446,8 +460,9 @@ impl ObjectImpl for RealsenseSrc {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let prop = &PROPERTIES[id];
         let settings = &self.settings.lock().unwrap();
+
+        let prop = &PROPERTIES[id];
         match *prop {
             subclass::Property("serial", ..) => {
                 let serial = settings
@@ -510,17 +525,12 @@ impl BaseSrcImpl for RealsenseSrc {
     fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
         let mut state = self.state.lock().unwrap();
         if let State::Started { .. } = *state {
-            unreachable!("Element realsensesrc has already started");
+            unreachable!("Element has already started");
         }
 
         let settings = self.settings.lock().unwrap();
 
         if settings.rosbag_location == None && settings.serial == None {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Neither the `serial` or `rosbag_location` properties are defined. At least one of these must be defined!"
-            );
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["Neither the `serial` or `rosbag_location` properties are defined. At least one of these must be defined!"]
@@ -532,11 +542,6 @@ impl BaseSrcImpl for RealsenseSrc {
             && !settings.streams.enable_infra2
             && !settings.streams.enable_color
         {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "No stream is enabled. At least one stream must be enabled!"
-            );
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["No stream is enabled. At least one stream must be enabled!"]
@@ -546,6 +551,7 @@ impl BaseSrcImpl for RealsenseSrc {
         rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
         let config = rs2::config::Config::new().unwrap();
 
+        // Based on properties, enable streaming, reading from or recording to a file (with the enabled streams)
         if let Some(serial) = settings.serial.as_ref() {
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 config
@@ -558,10 +564,10 @@ impl BaseSrcImpl for RealsenseSrc {
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_DEPTH,
                         -1,
-                        settings.streams.depth_resolution.width as i32,
-                        settings.streams.depth_resolution.height as i32,
+                        settings.streams.depth_resolution.width,
+                        settings.streams.depth_resolution.height,
                         rs2::rs2_format::RS2_FORMAT_Z16,
-                        settings.streams.framerate as i32,
+                        settings.streams.framerate,
                     )
                     .unwrap();
             }
@@ -570,10 +576,10 @@ impl BaseSrcImpl for RealsenseSrc {
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_INFRARED,
                         1,
-                        settings.streams.depth_resolution.width as i32,
-                        settings.streams.depth_resolution.height as i32,
+                        settings.streams.depth_resolution.width,
+                        settings.streams.depth_resolution.height,
                         rs2::rs2_format::RS2_FORMAT_Y8,
-                        settings.streams.framerate as i32,
+                        settings.streams.framerate,
                     )
                     .unwrap();
             }
@@ -582,10 +588,10 @@ impl BaseSrcImpl for RealsenseSrc {
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_INFRARED,
                         2,
-                        settings.streams.depth_resolution.width as i32,
-                        settings.streams.depth_resolution.height as i32,
+                        settings.streams.depth_resolution.width,
+                        settings.streams.depth_resolution.height,
                         rs2::rs2_format::RS2_FORMAT_Y8,
-                        settings.streams.framerate as i32,
+                        settings.streams.framerate,
                     )
                     .unwrap();
             }
@@ -594,10 +600,10 @@ impl BaseSrcImpl for RealsenseSrc {
                     .enable_stream(
                         rs2::rs2_stream::RS2_STREAM_COLOR,
                         -1,
-                        settings.streams.color_resolution.width as i32,
-                        settings.streams.color_resolution.height as i32,
+                        settings.streams.color_resolution.width,
+                        settings.streams.color_resolution.height,
                         rs2::rs2_format::RS2_FORMAT_RGB8,
-                        settings.streams.framerate as i32,
+                        settings.streams.framerate,
                     )
                     .unwrap();
             }
@@ -611,11 +617,13 @@ impl BaseSrcImpl for RealsenseSrc {
             };
         }
 
+        // Get context and a list of connected devices
         let context = rs2::context::Context::new().unwrap();
         let devices = context.get_devices().unwrap();
 
-        // Make sure the selected serial is connected
+        // Make sure a device with the selected serial is connected
         if let Some(serial) = settings.serial.as_ref() {
+            // Get the index of the matching device
             let mut index_of_used_device: usize = 0;
             let mut found_matching_serial = false;
             for device in devices.iter() {
@@ -628,20 +636,16 @@ impl BaseSrcImpl for RealsenseSrc {
                 }
                 index_of_used_device += 1;
             }
+
+            // Return error if there is no such device
             if !found_matching_serial {
-                gst_error!(
-                    self.cat,
-                    obj: element,
-                    "No device with serial `{}` is detected",
-                    serial
-                );
                 return Err(gst_error_msg!(
                     gst::ResourceError::Settings,
                     [&format!("No device with serial `{}` is detected", serial)]
                 ));
             }
 
-            // Load JSON file
+            // Load JSON file if specified
             if let Some(json_location) = settings.json_location.as_ref() {
                 if !devices[index_of_used_device]
                     .is_advanced_mode_enabled()
@@ -658,30 +662,29 @@ impl BaseSrcImpl for RealsenseSrc {
             }
         }
 
+        // Start the RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
         pipeline.start_with_config(&config).unwrap();
         *state = State::Started { pipeline };
 
-        gst_info!(self.cat, obj: element, "Started");
-
+        gst_info!(self.cat, obj: element, "Streaming started");
         Ok(())
     }
 
     fn stop(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
         let mut state = self.state.lock().unwrap();
         if let State::Stopped = *state {
-            unreachable!("realsensesrc is not yet started");
+            unreachable!("Element is not yet started");
         }
-
         *state = State::Stopped;
 
         gst_info!(self.cat, obj: element, "Stopped");
-
         Ok(())
     }
 
     fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
         let settings = self.settings.lock().unwrap();
+
         let mut caps = gst::Caps::truncate(caps);
         {
             let caps = caps.make_mut();
@@ -723,14 +726,14 @@ impl BaseSrcImpl for RealsenseSrc {
                 s.set("color_height", &settings.streams.color_resolution.height);
             }
 
-            // Pop the last ',' contained in streams
+            // Pop the last ',' contained in streams (not really necessary, but nice)
             selected_streams.pop();
 
             // Finally add the streams to the caps
             s.set("streams", &selected_streams.as_str());
 
             // Fixate the framerate
-            s.fixate_field_nearest_fraction("framerate", settings.streams.framerate as i32);
+            s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
         }
         self.parent_fixate(element, caps)
     }
@@ -741,21 +744,22 @@ impl BaseSrcImpl for RealsenseSrc {
 
     fn create(
         &self,
-        element: &gst_base::BaseSrc,
-        _: u64,
-        _: u32,
+        _element: &gst_base::BaseSrc,
+        _offset: u64,
+        _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
         let settings = self.settings.lock().unwrap();
         let mut state = self.state.lock().unwrap();
+
+        // Get the RealSense pipeline
         let pipeline = match *state {
             State::Started { ref mut pipeline } => pipeline,
             State::Stopped => {
-                gst_error!(self.cat, obj: element, "Pipeline is not yet started");
-                return Err(gst::FlowError::Error);
+                unreachable!("Element is not yet started");
             }
         };
 
-        // Get frames
+        // Get frames with the given timeout
         let frames = pipeline
             .wait_for_frames(PIPELINE_WAIT_FOR_FRAMES_TIMEOUT)
             .unwrap();
@@ -912,7 +916,7 @@ impl BaseSrcImpl for RealsenseSrc {
     //             // TODO: Determine the actual latency caused by system buffering and gstreamer copying
     //             let settings = self.settings.lock().unwrap();
     //             let latency = gst::SECOND
-    //                 .mul_div_floor(1, settings.streams.framerate.into())
+    //                 .mul_div_floor(1, settings.streams.framerate as u64)
     //                 .unwrap();
     //             gst_debug!(self.cat, obj: element, "Returning latency {}", latency);
     //             q.set(true, latency, gst::CLOCK_TIME_NONE);
