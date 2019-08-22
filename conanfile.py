@@ -64,9 +64,10 @@ class env(Generator):
         environ["PATH"] += pathsep + pathsep.join(bin_paths)
 
         content = "export PKG_CONFIG_PATH=\"$PKG_CONFIG_PATH\":\"%s\"\n" % pc_output_path
+        content += "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\":%s\n" % pathsep.join(map(lambda path: "\"%s\"" % path, lib_paths))
         for var, val in self.env.items():
             if type(val) is list:
-                content += "export {0}=\"${0}\":{1}\n".format(var, pathsep.join(map(lambda x: "\"%s\"" % x, val)))
+                content += "export {0}=\"${0}\":{1}\n".format(var, pathsep.join(map(lambda path: "\"%s\"" % path, val)))
             else:
                 content += "export {0}={1}\n".format(var, "\"%s\"" % val)
 
