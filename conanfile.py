@@ -39,6 +39,8 @@ class env(Generator):
         pc_output_path = self.output_path
         if not path.exists(pc_output_path):
             mkdir(pc_output_path)
+
+        # Find bin, lib and pkgconfig paths
         bin_paths = []
         lib_paths = []
         for _, cpp_info in self.deps_build_info.dependencies:
@@ -59,6 +61,7 @@ class env(Generator):
                     copy(path.join(pc_share_path, pc), pc_output_path)
                     replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
 
+        # Update Conan environment
         environ.update({
             "PKG_CONFIG_PATH": pc_output_path,
             "LD_LIBRARY_PATH": pathsep.join(lib_paths),
@@ -70,7 +73,9 @@ class env(Generator):
             })
         environ["PATH"] += pathsep + pathsep.join(bin_paths)
 
-        content = "export PKG_CONFIG_PATH=\"$PKG_CONFIG_PATH\":\"%s\"\n" % pc_output_path
+        # Generate env.sh
+        content = "export PATH=\"$PATH\":%s\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
+        content += "export PKG_CONFIG_PATH=\"$PKG_CONFIG_PATH\":\"%s\"\n" % pc_output_path
         content += "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\":%s\n" % pathsep.join(map(lambda path: "\"%s\"" % path, lib_paths))
         for var, val in self.env.items():
             if type(val) is list:
