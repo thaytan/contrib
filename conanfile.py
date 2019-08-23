@@ -6,11 +6,18 @@ from shutil import copy
 
 def replace_prefix_in_pc_file(pc_file, prefix):
     with open(pc_file) as f:
+        old_prefix = ""
         # Get old prefix
         for l in f:
             if "prefix=" in l:
                 old_prefix = l.split("=")[1][:-1]
                 break
+        f.seek(0)
+        if not old_prefix:
+            for l in f:
+                if "libdir=" in l:
+                    old_prefix = l.split("=")[1][:-1]
+                    break
 
         f.seek(0)
         content=f.read().replace(old_prefix, prefix)
