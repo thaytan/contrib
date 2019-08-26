@@ -438,27 +438,9 @@ impl ObjectImpl for RealsenseSrc {
 
         let prop = &PROPERTIES[id];
         match *prop {
-            subclass::Property("serial", ..) => {
-                let serial = settings
-                    .serial
-                    .as_ref()
-                    .map(|rosbag_location| rosbag_location.to_string());
-                Ok(serial.to_value())
-            }
-            subclass::Property("rosbag_location", ..) => {
-                let rosbag_location = settings
-                    .rosbag_location
-                    .as_ref()
-                    .map(|rosbag_location| rosbag_location.to_string());
-                Ok(rosbag_location.to_value())
-            }
-            subclass::Property("json_location", ..) => {
-                let json_location = settings
-                    .json_location
-                    .as_ref()
-                    .map(|json_location| json_location.to_string());
-                Ok(json_location.to_value())
-            }
+            subclass::Property("serial", ..) => Ok(settings.serial.to_value()),
+            subclass::Property("rosbag_location", ..) => Ok(settings.rosbag_location.to_value()),
+            subclass::Property("json_location", ..) => Ok(settings.json_location.to_value()),
             subclass::Property("enable_depth", ..) => Ok(settings.streams.enable_depth.to_value()),
             subclass::Property("enable_infra1", ..) => {
                 Ok(settings.streams.enable_infra1.to_value())
@@ -500,93 +482,35 @@ impl ElementImpl for RealsenseSrc {}
 
 impl BaseSrcImpl for RealsenseSrc {
     fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
+        // Lock the internals
         let internals = &mut self.internals.lock().unwrap();
-        if let State::Started { .. } = internals.state {
-            unreachable!("Element has already started");
-        }
-
         let settings = &internals.settings;
 
-        if settings.rosbag_location == None && settings.serial == None {
-            return Err(gst_error_msg!(
-                gst::ResourceError::Settings,
-                ["Neither the `serial` or `rosbag_location` properties are defined. At least one of these must be defined!"]
-            ));
-        }
+        // Make sure that the set properties are viable
+        Self::check_internals(&internals)?;
 
-        if !settings.streams.enable_depth
-            && !settings.streams.enable_infra1
-            && !settings.streams.enable_infra2
-            && !settings.streams.enable_color
-        {
-            return Err(gst_error_msg!(
-                gst::ResourceError::Settings,
-                ["No stream is enabled. At least one stream must be enabled!"]
-            ));
-        }
-
+        // Specify realsense log severity level
         rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
+
+        // Create new RealSense device config
         let config = rs2::config::Config::new().unwrap();
 
         // Based on properties, enable streaming, reading from or recording to a file (with the enabled streams)
         if let Some(serial) = &settings.serial {
+            // Enable the selected streams
+            Self::enable_streams(&config, &settings);
+
+            // Record to file if both `serial` and `rosbag_location` are defined
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 config
                     .enable_record_to_file(rosbag_location.to_string())
                     .unwrap();
             };
 
-            if settings.streams.enable_depth {
-                config
-                    .enable_stream(
-                        rs2::rs2_stream::RS2_STREAM_DEPTH,
-                        -1,
-                        settings.streams.depth_resolution.width,
-                        settings.streams.depth_resolution.height,
-                        rs2::rs2_format::RS2_FORMAT_Z16,
-                        settings.streams.framerate,
-                    )
-                    .unwrap();
-            }
-            if settings.streams.enable_infra1 {
-                config
-                    .enable_stream(
-                        rs2::rs2_stream::RS2_STREAM_INFRARED,
-                        1,
-                        settings.streams.depth_resolution.width,
-                        settings.streams.depth_resolution.height,
-                        rs2::rs2_format::RS2_FORMAT_Y8,
-                        settings.streams.framerate,
-                    )
-                    .unwrap();
-            }
-            if settings.streams.enable_infra2 {
-                config
-                    .enable_stream(
-                        rs2::rs2_stream::RS2_STREAM_INFRARED,
-                        2,
-                        settings.streams.depth_resolution.width,
-                        settings.streams.depth_resolution.height,
-                        rs2::rs2_format::RS2_FORMAT_Y8,
-                        settings.streams.framerate,
-                    )
-                    .unwrap();
-            }
-            if settings.streams.enable_color {
-                config
-                    .enable_stream(
-                        rs2::rs2_stream::RS2_STREAM_COLOR,
-                        -1,
-                        settings.streams.color_resolution.width,
-                        settings.streams.color_resolution.height,
-                        rs2::rs2_format::RS2_FORMAT_RGB8,
-                        settings.streams.framerate,
-                    )
-                    .unwrap();
-            }
-
+            // Enable device with the given serial number and device configuration
             config.enable_device(serial.to_string()).unwrap();
         } else {
+            // Play from rosbag file if `serial` is not defined
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 config
                     .enable_device_from_file_repeat_option(rosbag_location.to_string(), true)
@@ -596,48 +520,9 @@ impl BaseSrcImpl for RealsenseSrc {
 
         // Get context and a list of connected devices
         let context = rs2::context::Context::new().unwrap();
-        let devices = context.get_devices().unwrap();
 
-        // Make sure a device with the selected serial is connected
-        if let Some(serial) = settings.serial.as_ref() {
-            // Get the index of the matching device
-            let mut index_of_used_device: usize = 0;
-            let mut found_matching_serial = false;
-            for device in devices.iter() {
-                let serial_number = device
-                    .get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER)
-                    .unwrap();
-                if *serial == serial_number {
-                    found_matching_serial = true;
-                    break;
-                }
-                index_of_used_device += 1;
-            }
-
-            // Return error if there is no such device
-            if !found_matching_serial {
-                return Err(gst_error_msg!(
-                    gst::ResourceError::Settings,
-                    [&format!("No device with serial `{}` is detected", serial)]
-                ));
-            }
-
-            // Load JSON file if specified
-            if let Some(json_location) = settings.json_location.as_ref() {
-                if !devices[index_of_used_device]
-                    .is_advanced_mode_enabled()
-                    .unwrap()
-                {
-                    devices[index_of_used_device]
-                        .set_advanced_mode(true)
-                        .unwrap();
-                }
-                let json_content = std::fs::read_to_string(json_location).unwrap();
-                devices[index_of_used_device]
-                    .load_json(json_content)
-                    .unwrap();
-            }
-        }
+        // Load JSON if `json_location` is defined
+        Self::load_json(&context.get_devices().unwrap(), &settings)?;
 
         // Start the RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
@@ -727,6 +612,7 @@ impl BaseSrcImpl for RealsenseSrc {
     ) -> Result<gst::Buffer, gst::FlowError> {
         let intenals = &mut *self.internals.lock().unwrap();
         let settings = &intenals.settings;
+        let streams = &settings.streams;
 
         // Get the RealSense pipeline
         let pipeline = match intenals.state {
@@ -744,137 +630,56 @@ impl BaseSrcImpl for RealsenseSrc {
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
-        // Attach depth frame if enabled
-        if settings.streams.enable_depth {
-            // Extract the frame
-            let depth_frame = frames
-                .iter()
-                .find(|f| {
-                    f.get_profile().unwrap().get_data().unwrap().stream
-                        == rs2::rs2_stream::RS2_STREAM_DEPTH
-                })
-                .unwrap();
-            // Put this frame into the output buffer
-            output_buffer = gst::buffer::Buffer::from_mut_slice(depth_frame.get_data().unwrap());
-            // Release the frame
-            depth_frame.release();
-            // Add the appropriate tag
-            let mut depth_tags = gst::tags::TagList::new();
-            depth_tags
-                .get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&"depth", gst::TagMergeMode::Append);
-            TagsMeta::add(output_buffer.get_mut().unwrap(), &mut depth_tags);
+        // Attach `depth` frame if enabled
+        if streams.enable_depth {
+            Self::extract_frame(
+                &frames,
+                &mut output_buffer,
+                "depth",
+                rs2::rs2_stream::RS2_STREAM_DEPTH,
+                -1,
+                &[],
+            );
         }
 
-        // Attach infra1 frame if enabled
-        if settings.streams.enable_infra1 {
-            // Extract the frame
-            let infra1_frame = frames
-                .iter()
-                .find(|f| {
-                    f.get_profile().unwrap().get_data().unwrap().stream
-                        == rs2::rs2_stream::RS2_STREAM_INFRARED
-                        && f.get_profile().unwrap().get_data().unwrap().index == 1
-                })
-                .unwrap();
-            // Create the appropriate tag
-            let mut infra1_tags = gst::tags::TagList::new();
-            infra1_tags
-                .get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&"infra1", gst::TagMergeMode::Append);
-            if settings.streams.enable_depth {
-                // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
-                let mut infra1_buffer =
-                    gst::buffer::Buffer::from_mut_slice(infra1_frame.get_data().unwrap());
-                // Add tag to this new buffer
-                TagsMeta::add(infra1_buffer.get_mut().unwrap(), &mut infra1_tags);
-                // Attach this new buffer as meta to the output buffer
-                BufferMeta::add(output_buffer.get_mut().unwrap(), &mut infra1_buffer);
-            } else {
-                // Else put this frame into the output buffer
-                output_buffer =
-                    gst::buffer::Buffer::from_mut_slice(infra1_frame.get_data().unwrap());
-                // Add the tag
-                TagsMeta::add(output_buffer.get_mut().unwrap(), &mut infra1_tags);
-            }
-            // Release the frame
-            infra1_frame.release();
+        // Attach `infra1` frame if enabled
+        if streams.enable_infra1 {
+            Self::extract_frame(
+                &frames,
+                &mut output_buffer,
+                "infra1",
+                rs2::rs2_stream::RS2_STREAM_INFRARED,
+                1,
+                &[streams.enable_depth],
+            );
         }
 
-        // Attach infra2 frame if enabled
-        if settings.streams.enable_infra2 {
-            // Extract the frame
-            let infra2_frame = frames
-                .iter()
-                .find(|f| {
-                    f.get_profile().unwrap().get_data().unwrap().stream
-                        == rs2::rs2_stream::RS2_STREAM_INFRARED
-                        && f.get_profile().unwrap().get_data().unwrap().index == 2
-                })
-                .unwrap();
-            // Create the appropriate tag
-            let mut infra2_tags = gst::tags::TagList::new();
-            infra2_tags
-                .get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&"infra2", gst::TagMergeMode::Append);
-            if settings.streams.enable_depth || settings.streams.enable_infra1 {
-                // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
-                let mut infra2_buffer =
-                    gst::buffer::Buffer::from_mut_slice(infra2_frame.get_data().unwrap());
-                // Add tag to this new buffer
-                TagsMeta::add(infra2_buffer.get_mut().unwrap(), &mut infra2_tags);
-                // Attach this new buffer as meta to the output buffer
-                BufferMeta::add(output_buffer.get_mut().unwrap(), &mut infra2_buffer);
-            } else {
-                // Else put this frame into the output buffer
-                output_buffer =
-                    gst::buffer::Buffer::from_mut_slice(infra2_frame.get_data().unwrap());
-                // Add the tag
-                TagsMeta::add(output_buffer.get_mut().unwrap(), &mut infra2_tags);
-            }
-            // Release the frame
-            infra2_frame.release();
+        // Attach `infra2` frame if enabled
+        if streams.enable_infra2 {
+            Self::extract_frame(
+                &frames,
+                &mut output_buffer,
+                "infra2",
+                rs2::rs2_stream::RS2_STREAM_INFRARED,
+                2,
+                &[streams.enable_depth, streams.enable_infra1],
+            );
         }
 
-        // Attach color frame if enabled
-        if settings.streams.enable_color {
-            // Extract the frame
-            let color_frame = frames
-                .iter()
-                .find(|f| {
-                    f.get_profile().unwrap().get_data().unwrap().stream
-                        == rs2::rs2_stream::RS2_STREAM_COLOR
-                })
-                .unwrap();
-            // Create the appropriate tag
-            let mut color_tags = gst::tags::TagList::new();
-            color_tags
-                .get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&"color", gst::TagMergeMode::Append);
-            if settings.streams.enable_depth
-                || settings.streams.enable_infra1
-                || settings.streams.enable_infra2
-            {
-                // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
-                let mut color_buffer =
-                    gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
-                // Add tag to this new buffer
-                TagsMeta::add(color_buffer.get_mut().unwrap(), &mut color_tags);
-                // Attach this new buffer as meta to the output buffer
-                BufferMeta::add(output_buffer.get_mut().unwrap(), &mut color_buffer);
-            } else {
-                // Else put this frame into the output buffer
-                output_buffer =
-                    gst::buffer::Buffer::from_mut_slice(color_frame.get_data().unwrap());
-                // Add the tag
-                TagsMeta::add(output_buffer.get_mut().unwrap(), &mut color_tags);
-            }
-            // Release the frame
-            color_frame.release();
+        // Attach `color` frame if enabled
+        if streams.enable_color {
+            Self::extract_frame(
+                &frames,
+                &mut output_buffer,
+                "color",
+                rs2::rs2_stream::RS2_STREAM_COLOR,
+                -1,
+                &[
+                    streams.enable_depth,
+                    streams.enable_infra1,
+                    streams.enable_infra2,
+                ],
+            );
         }
 
         Ok(output_buffer)
@@ -902,6 +707,192 @@ impl BaseSrcImpl for RealsenseSrc {
     //         _ => BaseSrcImplExt::parent_query(self, element, query),
     //     }
     // }
+}
+
+impl RealsenseSrc {
+    fn check_internals(internals: &RealsenseSrcInternals) -> Result<(), gst::ErrorMessage> {
+        let settings = &internals.settings;
+
+        // Make sure the pipeline has started
+        if let State::Started { .. } = internals.state {
+            unreachable!("Element has already started");
+        }
+
+        // Either `serial` or `rosbag_location` must be specified
+        if settings.serial == None && settings.rosbag_location == None {
+            return Err(gst_error_msg!(
+                gst::ResourceError::Settings,
+                ["Neither the `serial` or `rosbag_location` properties are defined. At least one of these must be defined!"]
+            ));
+        }
+
+        // At least one stream must be enabled
+        if !settings.streams.enable_depth
+            && !settings.streams.enable_infra1
+            && !settings.streams.enable_infra2
+            && !settings.streams.enable_color
+        {
+            return Err(gst_error_msg!(
+                gst::ResourceError::Settings,
+                ["No stream is enabled. At least one stream must be enabled!"]
+            ));
+        }
+
+        Ok(())
+    }
+
+    fn enable_streams(config: &rs2::config::Config, settings: &Settings) {
+        if settings.streams.enable_depth {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_DEPTH,
+                    -1,
+                    settings.streams.depth_resolution.width,
+                    settings.streams.depth_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_Z16,
+                    settings.streams.framerate,
+                )
+                .unwrap();
+        }
+        if settings.streams.enable_infra1 {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_INFRARED,
+                    1,
+                    settings.streams.depth_resolution.width,
+                    settings.streams.depth_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_Y8,
+                    settings.streams.framerate,
+                )
+                .unwrap();
+        }
+        if settings.streams.enable_infra2 {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_INFRARED,
+                    2,
+                    settings.streams.depth_resolution.width,
+                    settings.streams.depth_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_Y8,
+                    settings.streams.framerate,
+                )
+                .unwrap();
+        }
+        if settings.streams.enable_color {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_COLOR,
+                    -1,
+                    settings.streams.color_resolution.width,
+                    settings.streams.color_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_RGB8,
+                    settings.streams.framerate,
+                )
+                .unwrap();
+        }
+    }
+
+    fn load_json(
+        devices: &Vec<rs2::device::Device>,
+        settings: &Settings,
+    ) -> Result<(), gst::ErrorMessage> {
+        // Make sure a device with the selected serial is connected
+        if let Some(serial) = settings.serial.as_ref() {
+            // Get the index of the matching device
+            let mut index_of_used_device: usize = 0;
+            let mut found_matching_serial = false;
+            for device in devices.iter() {
+                let serial_number = device
+                    .get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER)
+                    .unwrap();
+                if *serial == serial_number {
+                    found_matching_serial = true;
+                    break;
+                }
+                index_of_used_device += 1;
+            }
+
+            // Return error if there is no such device
+            if !found_matching_serial {
+                return Err(gst_error_msg!(
+                    gst::ResourceError::Settings,
+                    [&format!("No device with serial `{}` is detected", serial)]
+                ));
+            }
+
+            // Load JSON file if specified
+            if let Some(json_location) = settings.json_location.as_ref() {
+                if !devices[index_of_used_device]
+                    .is_advanced_mode_enabled()
+                    .unwrap()
+                {
+                    devices[index_of_used_device]
+                        .set_advanced_mode(true)
+                        .unwrap();
+                }
+                let json_content = std::fs::read_to_string(json_location).unwrap();
+                devices[index_of_used_device]
+                    .load_json(json_content)
+                    .unwrap();
+            }
+        }
+        Ok(())
+    }
+
+    fn extract_frame(
+        frames: &Vec<rs2::frame::Frame>,
+        output_buffer: &mut gst::Buffer,
+        tag: &str,
+        stream_type: rs2::rs2_stream,
+        stream_id: i32,
+        previous_streams: &[bool],
+    ) {
+        // Extract the frame from frames based on its type and id
+        let frame = frames
+            .iter()
+            .find(|f| {
+                f.get_profile().unwrap().get_data().unwrap().stream == stream_type
+                    && if stream_id == -1 {
+                        true
+                    } else {
+                        f.get_profile().unwrap().get_data().unwrap().index == stream_id
+                    }
+            })
+            .unwrap();
+
+        // Create the appropriate tag
+        let mut tags = gst::tags::TagList::new();
+        tags.get_mut()
+            .unwrap()
+            .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
+
+        // Determine whether any of the previous streams is enabled
+        let mut is_earlier_stream_enabled = false;
+        for previous_stream in previous_streams.iter() {
+            if *previous_stream {
+                is_earlier_stream_enabled = true;
+                break;
+            }
+        }
+
+        // Where the buffer is placed depends whether this is the first stream that is enabled
+        if is_earlier_stream_enabled {
+            // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
+            let mut buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
+            // Add tag to this new buffer
+            TagsMeta::add(buffer.get_mut().unwrap(), &mut tags);
+            // Attach this new buffer as meta to the output buffer
+            BufferMeta::add(output_buffer.get_mut().unwrap(), &mut buffer);
+        } else {
+            // Else put this frame into the output buffer
+            *output_buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
+            // Add the tag
+            TagsMeta::add(output_buffer.get_mut().unwrap(), &mut tags);
+        }
+
+        // Release the frame
+        frame.release();
+    }
 }
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
