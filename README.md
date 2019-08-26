@@ -52,3 +52,4 @@ realsense_demux.src_color ! queue ! glimagesink
 
 - *The `realsensesrc` does not play the entire rosbag file.* -> Make sure that all streams contained in the given rosbag file are enabled by setting the properties **enable_%s** to **true**.
 - *The `realsensesrc` panic while plaing from a rosbag file.* -> Make sure that only the streams contained in the given rosbag file are enabled by setting the properties **enable_%s** to **true** and the rest to **false**.
+- *The `realsensesrc` outputs distorted frames while playing from a rosbag file.* -> Make sure that the correct resolution of the enabled streams is selected.

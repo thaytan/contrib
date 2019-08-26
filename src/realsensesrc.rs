@@ -7,11 +7,11 @@ use gst_depth_meta::tags::TagsMeta;
 use rs2;
 use std::sync::Mutex;
 
-// Timeout used while waiting for frames from a realsense device in milliseconds
-const PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500;
+// Default timeout used while waiting for frames from a realsense device in milliseconds.
+const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500;
 
 use crate::properties_d435;
-static PROPERTIES: [subclass::Property; 12] = [
+static PROPERTIES: [subclass::Property; 13] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -130,6 +130,17 @@ static PROPERTIES: [subclass::Property; 12] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    subclass::Property("wait_for_frames_timeout", |name| {
+        glib::ParamSpec::uint(
+            name,
+            "wait_for_frames_timeout",
+            "Timeout used while waiting for frames from a RealSense device in milliseconds",
+            std::u32::MIN,
+            std::u32::MAX,
+            DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
 ];
 
 // A struct containing properties
@@ -138,6 +149,7 @@ struct Settings {
     rosbag_location: Option<String>,
     json_location: Option<String>,
     streams: Streams,
+    wait_for_frames_timeout: u32,
 }
 
 struct Streams {
@@ -176,6 +188,7 @@ impl Default for Settings {
                 },
                 framerate: properties_d435::DEFAULT_FRAMERATE,
             },
+            wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
         }
     }
 }
@@ -193,10 +206,15 @@ impl Default for State {
 }
 
 // A struct representation of the `realsensesrc` element
-pub struct RealsenseSrc {
+struct RealsenseSrc {
     cat: gst::DebugCategory,
-    settings: Mutex<Settings>,
-    state: Mutex<State>,
+    internals: Mutex<RealsenseSrcInternals>,
+}
+
+// Internals of the element that are under Mutex
+struct RealsenseSrcInternals {
+    settings: Settings,
+    state: State,
 }
 
 impl ObjectSubclass for RealsenseSrc {
@@ -214,8 +232,10 @@ impl ObjectSubclass for RealsenseSrc {
                 gst::DebugColorFlags::empty(),
                 Some("Realsense Source"),
             ),
-            settings: Mutex::new(Settings::default()),
-            state: Mutex::new(State::default()),
+            internals: Mutex::new(RealsenseSrcInternals {
+                settings: Settings::default(),
+                state: State::default(),
+            }),
         }
     }
 
@@ -224,7 +244,7 @@ impl ObjectSubclass for RealsenseSrc {
             "Realsense Source",
             "Source/RGB-D/Realsense",
             "Stream `video/rgbd` from a RealSense device",
-            "Niclas Moeslund Overby <noverby@prozum.dk>",
+            "Niclas Moeslund Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>",
         );
 
         klass.install_properties(&PROPERTIES);
@@ -261,99 +281,42 @@ impl ObjectImpl for RealsenseSrc {
 
     fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
         let element = obj.downcast_ref::<gst_base::BaseSrc>().unwrap();
-        let mut settings = self.settings.lock().unwrap();
+        let settings = &mut self.internals.lock().unwrap().settings;
 
         let property = &PROPERTIES[id];
         match *property {
             subclass::Property("serial", ..) => {
-                settings.serial = match value.get::<String>() {
-                    Some(serial) => {
-                        if serial.is_empty() {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Removing content of property `serial`"
-                            );
-                            None
-                        } else {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Changing property `serial` to {}",
-                                serial
-                            );
-                            Some(serial)
-                        }
-                    }
-                    None => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Removing content of property `serial`"
-                        );
-                        None
-                    }
-                };
+                let serial = value.get::<String>();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `serial` from {:?} to {:?}",
+                    settings.serial,
+                    serial
+                );
+                settings.serial = serial;
             }
             subclass::Property("rosbag_location", ..) => {
-                settings.rosbag_location = match value.get::<String>() {
-                    Some(rosbag_location) => {
-                        if rosbag_location.is_empty() {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Removing content of property `rosbag_location`"
-                            );
-                            None
-                        } else {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Changing property `rosbag_location` to {}",
-                                rosbag_location
-                            );
-                            Some(rosbag_location)
-                        }
-                    }
-                    None => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Removing content of property `rosbag_location`"
-                        );
-                        None
-                    }
-                };
+                let rosbag_location = value.get::<String>();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `rosbag_location` from {:?} to {:?}",
+                    settings.rosbag_location,
+                    rosbag_location
+                );
+                settings.rosbag_location = rosbag_location;
             }
             subclass::Property("json_location", ..) => {
-                settings.json_location = match value.get::<String>() {
-                    Some(json_location) => {
-                        if json_location.is_empty() {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Removing content of property `json_location`"
-                            );
-                            None
-                        } else {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Changing property `json_location` to {}",
-                                json_location
-                            );
-                            Some(json_location)
-                        }
-                    }
-                    None => {
-                        gst_info!(
-                            self.cat,
-                            obj: element,
-                            "Removing content of property `json_location`"
-                        );
-                        None
-                    }
-                };
+                let json_location = value.get::<String>();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `json_location` from {:?} to {:?}",
+                    settings.json_location,
+                    json_location
+                );
+                settings.json_location = json_location;
             }
             subclass::Property("enable_depth", ..) => {
                 let enable_depth = value.get().unwrap();
@@ -455,12 +418,23 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.framerate = framerate;
                 // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             }
+            subclass::Property("wait_for_frames_timeout", ..) => {
+                let wait_for_frames_timeout = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `wait_for_frames_timeout` from {} to {}",
+                    settings.wait_for_frames_timeout,
+                    wait_for_frames_timeout
+                );
+                settings.wait_for_frames_timeout = wait_for_frames_timeout;
+            }
             _ => unimplemented!("Property is not implemented"),
         };
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self.settings.lock().unwrap();
+        let settings = &self.internals.lock().unwrap().settings;
 
         let prop = &PROPERTIES[id];
         match *prop {
@@ -506,6 +480,9 @@ impl ObjectImpl for RealsenseSrc {
                 Ok(settings.streams.color_resolution.height.to_value())
             }
             subclass::Property("framerate", ..) => Ok(settings.streams.framerate.to_value()),
+            subclass::Property("wait_for_frames_timeout", ..) => {
+                Ok(settings.wait_for_frames_timeout.to_value())
+            }
             _ => unimplemented!("Property is not implemented"),
         }
     }
@@ -523,12 +500,12 @@ impl ElementImpl for RealsenseSrc {}
 
 impl BaseSrcImpl for RealsenseSrc {
     fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
-        let mut state = self.state.lock().unwrap();
-        if let State::Started { .. } = *state {
+        let internals = &mut self.internals.lock().unwrap();
+        if let State::Started { .. } = internals.state {
             unreachable!("Element has already started");
         }
 
-        let settings = self.settings.lock().unwrap();
+        let settings = &internals.settings;
 
         if settings.rosbag_location == None && settings.serial == None {
             return Err(gst_error_msg!(
@@ -552,7 +529,7 @@ impl BaseSrcImpl for RealsenseSrc {
         let config = rs2::config::Config::new().unwrap();
 
         // Based on properties, enable streaming, reading from or recording to a file (with the enabled streams)
-        if let Some(serial) = settings.serial.as_ref() {
+        if let Some(serial) = &settings.serial {
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 config
                     .enable_record_to_file(rosbag_location.to_string())
@@ -665,14 +642,14 @@ impl BaseSrcImpl for RealsenseSrc {
         // Start the RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
         pipeline.start_with_config(&config).unwrap();
-        *state = State::Started { pipeline };
+        internals.state = State::Started { pipeline };
 
         gst_info!(self.cat, obj: element, "Streaming started");
         Ok(())
     }
 
     fn stop(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
-        let mut state = self.state.lock().unwrap();
+        let state = &mut self.internals.lock().unwrap().state;
         if let State::Stopped = *state {
             unreachable!("Element is not yet started");
         }
@@ -683,7 +660,7 @@ impl BaseSrcImpl for RealsenseSrc {
     }
 
     fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
-        let settings = self.settings.lock().unwrap();
+        let settings = &self.internals.lock().unwrap().settings;
 
         let mut caps = gst::Caps::truncate(caps);
         {
@@ -748,12 +725,12 @@ impl BaseSrcImpl for RealsenseSrc {
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
-        let settings = self.settings.lock().unwrap();
-        let mut state = self.state.lock().unwrap();
+        let intenals = &mut *self.internals.lock().unwrap();
+        let settings = &intenals.settings;
 
         // Get the RealSense pipeline
-        let pipeline = match *state {
-            State::Started { ref mut pipeline } => pipeline,
+        let pipeline = match intenals.state {
+            State::Started { ref pipeline } => pipeline,
             State::Stopped => {
                 unreachable!("Element is not yet started");
             }
@@ -761,7 +738,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
         // Get frames with the given timeout
         let frames = pipeline
-            .wait_for_frames(PIPELINE_WAIT_FOR_FRAMES_TIMEOUT)
+            .wait_for_frames(settings.wait_for_frames_timeout)
             .unwrap();
 
         // Create the output buffer
