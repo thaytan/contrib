@@ -13,7 +13,7 @@ This is how I build it on my local system.
 ```
 cd gst-realsense
 conan install -if build . aivero/stable
-source build/activate.sh && source build/activate_run.sh 
+source build/env.sh
 cargo build --release
 export GST_PLUGIN_PATH=`pwd`/target/release:${GST_PLUGIN_PATH}
 ```
@@ -30,7 +30,7 @@ gst-inspect-1.0 realsensesrc
 Source and export `GST_PLUGIN_PATH` in a single terminal (if not done before).
 ```
 cd gst-realsense
-source build/activate.sh && source build/activate_run.sh 
+source build/env.sh 
 export GST_PLUGIN_PATH=`pwd`/target/release:${GST_PLUGIN_PATH}
 ```
 
