@@ -16,7 +16,7 @@ fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
 }
 
 gst_plugin_define!(
-    gstrealsensesrc,
+    Aivero,
     env!("CARGO_PKG_DESCRIPTION"),
     plugin_init,
     env!("CARGO_PKG_VERSION"),
