@@ -18,9 +18,9 @@ class RealsenseConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer-depth-meta/0.2.0@%s/%s" % (self.user, self.channel))
-        self.requires("librealsense/2.20.0@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("gstreamer-depth-meta/0.2.0@%s/stable" % self.user)
+        self.requires("librealsense/2.20.0@%s/stable" % self.user)
 
     def build(self):
         if self.settings.build_type == 'Release':
