@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from conans import ConanFile, CMake, tools
 
 def get_version():
     git = tools.Git()
     try:
-        if (git.get_tag() == None):
-            return "master"
-        else:
+        if git.get_tag():
             return git.get_tag()
+        else:
+            return git.get_branch()
     except:
         return None
 
@@ -24,9 +23,9 @@ class DepthMetaConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/1.16.0@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer-plugins-base/1.16.0@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("gstreamer/1.16.0@%s/stable" % self.user)
+        self.requires("gstreamer-plugins-base/1.16.0@%s/stable" % self.user)
 
     def build(self):
         env = {
