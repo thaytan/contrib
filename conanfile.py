@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from conans import ConanFile, CMake, tools
 import os
-
 
 def get_version():
     git = tools.Git()
     try:
-        if (git.get_tag() == None):
-            return "master"
-        else:
+        if git.get_tag():
             return git.get_tag()
+        else:
+            return git.get_branch()
     except:
         return None
-
 
 class GstreamerColorizerConan(ConanFile):
     name = "gstreamer-colorizer"
@@ -25,12 +22,12 @@ class GstreamerColorizerConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = ["CMakeLists.txt", "src/*"]
     generators = "env"
+    gst_version = "1.16.0"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/1.16.0@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer-plugins-base/1.16.0@%s/%s" %
-                      (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (self.gst_version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
 
     def build(self):
         env = {
@@ -43,9 +40,7 @@ class GstreamerColorizerConan(ConanFile):
             cmake.install()
 
     def package(self):
-        self.copy(pattern="*.so", dst=os.path.join(self.package_folder,
-                                                   "lib", "gstreamer-1.0"), keep_path=False)
-        if self.channel == "testing":
+        if self.settings.build_type == "Debug":
             self.copy("*gstcolorizer.c", "src")
             self.copy("*gstcolorizer.h", "src")
 
