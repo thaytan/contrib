@@ -1,15 +1,17 @@
 # gst-realsense
 
-GStreamer element providing librealsense2 capabilities
+GStreamer plugin containing `video/rgbd` source for a RealSense device.
 
-> Note: If you want to play from rosbag file, make sure that you enable all streams this file contains. Otherwise, it usually does not play the entire file if contained streams are disabled. And it usually panics at unwrap() if there are streams enabled that the file does not contain.
-
-> Note: All streams, i.e. depth, color and infra, must share the same framerate in the current implementation
+## `video/rgbd`
+The `video/rgbd` caps always contain the following fields
+- **streams** - This field contains selected streams with priority `depth > infra1 > infra2 > color`. The first stream in this comma separated string, e.g. "depth,infra2,color", is considered to be the main stream and is therefore transported in the main buffer. There must always be at least one stream enabled. All additional buffers are attached as meta to the main buffer.
+- **%s_format** - Format for each selected stream, e.g. depth_format="Gray16Le".
+- **%s_width** - Width for each selected stream, e.g. depth_width=1280.
+- **%s_height** - Height for each selected stream, e.g. depth_height=720.
+- **framerate** - Common framerate for all selected streams.
 
 ## Building
-
-This is how I build it on my local system.
-
+Execute the following commands.
 ```
 cd gst-realsense
 conan install -if build . aivero/stable
@@ -19,28 +21,35 @@ export GST_PLUGIN_PATH=`pwd`/target/release:${GST_PLUGIN_PATH}
 ```
 > Note: `conan install -if build . aivero/stable` might require you to build extra packages. Just follow the instructions in the error message. 
 
-Now you should see the plugin `realsense` as well as its element `realsensesrc` by running the following.
+Now you should see the plugin's element `realsensesrc`.
 ```
-gst-inspect-1.0 realsense
 gst-inspect-1.0 realsensesrc
 ```
 
-## Running
+## Running in combination with [`depthdemux`](https://gitlab.com/aivero/streaming/gst-depth-demux)
 
-Source and export `GST_PLUGIN_PATH` in a single terminal (if not done before).
+Source and export `GST_PLUGIN_PATH` in a single terminal for both `realsensesrc` and `depthdemux` (if not done before).
 ```
-cd gst-realsense
-source build/env.sh 
-export GST_PLUGIN_PATH=`pwd`/target/release:${GST_PLUGIN_PATH}
-```
+source gst-realsense/build/env.sh --extend
+export GST_PLUGIN_PATH=gst-realsense/target/release:${GST_PLUGIN_PATH}
 
-Build any of the plugins if you made any changes. And test the pipeline with `gst-launch`, using either rosbag or a connected camera.
-
-```
-gst-launch-1.0 realsensesrc serial=728312070031 ! glimagesink
+source gst-depth-demux/build/env.sh --extend
+export GST_PLUGIN_PATH=gst-depth-demux/target/release:${GST_PLUGIN_PATH}
 ```
 
-You can also change the properties, see `gst-inspect-1.0 realsensesrc`, as such:
+An example of a pipeline:
+
 ```
-gst-launch-1.0 realsensesrc rosbag_location=/ABSOLUTE_PATH/20190322_123122.bag json_location=/ABSOLUTE_PATH/HighAccuracy.json framerate=30 depth_width=1280 depth_height=720 enable_infra1=false enable_infra2=false enable_color=true color_width=1280 color_height=720 ! glimagesink
+gst-launch-1.0 \
+realsensesrc serial=XXXXXXXXXXXX json_location=configuration.json enable_depth=true enable_infra1=false enable_infra2=true enable_color=true depth_width=1280 depth_height=720 color_width=848 color_height=480 framerate=30 ! \
+depthdemux name=realsense_demux \
+realsense_demux.src_depth ! queue ! glimagesink  \
+realsense_demux.src_infra2 ! queue ! glimagesink \
+realsense_demux.src_color ! queue ! glimagesink 
 ```
+
+## Troubleshooting
+
+- *The `realsensesrc` does not play the entire rosbag file.* -> Make sure that all streams contained in the given rosbag file are enabled by setting the properties **enable_%s** to **true**.
+- *The `realsensesrc` panic while plaing from a rosbag file.* -> Make sure that only the streams contained in the given rosbag file are enabled by setting the properties **enable_%s** to **true** and the rest to **false**.
+- *The `realsensesrc` outputs distorted frames while playing from a rosbag file.* -> Make sure that the correct resolution of the enabled streams is selected.

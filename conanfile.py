@@ -7,7 +7,7 @@ import os
 class RealsenseConan(ConanFile):
     name = "gst-realsense"
     version = "0.1.0"
-    description = "Realsense gstreamer source element"
+    description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
     url = "https://aivero.com"
     license = "Proprietary"
     settings = "os", "arch", "compiler", "build_type"
