@@ -15,7 +15,7 @@ Execute the following commands.
 ```
 cd gst-realsense
 conan install -if build . aivero/stable
-source build/env.sh 
+source build/env.sh
 cargo build --release
 export GST_PLUGIN_PATH=`pwd`/target/release:${GST_PLUGIN_PATH}
 ```
