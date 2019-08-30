@@ -33,11 +33,11 @@ class V4l2(ConanFile):
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/TX2-AGX/public_sources.tbz2" % self.version.replace(".", "-"))
+            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
         elif self.options.jetson == "Nano":
-            tools.get("https://developer.download.nvidia.com/embedded/L4T/r%s_Release_v1.0/Nano-TX1/public_sources.tbz2" % self.version.replace(".", "-"))
+            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
         else:
-            raise KeyError("Unknown option: " + self.options.jetson)
+            raise KeyError( "Unknown option: " + self.options.jetson)
 
         tools.untargz("public_sources/v4l2_libs_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
