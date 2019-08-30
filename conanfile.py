@@ -1,16 +1,6 @@
 from conans import ConanFile, tools
 from os import symlink, path
 
-def get_version():
-    git = tools.Git()
-    try:
-        if git.get_tag() and not git.get_branch():
-            return git.get_tag()
-        else:
-            return "32.2"
-    except:
-        return None
-
 pc_content = """
 prefix=%s
 exec_prefix=${prefix}/bin
@@ -28,7 +18,7 @@ Cflags: -I${includedir}
 
 class V4l2(ConanFile):
     name = "nv-v4l2"
-    version = get_version()
+    version = "32.2.1"
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
