@@ -4,10 +4,7 @@ from os import path
 def get_version():
     git = tools.Git()
     try:
-        if git.get_tag() and not git.get_branch():
-            return git.get_tag()
-        else:
-            return "32.2"
+        return git.get_branch()
     except:
         return None
 
@@ -26,7 +23,7 @@ class GstreamerNvV4l2(ConanFile):
     def requirements(self):
         self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("nv-v4l2/%s@%s/%s" % (self.version, self.user, self.channel))
-        self.requires("deepstream/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("deepstream/4.0@%s/%s" % (self.user, self.channel))
         self.requires("gstreamer/%s@%s/%s" % (self.gst_version, self.user, self.channel))
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.gst_version, self.user, self.channel))
 
