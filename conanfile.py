@@ -3,7 +3,7 @@ from os import path
 
 class GstreamerNvV4l2(ConanFile):
     name = "gstreamer-nv-v4l2"
-    version = "32.2"
+    version = "32.2.1"
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
