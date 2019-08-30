@@ -1,9 +1,9 @@
-tx1-debug-armv8-bionic:
-  extends: test-debug-armv8-bionic
+armv8-bionic-debug-tx1:
+  extends: armv8-bionic-debug-stable
   variables:
     CONAN_BUILD_OPTIONS: "-o jetson=Nano"
 
-tx1-release-armv8-bionic:
-  extends: test-release-armv8-bionic
+armv8-bionic-release-tx1:
+  extends: armv8-bionic-release-stable
   variables:
     CONAN_BUILD_OPTIONS: "-o jetson=Nano"
