@@ -1,19 +1,9 @@
 from conans import ConanFile, tools
 from os import symlink, path
 
-def get_version():
-    git = tools.Git()
-    try:
-        if git.get_tag() and not git.get_branch():
-            return git.get_tag()
-        else:
-            return "4.0"
-    except:
-        return None
-
 class Deepstream(ConanFile):
     name = "deepstream"
-    version = get_version()
+    version = "4.0"
     license = "proprietary"
     description = "Complete streaming analytics toolkit for AI-based video"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
