@@ -26,7 +26,7 @@ class JetsonDrivers(ConanFile):
 
         tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
         tools.rmdir("Linux_for_Tegra")
-        for dl in ("nvbufsurface", "nvbuf_utils", "nvbuf_fdmap"):
+        for dl in ("nvbufsurface", "nvbuf_utils", "nvbuf_fdmap", "nvdsbufferpool"):
             symlink("lib%s.so.1.0.0" % dl, "lib%s.so" % dl)
 
     def package(self):
