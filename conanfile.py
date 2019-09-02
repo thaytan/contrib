@@ -15,6 +15,7 @@ class GstreamerNvPluginsConan(ConanFile):
 
     def requirements(self):
         self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("jetson-drivers/%s@%s/stable" % (self.version, self.user))
 
     def package(self):
         self.copy("*.so")
