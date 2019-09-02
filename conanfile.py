@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from conans import ConanFile
+import os
 
 class GstreamerNvPluginsConan(ConanFile):
     name = "gstreamer-nv-plugins"
@@ -17,3 +18,6 @@ class GstreamerNvPluginsConan(ConanFile):
 
     def package(self):
         self.copy("*.so")
+
+    def package_info(self):
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
