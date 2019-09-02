@@ -2,7 +2,7 @@
 name = "gst-realsense"
 version = "0.1.0"
 authors = ["Niclas Moeslund Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>"]
-license = "MIT/X11"
+license = "LGPL"
 description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
 keywords = ["Realsense", "Source", "GStreamer", "Rust"]
 repository = "https://gitlab.com/aivero/public/gstreamer/gst-realsense"
