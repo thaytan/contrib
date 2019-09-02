@@ -9,7 +9,7 @@ class RealsenseConan(ConanFile):
     version = "0.1.0"
     description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
     url = "https://aivero.com"
-    license = "Proprietary"
+    license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = [
         "Cargo.toml",
