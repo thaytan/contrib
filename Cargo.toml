@@ -1,0 +1,25 @@
+[package]
+name = "gst-rgbd"
+version = "0.1.0"
+authors = ["Raphael Dürscheid <rd@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>"]
+license = "LGPL"
+description = "GStreamer plugin for demuxing and muxing `video/rgbd` streams"
+keywords = ["RGB-D", "Demux", "Mux", "GStreamer", "Rust"]
+repository = "https://gitlab.com/aivero/public/gstreamer/gst-rgbd"
+edition = "2018"
+readme = "README.md"
+
+[features]
+default = ["dox"]
+dox = ["glib/dox", "gstreamer/dox", "gstreamer-base/dox"]
+
+[dependencies]
+glib = "0.8"
+gstreamer = { version = "0.14", features = ["subclassing"] }
+gstreamer-base = { version = "0.14", features = ["subclassing"] }
+gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs" }
+
+[lib]
+name = "gstrgbd"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
