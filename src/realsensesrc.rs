@@ -1,3 +1,19 @@
+// Aivero
+// Copyright (C) <2019> Aivero
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Library General Public
+// License as published by the Free Software Foundation; either
+// version 2 of the License, or (at your option) any later version.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Library General Public License for more details.
+// You should have received a copy of the GNU Library General Public
+// License along with this library; if not, write to the
+// Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
@@ -79,7 +95,7 @@ static PROPERTIES: [subclass::Property; 13] = [
         glib::ParamSpec::int(
             name,
             "depth_width",
-            "Width of the depth and IR frames.",
+            "Width of the depth and infra1/infra2 frames.",
             properties_d435::DEPTH_MIN_WIDTH,
             properties_d435::DEPTH_MAX_WIDTH,
             properties_d435::DEFAULT_DEPTH_WIDTH,
@@ -90,7 +106,7 @@ static PROPERTIES: [subclass::Property; 13] = [
         glib::ParamSpec::int(
             name,
             "depth_height",
-            "Height of the depth and IR frames.",
+            "Height of the depth and infra1/infra2 frames.",
             properties_d435::DEPTH_MIN_HEIGHT,
             properties_d435::DEPTH_MAX_HEIGHT,
             properties_d435::DEFAULT_DEPTH_HEIGHT,
@@ -134,7 +150,7 @@ static PROPERTIES: [subclass::Property; 13] = [
         glib::ParamSpec::uint(
             name,
             "wait_for_frames_timeout",
-            "Timeout used while waiting for frames from a RealSense device in milliseconds",
+            "Timeout used while waiting for frames from a RealSense device in milliseconds.",
             std::u32::MIN,
             std::u32::MAX,
             DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
