@@ -28,7 +28,7 @@ class LibRealsenseConan(ConanFile):
         cmake.definitions["BUILD_GRAPHICAL_EXAMPLES"] = "OFF"
         cmake.definitions["BUILD_PCL_EXAMPLES"] = "OFF"
         cmake.definitions["BUILD_NODEJS_BINDINGS"] = "OFF"
-        cmake.definitions["BUILD_PYTHON_BINDINGS"] = "OFF"
+        cmake.definitions["BUILD_PYTHON_BINDINGS"] = "ON"
         cmake.definitions["BUILD_UNIT_TESTS"] = "OFF"
 
         cmake.configure(source_folder="librealsense-" + self.version)
