@@ -13,6 +13,7 @@ class PythonGobjectConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
+        self.requires("cairo/1.17.2@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://gitlab.gnome.org/GNOME/pygobject/-/archive/{0}/pygobject-{0}.tar.gz".format(self.version))
