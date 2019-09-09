@@ -16,6 +16,7 @@ class CairoConan(ConanFile):
         self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
         self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
         self.requires("pixman/0.38.4@%s/%s" % (self.user, self.channel))
+        self.requires("freetype/2.10.1@%s/%s" % (self.user, self.channel))
         if self.options.introspection:
             self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel),)
 
