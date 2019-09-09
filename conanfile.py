@@ -28,3 +28,4 @@ class GObjectIntrospectionConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.XDG_DATA_DIRS.append(os.path.join(self.package_folder, "share"))
+        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
