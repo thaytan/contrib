@@ -1,9 +1,17 @@
 from conans import ConanFile, Meson, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.16.0"
+    except:
+        return None
+
 class GStreamerVaapiConan(ConanFile):
     name = "gstreamer-vaapi"
-    version = "1.16.0"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -11,12 +19,12 @@ class GStreamerVaapiConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
-        self.requires("gstreamer-plugins-bad/%s@%s/%s" % (self.version, self.user, self.channel))
-        self.requires("libva/2.3.0@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-bad/%s@%s/stable" % (self.version, self.user))
+        self.requires("libva/2.3.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gstreamer-vaapi/archive/%s.tar.gz" % self.version)
