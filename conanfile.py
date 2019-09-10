@@ -1,10 +1,17 @@
 from conans import ConanFile, Meson, tools
-
 import os
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.16.0"
+    except:
+        return None
 
 class GStreamerPluginsBadConan(ConanFile):
     name = "gstreamer-plugins-bad"
-    version = "1.16.0"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -46,16 +53,16 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvenc")
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
         if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
+            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
         if self.options.webrtc:
-            self.requires("libnice/0.1.15@%s/%s" % (self.user, self.channel))
+            self.requires("libnice/0.1.15@%s/stable" % self.user)
         if self.options.srtp:
-            self.requires("libsrtp/2.2.0@%s/%s" % (self.user, self.channel))
+            self.requires("libsrtp/2.2.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
