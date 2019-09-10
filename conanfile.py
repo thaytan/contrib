@@ -1,10 +1,17 @@
 from conans import ConanFile, Meson, tools
-
 import os
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.16.0"
+    except:
+        return None
 
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
-    version = "1.16.0"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Development and debugging tools for GStreamer"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -12,11 +19,11 @@ class GStreamerDevtoolsConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("json-glib/1.4.4@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("json-glib/1.4.4@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-devtools/archive/%s.tar.gz" % self.version)
