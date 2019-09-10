@@ -1,10 +1,17 @@
 from conans import ConanFile, Meson, tools
-
 import os
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.16.0"
+    except:
+        return None
 
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
-    version = "1.16.0"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -32,12 +39,12 @@ class GStreamerPluginsGoodConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
         if self.options.vpx:
-            self.requires("libvpx/1.8.0@%s/%s" % (self.user, self.channel))
+            self.requires("libvpx/1.8.0@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)
