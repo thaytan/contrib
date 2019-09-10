@@ -1,11 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from conans import ConanFile
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "32.2.1"
+    except:
+        return None
+
 class GstreamerNvPluginsConan(ConanFile):
     name = "gstreamer-nv-plugins"
-    version = "32.2.1"
+    version = get_version()
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = ("Demo conan package")
