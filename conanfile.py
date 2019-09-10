@@ -2,10 +2,17 @@ import os
 from conans import ConanFile, CMake, tools
 from conans.util import files
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "3.4.6"
+    except:
+        return None
 
 class OpenCVConan(ConanFile):
     name = "opencv"
-    version = "3.4.6"
+    version = get_version()
     license = "https://raw.githubusercontent.com/IntelRealSense/librealsense/master/LICENSE"
     description = "OpenCV is an open source computer vision and machine learning software library."
     url = "https://gitlab.com/aivero/public/conan/conan-opencv"
@@ -13,8 +20,8 @@ class OpenCVConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("zlib/1.2.11@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/opencv/opencv/archive/%s.tar.gz" % self.version)
@@ -33,7 +40,7 @@ class OpenCVConan(ConanFile):
         cmake.definitions['BUILD_ITT'] = False
         cmake.definitions['BUILD_JPEG_TURBO_DISABLE'] = True
 
-        cmake.configure(source_folder="opencv-" + self.version)
+        cmake.configure(source_folder="%s-%s" % (self.name, self.version))
         cmake.build()
         cmake.install()
 
