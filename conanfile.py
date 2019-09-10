@@ -1,11 +1,16 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from conans import ConanFile, CMake, tools
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.8.1"
+    except:
+        return None
 
 class GTestConan(ConanFile):
     name = "gtest"
-    version = "1.8.1"
+    version = get_version()
     description = "Google's C++ test framework"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD-3-Clause"
@@ -13,7 +18,7 @@ class GTestConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/google/googletest/archive/release-%s.tar.gz" % self.version)
