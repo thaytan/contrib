@@ -2,9 +2,16 @@ import os
 from conans import ConanFile, CMake, tools
 from conans.util import files
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.0.0"
+    except:
+        return None
 
 class GlfwcConan(ConanFile):
-    version = "3.2.1"
+    version = get_version()
     name = "glfw"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop."
@@ -15,7 +22,7 @@ class GlfwcConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/glfw/glfw/archive/%s.tar.gz" % self.version)
