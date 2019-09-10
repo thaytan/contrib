@@ -21,12 +21,12 @@ class CairoConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("pixman/0.38.4@%s/%s" % (self.user, self.channel))
-        self.requires("freetype/2.10.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("pixman/0.38.4@%s/stable" % self.user)
+        self.requires("freetype/2.10.1@%s/stable" % self.user)
         if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel),)
+            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/cairo/cairo/-/archive/{0}/cairo-{0}.tar.gz".format(self.version))
