@@ -6,10 +6,17 @@ import os
 import glob
 import shutil
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "4.1"
+    except:
+        return None
 
 class FFMpegConan(ConanFile):
     name = "ffmpeg"
-    version = "4.1"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md"
