@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "3.3"
+    except:
+        return None
 
 class BisonConan(ConanFile):
     name = "bison"
-    version = "3.3"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-bison"
     description = "Bison is a general-purpose parser generator"
     license = "GPL-3.0-or-later"
