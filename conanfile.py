@@ -74,12 +74,12 @@ class env(Generator):
         environ["PATH"] += pathsep + pathsep.join(bin_paths)
 
         # Generate env.sh
-        content = "export PATH=\"$PATH\":%s\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
-        content += "export PKG_CONFIG_PATH=\"$PKG_CONFIG_PATH\":\"%s\"\n" % pc_output_path
-        content += "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\":%s\n" % pathsep.join(map(lambda path: "\"%s\"" % path, lib_paths))
+        content = "export PATH=%s:\"$PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
+        content += "export PKG_CONFIG_PATH=\"%s\":\"$PKG_CONFIG_PATH\"\n" % pc_output_path
+        content += "export LD_LIBRARY_PATH=%s:\"$LD_LIBRARY_PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, lib_paths))
         for var, val in self.env.items():
             if type(val) is list:
-                content += "export {0}=\"${0}\":{1}\n".format(var, pathsep.join(map(lambda path: "\"%s\"" % path, val)))
+                content += "export {0}={1}:\"${0}\"\n".format(var, pathsep.join(map(lambda path: "\"%s\"" % path, val)))
             else:
                 content += "export {0}={1}\n".format(var, "\"%s\"" % val)
 
