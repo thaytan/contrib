@@ -1,9 +1,17 @@
 from conans import ConanFile, Meson, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.16.0"
+    except:
+        return None
+
 class GStreamerConan(ConanFile):
     name = "gstreamer"
-    version = "1.16.0"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A framework for streaming media"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -21,12 +29,12 @@ class GStreamerConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("bison/3.3@%s/%s" % (self.user, self.channel), private=True)
-        self.requires("flex/2.6.4@%s/%s" % (self.user, self.channel), private=True)
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("bison/3.3@%s/stable" % self.user, private=True)
+        self.requires("flex/2.6.4@%s/stable" % self.user, private=True)
         if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel),)
+            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user,)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gstreamer/archive/%s.tar.gz" % self.version)
