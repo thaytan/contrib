@@ -1,11 +1,18 @@
-import os
 from conans import ConanFile, CMake, tools
 from conans.util import files
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "4.3.0"
+    except:
+        return None
 
 class CppzmqConan(ConanFile):
     name = "cppzmq"
-    version = "4.3.0"
+    version = get_version()
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "https://raw.githubusercontent.com/zeromq/cppzmq/master/COPYING"
