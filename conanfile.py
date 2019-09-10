@@ -1,13 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "2.6.4"
+    except:
+        return None
 
 class FlexConan(ConanFile):
     name = "flex"
-    version = "2.6.4"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-flex"
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD 2-Clause"
