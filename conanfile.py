@@ -1,10 +1,17 @@
 from conans import ConanFile, Meson, tools
-
 import os
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.16.0"
+    except:
+        return None
 
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
-    version = "1.16.0"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -38,15 +45,15 @@ class GStreamerPluginsBaseConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("gstreamer/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
         if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
+            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
         if self.options.orc:
-            self.requires("orc/0.4.29@%s/%s" % (self.user, self.channel))
+            self.requires("orc/0.4.29@%s/stable" % self.user)
         if self.options.opus:
-            self.requires("opus/1.3.1@%s/%s" % (self.user, self.channel))
+            self.requires("opus/1.3.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
