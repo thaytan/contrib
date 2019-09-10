@@ -24,10 +24,10 @@ class FFMpegConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def build_requirements(self):
-        self.build_requires("yasm/1.3.0@%s/%s" % (self.user, self.channel))
+        self.build_requires("yasm/1.3.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("http://ffmpeg.org/releases/ffmpeg-%s.tar.bz2" % self.version)
