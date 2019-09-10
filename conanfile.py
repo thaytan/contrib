@@ -1,9 +1,17 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "4.3.0"
+    except:
+        return None
+
 class CairoConan(ConanFile):
     name = "cairo"
-    version = "1.17.2"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
