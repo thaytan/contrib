@@ -1,9 +1,17 @@
 from conans import ConanFile, tools
 from os import path
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "32.2.1"
+    except:
+        return None
+
 class GstreamerNvV4l2(ConanFile):
     name = "gstreamer-nv-v4l2"
-    version = "32.2.1"
+    version = get_version()
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
