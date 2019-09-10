@@ -1,12 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from conans import ConanFile, Meson, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "2.58.1"
+    except:
+        return None
+
 class GLibConan(ConanFile):
     name = "glib"
-    version = "2.58.1"
+    version = get_version()
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
@@ -14,9 +19,9 @@ class GLibConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("zlib/1.2.11@%s/%s" % (self.user, self.channel))
-        self.requires("libffi/3.3-rc0@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("zlib/1.2.11@%s/stable" % self.user)
+        self.requires("libffi/3.3-rc0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
