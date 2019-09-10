@@ -1,13 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "2.10.1"
+    except:
+        return None
 
 class FreetypeConan(ConanFile):
     name = "freetype"
-    version = "2.10.1"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
