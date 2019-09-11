@@ -125,7 +125,7 @@ impl AggregatorImpl for RgbdMux {
         let mut tags = gst::tags::TagList::new();
         tags.get_mut()
             .unwrap()
-            .add::<gst::tags::Title>(&&first_sink_pad_name[4..], gst::TagMergeMode::Append);
+            .add::<gst::tags::Title>(&&first_sink_pad_name[5..], gst::TagMergeMode::Append);
         TagsMeta::add(main_output_buffer.get_mut().unwrap(), &mut tags);
 
         // Attach the rest of the streams as meta to the main buffer
@@ -144,7 +144,7 @@ impl AggregatorImpl for RgbdMux {
             let mut tags = gst::tags::TagList::new();
             tags.get_mut()
                 .unwrap()
-                .add::<gst::tags::Title>(&&sink_pad_name[4..], gst::TagMergeMode::Append);
+                .add::<gst::tags::Title>(&&sink_pad_name[5..], gst::TagMergeMode::Append);
             TagsMeta::add(additional_output_buffer.make_mut(), &mut tags);
 
             // Attach the additional buffer to the main buffer
