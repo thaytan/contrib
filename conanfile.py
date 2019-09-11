@@ -30,7 +30,7 @@ class JetsonDrivers(ConanFile):
             symlink("lib%s.so.1.0.0" % dl, "lib%s.so" % dl)
 
     def package(self):
-        self.copy("*libnvbuf*.so*", dst="lib", keep_path=False, links=True)
+        self.copy("*.so*", dst="lib", keep_path=False, links=True)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
