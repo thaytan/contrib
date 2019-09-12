@@ -16,9 +16,17 @@ Libs.private: -lpthread
 Cflags: -I${includedir}
 """
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "32.2.1"
+    except:
+        return None
+
 class V4l2(ConanFile):
     name = "nv-v4l2"
-    version = "32.2.1"
+    version = get_version()
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
@@ -28,8 +36,8 @@ class V4l2(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("nv-v4lconvert/%s@%s/%s" % (self.version, self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("nv-v4lconvert/%s@%s/stable" % (self.version, self.user))
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
