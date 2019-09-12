@@ -3,9 +3,17 @@ import os
 import platform
 import shutil
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.1.1b"
+    except:
+        return None
+
 class OpensslConan(ConanFile):
     name = "openssl"
-    version = "1.1.1b"
+    version = get_version()
     description = "TLS/SSL and crypto library"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "https://raw.githubusercontent.com/openssl/openssl/master/LICENSE"
@@ -13,7 +21,7 @@ class OpensslConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/openssl/openssl/archive/OpenSSL_%s.tar.gz" % self.version.replace(".", "_"))
