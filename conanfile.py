@@ -1,9 +1,17 @@
 from conans import ConanFile, Meson, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "3.33.1"
+    except:
+        return None
+
 class PythonGobjectConan(ConanFile):
     name = "python-gobject"
-    version = "3.33.1"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Python GObject bindings"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -11,9 +19,9 @@ class PythonGobjectConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("gobject-introspection/1.59.3@%s/%s" % (self.user, self.channel))
-        self.requires("cairo/1.17.2@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
+        self.requires("cairo/1.17.2@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gitlab.gnome.org/GNOME/pygobject/-/archive/{0}/pygobject-{0}.tar.gz".format(self.version))
