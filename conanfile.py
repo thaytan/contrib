@@ -1,13 +1,18 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
 import stat
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.8.0"
+    except:
+        return None
 
 class LibVpxConan(ConanFile):
     name = "libvpx"
-    version = "1.8.0"
+    version = get_version()
     url = "https://github.com/webmproject/libvpx"
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
@@ -15,13 +20,13 @@ class LibVpxConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+
+    def build_requirements(self):
+        self.build_requires("yasm/1.3.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version)
-
-    def build_requirements(self):
-        self.build_requires("yasm/1.3.0@%s/%s" % (self.user, self.channel))
 
     def build(self):
         args = []
