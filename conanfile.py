@@ -1,13 +1,18 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
 import stat
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "2.2.0"
+    except:
+        return None
 
 class LibSrtpConan(ConanFile):
     name = "libsrtp"
-    version = "2.2.0"
+    version = get_version()
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD"
     description = "Library for SRTP (Secure Realtime Transport Protocol)"
