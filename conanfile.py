@@ -1,10 +1,17 @@
 from conans import ConanFile, Meson, tools
-
 import os
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "0.1.15"
+    except:
+        return None
 
 class LibNiceConan(ConanFile):
     name = "libnice"
-    version = "0.1.15"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "An implementation of the IETF’s Interactive Connectivity Establishment (ICE) standard"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
@@ -14,12 +21,12 @@ class LibNiceConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("glib/2.58.1@%s/%s" % (self.user, self.channel))
-        self.requires("openssl/1.1.1b@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("glib/2.58.1@%s/stable" % self.user)
+        self.requires("openssl/1.1.1b@%s/stable" % self.user)
         if self.options.gstreamer:
-            self.requires("gstreamer/1.16.0@%s/%s" % (self.user, self.channel))
-            self.requires("gstreamer-plugins-base/1.16.0@%s/%s" % (self.user, self.channel))
+            self.requires("gstreamer/1.16.0@%s/stable" % self.user)
+            self.requires("gstreamer-plugins-base/1.16.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/libnice/libnice/archive/%s.tar.gz" % self.version)
