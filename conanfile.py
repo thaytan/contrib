@@ -1,10 +1,17 @@
-import os
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.3.1"
+    except:
+        return None
 
 class OpusConan(ConanFile):
     name = "opus"
-    version = "1.3.1"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Modern audio compression for the internet"
     license = "https://raw.githubusercontent.com/xiph/opus/master/COPYING"
@@ -12,7 +19,7 @@ class OpusConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://archive.mozilla.org/pub/opus/opus-%s.tar.gz" % self.version)
