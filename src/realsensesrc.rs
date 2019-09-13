@@ -543,22 +543,51 @@ impl BaseSrcImpl for RealsenseSrc {
 
             // Record to file if both `serial` and `rosbag-location` are defined
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
-                config
-                    .enable_record_to_file(rosbag_location.to_string())
-                    .unwrap();
+                if let Err(_) = config.enable_record_to_file(rosbag_location.to_string()) {
+                    gst_error!(
+                        self.cat,
+                        obj: element,
+                        "Cannot write to \"{}\"!",
+                        rosbag_location
+                    );
+                    return Err(gst_error_msg!(
+                        gst::ResourceError::Settings,
+                        ["Cannot write to \"{}\"!", rosbag_location]
+                    ));
+                }
             };
 
             // Enable device with the given serial number and device configuration
-            config.enable_device(serial.to_string()).unwrap();
+            if let Err(_) = config.enable_device(serial.to_string()) {
+                gst_error!(
+                    self.cat,
+                    obj: element,
+                    "No device with serial \"{}\" is connected!",
+                    serial
+                );
+                return Err(gst_error_msg!(
+                    gst::ResourceError::Settings,
+                    ["No device with serial \"{}\" is connected!", serial]
+                ));
+            }
         } else {
             // Play from rosbag file if `serial` is not defined
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
-                config
-                    .enable_device_from_file_repeat_option(
-                        rosbag_location.to_string(),
-                        settings.loop_rosbag,
-                    )
-                    .unwrap();
+                if let Err(_) = config.enable_device_from_file_repeat_option(
+                    rosbag_location.to_string(),
+                    settings.loop_rosbag,
+                ) {
+                    gst_error!(
+                        self.cat,
+                        obj: element,
+                        "Cannot read from \"{}\"!",
+                        rosbag_location
+                    );
+                    return Err(gst_error_msg!(
+                        gst::ResourceError::Settings,
+                        ["Cannot read from \"{}\"!", rosbag_location]
+                    ));
+                }
             };
         }
 
@@ -570,7 +599,18 @@ impl BaseSrcImpl for RealsenseSrc {
 
         // Start the RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
-        pipeline.start_with_config(&config).unwrap();
+        if let Err(err) = pipeline.start_with_config(&config) {
+            gst_error!(
+                self.cat,
+                obj: element,
+                "Cannot initiate RealSense pipeline!\nError: {}",
+                err
+            );
+            return Err(gst_error_msg!(
+                gst::ResourceError::Settings,
+                ["Cannot initiate RealSense pipeline!\nError: {}", err]
+            ));
+        }
         internals.state = State::Started { pipeline };
 
         gst_info!(self.cat, obj: element, "Streaming started");
