@@ -1,13 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from conans import ConanFile, Meson, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "2.3.0"
+    except:
+        return None
 
 class LibVaConan(ConanFile):
     name = "libva"
-    version = "2.3.0"
+    version = get_version()
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
@@ -15,8 +19,8 @@ class LibVaConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("libdrm/2.4.96@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("libdrm/2.4.96@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
