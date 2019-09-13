@@ -1,10 +1,16 @@
-#!/usr/bin/env python
-
 from conans import ConanFile, tools, Meson
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "2.4.96"
+    except:
+        return None
 
 class LibdrmConan(ConanFile):
     name = "libdrm"
-    version = "2.4.96"
+    version = get_version()
     license = "MIT"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Direct Rendering Manager headers and kernel modules"
@@ -12,8 +18,8 @@ class LibdrmConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("libpciaccess/0.14@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("libpciaccess/0.14@%s/stable" % self.user)
 
     def source(self):
         tools.get("http://dri.freedesktop.org/libdrm/libdrm-%s.tar.gz" % self.version)
