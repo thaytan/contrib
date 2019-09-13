@@ -2,13 +2,25 @@ from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
 import platform
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "3.3-rc0"
+    except:
+        return None
+
 class LibffiConan(ConanFile):
     name = "libffi"
-    version = "3.3-rc0"
+    version = get_version()
     settings = "os", "compiler", "build_type", "arch"
     url = "https://github.com/prozum/conan-libffi"
     license = "https://github.com/libffi/libffi/blob/master/LICENSE"
     description = "A portable, high level programming interface to various calling conventions"
+    generators = "env"
+
+    def requirements(self):
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/libffi/libffi/archive/v%s.tar.gz" % self.version)
@@ -22,7 +34,7 @@ class LibffiConan(ConanFile):
             "--disable-static",
             "--enable-shared"
         ]
-        with tools.chdir("libffi-" + self.version):
+        with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("autoreconf -i")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
