@@ -32,21 +32,21 @@ static PROPERTIES: [subclass::Property; 13] = [
         glib::ParamSpec::string(
             name,
             "Serial Number",
-            "Serial number of a realsense device. If unchanged or empty, `rosbag_location` is used to locate a file to play from.",
+            "Serial number of a realsense device. If unchanged or empty, `rosbag-location` is used to locate a file to play from.",
             None,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("rosbag_location", |name| {
+    subclass::Property("rosbag-location", |name| {
         glib::ParamSpec::string(
             name,
             "Rosbag File Location",
-            "Location of a rosbag file to play from. If unchanged or empty, physical device specified by `serial` is used. If both `serial` and `rosbag_location` are selected, the selected streams are recorded into a file specified by this property.",
+            "Location of a rosbag file to play from. If unchanged or empty, physical device specified by `serial` is used. If both `serial` and `rosbag-location` are selected, the selected streams are recorded into a file specified by this property.",
             None,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("json_location", |name| {
+    subclass::Property("json-location", |name| {
         glib::ParamSpec::string(
             name,
             "JSON File Location",
@@ -55,46 +55,46 @@ static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("enable_depth", |name| {
+    subclass::Property("enable-depth", |name| {
         glib::ParamSpec::boolean(
             name,
-            "enable_depth",
+            "Enable Depth",
             "Enables depth stream.",
             properties_d435::DEFAULT_ENABLE_DEPTH,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("enable_infra1", |name| {
+    subclass::Property("enable-infra1", |name| {
         glib::ParamSpec::boolean(
             name,
-            "enable_infra1",
+            "Enable Infra1",
             "Enables infra1 stream.",
             properties_d435::DEFAULT_ENABLE_INFRA1,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("enable_infra2", |name| {
+    subclass::Property("enable-infra2", |name| {
         glib::ParamSpec::boolean(
             name,
-            "enable_infra2",
+            "Enable Infra2",
             "Enables infra2 stream.",
             properties_d435::DEFAULT_ENABLE_INFRA2,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("enable_color", |name| {
+    subclass::Property("enable-color", |name| {
         glib::ParamSpec::boolean(
             name,
-            "enable_color",
+            "Enable Color",
             "Enables color stream.",
             properties_d435::DEFAULT_ENABLE_COLOR,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("depth_width", |name| {
+    subclass::Property("depth-width", |name| {
         glib::ParamSpec::int(
             name,
-            "depth_width",
+            "depth-width",
             "Width of the depth and infra1/infra2 frames.",
             properties_d435::DEPTH_MIN_WIDTH,
             properties_d435::DEPTH_MAX_WIDTH,
@@ -102,10 +102,10 @@ static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("depth_height", |name| {
+    subclass::Property("depth-height", |name| {
         glib::ParamSpec::int(
             name,
-            "depth_height",
+            "depth-height",
             "Height of the depth and infra1/infra2 frames.",
             properties_d435::DEPTH_MIN_HEIGHT,
             properties_d435::DEPTH_MAX_HEIGHT,
@@ -113,10 +113,10 @@ static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("color_width", |name| {
+    subclass::Property("color-width", |name| {
         glib::ParamSpec::int(
             name,
-            "color_width",
+            "color-width",
             "Width of the color frame.",
             properties_d435::COLOR_MIN_WIDTH,
             properties_d435::COLOR_MAX_WIDTH,
@@ -124,10 +124,10 @@ static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("color_height", |name| {
+    subclass::Property("color-height", |name| {
         glib::ParamSpec::int(
             name,
-            "color_height",
+            "color-height",
             "Height of the color frame.",
             properties_d435::COLOR_MIN_HEIGHT,
             properties_d435::COLOR_MAX_HEIGHT,
@@ -146,10 +146,10 @@ static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("wait_for_frames_timeout", |name| {
+    subclass::Property("wait-for-frames-timeout", |name| {
         glib::ParamSpec::uint(
             name,
-            "wait_for_frames_timeout",
+            "wait-for-frames-timeout",
             "Timeout used while waiting for frames from a RealSense device in milliseconds.",
             std::u32::MIN,
             std::u32::MAX,
@@ -312,111 +312,111 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.serial = serial;
             }
-            subclass::Property("rosbag_location", ..) => {
+            subclass::Property("rosbag-location", ..) => {
                 let rosbag_location = value.get::<String>();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `rosbag_location` from {:?} to {:?}",
+                    "Changing property `rosbag-location` from {:?} to {:?}",
                     settings.rosbag_location,
                     rosbag_location
                 );
                 settings.rosbag_location = rosbag_location;
             }
-            subclass::Property("json_location", ..) => {
+            subclass::Property("json-location", ..) => {
                 let json_location = value.get::<String>();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `json_location` from {:?} to {:?}",
+                    "Changing property `json-location` from {:?} to {:?}",
                     settings.json_location,
                     json_location
                 );
                 settings.json_location = json_location;
             }
-            subclass::Property("enable_depth", ..) => {
+            subclass::Property("enable-depth", ..) => {
                 let enable_depth = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `enable_depth` from {} to {}",
+                    "Changing property `enable-depth` from {} to {}",
                     settings.streams.enable_depth,
                     enable_depth
                 );
                 settings.streams.enable_depth = enable_depth;
             }
-            subclass::Property("enable_infra1", ..) => {
+            subclass::Property("enable-infra1", ..) => {
                 let enable_infra1 = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `enable_infra1` from {} to {}",
+                    "Changing property `enable-infra1` from {} to {}",
                     settings.streams.enable_infra1,
                     enable_infra1
                 );
                 settings.streams.enable_infra1 = enable_infra1;
             }
-            subclass::Property("enable_infra2", ..) => {
+            subclass::Property("enable-infra2", ..) => {
                 let enable_infra2 = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `enable_infra2` from {} to {}",
+                    "Changing property `enable-infra2` from {} to {}",
                     settings.streams.enable_infra2,
                     enable_infra2
                 );
                 settings.streams.enable_infra2 = enable_infra2;
             }
-            subclass::Property("enable_color", ..) => {
+            subclass::Property("enable-color", ..) => {
                 let enable_color = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `enable_color` from {} to {}",
+                    "Changing property `enable-color` from {} to {}",
                     settings.streams.enable_color,
                     enable_color
                 );
                 settings.streams.enable_color = enable_color;
             }
-            subclass::Property("depth_width", ..) => {
+            subclass::Property("depth-width", ..) => {
                 let depth_width = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `depth_width` from {} to {}",
+                    "Changing property `depth-width` from {} to {}",
                     settings.streams.depth_resolution.width,
                     depth_width
                 );
                 settings.streams.depth_resolution.width = depth_width;
             }
-            subclass::Property("depth_height", ..) => {
+            subclass::Property("depth-height", ..) => {
                 let depth_height = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `depth_height` from {} to {}",
+                    "Changing property `depth-height` from {} to {}",
                     settings.streams.depth_resolution.height,
                     depth_height
                 );
                 settings.streams.depth_resolution.height = depth_height;
             }
-            subclass::Property("color_width", ..) => {
+            subclass::Property("color-width", ..) => {
                 let color_width = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `color_width` from {} to {}",
+                    "Changing property `color-width` from {} to {}",
                     settings.streams.color_resolution.width,
                     color_width
                 );
                 settings.streams.color_resolution.width = color_width;
             }
-            subclass::Property("color_height", ..) => {
+            subclass::Property("color-height", ..) => {
                 let color_height = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `color_height` from {} to {}",
+                    "Changing property `color-height` from {} to {}",
                     settings.streams.color_resolution.height,
                     color_height
                 );
@@ -434,12 +434,12 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.framerate = framerate;
                 // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             }
-            subclass::Property("wait_for_frames_timeout", ..) => {
+            subclass::Property("wait-for-frames-timeout", ..) => {
                 let wait_for_frames_timeout = value.get().unwrap();
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `wait_for_frames_timeout` from {} to {}",
+                    "Changing property `wait-for-frames-timeout` from {} to {}",
                     settings.wait_for_frames_timeout,
                     wait_for_frames_timeout
                 );
@@ -455,30 +455,30 @@ impl ObjectImpl for RealsenseSrc {
         let prop = &PROPERTIES[id];
         match *prop {
             subclass::Property("serial", ..) => Ok(settings.serial.to_value()),
-            subclass::Property("rosbag_location", ..) => Ok(settings.rosbag_location.to_value()),
-            subclass::Property("json_location", ..) => Ok(settings.json_location.to_value()),
-            subclass::Property("enable_depth", ..) => Ok(settings.streams.enable_depth.to_value()),
-            subclass::Property("enable_infra1", ..) => {
+            subclass::Property("rosbag-location", ..) => Ok(settings.rosbag_location.to_value()),
+            subclass::Property("json-location", ..) => Ok(settings.json_location.to_value()),
+            subclass::Property("enable-depth", ..) => Ok(settings.streams.enable_depth.to_value()),
+            subclass::Property("enable-infra1", ..) => {
                 Ok(settings.streams.enable_infra1.to_value())
             }
-            subclass::Property("enable_infra2", ..) => {
+            subclass::Property("enable-infra2", ..) => {
                 Ok(settings.streams.enable_infra2.to_value())
             }
-            subclass::Property("enable_color", ..) => Ok(settings.streams.enable_color.to_value()),
-            subclass::Property("depth_width", ..) => {
+            subclass::Property("enable-color", ..) => Ok(settings.streams.enable_color.to_value()),
+            subclass::Property("depth-width", ..) => {
                 Ok(settings.streams.depth_resolution.width.to_value())
             }
-            subclass::Property("depth_height", ..) => {
+            subclass::Property("depth-height", ..) => {
                 Ok(settings.streams.depth_resolution.height.to_value())
             }
-            subclass::Property("color_width", ..) => {
+            subclass::Property("color-width", ..) => {
                 Ok(settings.streams.color_resolution.width.to_value())
             }
-            subclass::Property("color_height", ..) => {
+            subclass::Property("color-height", ..) => {
                 Ok(settings.streams.color_resolution.height.to_value())
             }
             subclass::Property("framerate", ..) => Ok(settings.streams.framerate.to_value()),
-            subclass::Property("wait_for_frames_timeout", ..) => {
+            subclass::Property("wait-for-frames-timeout", ..) => {
                 Ok(settings.wait_for_frames_timeout.to_value())
             }
             _ => unimplemented!("Property is not implemented"),
@@ -516,7 +516,7 @@ impl BaseSrcImpl for RealsenseSrc {
             // Enable the selected streams
             Self::enable_streams(&config, &settings);
 
-            // Record to file if both `serial` and `rosbag_location` are defined
+            // Record to file if both `serial` and `rosbag-location` are defined
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 config
                     .enable_record_to_file(rosbag_location.to_string())
@@ -537,7 +537,7 @@ impl BaseSrcImpl for RealsenseSrc {
         // Get context and a list of connected devices
         let context = rs2::context::Context::new().unwrap();
 
-        // Load JSON if `json_location` is defined
+        // Load JSON if `json-location` is defined
         Self::load_json(&context.get_devices().unwrap(), &settings)?;
 
         // Start the RealSense pipeline
@@ -734,11 +734,11 @@ impl RealsenseSrc {
             unreachable!("Element has already started");
         }
 
-        // Either `serial` or `rosbag_location` must be specified
+        // Either `serial` or `rosbag-location` must be specified
         if settings.serial == None && settings.rosbag_location == None {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
-                ["Neither the `serial` or `rosbag_location` properties are defined. At least one of these must be defined!"]
+                ["Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!"]
             ));
         }
 
