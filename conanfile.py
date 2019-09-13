@@ -4,9 +4,20 @@
 from conans import ConanFile, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        if git.get_tag():
+            return git.get_tag()
+        else:
+            return git.get_branch()
+    except:
+        return None
+
+
 class RgbdConan(ConanFile):
     name = "gst-rgbd"
-    version = "0.1.0"
+    version = get_version()
     description = "GStreamer plugin for demuxing and muxing `video/rgbd` streams"
     url = "https://aivero.com"
     license = "LGPL"
