@@ -25,9 +25,11 @@ use std::sync::Mutex;
 
 // Default timeout used while waiting for frames from a realsense device in milliseconds.
 const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500;
+// Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
+const DEFAULT_LOOP_ROSBAG: bool = true;
 
 use crate::properties_d435;
-static PROPERTIES: [subclass::Property; 13] = [
+static PROPERTIES: [subclass::Property; 14] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -146,6 +148,15 @@ static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    subclass::Property("loop-rosbag", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Loop Rosbag",
+            "Enables looping of playing from rosbag recording specified by `rosbag-location` property. This property applies only if `rosbag-location` and no `serial` are specified.",
+            DEFAULT_LOOP_ROSBAG,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
     subclass::Property("wait-for-frames-timeout", |name| {
         glib::ParamSpec::uint(
             name,
@@ -165,6 +176,7 @@ struct Settings {
     rosbag_location: Option<String>,
     json_location: Option<String>,
     streams: Streams,
+    loop_rosbag: bool,
     wait_for_frames_timeout: u32,
 }
 
@@ -204,6 +216,7 @@ impl Default for Settings {
                 },
                 framerate: properties_d435::DEFAULT_FRAMERATE,
             },
+            loop_rosbag: DEFAULT_LOOP_ROSBAG,
             wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
         }
     }
@@ -434,6 +447,17 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.framerate = framerate;
                 // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             }
+            subclass::Property("loop-rosbag", ..) => {
+                let loop_rosbag = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `loop-rosbag` from {} to {}",
+                    settings.loop_rosbag,
+                    loop_rosbag
+                );
+                settings.loop_rosbag = loop_rosbag;
+            }
             subclass::Property("wait-for-frames-timeout", ..) => {
                 let wait_for_frames_timeout = value.get().unwrap();
                 gst_info!(
@@ -478,6 +502,7 @@ impl ObjectImpl for RealsenseSrc {
                 Ok(settings.streams.color_resolution.height.to_value())
             }
             subclass::Property("framerate", ..) => Ok(settings.streams.framerate.to_value()),
+            subclass::Property("loop-rosbag", ..) => Ok(settings.loop_rosbag.to_value()),
             subclass::Property("wait-for-frames-timeout", ..) => {
                 Ok(settings.wait_for_frames_timeout.to_value())
             }
@@ -529,7 +554,10 @@ impl BaseSrcImpl for RealsenseSrc {
             // Play from rosbag file if `serial` is not defined
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 config
-                    .enable_device_from_file_repeat_option(rosbag_location.to_string(), true)
+                    .enable_device_from_file_repeat_option(
+                        rosbag_location.to_string(),
+                        settings.loop_rosbag,
+                    )
                     .unwrap();
             };
         }
@@ -556,8 +584,7 @@ impl BaseSrcImpl for RealsenseSrc {
         }
         *state = State::Stopped;
 
-        gst_info!(self.cat, obj: element, "Stopped");
-        Ok(())
+        self.parent_stop(element)
     }
 
     fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
@@ -622,7 +649,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
     fn create(
         &self,
-        _element: &gst_base::BaseSrc,
+        element: &gst_base::BaseSrc,
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
@@ -639,9 +666,17 @@ impl BaseSrcImpl for RealsenseSrc {
         };
 
         // Get frames with the given timeout
-        let frames = pipeline
-            .wait_for_frames(settings.wait_for_frames_timeout)
-            .unwrap();
+        let frames = pipeline.wait_for_frames(settings.wait_for_frames_timeout);
+
+        // Stop if timeout is exceeded. This can occur also if the recording has ended.
+        if frames.is_err() {
+            element
+                .get_static_pad("src")
+                .unwrap()
+                .push_event(gst::Event::new_eos().build());
+            std::process::exit(0);
+        }
+        let frames = frames.unwrap();
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
