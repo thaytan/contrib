@@ -1,19 +1,24 @@
-#!/usr/bin/env python
-
-import os
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "0.14"
+    except:
+        return None
 
 class LibPciAccessConan(ConanFile):
     name = "libpciaccess"
-    version = "0.14"
+    version = get_version()
     description = "Generic PCI access library"
     url = "https://gitlab.com/aivero/public/conan/conan-libusb"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
     def requirements(self):
-        self.requires("xorg-util-macros/1.19.1@%s/%s" % (self.user, self.channel))
+        self.requires("xorg-util-macros/1.19.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/freedesktop/xorg-libpciaccess/archive/libpciaccess-%s.tar.gz" % self.version)
