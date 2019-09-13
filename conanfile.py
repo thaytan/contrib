@@ -1,15 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Conan receipt package for USB Library
-"""
-import os
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.19.1"
+    except:
+        return None
 
 class LibXorgUtilMacrosConan(ConanFile):
     name = "xorg-util-macros"
-    version = "1.19.1"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "X.Org Autotools macros"
@@ -17,7 +19,7 @@ class LibXorgUtilMacrosConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/freedesktop/xorg-macros/archive/util-macros-%s.tar.gz" % self.version)
