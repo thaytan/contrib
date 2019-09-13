@@ -1,13 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.0.22"
+    except:
+        return None
 
 class LibUSBConan(ConanFile):
     name = "libusb"
-    version = "1.0.22"
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
     description = "A cross-platform library to access USB devices"
@@ -17,7 +21,7 @@ class LibUSBConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/libusb/libusb/archive/v%s.tar.gz" % self.version)
