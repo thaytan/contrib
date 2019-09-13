@@ -20,8 +20,8 @@ class CppzmqConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("libzmq/4.3.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("libzmq/4.3.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/zeromq/cppzmq/archive/v%s.tar.gz" % self.version)
