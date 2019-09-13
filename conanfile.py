@@ -1,11 +1,18 @@
-import os
 from conans import ConanFile, CMake, tools
 from conans.util import files
+import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "2.20.0"
+    except:
+        return None
 
 class LibRealsenseConan(ConanFile):
     name = "librealsense"
-    version = "2.20.0"
+    version = get_version()
     license = "https://raw.githubusercontent.com/IntelRealSense/librealsense/master/LICENSE"
     description = "Intel RealSense SDK https://realsense.intel.com"
     url = "https://gitlab.com/aivero/public/conan/conan-librealsense"
@@ -14,8 +21,8 @@ class LibRealsenseConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
-        self.requires("libusb/1.0.22@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("libusb/1.0.22@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)
