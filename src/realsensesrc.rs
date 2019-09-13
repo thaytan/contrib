@@ -655,7 +655,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 rs2::rs2_stream::RS2_STREAM_DEPTH,
                 -1,
                 &[],
-            );
+            )?;
         }
 
         // Attach `infra1` frame if enabled
@@ -667,7 +667,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 1,
                 &[streams.enable_depth],
-            );
+            )?;
         }
 
         // Attach `infra2` frame if enabled
@@ -679,7 +679,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 2,
                 &[streams.enable_depth, streams.enable_infra1],
-            );
+            )?;
         }
 
         // Attach `color` frame if enabled
@@ -695,7 +695,7 @@ impl BaseSrcImpl for RealsenseSrc {
                     streams.enable_infra1,
                     streams.enable_infra2,
                 ],
-            );
+            )?;
         }
 
         Ok(output_buffer)
@@ -862,19 +862,22 @@ impl RealsenseSrc {
         stream_type: rs2::rs2_stream,
         stream_id: i32,
         previous_streams: &[bool],
-    ) {
+    ) -> Result<(), gst::FlowError> {
         // Extract the frame from frames based on its type and id
-        let frame = frames
-            .iter()
-            .find(|f| {
-                f.get_profile().unwrap().get_data().unwrap().stream == stream_type
-                    && if stream_id == -1 {
-                        true
-                    } else {
-                        f.get_profile().unwrap().get_data().unwrap().index == stream_id
-                    }
-            })
-            .unwrap();
+        let frame = frames.iter().find(|f| {
+            f.get_profile().unwrap().get_data().unwrap().stream == stream_type
+                && if stream_id == -1 {
+                    true
+                } else {
+                    f.get_profile().unwrap().get_data().unwrap().index == stream_id
+                }
+        });
+
+        // Return error if the expected frame could no be found
+        if frame.is_none() {
+            return Err(gst::FlowError::CustomError);
+        }
+        let frame = frame.unwrap();
 
         // Create the appropriate tag
         let mut tags = gst::tags::TagList::new();
@@ -908,6 +911,8 @@ impl RealsenseSrc {
 
         // Release the frame
         frame.release();
+
+        Ok(())
     }
 }
 
