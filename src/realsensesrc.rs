@@ -544,12 +544,6 @@ impl BaseSrcImpl for RealsenseSrc {
             // Record to file if both `serial` and `rosbag-location` are defined
             if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
                 if let Err(_) = config.enable_record_to_file(rosbag_location.to_string()) {
-                    gst_error!(
-                        self.cat,
-                        obj: element,
-                        "Cannot write to \"{}\"!",
-                        rosbag_location
-                    );
                     return Err(gst_error_msg!(
                         gst::ResourceError::Settings,
                         ["Cannot write to \"{}\"!", rosbag_location]
@@ -559,15 +553,9 @@ impl BaseSrcImpl for RealsenseSrc {
 
             // Enable device with the given serial number and device configuration
             if let Err(_) = config.enable_device(serial.to_string()) {
-                gst_error!(
-                    self.cat,
-                    obj: element,
-                    "No device with serial \"{}\" is connected!",
-                    serial
-                );
                 return Err(gst_error_msg!(
                     gst::ResourceError::Settings,
-                    ["No device with serial \"{}\" is connected!", serial]
+                    ["No device with serial `{}` is connected!", serial]
                 ));
             }
         } else {
@@ -577,12 +565,6 @@ impl BaseSrcImpl for RealsenseSrc {
                     rosbag_location.to_string(),
                     settings.loop_rosbag,
                 ) {
-                    gst_error!(
-                        self.cat,
-                        obj: element,
-                        "Cannot read from \"{}\"!",
-                        rosbag_location
-                    );
                     return Err(gst_error_msg!(
                         gst::ResourceError::Settings,
                         ["Cannot read from \"{}\"!", rosbag_location]
@@ -600,12 +582,6 @@ impl BaseSrcImpl for RealsenseSrc {
         // Start the RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
         if let Err(err) = pipeline.start_with_config(&config) {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Cannot initiate RealSense pipeline!\nError: {}",
-                err
-            );
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["Cannot initiate RealSense pipeline!\nError: {}", err]
@@ -689,7 +665,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
     fn create(
         &self,
-        element: &gst_base::BaseSrc,
+        _element: &gst_base::BaseSrc,
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
@@ -708,13 +684,9 @@ impl BaseSrcImpl for RealsenseSrc {
         // Get frames with the given timeout
         let frames = pipeline.wait_for_frames(settings.wait_for_frames_timeout);
 
-        // Stop if timeout is exceeded. This can occur also if the recording has ended.
         if frames.is_err() {
-            element
-                .get_static_pad("src")
-                .unwrap()
-                .push_event(gst::Event::new_eos().build());
-            std::process::exit(0);
+            // Stop if timeout is exceeded. This can occur also if the recording has ended.
+            return Err(gst::FlowError::Eos);
         }
         let frames = frames.unwrap();
 
@@ -921,10 +893,23 @@ impl RealsenseSrc {
                         .set_advanced_mode(true)
                         .unwrap();
                 }
-                let json_content = std::fs::read_to_string(json_location).unwrap();
-                devices[index_of_used_device]
-                    .load_json(json_content)
-                    .unwrap();
+                let json_content = std::fs::read_to_string(json_location);
+                if json_content.is_err() {
+                    return Err(gst_error_msg!(
+                        gst::ResourceError::Settings,
+                        [&format!(
+                            "Cannot read RealSense configuration from \"{}\"",
+                            json_location
+                        )]
+                    ));
+                }
+                let res = devices[index_of_used_device].load_json(json_content.unwrap());
+                if res.is_err() {
+                    return Err(gst_error_msg!(
+                        gst::ResourceError::Settings,
+                        [&res.unwrap_err().get_message()]
+                    ));
+                }
             }
         }
         Ok(())
@@ -940,15 +925,26 @@ impl RealsenseSrc {
     ) -> Result<(), gst::FlowError> {
         // Extract the frame from frames based on its type and id
         let frame = frames.iter().find(|f| {
-            f.get_profile().unwrap().get_data().unwrap().stream == stream_type
+            let frame_profile = f.get_profile();
+            if frame_profile.is_err() {
+                return false;
+            }
+
+            let frame_profile_data = frame_profile.unwrap().get_data();
+            if frame_profile_data.is_err() {
+                return false;
+            }
+
+            let frame_profile_data = frame_profile_data.unwrap();
+            frame_profile_data.stream == stream_type
                 && if stream_id == -1 {
                     true
                 } else {
-                    f.get_profile().unwrap().get_data().unwrap().index == stream_id
+                    frame_profile_data.index == stream_id
                 }
         });
 
-        // Return error if the expected frame could no be found
+        // Return error if the expected frame could no be found. It also returns error if the frame profile is not valid.
         if frame.is_none() {
             return Err(gst::FlowError::CustomError);
         }
