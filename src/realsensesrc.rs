@@ -43,7 +43,7 @@ static PROPERTIES: [subclass::Property; 14] = [
         glib::ParamSpec::string(
             name,
             "Rosbag File Location",
-            "Location of a rosbag file to play from. If unchanged or empty, physical device specified by `serial` is used. If both `serial` and `rosbag-location` are selected, the selected streams are recorded into a file specified by this property.",
+            "Location of a rosbag file to play from. If unchanged or empty, physical device specified by `serial` is used.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -540,16 +540,6 @@ impl BaseSrcImpl for RealsenseSrc {
         if let Some(serial) = &settings.serial {
             // Enable the selected streams
             Self::enable_streams(&config, &settings);
-
-            // Record to file if both `serial` and `rosbag-location` are defined
-            if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
-                if let Err(_) = config.enable_record_to_file(rosbag_location.to_string()) {
-                    return Err(gst_error_msg!(
-                        gst::ResourceError::Settings,
-                        ["Cannot write to \"{}\"!", rosbag_location]
-                    ));
-                }
-            };
 
             // Enable device with the given serial number and device configuration
             if let Err(_) = config.enable_device(serial.to_string()) {
