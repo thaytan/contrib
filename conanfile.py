@@ -5,7 +5,7 @@ def get_version():
     git = tools.Git()
     try:
         tag = git.get_tag()
-        return tag if tag else "2.58.1"
+        return tag if tag else "2.62.0"
     except:
         return None
 
@@ -27,7 +27,7 @@ class GLibConan(ConanFile):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dselinux=False", "-Dinternal_pcre=False"]
+        args = ["--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dinternal_pcre=False"]
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
