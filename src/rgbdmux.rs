@@ -112,14 +112,14 @@ impl AggregatorImpl for RgbdMux {
         // TODO (minor): Consider making `depth` stream always first/located in the main buffer if it is enabled
 
         // Put the first buffer in the list into the main buffer
-        let first_sink_pad_name = sink_pad_names_iter.next().unwrap();
+        let first_sink_pad_name = sink_pad_names_iter.next().expect("unable to get next sinkpad");
         let mut main_output_buffer = aggregator
             .get_static_pad(first_sink_pad_name)
-            .unwrap()
+            .expect("Unable to get static pad")
             .downcast::<gst_base::AggregatorPad>()
-            .unwrap()
+            .expect("Unable to downcast")
             .pop_buffer()
-            .unwrap();
+            .expect("Unable to pop buffer");
 
         // Add tag title according to the main stream name (remove `sink_` from sink pad name)
         let mut tags = gst::tags::TagList::new();
@@ -138,7 +138,7 @@ impl AggregatorImpl for RgbdMux {
                 .unwrap();
 
             // Extract the buffer
-            let mut additional_output_buffer = sink_pad.pop_buffer().unwrap();
+            let mut additional_output_buffer = sink_pad.pop_buffer().expect("Unable to pop additional buffers");
 
             // Add tag title according to the stream name (remove `sink_` from sink pad name)
             let mut tags = gst::tags::TagList::new();
