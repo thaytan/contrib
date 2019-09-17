@@ -24,7 +24,7 @@ use rs2;
 use std::sync::Mutex;
 
 // Default timeout used while waiting for frames from a realsense device in milliseconds.
-const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500;
+const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 const DEFAULT_LOOP_ROSBAG: bool = true;
 
