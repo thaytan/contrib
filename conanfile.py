@@ -1,4 +1,6 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from glob import glob
+from os import path, remove
 
 def get_version():
     git = tools.Git()
@@ -27,8 +29,12 @@ class FreetypeNoHarfbuzzConan(ConanFile):
         autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("freetype2-VER-" + self.version.replace(".", "-")):
             self.run("./autogen.sh")
-            autotools.configure()
+            autotools.configure(args=["--disable-static"])
             autotools.install()
+
+    def package(self):
+        for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
+            remove(f)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
