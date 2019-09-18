@@ -45,9 +45,18 @@ static GstFlowReturn gst_colorizer_transform_gray16(GstColorizer *filter,
 
   for (guint i = 0; i < width * height; i++) {
     guint16 gray = in[i];
-    out[i * 3 + 0] = filter->table[gray * 3 + 0];
-    out[i * 3 + 1] = filter->table[gray * 3 + 1];
-    out[i * 3 + 2] = filter->table[gray * 3 + 2];
+    // Check if the value is to be truncated (i.e. too near or too far), if so set it to pitch black
+    if (gray <= filter->near_cut || gray > filter->far_cut) {
+        out[i * 3 + 0] = 0;
+        out[i * 3 + 1] = 0;
+        out[i * 3 + 2] = 0;
+    }
+    // Otherwise apply its color scheme
+    else {
+        out[i * 3 + 0] = filter->table[gray * 3 + 0];
+        out[i * 3 + 1] = filter->table[gray * 3 + 1];
+        out[i * 3 + 2] = filter->table[gray * 3 + 2];
+    }
   }
 
   return GST_FLOW_OK;
