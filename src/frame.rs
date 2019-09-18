@@ -105,7 +105,7 @@ impl Frame {
         }
     }
 
-    pub fn get_metadata(&self, frame: &Frame) -> Result<HashMap<String, i64>, Error> {
+    pub fn get_metadata(&self) -> Result<HashMap<String, i64>, Error> {
         let mut error = Error::default();
         let mut meta_values : HashMap<String, i64> = HashMap::new();
 
@@ -113,13 +113,13 @@ impl Frame {
             // Cast the integer to a rs2_frame_metadata_value, which realsense uses to identify metadata fields
             let metadata_value : rs2::rs2_frame_metadata_value = i;
             // Check if the given index is supported, ignore it if not
-            let meta_supported = unsafe { rs2::rs2_supports_frame_metadata(frame.raw, metadata_value, error.inner()) };
+            let meta_supported = unsafe { rs2::rs2_supports_frame_metadata(self.raw, metadata_value, error.inner()) };
             if meta_supported == 0 || error.check() {
                 continue;
             }
             // Attempt to get the meta's name and value
             let meta_name = unsafe { to_string(rs2::rs2_frame_metadata_to_string(metadata_value)) };
-            let mete_val = unsafe { rs2::rs2_get_frame_metadata(frame.raw, metadata_value, error.inner()) };
+            let mete_val = unsafe { rs2::rs2_get_frame_metadata(self.raw, metadata_value, error.inner()) };
             if error.check() {
                 return Err(error);
             }
