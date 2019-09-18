@@ -1,6 +1,8 @@
 use crate::error::Error;
 use crate::stream::StreamProfile;
 use rs2;
+use crate::util::to_string;
+use std::collections::HashMap;
 
 pub struct Frame {
     pub raw: *mut rs2::rs2_frame,
@@ -101,5 +103,30 @@ impl Frame {
         } else {
             Ok(profile)
         }
+    }
+
+    pub fn get_metadata(&self, frame: &Frame) -> Result<HashMap<String, i64>, Error> {
+        let mut error = Error::default();
+        let mut meta_values : HashMap<String, i64> = HashMap::new();
+
+        for i in 0..rs2::rs2_frame_metadata_value_RS2_FRAME_METADATA_COUNT {
+            // Cast the integer to a rs2_frame_metadata_value, which realsense uses to identify metadata fields
+            let metadata_value : rs2::rs2_frame_metadata_value = i;
+            // Check if the given index is supported, ignore it if not
+            let meta_supported = unsafe { rs2::rs2_supports_frame_metadata(frame.raw, metadata_value, error.inner()) };
+            if meta_supported == 0 || error.check() {
+                continue;
+            }
+            // Attempt to get the meta's name and value
+            let meta_name = unsafe { to_string(rs2::rs2_frame_metadata_to_string(metadata_value)) };
+            let mete_val = unsafe { rs2::rs2_get_frame_metadata(frame.raw, metadata_value, error.inner()) };
+            if error.check() {
+                return Err(error);
+            }
+
+            // Append that to the dictionary
+            meta_values.insert(meta_name, mete_val);
+        }
+        Ok(meta_values)
     }
 }
