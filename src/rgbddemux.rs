@@ -349,7 +349,7 @@ impl RgbdDemux {
                 return corresponding_pad.push(buffer);
             }
             None => {
-                gst_error!(
+                gst_warning!(
                     self.cat,
                     obj: element,
                     "No corresponding pad for buffer with tag title `{}` exists",

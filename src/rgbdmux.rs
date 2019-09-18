@@ -56,12 +56,17 @@ impl ObjectSubclass for RgbdMux {
         );
 
         // sink pads
+        let mut sink_caps = gst::Caps::new_simple("video/x-raw", &[]);
+        sink_caps
+            .get_mut()
+            .unwrap()
+            .append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
         klass.add_pad_template(
             gst::PadTemplate::new_with_gtype(
                 "sink_%s",
                 gst::PadDirection::Sink,
                 gst::PadPresence::Request,
-                &gst::Caps::new_simple("video/x-raw", &[]),
+                &sink_caps,
                 gst_base::AggregatorPad::static_type(),
             )
             .unwrap(),
