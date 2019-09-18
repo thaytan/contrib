@@ -140,13 +140,19 @@ impl RgbdDemux {
 
         // Iterate over all streams
         for stream_name in streams.iter() {
-            // Extract `video/x-raw` caps from the `video/rgbd` caps for the particular stream
-            let new_pad_caps = if let Some(new_caps) =
-                self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate)
-            {
-                new_caps
+            // Determine the appropriate caps for the stream
+            let new_pad_caps = if *stream_name == "meta" {
+                // Get `video/meta-klv` caps if the `meta` stream is enabled
+                gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)])
             } else {
-                return false;
+                // Extract `video/x-raw` caps from the `video/rgbd` caps for the particular stream
+                if let Some(new_caps) =
+                    self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate)
+                {
+                    new_caps
+                } else {
+                    return false;
+                }
             };
 
             // Create the new src pad with given caps and stream name
@@ -432,12 +438,17 @@ impl ObjectSubclass for RgbdDemux {
         );
 
         // src pads
+        let mut src_caps = gst::Caps::new_simple("video/x-raw", &[]);
+        src_caps
+            .get_mut()
+            .unwrap()
+            .append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
         klass.add_pad_template(
             gst::PadTemplate::new(
                 "src_%s",
                 gst::PadDirection::Src,
                 gst::PadPresence::Sometimes,
-                &gst::Caps::new_simple("video/x-raw", &[]),
+                &src_caps,
             )
             .unwrap(),
         );
