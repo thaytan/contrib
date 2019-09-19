@@ -1,8 +1,8 @@
 use std::fmt;
 
+use gst::meta::*;
 use gst::BufferRef;
 use gst::MiniObject;
-use gst::meta::*;
 
 use glib;
 use glib::translate::from_glib;
@@ -11,7 +11,10 @@ use crate::sys;
 pub use crate::sys::BufferMeta;
 
 impl BufferMeta {
-    pub fn add<'a>(buffer: &'a mut BufferRef, meta_buffer: &mut gst::Buffer) -> MetaRefMut<'a, Self, Standalone> {
+    pub fn add<'a>(
+        buffer: &'a mut BufferRef,
+        meta_buffer: &mut gst::Buffer,
+    ) -> MetaRefMut<'a, Self, Standalone> {
         unsafe {
             let meta = sys::buffer_meta_add(buffer.as_mut_ptr(), meta_buffer.as_mut_ptr());
             Self::from_mut_ptr(buffer, meta)
@@ -19,9 +22,7 @@ impl BufferMeta {
     }
 
     pub fn get(buffer: &mut BufferRef) -> &BufferMeta {
-        unsafe {
-            &*sys::buffer_meta_get(buffer.as_mut_ptr())
-        }
+        unsafe { &*sys::buffer_meta_get(buffer.as_mut_ptr()) }
     }
 }
 
@@ -40,4 +41,3 @@ impl fmt::Debug for BufferMeta {
             .finish()
     }
 }
-

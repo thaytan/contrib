@@ -1,8 +1,8 @@
 use std::fmt;
 
+use gst::meta::*;
 use gst::BufferRef;
 use gst::MiniObject;
-use gst::meta::*;
 
 use glib;
 use glib::translate::from_glib;
@@ -11,7 +11,10 @@ use crate::sys;
 pub use crate::sys::TagsMeta;
 
 impl TagsMeta {
-    pub fn add<'a>(buffer: &'a mut BufferRef, meta_tags: &mut gst::TagList) -> MetaRefMut<'a, Self, Standalone> {
+    pub fn add<'a>(
+        buffer: &'a mut BufferRef,
+        meta_tags: &mut gst::TagList,
+    ) -> MetaRefMut<'a, Self, Standalone> {
         unsafe {
             let meta = sys::tags_meta_add(buffer.as_mut_ptr(), meta_tags.as_mut_ptr());
             Self::from_mut_ptr(buffer, meta)
@@ -19,9 +22,7 @@ impl TagsMeta {
     }
 
     pub fn get(buffer: &mut BufferRef) -> &TagsMeta {
-        unsafe {
-            &*sys::tags_meta_get(buffer.as_mut_ptr())
-        }
+        unsafe { &*sys::tags_meta_get(buffer.as_mut_ptr()) }
     }
 }
 
