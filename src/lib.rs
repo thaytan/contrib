@@ -9,6 +9,7 @@ extern crate librealsense2 as rs2;
 
 mod properties_d435;
 mod realsensesrc;
+mod rs_meta;
 
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     realsensesrc::register(plugin)?;

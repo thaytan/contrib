@@ -29,3 +29,5 @@ pub const COLOR_MIN_HEIGHT: i32 = 180;
 pub const COLOR_MAX_HEIGHT: i32 = 1080;
 pub const DEFAULT_COLOR_HEIGHT: i32 = 720;
 // pub const COLOR_SUPPORTED_HEIGHT: [i32; 9] = [180, 240, 240, 360, 480, 480, 540, 720, 1080];
+
+pub const DEFAULT_ENABLE_METADATA: bool = false;

@@ -20,14 +20,19 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
+use gst_depth_meta::frame::FrameMeta;
 use rs2;
-use std::sync::Mutex;
+
+use crate::rs_meta::rs_meta_serialization::*;
 
 // Default timeout used while waiting for frames from a realsense device in milliseconds.
 const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 500;
 
 use crate::properties_d435;
-static PROPERTIES: [subclass::Property; 13] = [
+use crate::properties_d435::DEFAULT_ENABLE_METADATA;
+use std::sync::Mutex;
+
+static PROPERTIES: [subclass::Property; 14] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -157,6 +162,15 @@ static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    subclass::Property("include-per-frame-metadata", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "include-per-frame-metadata",
+            "Adds librealsense2's per-frame metadata as an additional buffer on the video stream.",
+            properties_d435::DEFAULT_ENABLE_METADATA,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
 ];
 
 // A struct containing properties
@@ -166,6 +180,7 @@ struct Settings {
     json_location: Option<String>,
     streams: Streams,
     wait_for_frames_timeout: u32,
+    include_per_frame_metadata: bool,
 }
 
 struct Streams {
@@ -205,6 +220,7 @@ impl Default for Settings {
                 framerate: properties_d435::DEFAULT_FRAMERATE,
             },
             wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
+            include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
         }
     }
 }
@@ -260,7 +276,7 @@ impl ObjectSubclass for RealsenseSrc {
             "Realsense Source",
             "Source/RGB-D/Realsense",
             "Stream `video/rgbd` from a RealSense device",
-            "Niclas Moeslund Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>",
+            "Niclas Moeslund Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
 
         klass.install_properties(&PROPERTIES);
@@ -445,6 +461,17 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.wait_for_frames_timeout = wait_for_frames_timeout;
             }
+            subclass::Property("include-per-frame-metadata", ..) => {
+                let do_metadata = value.get().unwrap();
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `include-per-frame-metadata` from {} to {}",
+                    settings.include_per_frame_metadata,
+                    do_metadata
+                );
+                settings.include_per_frame_metadata = do_metadata;
+            }
             _ => unimplemented!("Property is not implemented"),
         };
     }
@@ -480,6 +507,9 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("framerate", ..) => Ok(settings.streams.framerate.to_value()),
             subclass::Property("wait_for_frames_timeout", ..) => {
                 Ok(settings.wait_for_frames_timeout.to_value())
+            }
+            subclass::Property("include-per-frame-metadata", ..) => {
+                Ok(settings.include_per_frame_metadata.to_value())
             }
             _ => unimplemented!("Property is not implemented"),
         }
@@ -622,7 +652,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
     fn create(
         &self,
-        _element: &gst_base::BaseSrc,
+        element: &gst_base::BaseSrc,
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
@@ -648,43 +678,50 @@ impl BaseSrcImpl for RealsenseSrc {
 
         // Attach `depth` frame if enabled
         if streams.enable_depth {
-            Self::extract_frame(
+            self.extract_frame(
+                element,
                 &frames,
                 &mut output_buffer,
                 "depth",
                 rs2::rs2_stream::RS2_STREAM_DEPTH,
                 -1,
                 &[],
+                settings,
             );
         }
 
         // Attach `infra1` frame if enabled
         if streams.enable_infra1 {
-            Self::extract_frame(
+            self.extract_frame(
+                element,
                 &frames,
                 &mut output_buffer,
                 "infra1",
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 1,
                 &[streams.enable_depth],
+                settings,
             );
         }
 
         // Attach `infra2` frame if enabled
         if streams.enable_infra2 {
-            Self::extract_frame(
+            self.extract_frame(
+                element,
                 &frames,
                 &mut output_buffer,
                 "infra2",
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 2,
                 &[streams.enable_depth, streams.enable_infra1],
+                settings,
             );
         }
 
         // Attach `color` frame if enabled
         if streams.enable_color {
-            Self::extract_frame(
+            self.extract_frame(
+                element,
                 &frames,
                 &mut output_buffer,
                 "color",
@@ -695,6 +732,7 @@ impl BaseSrcImpl for RealsenseSrc {
                     streams.enable_infra1,
                     streams.enable_infra2,
                 ],
+                settings,
             );
         }
 
@@ -855,13 +893,42 @@ impl RealsenseSrc {
         Ok(())
     }
 
+    fn get_frame_meta(&self, frame: &rs2::frame::Frame, element: &gst_base::BaseSrc) -> Option<Vec<u8>> {
+        match frame.get_metadata() {
+            Ok(metadata) => {
+                match capnp_serialize(metadata) {
+                    Ok(m) => Some(m),
+                    Err(e) => {
+                        gst_warning!(
+                                self.cat,
+                                obj: element,
+                                "Failed to serialize metadata from RealSense camera: {}",
+                                e);
+                        None
+                    }
+                }
+            },
+            Err(e) => {
+                gst_warning!(
+                        self.cat,
+                        obj: element,
+                        "Failed to read metadata from RealSense camera: {}",
+                        e);
+                None
+            }
+        }
+    }
+
     fn extract_frame(
+        &self,
+        element: &gst_base::BaseSrc,
         frames: &Vec<rs2::frame::Frame>,
         output_buffer: &mut gst::Buffer,
         tag: &str,
         stream_type: rs2::rs2_stream,
         stream_id: i32,
         previous_streams: &[bool],
+        settings: &Settings
     ) {
         // Extract the frame from frames based on its type and id
         let frame = frames
@@ -876,20 +943,19 @@ impl RealsenseSrc {
             })
             .unwrap();
 
+        // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
+        let frame_meta  =
+            match settings.include_per_frame_metadata {
+                true => self.get_frame_meta(frame, element),
+                false => None
+            };
+
         // Create the appropriate tag
         let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .unwrap()
-            .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
+        tags.get_mut().unwrap().add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
 
         // Determine whether any of the previous streams is enabled
-        let mut is_earlier_stream_enabled = false;
-        for previous_stream in previous_streams.iter() {
-            if *previous_stream {
-                is_earlier_stream_enabled = true;
-                break;
-            }
-        }
+        let is_earlier_stream_enabled = previous_streams.iter().any(|s| *s);
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_earlier_stream_enabled {
@@ -904,6 +970,11 @@ impl RealsenseSrc {
             *output_buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
             // Add the tag
             TagsMeta::add(output_buffer.get_mut().unwrap(), &mut tags);
+        }
+
+        // If we were able to read some metadata add it to the buffer
+        if frame_meta.is_some() {
+            FrameMeta::add(output_buffer.get_mut().unwrap(), &mut frame_meta.unwrap());
         }
 
         // Release the frame
