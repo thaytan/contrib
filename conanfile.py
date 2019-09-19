@@ -14,12 +14,13 @@ class RealsenseConan(ConanFile):
     exports_sources = [
         "Cargo.toml",
         "src/*",
+        "build.rs"
     ]
     generators = "env"
 
     def requirements(self):
         self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("gstreamer-depth-meta/0.2.0@%s/stable" % self.user)
+        self.requires("gstreamer-depth-meta/0.2.1@%s/stable" % self.user)
         self.requires("librealsense/2.20.0@%s/stable" % self.user)
 
     def build(self):
