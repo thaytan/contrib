@@ -12,6 +12,7 @@ typedef struct _FrameMeta FrameMeta;
 struct _FrameMeta {
     GstMeta meta;
     u_int8_t *bytes;
+    size_t nbytes;
 };
 
 GType frame_meta_api_get_type(void);

@@ -18,7 +18,7 @@ gboolean frame_meta_init(GstMeta *meta, gpointer params, GstBuffer *buffer) {
 gboolean frame_meta_transform(GstBuffer *dest_buf, GstMeta *src_meta,
                              GstBuffer *src_buf, GQuark type, gpointer data) {
     FrameMeta *src = (FrameMeta *) src_meta;
-    frame_meta_add(dest_buf, src->tags);
+    frame_meta_add(dest_buf, src->bytes, src->nbytes);
 
     return TRUE;
 }
@@ -48,9 +48,9 @@ FrameMeta *frame_meta_get(GstBuffer *buffer) {
     return ((FrameMeta *) gst_buffer_get_meta(buffer, frame_meta_api_get_type()));
 }
 
-int * intdup(u_int8_t const * src, size_t len)
+u_int8_t * intdup(u_int8_t const * src, size_t len)
 {
-    int * p = malloc(len * sizeof(u_int8_t));
+    u_int8_t * p = malloc(len * sizeof(u_int8_t));
     memcpy(p, src, len * sizeof(u_int8_t));
     return p;
 }
@@ -67,6 +67,7 @@ FrameMeta *frame_meta_add(GstBuffer *buffer, u_int8_t *bytes, size_t nbytes) {
 
     // We copy the array, as I'm not sure whether Rust will deallocate the array after the invocation
     meta->bytes = intdup(bytes, nbytes);
+    meta->nbytes = nbytes;
 
     return meta;
 }
