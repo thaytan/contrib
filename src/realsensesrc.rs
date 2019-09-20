@@ -20,7 +20,6 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
-use gst_depth_meta::frame::FrameMeta;
 use rs2;
 
 use crate::rs_meta::rs_meta_serialization::*;
@@ -919,6 +918,20 @@ impl RealsenseSrc {
         }
     }
 
+    fn try_add_per_frame_metadata(&self, buffer: &mut gst::Buffer, frame_meta: Option<Vec<u8>>, tag: &str) {
+        // If we were able to read some metadata add it to the buffer
+        if frame_meta.is_some() {
+            let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta.unwrap());
+            let tag_name = format!("{}_meta", tag);
+            let mut tags = gst::tags::TagList::new();
+            tags.get_mut().unwrap().add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
+
+            TagsMeta::add(frame_meta_buffer.get_mut().unwrap(), &mut tags);
+
+            BufferMeta::add(buffer.get_mut().unwrap(), &mut frame_meta_buffer);
+        }
+    }
+
     fn extract_frame(
         &self,
         element: &gst_base::BaseSrc,
@@ -963,18 +976,15 @@ impl RealsenseSrc {
             let mut buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
             // Add tag to this new buffer
             TagsMeta::add(buffer.get_mut().unwrap(), &mut tags);
+            self.try_add_per_frame_metadata(&mut buffer, frame_meta, tag);
             // Attach this new buffer as meta to the output buffer
             BufferMeta::add(output_buffer.get_mut().unwrap(), &mut buffer);
         } else {
             // Else put this frame into the output buffer
             *output_buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
+            self.try_add_per_frame_metadata(output_buffer, frame_meta, tag);
             // Add the tag
             TagsMeta::add(output_buffer.get_mut().unwrap(), &mut tags);
-        }
-
-        // If we were able to read some metadata add it to the buffer
-        if frame_meta.is_some() {
-            FrameMeta::add(output_buffer.get_mut().unwrap(), &mut frame_meta.unwrap());
         }
 
         // Release the frame
