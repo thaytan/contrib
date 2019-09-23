@@ -1,5 +1,4 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-import os
 
 def get_version():
     git = tools.Git()
@@ -14,7 +13,7 @@ class OpusConan(ConanFile):
     version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Modern audio compression for the internet"
-    license = "https://raw.githubusercontent.com/xiph/opus/master/COPYING"
+    license = "BSD"
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
 
@@ -25,9 +24,12 @@ class OpusConan(ConanFile):
         tools.get("https://archive.mozilla.org/pub/opus/opus-%s.tar.gz" % self.version)
 
     def build(self):
+        args = [
+            "--disable-static"
+        ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
+            autotools.configure(args=args)
             autotools.install()
 
     def package(self):
