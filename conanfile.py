@@ -1,5 +1,4 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-import os
 
 def get_version():
     git = tools.Git()
@@ -24,7 +23,7 @@ class LibPciAccessConan(ConanFile):
         tools.get("https://github.com/freedesktop/xorg-libpciaccess/archive/libpciaccess-%s.tar.gz" % self.version)
 
     def build(self):
-        args = ['--disable-static']
+        args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("xorg-libpciaccess-libpciaccess-" + self.version):
             self.run("autoreconf -i")
