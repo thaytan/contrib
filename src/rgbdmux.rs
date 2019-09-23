@@ -118,39 +118,12 @@ impl AggregatorImpl for RgbdMux {
 
         // Put the first buffer in the list into the main buffer
         let first_sink_pad_name = sink_pad_names_iter.next().unwrap();
-        let mut main_output_buffer = aggregator
-            .get_static_pad(first_sink_pad_name)
-            .unwrap()
-            .downcast::<gst_base::AggregatorPad>()
-            .unwrap()
-            .pop_buffer()
-            .unwrap();
-
-        // Add tag title according to the main stream name (remove `sink_` from sink pad name)
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .unwrap()
-            .add::<gst::tags::Title>(&&first_sink_pad_name[5..], gst::TagMergeMode::Append);
-        TagsMeta::add(main_output_buffer.get_mut().unwrap(), &mut tags);
+        let mut main_output_buffer = self.get_tagged_buffer(aggregator, first_sink_pad_name);
 
         // Attach the rest of the streams as meta to the main buffer
         for sink_pad_name in sink_pad_names_iter {
-            // Get a reference to the sink pad with the given name
-            let sink_pad = &aggregator
-                .get_static_pad(sink_pad_name)
-                .unwrap()
-                .downcast::<gst_base::AggregatorPad>()
-                .unwrap();
-
-            // Extract the buffer
-            let mut additional_output_buffer = sink_pad.pop_buffer().unwrap();
-
-            // Add tag title according to the stream name (remove `sink_` from sink pad name)
-            let mut tags = gst::tags::TagList::new();
-            tags.get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&&sink_pad_name[5..], gst::TagMergeMode::Append);
-            TagsMeta::add(additional_output_buffer.make_mut(), &mut tags);
+            // Extract and tag a buffer from the given sink pad
+            let mut additional_output_buffer = self.get_tagged_buffer(aggregator, sink_pad_name);
 
             // Attach the additional buffer to the main buffer
             BufferMeta::add(
@@ -213,7 +186,30 @@ impl AggregatorImpl for RgbdMux {
     }
 }
 
-impl RgbdMux {}
+impl RgbdMux {
+    /// Get a buffer from the pad with the given `pad_name` on the given `aggregator`. This function
+    /// also tags the buffer with a correct title tag.
+    /// # Arguments
+    /// * `aggregator` - The aggregator that holds a pad with the given name.
+    /// * `pad_name` - The name of the pad to read a buffer from.
+    fn get_tagged_buffer(&self, aggregator: &gst_base::Aggregator, pad_name: &str) -> gst::Buffer {
+        let mut buffer = aggregator
+            .get_static_pad(pad_name)
+            .unwrap()
+            .downcast::<gst_base::AggregatorPad>()
+            .unwrap()
+            .pop_buffer()
+            .unwrap();
+
+        // Add tag title according to the main stream name (remove `sink_` from sink pad name)
+        let mut tags = gst::tags::TagList::new();
+        tags.get_mut()
+            .unwrap()
+            .add::<gst::tags::Title>(&&pad_name[5..], gst::TagMergeMode::Append);
+        TagsMeta::add(buffer.get_mut().unwrap(), &mut tags);
+        buffer
+    }
+}
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     gst::Element::register(

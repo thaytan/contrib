@@ -1,3 +1,7 @@
 /target
 **/*.rs.bk
 Cargo.lock
+.idea/
+CMakeLists.txt
+cmake-build-debug/
+conan/
