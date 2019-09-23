@@ -22,6 +22,9 @@ class FontconfigConan(ConanFile):
         self.requires("freetype/2.10.1@%s/stable" % self.user)
         self.requires("gperf/3.1@%s/stable" % self.user)
 
+    def build_requirements(self):
+        self.build_requires("gettext/0.20.1@%s/stable" % self.user)
+
     def source(self):
         tools.get("https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{0}/fontconfig-{0}.tar.gz".format(self.version))
 
