@@ -1,6 +1,4 @@
-import os
 from conans import ConanFile, CMake, tools
-from conans.util import files
 
 
 def get_version():
@@ -16,7 +14,7 @@ class LibzmqConan(ConanFile):
     version = get_version()
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    license = "https://raw.githubusercontent.com/zeromq/libzmq/master/COPYING"
+    license = "LGPL"
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
 
@@ -28,8 +26,8 @@ class LibzmqConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.definitions['ZMQ_BUILD_TESTS'] = False
-        cmake.definitions['WITH_PERF_TOOL'] = False
+        cmake.definitions["ZMQ_BUILD_TESTS"] = False
+        cmake.definitions["WITH_PERF_TOOL"] = False
         cmake.configure(source_folder="%s-%s" % (self.name, self.version))
         cmake.install()
 
