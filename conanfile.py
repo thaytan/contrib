@@ -1,6 +1,5 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
-import os
-import platform
+from os import path, symlink
 
 def get_version():
     git = tools.Git()
@@ -26,12 +25,16 @@ class GettextConan(ConanFile):
         tools.get("https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version)
 
     def build(self):
-        args = []
+        args = [
+            "--disable-static"
+        ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+        symlink("preloadable_libintl.so", path.join(self.package_folder, "lib", "libpreloadable_libintl.so"))
+        symlink("preloadable_libintl.so", path.join(self.package_folder, "lib", "libgnuintl.so.8"))
 
     def package(self):
         if self.settings.build_type == "Debug":
@@ -41,4 +44,4 @@ class GettextConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.srcdirs.append("src")
-        self.env_info.gettext_datadir.append(os.path.join(self.package_folder, "share", "gettext"))
+        self.env_info.gettext_datadir.append(path.join(self.package_folder, "share", "gettext"))
