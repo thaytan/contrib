@@ -19,9 +19,9 @@ class AutomakeConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("autoconf/2.69@%s/stable" % self.user)
 
     def requirements(self):
+        self.requires("autoconf/2.69@%s/stable" % self.user)
         self.requires("m4/1.4.18@%s/stable" % self.user)
 
     def source(self):
