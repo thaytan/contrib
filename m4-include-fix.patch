@@ -1,0 +1,13 @@
+diff --git a/bin/autom4te.in b/bin/autom4te.in
+index 11773c9..65ac872 100644
+--- a/bin/autom4te.in
++++ b/bin/autom4te.in
+@@ -81,7 +81,7 @@ my @preselect = ('include',
+ 		 '_m4_warn');
+ 
+ # M4 include path.
+-my @include;
++my @include = ($ENV{"AC_MACRODIR"});
+ 
+ # Do we freeze?
+ my $freeze = 0;

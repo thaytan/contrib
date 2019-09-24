@@ -16,6 +16,7 @@ class AutoconfConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL3"
     description = "A GNU tool for automatically configuring source code"
+    exports = "m4-include-fix.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -26,6 +27,7 @@ class AutoconfConan(ConanFile):
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/autoconf/autoconf-%s.tar.gz" % self.version)
+        tools.patch(patch_file="m4-include-fix.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
@@ -43,6 +45,6 @@ class AutoconfConan(ConanFile):
         self.cpp_info.srcdirs.append("src")
         self.env_info.AUTOM4TE = os.path.join(self.package_folder, "bin", "autom4te")
         #self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "autoconf"))
-        self.env_info.M4PATH.append(os.path.join(self.package_folder, "share", "autoconf"))
+        #self.env_info.M4PATH.append(os.path.join(self.package_folder, "share", "autoconf"))
         self.env_info.AC_MACRODIR = os.path.join(self.package_folder, "share", "autoconf")
         self.env_info.autom4te_perllibdir = os.path.join(self.package_folder, "share", "autoconf")
