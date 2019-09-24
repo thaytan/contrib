@@ -12,7 +12,7 @@ class LibPciAccessConan(ConanFile):
     name = "libpciaccess"
     version = get_version()
     description = "Generic PCI access library"
-    url = "https://gitlab.com/aivero/public/conan/conan-libusb"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
@@ -20,13 +20,12 @@ class LibPciAccessConan(ConanFile):
         self.requires("xorg-util-macros/1.19.1@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/freedesktop/xorg-libpciaccess/archive/libpciaccess-%s.tar.gz" % self.version)
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("xorg-libpciaccess-libpciaccess-" + self.version):
-            self.run("autoreconf -i")
+        with tools.chdir("libpciaccess-" + self.version):
             autotools.configure(args=args)
             autotools.install()
 
