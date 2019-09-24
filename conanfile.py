@@ -1,5 +1,6 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
-from os import path, symlink
+from os import path, symlink, remove
+from glob import glob
 
 def get_version():
     git = tools.Git()
@@ -35,6 +36,8 @@ class GettextConan(ConanFile):
             autotools.install()
         symlink("preloadable_libintl.so", path.join(self.package_folder, "lib", "libpreloadable_libintl.so"))
         symlink("preloadable_libintl.so", path.join(self.package_folder, "lib", "libgnuintl.so.8"))
+        for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
+            remove(f)
 
     def package(self):
         if self.settings.build_type == "Debug":
