@@ -12,17 +12,19 @@ def get_version():
 class GObjectIntrospectionConan(ConanFile):
     name = "gobject-introspection"
     version = get_version()
-    url = "https://gitlab.com/aivero/public/conan/conan-gobject-introspection"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Middleware layer between C libraries (using GObject) and language bindings"
-    license = "https://github.com/GNOME/gobject-introspection/blob/master/COPYING"
+    license = "GPL, LGPL"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
     def requirements(self):
         self.requires("env-generator/0.1@%s/stable" % self.user)
         self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("bison/3.3@%s/stable" % self.user, private=True)
-        self.requires("flex/2.6.4@%s/stable" % self.user, private=True)
+
+    def build_requirements(self):
+        self.build_requires("bison/3.3@%s/stable" % self.user)
+        self.build_requires("flex/2.6.4@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GNOME/gobject-introspection/archive/%s.tar.gz" % self.version)
