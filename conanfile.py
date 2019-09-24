@@ -1,4 +1,6 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from os import path, remove
+from glob import glob
 
 def get_version():
     git = tools.Git()
@@ -25,11 +27,16 @@ class FreetypeConan(ConanFile):
         tools.get("https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-%s.tar.gz" % self.version.replace(".", "-"))
 
     def build(self):
+        args = [
+            "--disable-static"
+        ]
         autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("freetype2-VER-" + self.version.replace(".", "-")):
             self.run("./autogen.sh")
-            autotools.configure()
+            autotools.configure(args=args)
             autotools.install()
+        for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
+            remove(f)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
