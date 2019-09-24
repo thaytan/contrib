@@ -1,5 +1,4 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-import os
 
 def get_version():
     git = tools.Git()
@@ -25,7 +24,7 @@ class OrcConan(ConanFile):
         tools.get("https://github.com/GStreamer/orc/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ['--disable-gtk-doc']
+        args = ["--disable-gtk-doc"]
         with tools.chdir("%s-%s" % (self.name, self.version)):
                 self.run("./autogen.sh " + " ".join(args))
                 autotools = AutoToolsBuildEnvironment(self)
