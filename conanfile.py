@@ -14,7 +14,7 @@ class Deepstream(ConanFile):
     version = get_version()
     license = "proprietary"
     description = "Complete streaming analytics toolkit for AI-based video"
-    url = "https://developer.nvidia.com/embedded/linux-tegra"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
