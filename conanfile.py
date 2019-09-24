@@ -6,7 +6,7 @@ def get_version():
     git = tools.Git()
     try:
         tag = git.get_tag()
-        return tag if tag else "2.20.0"
+        return tag if tag else "2.28.0"
     except:
         return None
 
@@ -22,7 +22,7 @@ class LibRealsenseConan(ConanFile):
 
     def requirements(self):
         self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("libusb/1.0.22@%s/stable" % self.user)
+        self.requires("libusb/1.0.23@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)
@@ -53,3 +53,4 @@ class LibRealsenseConan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.cppflags = ["-pthread"]
         self.cpp_info.srcdirs.append("src")
+        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib")

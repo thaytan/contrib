@@ -1,25 +1,33 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 78834fe1..ad492fd7 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -20,6 +20,20 @@ os_set_flags()
- # macro definition located at "CMake/global_config.cmake"
- global_set_flags()
- 
-+find_package(PkgConfig)
-+if(NOT PKG_CONFIG_FOUND)
-+    message(FATAL_ERROR "\n\n PkgConfig package is missing!\n\n")
-+endif()
+diff --git a/CMake/libusb_config.cmake b/CMake/libusb_config.cmake
+index 9216c75..a230bcf 100644
+--- a/CMake/libusb_config.cmake
++++ b/CMake/libusb_config.cmake
+@@ -1,14 +1,19 @@
+ if (NOT TARGET usb)
+-    find_library(LIBUSB_LIB usb-1.0)
+-    find_path(LIBUSB_INC libusb.h HINTS PATH_SUFFIXES libusb-1.0)
+-    include(FindPackageHandleStandardArgs)
+-    find_package_handle_standard_args(usb "libusb not found; using internal version" LIBUSB_LIB LIBUSB_INC)
+-    if (USB_FOUND)
++    find_package(PkgConfig)
++    if(NOT PKG_CONFIG_FOUND)
++        message(FATAL_ERROR "\n\n PkgConfig package is missing!\n\n")
++    endif()
++    pkg_search_module(LIBUSB1 REQUIRED libusb-1.0)
++    if(LIBUSB1_FOUND)
++        include_directories(SYSTEM ${LIBUSB1_INCLUDE_DIRS})
++        link_directories(${LIBUSB1_LIBRARY_DIRS})
 +
-+pkg_search_module(LIBUSB1 REQUIRED libusb-1.0)
-+if(LIBUSB1_FOUND)
-+    include_directories(SYSTEM ${LIBUSB1_INCLUDE_DIRS})
-+    link_directories(${LIBUSB1_LIBRARY_DIRS})
-+    list(APPEND librealsense_PKG_DEPS "libusb-1.0")
-+else()
-+    message( FATAL_ERROR "Failed to find libusb-1.0" )
-+endif(LIBUSB1_FOUND)
+         add_library(usb INTERFACE)
+-        target_include_directories(usb INTERFACE ${LIBUSB_INC})
+-        target_link_libraries(usb INTERFACE ${LIBUSB_LIB})
++        target_include_directories(usb INTERFACE ${LIBUSB1_INCLUDE_DIRS})
++        target_link_libraries(usb INTERFACE ${LIBUSB1_LINK_LIBRARIES})
+     else()
+-        include(CMake/external_libusb.cmake)
+-    endif()
++        message( FATAL_ERROR "Failed to find libusb-1.0" )
++    endif(LIBUSB1_FOUND)
 +
- if(BUILD_SHARED_LIBS)
-     add_library(${LRS_TARGET} SHARED "")
- else()
+     install(TARGETS usb EXPORT realsense2Targets)
+ endif()
