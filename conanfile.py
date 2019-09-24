@@ -1,6 +1,6 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-from conans.util import files
-import os
+from os import remove, path
+from glob import glob
 
 def get_version():
     git = tools.Git()
@@ -29,11 +29,16 @@ class HarfbuzzConan(ConanFile):
         tools.get("https://github.com/harfbuzz/harfbuzz/archive/%s.tar.gz" % self.version)
 
     def build(self):
+        args = [
+            "--disable-static"
+        ]
         autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("%s-%s" % (self.name , self.version)):
             self.run("./autogen.sh")
             autotools.configure()
             autotools.install()
+        for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
+            remove(f)
 
     def package(self):
         if self.settings.build_type == "Debug":
