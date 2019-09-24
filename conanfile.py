@@ -1,5 +1,6 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-import os
+from os import path, remove
+from glob import glob
 
 def get_version():
     git = tools.Git()
@@ -27,13 +28,17 @@ class LibUSBConan(ConanFile):
         tools.get("https://github.com/libusb/libusb/archive/v%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--disable-static"]
+        args = [
+            "--disable-static"
+        ]
         args.append("--enable-udev" if self.options.udev else "--disable-udev")
         with tools.chdir("%s-%s" % (self.name, self.version)):
                 self.run("./autogen.sh " + " ".join(args))
                 autotools = AutoToolsBuildEnvironment(self)
                 autotools.configure(args=args)
                 autotools.install()
+        for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
+            remove(f)
 
     def package(self):
         if self.settings.build_type == "Debug":
