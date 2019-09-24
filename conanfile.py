@@ -26,7 +26,7 @@ class CMakeConan(ConanFile):
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("./bootstrap --prefix=" + self.package_folder)
-            self.run("make")
+            self.run("make install")
 
     def package(self):
         if self.settings.build_type == "Debug":
