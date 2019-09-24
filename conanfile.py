@@ -1,5 +1,6 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-from os import path
+from os import path, remove
+from glob import glob
 
 def get_version():
     git = tools.Git()
@@ -39,6 +40,8 @@ class FontconfigConan(ConanFile):
             self.run("./autogen.sh")
             autotools.configure(args=args)
             autotools.install()
+        for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
+            remove(f)
 
     def package(self):
         if self.settings.build_type == "Debug":
