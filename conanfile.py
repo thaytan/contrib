@@ -1,6 +1,4 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
-import os
-import platform
 
 def get_version():
     git = tools.Git()
@@ -14,8 +12,8 @@ class LibffiConan(ConanFile):
     name = "libffi"
     version = get_version()
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://github.com/prozum/conan-libffi"
-    license = "https://github.com/libffi/libffi/blob/master/LICENSE"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
+    license = "MIT"
     description = "A portable, high level programming interface to various calling conventions"
     generators = "env"
 
@@ -23,7 +21,7 @@ class LibffiConan(ConanFile):
         self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/libffi/libffi/archive/v%s.tar.gz" % self.version)
+        tools.get("http://sourceware.org/pub/libffi/libffi-%s.tar.gz" % self.version)
 
     def build(self):
         args = [
@@ -35,7 +33,6 @@ class LibffiConan(ConanFile):
             "--enable-shared"
         ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run("autoreconf -i")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
