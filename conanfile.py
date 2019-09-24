@@ -42,5 +42,6 @@ class AutoconfConan(ConanFile):
     def package_info(self):
         self.cpp_info.srcdirs.append("src")
         self.env_info.AUTOM4TE = os.path.join(self.package_folder, "bin", "autom4te")
+        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "autoconf"))
         self.env_info.AC_MACRODIR = os.path.join(self.package_folder, "share", "autoconf")
         self.env_info.autom4te_perllibdir = os.path.join(self.package_folder, "share", "autoconf")
