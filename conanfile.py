@@ -1,4 +1,5 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from os import path
 
 def get_version():
     git = tools.Git()
@@ -21,6 +22,7 @@ class FontconfigConan(ConanFile):
         self.requires("env-generator/0.1@%s/stable" % self.user)
         self.requires("freetype/2.10.1@%s/stable" % self.user)
         self.requires("gperf/3.1@%s/stable" % self.user)
+        self.requires("libuuid/1.0.3@%s/stable" % self.user)
 
     def build_requirements(self):
         self.build_requires("gettext/0.20.1@%s/stable" % self.user)
@@ -29,10 +31,13 @@ class FontconfigConan(ConanFile):
         tools.get("https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{0}/fontconfig-{0}.tar.gz".format(self.version))
 
     def build(self):
+        args = [
+            "--disable-static"
+        ]
         autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("%s-%s" % (self.name , self.version)):
             self.run("./autogen.sh")
-            autotools.configure()
+            autotools.configure(args=args)
             autotools.install()
 
     def package(self):
