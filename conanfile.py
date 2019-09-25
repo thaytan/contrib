@@ -44,3 +44,4 @@ class AutomakeConan(ConanFile):
         self.cpp_info.srcdirs.append("src")
         self.env_info.AUTOMAKE = os.path.join(self.package_folder, "bin", "automake")
         self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "share", "automake-1.16"))
+        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal-1.16"))
