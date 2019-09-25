@@ -1,4 +1,5 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
+import os
 
 def get_version():
     git = tools.Git()
@@ -35,6 +36,7 @@ class PkgconfConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+        os.symlink("pkgconf", os.path.join(self.package_folder, "bin", "pkg-config"))
 
     def package(self):
         if self.settings.build_type == "Debug":
@@ -44,3 +46,4 @@ class PkgconfConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.srcdirs.append("src")
+        self.env_info.PKG_CONFIG = os.path.join(self.package_folder, "bin", "pkgconf")
