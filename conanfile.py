@@ -56,3 +56,4 @@ class LibtoolConan(ConanFile):
         self.env_info.LIBTOOL_PREFIX = self.package_folder
         self.env_info.LIBTOOL = os.path.join(self.package_folder, "bin", "libtool")
         self.env_info.LIBTOOLIZE = os.path.join(self.package_folder, "bin", "libtoolize")
+        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
