@@ -33,6 +33,7 @@ class LibffiConan(ConanFile):
             "--enable-shared"
         ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
+            self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
