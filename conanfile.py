@@ -29,7 +29,7 @@ class NinjaConan(ConanFile):
             self.run("python3 configure.py --bootstrap")
 
     def package(self):
-        self.copy(os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin")
+        self.copy(os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin", keep_path=False)
         if self.settings.build_type == "Debug":
             self.copy("*.cpp", "src")
             self.copy("*.hpp", "src")
