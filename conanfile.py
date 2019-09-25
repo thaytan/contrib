@@ -26,7 +26,7 @@ class NinjaConan(ConanFile):
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name , self.version)):
-            self.run("python2 configure.py --bootstrap")
+            self.run("python3 configure.py --bootstrap")
 
     def package(self):
         self.copy(os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin")
