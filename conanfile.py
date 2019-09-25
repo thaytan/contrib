@@ -1,9 +1,17 @@
 from conans import ConanFile, tools
 from os import symlink, path
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "32.2.1"
+    except:
+        return None
+
 class JetsonDrivers(ConanFile):
     name = "jetson-drivers"
-    version = "32.2.1"
+    version = get_version()
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
@@ -14,7 +22,7 @@ class JetsonDrivers(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
