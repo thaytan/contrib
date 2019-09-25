@@ -1,4 +1,5 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
+import os
 
 def get_version():
     git = tools.Git()
@@ -41,3 +42,4 @@ class AutomakeConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.srcdirs.append("src")
+        self.env_info.AUTOMAKE = os.path.join(self.package_folder, "bin", "automake")
