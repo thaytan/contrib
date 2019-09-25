@@ -21,6 +21,7 @@ class LibtoolConan(ConanFile):
         self.build_requires("env-generator/0.1@%s/stable" % self.user)
         self.build_requires("automake/1.16.1@%s/stable" % self.user)
         self.build_requires("help2man/1.47.11@%s/stable" % self.user)
+        self.build_requires("texinfo/6.6@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="%s-%s" % (self.name, self.version))
