@@ -71,7 +71,7 @@ class env(Generator):
                 "CFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
                 "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
             })
-        environ["PATH"] += pathsep + pathsep.join(bin_paths)
+        environ["PATH"] = pathsep.join(bin_paths) + pathsep + environ["PATH"]
 
         # Generate env.sh
         content = "export PATH=%s:\"$PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
