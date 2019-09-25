@@ -39,3 +39,7 @@ class TexinfoConan(ConanFile):
     def package_info(self):
         self.cpp_info.srcdirs.append("src")
         self.env_info.MAKEINFO = os.path.join(self.package_folder, "bin", "makeinfo")
+        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "share", "texinfo"))
+        for mod in ["libintl-perl", "Text-Unidecode", "Unicode-EastAsianWidth"]:
+            self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "share", "texinfo", "lib", mod, "lib"))
+
