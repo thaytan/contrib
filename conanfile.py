@@ -16,6 +16,7 @@ class AutomakeConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A GNU tool for automatically creating Makefiles"
+    exports = "automake-include-fix.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -27,6 +28,7 @@ class AutomakeConan(ConanFile):
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/automake/automake-%s.tar.gz" % self.version)
+        tools.patch(patch_file="automake-include-fix.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
