@@ -1,4 +1,5 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
+import os
 
 def get_version():
     git = tools.Git()
@@ -15,6 +16,7 @@ class LibtoolConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A generic library support script"
+    exports = "libtool-prefix-fix.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -30,6 +32,7 @@ class LibtoolConan(ConanFile):
         git.clone("https://git.savannah.gnu.org/git/gnulib.git")
         git = tools.Git(folder="gnulib-bootstrap")
         git.clone("https://github.com/gnulib-modules/bootstrap.git")
+        tools.patch(patch_file="libtool-prefix-fix.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
@@ -50,3 +53,5 @@ class LibtoolConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.srcdirs.append("src")
+        self.env_info.LIBTOOLIZE = os.path.join(self.package_folder, "bin", "libtoolize")
+        self.env_info.LIBTOOL_PREFIX = self.package_folder
