@@ -19,15 +19,18 @@ class CppzmqConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("cmake/3.15.3@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
         self.requires("libzmq/4.3.1@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/zeromq/cppzmq/archive/v%s.tar.gz" % self.version)
 
     def build(self):
-        cmake = CMake(self)
+        cmake = CMake(self, generator="Ninja")
         cmake.configure(source_folder="%s-%s" % (self.name, self.version))
         cmake.install()
 
