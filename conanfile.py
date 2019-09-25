@@ -21,7 +21,7 @@ class LibffiConan(ConanFile):
         self.requires("env-generator/0.1@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/libffi/libffi/archive/v%star.gz" % self.version)
+        tools.get("https://github.com/libffi/libffi/archive/v%s.tar.gz" % self.version)
 
     def build(self):
         args = [
