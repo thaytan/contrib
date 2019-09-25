@@ -1,0 +1,46 @@
+from conans import ConanFile, tools, AutoToolsBuildEnvironment
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else "1.6.3"
+    except:
+        return None
+
+class PkgconfConan(ConanFile):
+    name = "pkgconf"
+    version = get_version()
+    settings = "os", "compiler", "build_type", "arch"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
+    license = "custom"
+    description = "Package compiler and linker metadata toolkit"
+    generators = "env"
+
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("automake/1.16.1@%s/stable" % self.user)
+        self.build_requires("libtool/2.4.6@%s/stable" % self.user)
+
+    def source(self):
+        tools.get("https://github.com/pkgconf/pkgconf/archive/pkgconf-%s.tar.gz" % self.version)
+
+    def build(self):
+        args = [
+            "--disable-static",
+        ]
+        with tools.chdir("pkgconf-pkgconf-%s" % self.version):
+            self.run("./autogen.sh")
+            autotools = AutoToolsBuildEnvironment(self)
+            autotools.configure(args=args)
+            autotools.make()
+            autotools.install()
+
+    def package(self):
+        if self.settings.build_type == "Debug":
+            self.copy("*.c", "src")
+            self.copy("*.h", "src")
+
+    def package_info(self):
+        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.srcdirs.append("src")
