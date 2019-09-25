@@ -17,8 +17,12 @@ class CMakeConan(ConanFile):
     description = "A cross-platform open-source make system"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("pkgconf/1.6.3@%s/stable" % self.user)
+        self.requires("ninja/1.9.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/Kitware/CMake/releases/download/v{0}/cmake-{0}.tar.gz".format(self.version))
