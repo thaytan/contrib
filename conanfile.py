@@ -1,4 +1,5 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
+import os
 
 def get_version():
     git = tools.Git()
@@ -37,3 +38,4 @@ class TexinfoConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.srcdirs.append("src")
+        self.env_info.MAKEINFO = os.path.join(self.package_folder, "bin", "makeinfo")
