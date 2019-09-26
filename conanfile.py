@@ -1,11 +1,10 @@
 from conans import ConanFile, Meson, tools
-import os
 
 def get_version():
     git = tools.Git()
     try:
         tag = git.get_tag()
-        return tag if tag else "1.15.1"
+        return tag if tag else "1.4.4"
     except:
         return None
 
@@ -14,25 +13,27 @@ class JsonGlibBaseConan(ConanFile):
     version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
-    license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
+    license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
     options = {"introspection": [True, False]}
     default_options = "introspection=True"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("glib/2.58.1@%s/stable" % self.user)
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/GNOME/json-glib/archive/%s.tar.gz" % self.version)
+        tools.get("https://gitlab.gnome.org/GNOME/json-glib/-/archive/{0}/json-glib-{0}.tar.gz".format(self.version))
 
     def build(self):
         args = ["--auto-features=disabled"]
         args.append("-Dintrospection=" + ("true" if self.options.introspection else "false"))
-
         meson = Meson(self)
         meson.configure(args=args, source_folder="%s-%s" % (self.name, self.version))
         meson.install()
@@ -41,7 +42,3 @@ class JsonGlibBaseConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
