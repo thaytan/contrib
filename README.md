@@ -64,3 +64,5 @@ realsense_demux.src_color ! queue ! glimagesink
 ## Example of a pipeline with `depthmux`
 
 >TODO: Wait until downstream re-negotiation is fixed
+
+video/rgbd,streams=\"depth,color,infra1,infra2\",framerate=30/1,depth_format=GRAY16_LE,depth_width=1280,depth_height=720,idmap_format=GRAY8,idmap_width=1280,idmap_height=720,layer_format=RGB,layer_width=2560,layer_height=720,color_format=RGB,color_width=1280,color_height=720,infra1_format=GRAY8,infra1_width=1280,infra1_height=720,infra2_format=GRAY8,infra2_width=1280,infra2_height=720

@@ -96,6 +96,8 @@ impl ElementImpl for RgbdMux {
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
         self.sink_pads.lock().unwrap().retain(|x| *x != pad_name);
+
+        // TODO: Generate CAPS from sink_pads and push it downstream
     }
 }
 
@@ -112,7 +114,9 @@ impl AggregatorImpl for RgbdMux {
         // TODO (minor): Consider making `depth` stream always first/located in the main buffer if it is enabled
 
         // Put the first buffer in the list into the main buffer
-        let first_sink_pad_name = sink_pad_names_iter.next().expect("unable to get next sinkpad");
+        let first_sink_pad_name = sink_pad_names_iter
+            .next()
+            .expect("unable to get next sinkpad");
         let mut main_output_buffer = aggregator
             .get_static_pad(first_sink_pad_name)
             .expect("Unable to get static pad")
@@ -138,7 +142,9 @@ impl AggregatorImpl for RgbdMux {
                 .unwrap();
 
             // Extract the buffer
-            let mut additional_output_buffer = sink_pad.pop_buffer().expect("Unable to pop additional buffers");
+            let mut additional_output_buffer = sink_pad
+                .pop_buffer()
+                .expect("Unable to pop additional buffers");
 
             // Add tag title according to the stream name (remove `sink_` from sink pad name)
             let mut tags = gst::tags::TagList::new();
@@ -194,7 +200,24 @@ impl AggregatorImpl for RgbdMux {
                     }
                 }
 
-                // TODO (important): fix downstream re-negotiation
+                let ds_caps = self.get_current_downstream_caps(
+                    aggregator
+                        .upcast_ref::<gst::Element>()
+                );
+                match aggregator.parent_update_src_caps(&aggregator, &ds_caps){
+                    Ok(o) => {
+
+                    },
+                    Err(e) => {
+                        gst_error!(self.cat, obj: aggregator, "Failed to negotiate CAPS: {}", e);
+                    }
+                }
+
+//                let src_pad = aggregator
+//                    .get_static_pad("src")
+//                    .expect("Could not find aggregator src pad");
+//                src_pad.mark_reconfigure();
+//                src_pad.set_caps(&ds_caps);
 
                 // Insert the new sink pad name into the struct
                 self.sink_pads.lock().unwrap().push(name.to_string());
@@ -208,7 +231,99 @@ impl AggregatorImpl for RgbdMux {
     }
 }
 
-impl RgbdMux {}
+impl RgbdMux {
+    fn get_current_downstream_caps(&self, element: &gst::Element) -> gst::Caps {
+        // First lock sink_pads, so that we may iterate it
+        let sink_pads = self
+            .sink_pads
+            .lock()
+            .expect("Failed to obtain `sink_pads` lock.");
+
+        // Join all the pad names to create the 'streams' section of the CAPS
+        let streams = sink_pads.join(",");
+
+        // Map the caps into their corresponding stream formats
+        let stream_caps = sink_pads
+            .iter()
+            .map(|pad_name| {
+                // First find the current CAPS of Pad we're currently dealing with
+                let pad_caps = element
+                    .get_static_pad(&format!("sink_{}", pad_name))
+                    .expect(&format!(
+                        "Could not get static pad from aggregator with name `{}`",
+                        pad_name
+                    ))
+                    .get_current_caps()
+                    .expect(&format!("Failed to get CAPS from `{}`", pad_name));
+
+                // Then map and filter those CAPS into a string of comma separated key-value pairs
+                // with the following format: key=value,key2=value2...
+                pad_caps
+                    .iter()
+                    .filter_map(|caps_field| match caps_field.get_name() {
+                        "framerate" => Some(format!(
+                            "{stream}_framerate={value}",
+                            stream = pad_name,
+                            value = caps_field.get::<&str>("framerate").expect(&format!(
+                                "Could not get field {} for stream {}",
+                                "framerate", pad_name
+                            ))
+                        )),
+                        "height" => Some(format!(
+                            "{stream}_height={value}",
+                            stream = pad_name,
+                            value = caps_field.get::<&str>("height").expect(&format!(
+                                "Could not get field {} for stream {}",
+                                "height", pad_name
+                            ))
+                        )),
+                        "width" => Some(format!(
+                            "{stream}_width={value}",
+                            stream = pad_name,
+                            value = caps_field.get::<&str>("width").expect(&format!(
+                                "Could not get field {} for stream {}",
+                                "width", pad_name
+                            ))
+                        )),
+                        "format" => Some(format!(
+                            "{stream}_format={value}",
+                            stream = pad_name,
+                            value = caps_field.get::<&str>("format").expect(&format!(
+                                "Could not get field {} for stream {}",
+                                "format", pad_name
+                            ))
+                        )),
+                        x => {
+                            gst_info!(
+                                self.cat,
+                                obj: element,
+                                "Unknown CAPS field found: {}. Ignoring it.",
+                                x
+                            );
+                            None
+                        }
+                    })
+                    .collect::<Vec<String>>()
+                    .join(",")
+            })
+            .collect::<Vec<String>>()
+            .join(",");
+        gst_info!(
+            self.cat,
+            obj: element,
+            "stream_caps were found to be: {}.",
+            stream_caps
+        );
+
+        // TODO: Remove hardcoded framerate
+        gst::Caps::from_string(&format!(
+            "video/rgbd,streams=\"{streams}\",framerate=30/1,{stream_caps}",
+            streams = streams,
+            stream_caps = stream_caps
+        ))
+        .expect("Failed to create downstream CAPS")
+    }
+}
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     gst::Element::register(
