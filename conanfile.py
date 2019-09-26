@@ -41,7 +41,6 @@ class JetsonDrivers(ConanFile):
 
         lib_folder = path.join(self.package_folder, "lib")
         for dl in listdir(lib_folder):
-            print("Checked file " + dl)
             old = re.search(r".*\.so\..*", dl)
             new = re.search(r".*\.so", dl)
             if old:
