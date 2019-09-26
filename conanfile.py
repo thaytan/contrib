@@ -20,8 +20,7 @@ class PkgconfConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("automake/1.16.1@%s/stable" % self.user)
-        self.build_requires("libtool/2.4.6@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/pkgconf/pkgconf/archive/pkgconf-%s.tar.gz" % self.version)
@@ -31,7 +30,7 @@ class PkgconfConan(ConanFile):
             "--disable-static",
         ]
         with tools.chdir("pkgconf-pkgconf-%s" % self.version):
-            self.run("./autogen.sh")
+            self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
