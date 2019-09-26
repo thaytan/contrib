@@ -1,6 +1,4 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-from conans.util import files
-import os
 
 def get_version():
     git = tools.Git()
@@ -11,29 +9,29 @@ def get_version():
         return None
 
 class GraphvizConan(ConanFile):
-    version = get_version()
     name = "graphviz"
-    license = "https://gitlab.com/graphviz/graphviz/blob/master/LICENSE"
+    version = get_version()
+    license = "EPL"
     description = "Graph Visualization Tools"
     url = "https://gitlab.com/graphviz/graphviz"
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("flex/2.6.4@%s/stable" % self.user, private=True)
-        self.requires("bison/3.3@%s/stable" % self.user, private=True)
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
+        self.build_requires("flex/2.6.4@%s/stable" % self.user)
+        self.build_requires("bison/3.3@%s/stable" % self.user)
 
     def source(self):
         tools.get("https:https://gitlab.com/graphviz/graphviz/-/archive/stable_release_{0}/graphviz-stable_release_{0}.tar.gz".format(self.version))
 
     def build(self):
         with tools.chdir("graphviz-stable_release_" + self.version):
-            self.run("./autogen.sh")
+            self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
