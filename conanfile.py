@@ -6,7 +6,7 @@ def get_version():
     git = tools.Git()
     try:
         tag = git.get_tag()
-        return tag if tag else "1.0.22"
+        return tag if tag else "1.0.23"
     except:
         return None
 
@@ -21,11 +21,12 @@ class LibUSBConan(ConanFile):
     default_options = "udev=False"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/libusb/libusb/archive/v%s.tar.gz" % self.version)
+        tools.get("https://github.com/libusb/libusb/releases/download/v{0}/libusb-{0}.tar.bz2".format(self.version))
 
     def build(self):
         args = [
@@ -33,7 +34,6 @@ class LibUSBConan(ConanFile):
         ]
         args.append("--enable-udev" if self.options.udev else "--disable-udev")
         with tools.chdir("%s-%s" % (self.name, self.version)):
-                self.run("./autogen.sh " + " ".join(args))
                 autotools = AutoToolsBuildEnvironment(self)
                 autotools.configure(args=args)
                 autotools.install()
