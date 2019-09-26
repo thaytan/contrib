@@ -21,3 +21,4 @@ class AutotoolsConan(ConanFile):
         self.requires("autoconf/2.69@%s/stable" % self.user)
         self.requires("automake/1.16.1@%s/stable" % self.user)
         self.requires("libtool/2.4.6@%s/stable" % self.user)
+        self.requires("texinfo/6.6@%s/stable" % self.user)
