@@ -20,21 +20,19 @@ class HarfbuzzConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
-        self.build_requires("freetype-no-harfbuzz/2.10.1@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("freetype-no-harfbuzz/[>=2.10.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/harfbuzz/harfbuzz/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = [
-            "--disable-static"
-        ]
+        args = ["--disable-static"]
         with tools.chdir("%s-%s" % (self.name , self.version)):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
+            autotools.configure(args=args)
             autotools.install()
         for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
             remove(f)
@@ -43,7 +41,3 @@ class HarfbuzzConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.cpp", "src")
             self.copy("*.hpp", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
