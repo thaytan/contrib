@@ -23,9 +23,9 @@ class DepthMetaConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("gstreamer/1.16.0@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/1.16.0@%s/stable" % self.user)
+        self.requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.requires("gstreamer/[>=1.16.0]@%s/stable" % self.user)
+        self.requires("gstreamer-plugins-base/[>=1.16.0]@%s/stable" % self.user)
 
     def build(self):
         env = {
