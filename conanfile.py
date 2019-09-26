@@ -28,13 +28,16 @@ class GStreamerConan(ConanFile):
     )
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("bison/3.3@%s/stable" % self.user, private=True)
-        self.requires("flex/2.6.4@%s/stable" % self.user, private=True)
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
+        self.build_requires("flex/[>=2.6.4]@%s/stable" % self.user)
         if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user,)
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user,)
+
+    def requirements(self):
+        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gstreamer/archive/%s.tar.gz" % self.version)
@@ -54,9 +57,6 @@ class GStreamerConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.includedirs = ["include/gstreamer-1.0"]
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
         self.env_info.GST_PLUGIN_SCANNER = os.path.join(self.package_folder, "bin", "gstreamer-1.0", "gst-plugin-scanner")
         self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
