@@ -18,8 +18,11 @@ class GLibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("meson/0.51.2@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
         self.requires("zlib/1.2.11@%s/stable" % self.user)
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
 
@@ -36,10 +39,3 @@ class GLibConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.includedirs.append(os.path.join("include", "gio-unix-2.0"))
-        self.cpp_info.includedirs.append(os.path.join("include", "glib-2.0"))
-        self.cpp_info.includedirs.append(os.path.join("lib", "glib-2.0", "include"))
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
