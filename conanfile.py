@@ -20,14 +20,17 @@ class CairoConan(ConanFile):
     default_options = ("introspection=True")
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
+        if self.options.introspection:
+            self.build_requires("gobject-introspection/1.59.3@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
         self.requires("glib/2.58.1@%s/stable" % self.user)
         self.requires("pixman/0.38.4@%s/stable" % self.user)
         self.requires("freetype/2.10.1@%s/stable" % self.user)
         self.requires("fontconfig/2.13.1@%s/stable" % self.user)
-        if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/cairo/cairo/-/archive/{0}/cairo-{0}.tar.gz".format(self.version))
@@ -36,9 +39,9 @@ class CairoConan(ConanFile):
         args = [
             "--disable-static"
         ]
-        autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run("./autogen.sh")
+            self.run("sh autogen.sh")
+            autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()
 
