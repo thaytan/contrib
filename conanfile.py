@@ -17,8 +17,9 @@ class LibffiConan(ConanFile):
     description = "A portable, high level programming interface to various calling conventions"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+    def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/libffi/libffi/archive/v%s.tar.gz" % self.version)
