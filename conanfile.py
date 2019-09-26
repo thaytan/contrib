@@ -18,9 +18,9 @@ class AutotoolsConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("autoconf/2.69@%s/stable" % self.user)
-        self.requires("automake/1.16.1@%s/stable" % self.user)
-        self.requires("libtool/2.4.6@%s/stable" % self.user)
-        self.requires("gettext/0.20.1@%s/stable" % self.user)
-        self.requires("texinfo/6.6@%s/stable" % self.user)
-        self.requires("pkgconf/1.6.3@%s/stable" % self.user)
+        self.requires("autoconf/[>=2.69]@%s/stable" % self.user)
+        self.requires("automake/[>=1.16.1]@%s/stable" % self.user)
+        self.requires("libtool/[>=2.4.6]@%s/stable" % self.user)
+        self.requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
+        self.requires("gettext/[>=0.20.1]@%s/stable" % self.user)
+        self.requires("texinfo/[>=6.6]@%s/stable" % self.user)
