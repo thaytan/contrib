@@ -1,6 +1,5 @@
 from conans import ConanFile, tools
-from os import symlink, path
-import glob
+from os import symlink, path, listdir
 import re
 
 def get_version():
@@ -40,12 +39,13 @@ class JetsonDrivers(ConanFile):
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False, symlinks=False)
 
-        for dl in glob.glob("/home/nvidia/.conan/data/jetson-drivers/32.2.1/aivero/stable/package/3b5763019071ec93fd545a11a5a9afa6c0134551/lib/*"):
+        lib_folder = path.join(self.package_folder, "lib")
+        for dl in listdir(lib_folder):
             print("Checked file " + dl)
             old = re.search(r".*\.so\..*", dl)
             new = re.search(r".*\.so", dl)
             if old:
-                symlink(old.group(0), new.group(0))
+                symlink(path.join(lib_folder, old.group(0)), path.join(lib_folder, new.group(0)) )
                 print("Created symlink from " + old.group(0) + " to " + new.group(0))
 
     def package_info(self):
