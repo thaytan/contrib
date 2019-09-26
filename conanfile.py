@@ -18,13 +18,14 @@ class GObjectIntrospectionConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-
     def build_requirements(self):
-        self.build_requires("bison/3.3@%s/stable" % self.user)
-        self.build_requires("flex/2.6.4@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
+        self.build_requires("flex/[>=2.6.4]@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GNOME/gobject-introspection/archive/%s.tar.gz" % self.version)
@@ -36,6 +37,5 @@ class GObjectIntrospectionConan(ConanFile):
         meson.install()
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.XDG_DATA_DIRS.append(os.path.join(self.package_folder, "share"))
         self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
