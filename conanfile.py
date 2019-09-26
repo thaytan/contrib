@@ -1,6 +1,4 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
-import os
-import stat
 
 def get_version():
     git = tools.Git()
@@ -13,17 +11,17 @@ def get_version():
 class LibVpxConan(ConanFile):
     name = "libvpx"
     version = get_version()
-    url = "https://github.com/webmproject/libvpx"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=0.1]@%s/stable" % self.user)
 
     def build_requirements(self):
-        self.build_requires("yasm/1.3.0@%s/stable" % self.user)
+        self.build_requires("yasm/[>=1.3.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version)
