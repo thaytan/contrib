@@ -13,15 +13,17 @@ class PangoConan(ConanFile):
     version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A library for layout and rendering of text"
-    license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
+    license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("fribidi/1.0.5@%s/stable" % self.user)
-        self.requires("cairo/1.17.2@%s/stable" % self.user)
+        self.requires("fribidi/[>=1.0.5]@%s/stable" % self.user)
+        self.requires("cairo/[>=1.17.2]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GNOME/pango/archive/%s.tar.gz" % self.version)
@@ -36,6 +38,3 @@ class PangoConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.srcdirs.append("src")
