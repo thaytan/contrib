@@ -19,10 +19,9 @@ class HarfbuzzConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-
     def build_requirements(self):
+        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
         self.build_requires("freetype-no-harfbuzz/2.10.1@%s/stable" % self.user)
 
     def source(self):
@@ -32,9 +31,9 @@ class HarfbuzzConan(ConanFile):
         args = [
             "--disable-static"
         ]
-        autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("%s-%s" % (self.name , self.version)):
-            self.run("./autogen.sh")
+            self.run("sh autogen.sh")
+            autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.install()
         for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
