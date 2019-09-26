@@ -19,8 +19,8 @@ class PkgconfConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/pkgconf/pkgconf/archive/pkgconf-%s.tar.gz" % self.version)
@@ -43,6 +43,5 @@ class PkgconfConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
         self.env_info.PKG_CONFIG = os.path.join(self.package_folder, "bin", "pkgconf")
+        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
