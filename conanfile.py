@@ -14,7 +14,7 @@ class GStreamerPluginsBadConan(ConanFile):
     version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
-    license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
+    license = "LGPL"
     exports = "reduce_latency.patch"
     settings = "os", "arch", "compiler", "build_type"
     options = {
@@ -52,17 +52,18 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvdec")
             self.options.remove("nvenc")
 
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        if self.build_options.introspection:
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
-        if self.options.introspection:
-            self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
+        self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
+        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         if self.options.webrtc:
-            self.requires("libnice/0.1.15@%s/stable" % self.user)
+            self.requires("libnice/[>=0.1.15]@%s/stable" % self.user)
         if self.options.srtp:
-            self.requires("libsrtp/2.2.0@%s/stable" % self.user)
+            self.requires("libsrtp/[>=2.2.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
@@ -79,7 +80,6 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dmpegtsmux=" + ("enabled" if self.options.mpegtsmux else "disabled"))
         args.append("-Dmpegtsdemux=" + ("enabled" if self.options.mpegtsdemux else "disabled"))
         args.append("-Ddebugutils=" + ("enabled" if self.options.debugutils else "disabled"))
-
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
@@ -93,7 +93,4 @@ class GStreamerPluginsBadConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.includedirs = ["include/gstreamer-1.0"]
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
