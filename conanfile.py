@@ -1,7 +1,4 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-import os
-import glob
-import shutil
 
 def get_version():
     git = tools.Git()
@@ -20,11 +17,11 @@ class FFMpegConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-
     def build_requirements(self):
-        self.build_requires("yasm/1.3.0@%s/stable" % self.user)
+        self.build_requires("yasm/[>=1.3.0]@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("http://ffmpeg.org/releases/ffmpeg-%s.tar.bz2" % self.version)
@@ -36,7 +33,6 @@ class FFMpegConan(ConanFile):
         ]
         if self.settings.build_type == "Debug":
             args.extend(["--disable-optimizations", "--disable-mmx", "--disable-stripping", "--enable-debug"])
-
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
@@ -47,7 +43,3 @@ class FFMpegConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
