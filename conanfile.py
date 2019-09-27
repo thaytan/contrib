@@ -1,5 +1,4 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
-import os
 
 def get_version():
     git = tools.Git()
@@ -19,7 +18,7 @@ class LibXorgUtilMacrosConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/util/util-macros-%s.tar.gz" % self.version)
