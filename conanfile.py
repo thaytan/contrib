@@ -24,6 +24,8 @@ def replace_prefix_in_pc_file(pc_file, prefix):
     with open(pc_file, "w") as f:
         f.write(content)
 
+def env_prepend(var, val):
+    environ[var] = val + (pathsep + environ[var] if var in environ else "")
 
 class env(Generator):
     def __init__(self, conanfile):
@@ -62,17 +64,12 @@ class env(Generator):
                     replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
 
         # Update Conan environment
-        if "PATH" in environ:
-            environ["PATH"] = pathsep.join(bin_paths) + pathsep + environ["PATH"]
-        if "PKG_CONFIG_PATH" in environ:
-            environ["PKG_CONFIG_PATH"] = pc_output_path + pathsep + environ["PKG_CONFIG_PATH"]
-        if "LD_LIBRARY_PATH" in environ:
-            environ["LD_LIBRARY_PATH"] = pathsep.join(lib_paths) + pathsep + environ["LD_LIBRARY_PATH"]
+        env_prepend("PATH", pathsep.join(bin_paths))
+        env_prepend("PKG_CONFIG_PATH", pc_output_path)
+        env_prepend("LD_LIBRARY_PATH", pathsep.join(lib_paths))
         if hasattr(self.conanfile, "source_folder"):
-            if "CFLAGS" in environ:
-                environ["CFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
-            if "CXXFLAGS" in environ:
-                environ["CXXFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
+            env_prepend("CFLAGS", " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder)
+            env_prepend("CXXFLAGS", " -fdebug-prefix-map=%s=. " % self.conanfile.source_folderr)
 
         # Generate env.sh
         content = "export PATH=%s:\"$PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
