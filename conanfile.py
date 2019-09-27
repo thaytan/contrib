@@ -18,22 +18,24 @@ class OpenCVConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("cmake/3.15.3@%s/stable" % self.user)
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("zlib/1.2.11@%s/stable" % self.user)
+        self.requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+        self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/opencv/opencv/archive/%s.tar.gz" % self.version)
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.definitions["BUILD_ZLIB"] = False
+        cmake.definitions["OPENCV_GENERATE_PKGCONFIG"] = True
+        cmake.definitions["BUILD_ZLIB"] = True
+        cmake.definitions["BUILD_PNG"] = True
         cmake.definitions["BUILD_TIFF"] = False
         cmake.definitions["BUILD_JASPER"] = False
         cmake.definitions["BUILD_JPEG"] = False
-        cmake.definitions["BUILD_PNG"] = False
         cmake.definitions["BUILD_OPENEXR"] = False
         cmake.definitions["BUILD_WEBP"] = False
         cmake.definitions["BUILD_TBB"] = False
@@ -49,7 +51,3 @@ class OpenCVConan(ConanFile):
             self.copy("*.cpp", "src")
             self.copy("*.hpp", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
