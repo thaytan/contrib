@@ -62,16 +62,12 @@ class env(Generator):
                     replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
 
         # Update Conan environment
-        environ.update({
-            "PKG_CONFIG_PATH": pc_output_path,
-            "LD_LIBRARY_PATH": pathsep.join(lib_paths),
-        })
-        if hasattr(self.conanfile, "source_folder"):
-            environ.update({
-                "CFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
-                "CXXFLAGS": "-fdebug-prefix-map=%s=." % self.conanfile.source_folder,
-            })
         environ["PATH"] = pathsep.join(bin_paths) + pathsep + environ["PATH"]
+        environ["PKG_CONFIG_PATH"] = pc_output_path + pathsep + environ["PKG_CONFIG_PATH"]
+        environ["LD_LIBRARY_PATH"] = pathsep.join(lib_paths) + pathsep + environ["LD_LIBRARY_PATH"]
+        if hasattr(self.conanfile, "source_folder"):
+            environ["CFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
+            environ["CXXFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
 
         # Generate env.sh
         content = "export PATH=%s:\"$PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
@@ -88,7 +84,7 @@ class env(Generator):
 
 class EnvPackage(ConanFile):
     name = "env-generator"
-    version = "0.1"
+    version = "1.0.0"
     url = "https://gitlab.com/aivero/public/tools/conan-env-generator"
     license = "MIT"
     description = "Generator for combined build and runtime environment file"
