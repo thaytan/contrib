@@ -18,12 +18,13 @@ class GStreamerLibavConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/[>=0.1]@%s/stable" % self.user)
         self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
         self.requires("ffmpeg/[>=4.1]@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-libav/archive/%s.tar.gz" % self.version)
@@ -35,5 +36,4 @@ class GStreamerLibavConan(ConanFile):
         meson.install()
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
