@@ -18,8 +18,10 @@ class GTestConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("cmake/3.15.3@%s/stable" % self.user)
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/google/googletest/archive/release-%s.tar.gz" % self.version)
@@ -34,9 +36,3 @@ class GTestConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
-        if self.settings.os == "Linux":
-            self.cpp_info.libs.append("pthread")
