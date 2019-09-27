@@ -1,4 +1,5 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
+import os
 
 def get_version():
     git = tools.Git()
