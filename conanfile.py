@@ -62,9 +62,12 @@ class env(Generator):
                     replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
 
         # Update Conan environment
-        environ["PATH"] = pathsep.join(bin_paths) + pathsep + environ["PATH"]
-        environ["PKG_CONFIG_PATH"] = pc_output_path + pathsep + environ["PKG_CONFIG_PATH"]
-        environ["LD_LIBRARY_PATH"] = pathsep.join(lib_paths) + pathsep + environ["LD_LIBRARY_PATH"]
+        if "PATH" in environ:
+            environ["PATH"] = pathsep.join(bin_paths) + pathsep + environ["PATH"]
+        if "PKG_CONFIG_PATH" in environ:
+            environ["PKG_CONFIG_PATH"] = pc_output_path + pathsep + environ["PKG_CONFIG_PATH"]
+        if "LD_LIBRARY_PATH" in environ:
+            environ["LD_LIBRARY_PATH"] = pathsep.join(lib_paths) + pathsep + environ["LD_LIBRARY_PATH"]
         if hasattr(self.conanfile, "source_folder"):
             environ["CFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
             environ["CXXFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
@@ -73,6 +76,7 @@ class env(Generator):
         content = "export PATH=%s:\"$PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
         content += "export PKG_CONFIG_PATH=\"%s\":\"$PKG_CONFIG_PATH\"\n" % pc_output_path
         content += "export LD_LIBRARY_PATH=%s:\"$LD_LIBRARY_PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, lib_paths))
+
         for var, val in self.env.items():
             if type(val) is list:
                 content += "export {0}={1}:\"${0}\"\n".format(var, pathsep.join(map(lambda path: "\"%s\"" % path, val)))
