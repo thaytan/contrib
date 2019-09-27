@@ -29,7 +29,7 @@ class FFMpegConan(ConanFile):
     def build(self):
         args = [
             "--disable-static",
-            "--disable-dynamic",
+            "--enable-shared",
             "--disable-doc",
             "--disable-programs"
         ]
