@@ -18,8 +18,8 @@ class M4Conan(ConanFile):
     description = "The GNU macro processor"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/m4/m4-%s.tar.gz" % self.version)
@@ -37,5 +37,4 @@ class M4Conan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.srcdirs.append("src")
         self.env_info.M4 = os.path.join(self.package_folder, "bin", "m4")
