@@ -45,3 +45,9 @@ class PkgconfConan(ConanFile):
     def package_info(self):
         self.env_info.PKG_CONFIG = os.path.join(self.package_folder, "bin", "pkgconf")
         self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
+        # Support system pkgconfig files
+        if self.settings.os == "Linux":
+            if self.settings.arch == "x86_64":
+                self.env_info.PKG_CONFIG_PATH.append("/usr/lib/x86_64-linux-gnu/pkgconfig")
+            if self.settings.arch == "armv8":
+                self.env_info.PKG_CONFIG_PATH.append("/usr/lib/aarch64-linux-gnu/pkgconfig")
