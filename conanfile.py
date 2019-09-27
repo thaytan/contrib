@@ -1,5 +1,4 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
-import os
 
 def get_version():
     git = tools.Git()
@@ -18,10 +17,8 @@ class LibpngConan(ConanFile):
     description = "A collection of routines used to create PNG format graphics files"
     generators = "env"
 
-    def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
-
     def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
