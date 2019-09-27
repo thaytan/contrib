@@ -14,7 +14,7 @@ class GStreamerConan(ConanFile):
     version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A framework for streaming media"
-    license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
+    license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "introspection": [True, False],
