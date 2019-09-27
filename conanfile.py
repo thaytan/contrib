@@ -1,15 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from conans import ConanFile, CMake, tools
 import os
 
 def get_version():
     git = tools.Git()
     try:
-        if git.get_tag():
-            return git.get_tag()
-        else:
-            return git.get_branch()
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
     except:
         return None
 
@@ -24,10 +20,11 @@ class GstreamerColorizerConan(ConanFile):
     generators = "env"
     gst_version = "1.16.0"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.gst_version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
+        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user))
 
     def build(self):
         env = {
@@ -45,8 +42,5 @@ class GstreamerColorizerConan(ConanFile):
             self.copy("*gstcolorizer.h", "src")
 
     def package_info(self):
-        self.cpp_info.includedirs = ["include/gstreamer-1.0"]
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(
             self.package_folder, "lib", "gstreamer-1.0"))
