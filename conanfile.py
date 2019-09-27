@@ -14,7 +14,7 @@ class GStreamerLibavConan(ConanFile):
     version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
-    license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
+    license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
@@ -23,8 +23,8 @@ class GStreamerLibavConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
-        self.requires("ffmpeg/[>=4.1]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("ffmpeg/[>=4.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-libav/archive/%s.tar.gz" % self.version)
