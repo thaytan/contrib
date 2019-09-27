@@ -18,11 +18,11 @@ class CMakeConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("pkgconf/1.6.3@%s/stable" % self.user)
-        self.requires("ninja/1.9.0@%s/stable" % self.user)
+        self.requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
+        self.requires("ninja/[>=1.9.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/Kitware/CMake/releases/download/v{0}/cmake-{0}.tar.gz".format(self.version))
@@ -36,6 +36,3 @@ class CMakeConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.srcdirs.append("src")
