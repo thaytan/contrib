@@ -1,5 +1,4 @@
 from conans import ConanFile, CMake, tools
-from conans.util import files
 import os
 
 def get_version():
@@ -13,7 +12,7 @@ def get_version():
 class LibRealsenseConan(ConanFile):
     name = "librealsense"
     version = get_version()
-    license = "https://raw.githubusercontent.com/IntelRealSense/librealsense/master/LICENSE"
+    license = "Apache"
     description = "Intel RealSense SDK https://realsense.intel.com"
     url = "https://gitlab.com/aivero/public/conan/conan-librealsense"
     settings = "os", "compiler", "build_type", "arch"
@@ -21,11 +20,11 @@ class LibRealsenseConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("cmake/3.15.3@%s/stable" % self.user)
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("libusb/1.0.23@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("libusb/[>=1.0.23]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)
@@ -40,7 +39,6 @@ class LibRealsenseConan(ConanFile):
         cmake.definitions["BUILD_NODEJS_BINDINGS"] = "OFF"
         cmake.definitions["BUILD_PYTHON_BINDINGS"] = "ON"
         cmake.definitions["BUILD_UNIT_TESTS"] = "OFF"
-
         cmake.configure(source_folder="librealsense-" + self.version)
         cmake.build()
         cmake.install()
@@ -53,7 +51,4 @@ class LibRealsenseConan(ConanFile):
             self.copy("*.c", "src")
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.cppflags = ["-pthread"]
-        self.cpp_info.srcdirs.append("src")
         self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib")
