@@ -20,8 +20,10 @@ class AutomakeConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/automake/automake-%s.tar.gz" % self.version)
