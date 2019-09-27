@@ -18,11 +18,8 @@ class GStreamerVaapiConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
-    def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
-
     def requirements(self):
-        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("gstreamer-plugins-bad/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("libva/[>=2.3.0]@%s/stable" % self.user)
