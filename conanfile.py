@@ -14,7 +14,7 @@ class GStreamerPluginsGoodConan(ConanFile):
     version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
-    license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
+    license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "autodetect": [True, False],
@@ -38,13 +38,14 @@ class GStreamerPluginsGoodConan(ConanFile):
     )
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("glib/2.58.1@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
+        self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
+        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         if self.options.vpx:
-            self.requires("libvpx/1.8.0@%s/stable" % self.user)
+            self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)
@@ -71,6 +72,4 @@ class GStreamerPluginsGoodConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
