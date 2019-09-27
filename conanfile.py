@@ -17,6 +17,7 @@ class LibPciAccessConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
 
     def source(self):
