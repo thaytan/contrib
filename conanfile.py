@@ -18,10 +18,11 @@ class FlexConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
-        self.build_requires("gettext/0.20.1@%s/stable" % self.user)
-        self.build_requires("bison/3.3@%s/stable" % self.user)
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/westes/flex/releases/download/v{0}/flex-{0}.tar.gz".format(self.version))
