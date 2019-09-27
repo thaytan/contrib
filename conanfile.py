@@ -24,7 +24,7 @@ class LibNiceConan(ConanFile):
         self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
+        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
         if self.options.gstreamer:
             self.requires("gstreamer-plugins-base/[>=1.16.0]@%s/stable" % self.user)
