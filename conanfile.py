@@ -1,5 +1,4 @@
 from conans import ConanFile, tools
-from os import symlink, path
 
 def get_version():
     git = tools.Git()
@@ -21,7 +20,7 @@ class Deepstream(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/[>=1.0.0]@%s/%s" % (self.user, self.channel))
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
@@ -34,6 +33,3 @@ class Deepstream(ConanFile):
 
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
