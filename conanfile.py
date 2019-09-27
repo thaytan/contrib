@@ -13,12 +13,12 @@ class GperfConan(ConanFile):
     version = get_version()
     settings = "os", "compiler", "build_type", "arch"
     url = "https://github.com/prozum/conan-libffi"
-    license = "https://github.com/libffi/libffi/blob/master/LICENSE"
+    license = "GPL3"
     description = "A portable, high level programming interface to various calling conventions"
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git("%s-%s" % (self.name, self.version))
@@ -33,6 +33,3 @@ class GperfConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.srcdirs.append("src")
