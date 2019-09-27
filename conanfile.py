@@ -18,7 +18,7 @@ class YasmConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("http://www.tortall.net/projects/yasm/releases/yasm-%s.tar.gz" % self.version)
