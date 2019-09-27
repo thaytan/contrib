@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 import os
 
@@ -21,7 +19,7 @@ class BisonConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/[>=1.0.0]@%s/%s" % (self.user, self.channel))
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/bison/bison-%s.tar.gz" % self.version)
@@ -33,5 +31,4 @@ class BisonConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.BISON_PKGDATADIR = os.path.join(self.package_folder, "share", "bison")
