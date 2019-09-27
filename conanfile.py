@@ -17,7 +17,7 @@ class LibPciAccessConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     def requirements(self):
-        self.requires("xorg-util-macros/1.19.1@%s/stable" % self.user)
+        self.requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-%s.tar.gz" % self.version)
@@ -25,7 +25,7 @@ class LibPciAccessConan(ConanFile):
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("libpciaccess-" + self.version):
+        with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools.configure(args=args)
             autotools.install()
 
@@ -33,7 +33,3 @@ class LibPciAccessConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
