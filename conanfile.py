@@ -22,16 +22,16 @@ class LibUSBConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/libusb/libusb/releases/download/v{0}/libusb-{0}.tar.bz2".format(self.version))
 
     def build(self):
-        args = [
-            "--disable-static"
-        ]
+        args = ["--disable-static"]
         args.append("--enable-udev" if self.options.udev else "--disable-udev")
         with tools.chdir("%s-%s" % (self.name, self.version)):
                 autotools = AutoToolsBuildEnvironment(self)
@@ -44,7 +44,3 @@ class LibUSBConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
