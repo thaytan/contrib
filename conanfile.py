@@ -69,8 +69,10 @@ class env(Generator):
         if "LD_LIBRARY_PATH" in environ:
             environ["LD_LIBRARY_PATH"] = pathsep.join(lib_paths) + pathsep + environ["LD_LIBRARY_PATH"]
         if hasattr(self.conanfile, "source_folder"):
-            environ["CFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
-            environ["CXXFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
+            if "CFLAGS" in environ:
+                environ["CFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
+            if "CXXFLAGS" in environ:
+                environ["CXXFLAGS"] += " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder,
 
         # Generate env.sh
         content = "export PATH=%s:\"$PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
