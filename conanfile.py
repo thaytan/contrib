@@ -18,7 +18,7 @@ class CapNProtoConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://capnproto.org/capnproto-c++-%s.tar.gz" % self.version)
@@ -34,6 +34,3 @@ class CapNProtoConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.srcdirs.append("src")
