@@ -16,7 +16,7 @@ class OpensslConan(ConanFile):
     version = get_version()
     description = "TLS/SSL and crypto library"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    license = "https://raw.githubusercontent.com/openssl/openssl/master/LICENSE"
+    license = "custom"
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
 
