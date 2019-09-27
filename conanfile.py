@@ -20,10 +20,10 @@ class AutoconfConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("m4/1.4.18@%s/stable" % self.user)
+        self.requires("m4/[>=1.4.18]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/autoconf/autoconf-%s.tar.gz" % self.version)
@@ -42,7 +42,6 @@ class AutoconfConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.srcdirs.append("src")
         self.env_info.AUTOCONF = os.path.join(self.package_folder, "bin", "autoconf")
         self.env_info.AUTOHEADER = os.path.join(self.package_folder, "bin", "autoheader")
         self.env_info.AUTOM4TE = os.path.join(self.package_folder, "bin", "autom4te")
