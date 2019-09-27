@@ -661,12 +661,12 @@ impl BaseSrcImpl for RealsenseSrc {
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
-        let intenals = &mut *self.internals.lock().unwrap();
-        let settings = &intenals.settings;
+        let internals = &mut *self.internals.lock().unwrap();
+        let settings = &internals.settings;
         let streams = &settings.streams;
 
         // Get the RealSense pipeline
-        let pipeline = match intenals.state {
+        let pipeline = match internals.state {
             State::Started { ref pipeline } => pipeline,
             State::Stopped => {
                 unreachable!("Element is not yet started");
@@ -685,7 +685,7 @@ impl BaseSrcImpl for RealsenseSrc {
         // Calculate a common timestamp
         let timestamp = Some(
             std::time::SystemTime::now()
-                .duration_since(intenals.system_time)
+                .duration_since(internals.system_time)
                 .unwrap_or_default()
                 .as_nanos() as u64,
         );
