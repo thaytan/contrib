@@ -20,10 +20,12 @@ class LibtoolConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
         self.build_requires("automake/1.16.1@%s/stable" % self.user)
         self.build_requires("help2man/1.47.11@%s/stable" % self.user)
         self.build_requires("texinfo/6.6@%s/stable" % self.user)
+
+    def requirements(self):
+        self.requires("env-generator/1.0.0@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="%s-%s" % (self.name, self.version))
@@ -52,7 +54,6 @@ class LibtoolConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.srcdirs.append("src")
         self.env_info.LIBTOOL_PREFIX = self.package_folder
         self.env_info.LIBTOOL = os.path.join(self.package_folder, "bin", "libtool")
         self.env_info.LIBTOOLIZE = os.path.join(self.package_folder, "bin", "libtoolize")
