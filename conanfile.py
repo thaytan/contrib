@@ -42,7 +42,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
+        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         if self.options.vpx:
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
