@@ -17,8 +17,8 @@ class Help2ManConan(ConanFile):
     description = "Conversion tool to create man files"
     generators = "env"
 
-    def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+    def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/help2man/help2man-%s.tar.xz" % self.version)
@@ -34,6 +34,3 @@ class Help2ManConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.srcdirs.append("src")
