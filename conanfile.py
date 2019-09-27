@@ -19,7 +19,7 @@ class GStreamerLibavConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
