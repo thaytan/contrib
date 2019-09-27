@@ -54,7 +54,7 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
-        if self.build_options.introspection:
+        if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
