@@ -1,5 +1,4 @@
 from conans import ConanFile, CMake, tools
-from conans.util import files
 import os
 
 def get_version():
@@ -20,11 +19,11 @@ class CppzmqConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
-        self.build_requires("cmake/3.15.3@%s/stable" % self.user)
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("libzmq/4.3.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("libzmq/[>=4.3.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/zeromq/cppzmq/archive/v%s.tar.gz" % self.version)
@@ -47,7 +46,3 @@ class CppzmqConan(ConanFile):
             pc_file.write("Version: 4.3.0\n")
             pc_file.write("Cflags: -I${includedir}\n")
             pc_file.write("Requires: libzmq\n")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
