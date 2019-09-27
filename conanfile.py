@@ -18,8 +18,8 @@ class LibdrmConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("libpciaccess/0.14@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("libpciaccess/[>=0.14]@%s/stable" % self.user)
 
     def source(self):
         tools.get("http://dri.freedesktop.org/libdrm/libdrm-%s.tar.gz" % self.version)
@@ -29,6 +29,3 @@ class LibdrmConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
