@@ -19,7 +19,7 @@ class TexinfoConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/0.1@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/pub/gnu/texinfo/texinfo-%s.tar.xz" % self.version)
@@ -37,7 +37,6 @@ class TexinfoConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.srcdirs.append("src")
         self.env_info.MAKEINFO = os.path.join(self.package_folder, "bin", "makeinfo")
         self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "share", "texinfo"))
         for mod in ["libintl-perl", "Text-Unidecode", "Unicode-EastAsianWidth"]:
