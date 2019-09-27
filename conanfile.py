@@ -1,5 +1,4 @@
 from conans import ConanFile, Meson, tools
-import os
 
 def get_version():
     git = tools.Git()
@@ -19,8 +18,8 @@ class LibVaConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("libdrm/2.4.96@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("libdrm/[>=2.4.96]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
@@ -29,6 +28,3 @@ class LibVaConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version))
         meson.install()
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
