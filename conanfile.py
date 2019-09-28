@@ -1,5 +1,6 @@
 from conans import ConanFile, tools
-from os import symlink, path
+from os import symlink, path, listdir
+import re
 
 def get_version():
     git = tools.Git()
@@ -34,11 +35,17 @@ class JetsonDrivers(ConanFile):
 
         tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
         tools.rmdir("Linux_for_Tegra")
-        for dl in ("nvbufsurface", "nvbuf_utils", "nvbuf_fdmap", "nvdsbufferpool"):
-            symlink("lib%s.so.1.0.0" % dl, "lib%s.so" % dl)
 
     def package(self):
-        self.copy("*libnvbuf*.so*", dst="lib", keep_path=False, links=True)
+        self.copy("*.so*", dst="lib", keep_path=False, symlinks=False)
+
+        lib_folder = path.join(self.package_folder, "lib")
+        for dl in listdir(lib_folder):
+            old = re.search(r".*\.so\..*", dl)
+            new = re.search(r".*\.so", dl)
+            if old:
+                symlink(path.join(lib_folder, old.group(0)), path.join(lib_folder, new.group(0)) )
+                print("Created symlink from " + old.group(0) + " to " + new.group(0))
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
