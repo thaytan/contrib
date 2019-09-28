@@ -12,7 +12,7 @@ class OpenCVConan(ConanFile):
     name = "opencv"
     version = get_version()
     description = "OpenCV is an open source computer vision and machine learning software library."
-    url = "https://gitlab.com/aivero/public/conan/conan-opencv"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD"
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
