@@ -36,8 +36,8 @@ class V4l2(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("nv-v4lconvert/%s@%s/stable" % (self.version, self.user))
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("nv-v4lconvert/[>=%s]@%s/stable" % (self.version, self.user))
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
@@ -63,6 +63,3 @@ class V4l2(ConanFile):
         self.copy("*.so*", dst="lib", keep_path=False)
         self.copy("*.h", dst="include", keep_path=False)
         self.copy("libv4l2.pc", dst="lib/pkgconfig", keep_path=False)
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
