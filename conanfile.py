@@ -15,7 +15,7 @@ class JetsonDrivers(ConanFile):
     version = get_version()
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
-    url = "https://developer.nvidia.com/embedded/linux-tegra"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
     exports_sources= ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
@@ -23,7 +23,7 @@ class JetsonDrivers(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
@@ -46,6 +46,3 @@ class JetsonDrivers(ConanFile):
             if old:
                 symlink(path.join(lib_folder, old.group(0)), path.join(lib_folder, new.group(0)) )
                 print("Created symlink from " + old.group(0) + " to " + new.group(0))
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
