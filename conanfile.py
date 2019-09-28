@@ -1,4 +1,4 @@
-from conans import ConanFile
+from conans import ConanFile, tools
 import os
 
 def get_version():
