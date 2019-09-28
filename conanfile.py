@@ -21,12 +21,12 @@ class CairoConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("pixman/[>=0.38.4]@%s/stable" % self.user)
         self.requires("freetype/[>=2.10.1]@%s/stable" % self.user)
@@ -37,9 +37,7 @@ class CairoConan(ConanFile):
         tools.get("https://gitlab.freedesktop.org/cairo/cairo/-/archive/{0}/cairo-{0}.tar.gz".format(self.version))
 
     def build(self):
-        args = [
-            "--disable-static"
-        ]
+        args = ["--disable-static"]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
@@ -52,6 +50,4 @@ class CairoConan(ConanFile):
             self.copy("*.h", "src")
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
         self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
