@@ -32,7 +32,6 @@ class JetsonDrivers(ConanFile):
             tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/Tegra210_Linux_R%s_aarch64.tbz2" % (self.version.replace(".", "-"), self.version))
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
-
         tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
         tools.rmdir("Linux_for_Tegra")
 
