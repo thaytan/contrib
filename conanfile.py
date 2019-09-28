@@ -1,6 +1,4 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment
-import os
-import stat
 
 def get_version():
     git = tools.Git()
@@ -18,6 +16,9 @@ class LibSrtpConan(ConanFile):
     description = "Library for SRTP (Secure Realtime Transport Protocol)"
     settings = "os", "arch", "compiler", "build_type"
 
+    def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+
     def source(self):
         tools.get("https://github.com/cisco/libsrtp/archive/v%s.tar.gz" % self.version)
 
@@ -32,8 +33,3 @@ class LibSrtpConan(ConanFile):
         if self.settings.build_type == "Debug":
             self.copy("*.c", "src")
             self.copy("*.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
-
