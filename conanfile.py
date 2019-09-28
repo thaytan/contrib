@@ -21,7 +21,7 @@ class OpenCVConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
 
@@ -51,3 +51,6 @@ class OpenCVConan(ConanFile):
             self.copy("*.cpp", "src")
             self.copy("*.hpp", "src")
             self.copy("*.h", "src")
+
+    def package_info(self):
+        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "python3.6", "dist-packages")
