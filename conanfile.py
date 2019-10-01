@@ -18,6 +18,9 @@ class IntelVaapiDriverConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libdrm/[>=2.4.96]@%s/stable" % self.user)
