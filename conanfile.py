@@ -41,8 +41,8 @@ class IntelVaapiDriverConan(ConanFile):
 
     def build(self):
         args = ["--auto-features=disabled"]
-        args.append("-Dwith_x11=" + ("enabled" if self.options.with_x11 else "disabled"))
-        args.append("-Dwith_wayland=" + ("enabled" if self.options.with_wayland else "disabled"))
+        args.append("-Dwith_x11=" + ("yes" if self.options.with_x11 else "no"))
+        args.append("-Dwith_wayland=" + ("yes" if self.options.with_wayland else "no"))
         args.append("-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri"))
         meson = Meson(self)
         meson.configure(source_folder="intel-vaapi-driver-" + self.version, args=args)
