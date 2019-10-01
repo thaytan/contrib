@@ -62,7 +62,29 @@ realsense_demux.src_color ! queue ! glimagesink
 ```
 
 ## Example of a pipeline with `depthmux`
-
->TODO: Wait until downstream re-negotiation is fixed
-
-video/rgbd,streams=\"depth,color,infra1,infra2\",framerate=30/1,depth_format=GRAY16_LE,depth_width=1280,depth_height=720,idmap_format=GRAY8,idmap_width=1280,idmap_height=720,layer_format=RGB,layer_width=2560,layer_height=720,color_format=RGB,color_width=1280,color_height=720,infra1_format=GRAY8,infra1_width=1280,infra1_height=720,infra2_format=GRAY8,infra2_width=1280,infra2_height=720
+**Sending:**
+```
+gst-launch-1.0 \
+realsensesrc serial=${SERIAL} enable_depth=true enable_color=true enable_infra1=true enable_infra2=true ! \
+dddqencbin video_encoder=vaapih264enc video_encoder_parse=h264parse mpegtsmux_properties="pat-interval:=9000000;pmt-interval:=9000;si-interval:=9000" ! \
+rtpmp2tpay ! rtpbin autoremove=true drop-on-latency=false ! \
+udpsink host=127.0.0.1 port=9000
+```
+**Receiving:**
+```
+gst-launch-1.0 tsdemux name=mpegts_demux rgbdmux name=decoded_mux rgbddemux name=decoded_demux \
+udpsrc address=127.0.0.1 port=9000 caps="application/x-rtp,media=video,payload=33,clock-rate=90000,encoding-name=MP2T" ! \
+queue max-size-time=100000000 ! rtpbin ! rtpmp2tdepay ! \
+mpegts_demux.sink \
+mpegts_demux.video_0_0000 ! queue ! h264parse ! vaapidecodebin ! videoconvert ! video/x-raw,format=GRAY8 ! decoded_mux.sink_depth \
+mpegts_demux.video_0_0001 ! queue ! h264parse ! vaapidecodebin ! videoconvert ! video/x-raw,format=RGB ! decoded_mux.sink_layer \
+mpegts_demux.video_0_0002 ! queue ! h264parse ! vaapidecodebin ! videoconvert ! video/x-raw,format=RGB ! decoded_mux.sink_color \
+mpegts_demux.video_0_0003 ! queue ! h264parse ! vaapidecodebin ! videoconvert ! video/x-raw,format=GRAY8 ! decoded_mux.sink_infra1 \
+mpegts_demux.video_0_0004 ! queue ! h264parse ! vaapidecodebin ! videoconvert ! video/x-raw,format=GRAY8 ! decoded_mux.sink_infra2 \
+decoded_mux.src ! dddqdec ! \
+decoded_demux.sink \
+decoded_demux.src_depth ! queue ! glimagesink \
+decoded_demux.src_color ! queue ! glimagesink \
+decoded_demux.src_infra1 ! queue ! glimagesink \
+decoded_demux.src_infra2 ! queue ! glimagesink
+```

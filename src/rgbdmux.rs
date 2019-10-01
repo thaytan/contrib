@@ -97,7 +97,7 @@ impl ElementImpl for RgbdMux {
         let pad_name = pad.get_name().as_str().to_string();
         self.sink_pads.lock().unwrap().retain(|x| *x != pad_name);
 
-        // TODO: Generate CAPS from sink_pads and push it downstream
+        self.renegotiate_downstream_caps(element);
     }
 }
 
@@ -200,24 +200,8 @@ impl AggregatorImpl for RgbdMux {
                     }
                 }
 
-                let ds_caps = self.get_current_downstream_caps(
-                    aggregator
-                        .upcast_ref::<gst::Element>()
-                );
-                match aggregator.parent_update_src_caps(&aggregator, &ds_caps){
-                    Ok(o) => {
-
-                    },
-                    Err(e) => {
-                        gst_error!(self.cat, obj: aggregator, "Failed to negotiate CAPS: {}", e);
-                    }
-                }
-
-//                let src_pad = aggregator
-//                    .get_static_pad("src")
-//                    .expect("Could not find aggregator src pad");
-//                src_pad.mark_reconfigure();
-//                src_pad.set_caps(&ds_caps);
+                let elm = aggregator.upcast_ref::<gst::Element>();
+                self.renegotiate_downstream_caps(elm);
 
                 // Insert the new sink pad name into the struct
                 self.sink_pads.lock().unwrap().push(name.to_string());
@@ -232,6 +216,72 @@ impl AggregatorImpl for RgbdMux {
 }
 
 impl RgbdMux {
+    /// Extracts the relevant fields from the pad's CAPS and converts them into a string
+    /// representation in the video/rgbd format.
+    /// # Arguments
+    /// * `element` - The element that represents the rgbdmux.
+    /// * `pad_caps` - A reference to the pad's CAPS.
+    /// * `stream_name` - The name of the stream we're currently generating CAPS for.
+    fn pad_caps_to_string(
+        &self,
+        element: &gst::Element,
+        pad_caps: &gst::Caps,
+        stream_name: &str,
+    ) -> String {
+        // Filter out all CAPS we don't care about and map those we do into strings
+        pad_caps
+            .iter()
+            .filter_map(|caps_field| match caps_field.get_name() {
+                "framerate" => Some(format!(
+                    "{stream}_framerate={value}",
+                    stream = stream_name,
+                    value = caps_field.get::<&str>("framerate").expect(&format!(
+                        "Could not get field {} for stream {}",
+                        "framerate", stream_name
+                    ))
+                )),
+                "height" => Some(format!(
+                    "{stream}_height={value}",
+                    stream = stream_name,
+                    value = caps_field.get::<&str>("height").expect(&format!(
+                        "Could not get field {} for stream {}",
+                        "height", stream_name
+                    ))
+                )),
+                "width" => Some(format!(
+                    "{stream}_width={value}",
+                    stream = stream_name,
+                    value = caps_field.get::<&str>("width").expect(&format!(
+                        "Could not get field {} for stream {}",
+                        "width", stream_name
+                    ))
+                )),
+                "format" => Some(format!(
+                    "{stream}_format={value}",
+                    stream = stream_name,
+                    value = caps_field.get::<&str>("format").expect(&format!(
+                        "Could not get field {} for stream {}",
+                        "format", stream_name
+                    ))
+                )),
+                x => {
+                    gst_info!(
+                        self.cat,
+                        obj: element,
+                        "Unknown CAPS field found: {}. Ignoring it.",
+                        x
+                    );
+                    None
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(",")
+    }
+
+    /// Get the current downstream CAPS. The downstream CAPS are generated based on the current sink
+    /// pads on the muxer.
+    /// # Arguments
+    /// * `element` - The element that represents the `rgbdmux`.
     fn get_current_downstream_caps(&self, element: &gst::Element) -> gst::Caps {
         // First lock sink_pads, so that we may iterate it
         let sink_pads = self
@@ -258,56 +308,11 @@ impl RgbdMux {
 
                 // Then map and filter those CAPS into a string of comma separated key-value pairs
                 // with the following format: key=value,key2=value2...
-                pad_caps
-                    .iter()
-                    .filter_map(|caps_field| match caps_field.get_name() {
-                        "framerate" => Some(format!(
-                            "{stream}_framerate={value}",
-                            stream = pad_name,
-                            value = caps_field.get::<&str>("framerate").expect(&format!(
-                                "Could not get field {} for stream {}",
-                                "framerate", pad_name
-                            ))
-                        )),
-                        "height" => Some(format!(
-                            "{stream}_height={value}",
-                            stream = pad_name,
-                            value = caps_field.get::<&str>("height").expect(&format!(
-                                "Could not get field {} for stream {}",
-                                "height", pad_name
-                            ))
-                        )),
-                        "width" => Some(format!(
-                            "{stream}_width={value}",
-                            stream = pad_name,
-                            value = caps_field.get::<&str>("width").expect(&format!(
-                                "Could not get field {} for stream {}",
-                                "width", pad_name
-                            ))
-                        )),
-                        "format" => Some(format!(
-                            "{stream}_format={value}",
-                            stream = pad_name,
-                            value = caps_field.get::<&str>("format").expect(&format!(
-                                "Could not get field {} for stream {}",
-                                "format", pad_name
-                            ))
-                        )),
-                        x => {
-                            gst_info!(
-                                self.cat,
-                                obj: element,
-                                "Unknown CAPS field found: {}. Ignoring it.",
-                                x
-                            );
-                            None
-                        }
-                    })
-                    .collect::<Vec<String>>()
-                    .join(",")
+                self.pad_caps_to_string(element, &pad_caps, pad_name)
             })
             .collect::<Vec<String>>()
             .join(",");
+
         gst_info!(
             self.cat,
             obj: element,
@@ -322,6 +327,24 @@ impl RgbdMux {
             stream_caps = stream_caps
         ))
         .expect("Failed to create downstream CAPS")
+    }
+
+    /// Generates and sends new CAPS for the downstream elements. This function automatically
+    /// generates CAPS based on the sink_pads of the muxer and their current CAPS.
+    /// # Arguments
+    /// * `element` - The element that represents the `rgbdmux`.
+    fn renegotiate_downstream_caps(&self, element: &gst::Element) {
+        // Figure out the new caps the element should output
+        let ds_caps = self.get_current_downstream_caps(element);
+        // And send a CAPS event downstream
+        let caps_event = gst::Event::new_caps(&ds_caps).build();
+        if !element.send_event(caps_event) {
+            gst_error!(
+                self.cat,
+                obj: element,
+                "Failed to send CAPS negotiation event"
+            );
+        }
     }
 }
 

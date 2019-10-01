@@ -29,8 +29,8 @@ class RgbdConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("gstreamer-depth-meta/0.2.0@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
 
     def build(self):
         if self.settings.build_type == 'Release':
