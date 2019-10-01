@@ -16,6 +16,16 @@ class IntelVaapiDriverConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
+    options = {
+        "with_x11": [True, False],
+        "with_wayland": [True, False]
+    }
+    default_options = (
+        "with_x11=True",
+        "with_wayland=False"
+    )
+
+
     generators = "env"
 
     def build_requirements(self):
@@ -31,6 +41,8 @@ class IntelVaapiDriverConan(ConanFile):
 
     def build(self):
         args = ["--auto-features=disabled"]
+        args.append("-Dwith_x11=" + ("enabled" if self.options.with_x11 else "disabled"))
+        args.append("-Dwith_wayland=" + ("enabled" if self.options.with_wayland else "disabled"))
         args.append("-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri"))
         meson = Meson(self)
         meson.configure(source_folder="intel-vaapi-driver-" + self.version, args=args)
