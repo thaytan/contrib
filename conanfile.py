@@ -55,6 +55,20 @@ class env(Generator):
                     conanfile.copy("*." + ext, "src")
         conanfile.package = package
 
+        # Copy pc files from PKG_CONFIG_SYSTEM_PATH
+        if hasattr(conanfile, "system_pcs") and "PKG_CONFIG_SYSTEM_PATH" in environ:
+            if isinstance(conanfile.system_pcs, str):
+                system_pcs = set([conanfile.system_pcs])
+            else:
+                system_pcs = set(conanfile.system_pcs)
+            for pc_path in environ["PKG_CONFIG_SYSTEM_PATH"].split(pathsep):
+                for pc in listdir(pc_path):
+                    if path.splitext(pc)[0] in conanfile.system_pcs:
+                        system_pcs.remove(path.splitext(pc)[0])
+                        copy(path.join(pc_path, pc), pc_output_path)
+            if len(system_pcs):
+                raise Exception("'%s' not available in system pkg-config directories" % ", ".join(system_pcs))
+
         # Find bin, lib and pkgconfig paths
         bin_paths = []
         lib_paths = []
