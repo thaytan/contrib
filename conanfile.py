@@ -27,6 +27,7 @@ def replace_prefix_in_pc_file(pc_file, prefix):
 def env_prepend(var, val):
     environ[var] = val + (pathsep + environ[var] if var in environ else "")
 
+
 class env(Generator):
     def __init__(self, conanfile):
         super().__init__(conanfile)
@@ -38,27 +39,39 @@ class env(Generator):
 
     @property
     def content(self):
+        conanfile = self.conanfile
         pc_output_path = self.output_path
-        if not path.exists(pc_output_path):
+        if not path.isdir(pc_output_path):
             makedirs(pc_output_path)
+
+        # Copy sources to package
+        if hasattr(conanfile, "package"):
+            conanfile.pre_package = conanfile.package
+        def package():
+            if hasattr(conanfile, "pre_package"):
+                conanfile.pre_package()
+            if conanfile.settings.build_type == "Debug":
+                for ext in ("c", "cpp", "cpp", "h", "hpp", "hxx"):
+                    conanfile.copy("*." + ext, "src")
+        conanfile.package = package
 
         # Find bin, lib and pkgconfig paths
         bin_paths = []
         lib_paths = []
         for _, cpp_info in self.deps_build_info.dependencies:
             lib_path = path.join(cpp_info.rootpath, "lib")
-            if path.exists(lib_path):
+            if path.isdir(lib_path):
                 lib_paths.append(lib_path)
             bin_path = path.join(cpp_info.rootpath, "bin")
-            if path.exists(bin_path):
+            if path.isdir(bin_path):
                 bin_paths.append(bin_path)
             pc_lib_path = path.join(cpp_info.rootpath, "lib", "pkgconfig")
             pc_share_path = path.join(cpp_info.rootpath, "share", "pkgconfig")
-            if path.exists(pc_lib_path):
+            if path.isdir(pc_lib_path):
                 for pc in listdir(pc_lib_path):
                     copy(path.join(pc_lib_path, pc), pc_output_path)
                     replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
-            if path.exists(pc_share_path):
+            if path.isdir(pc_share_path):
                 for pc in listdir(pc_share_path):
                     copy(path.join(pc_share_path, pc), pc_output_path)
                     replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
@@ -67,18 +80,17 @@ class env(Generator):
         env_prepend("PATH", pathsep.join(bin_paths))
         env_prepend("PKG_CONFIG_PATH", pc_output_path)
         env_prepend("LD_LIBRARY_PATH", pathsep.join(lib_paths))
-        if hasattr(self.conanfile, "source_folder"):
-            env_prepend("CFLAGS", " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder)
-            env_prepend("CXXFLAGS", " -fdebug-prefix-map=%s=. " % self.conanfile.source_folder)
+        if hasattr(conanfile, "source_folder"):
+            env_prepend("CFLAGS", " -fdebug-prefix-map=%s=. " % conanfile.source_folder)
+            env_prepend("CXXFLAGS", " -fdebug-prefix-map=%s=. " % conanfile.source_folder)
 
         # Generate env.sh
-        content = "export PATH=%s:\"$PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, bin_paths))
+        content = "export PATH=%s:\"$PATH\"\n" % pathsep.join("\"%s\"" % p for p in bin_paths)
         content += "export PKG_CONFIG_PATH=\"%s\":\"$PKG_CONFIG_PATH\"\n" % pc_output_path
-        content += "export LD_LIBRARY_PATH=%s:\"$LD_LIBRARY_PATH\"\n" % pathsep.join(map(lambda path: "\"%s\"" % path, lib_paths))
-
+        content += "export LD_LIBRARY_PATH=%s:\"$LD_LIBRARY_PATH\"\n" % pathsep.join("\"%s\"" for p in lib_paths)
         for var, val in self.env.items():
             if type(val) is list:
-                content += "export {0}={1}:\"${0}\"\n".format(var, pathsep.join(map(lambda path: "\"%s\"" % path, val)))
+                content += "export {0}={1}:\"${0}\"\n".format(var, pathsep.join("\"%s\"" % p for p in val))
             else:
                 content += "export {0}={1}\n".format(var, "\"%s\"" % val)
 
