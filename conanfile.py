@@ -30,7 +30,8 @@ class IntelVaapiDriverConan(ConanFile):
         tools.get("https://github.com/intel/intel-vaapi-driver/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri")]
+        args = ["--auto-features=disabled"]
+        args.append("-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri"))
         meson = Meson(self)
         meson.configure(source_folder="intel-vaapi-driver-" + self.version, args=args)
         meson.install()
