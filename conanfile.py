@@ -39,9 +39,10 @@ class JetsonDrivers(ConanFile):
         self.copy("*.so*", dst="lib", keep_path=False, symlinks=False)
 
         lib_folder = path.join(self.package_folder, "lib")
-        for dl in listdir(lib_folder):
-            old = re.search(r".*\.so((\.[0-9]+)+)$", dl)
-            new = re.search(r".*\.so", dl)
-            if old:
-                symlink(path.join(lib_folder, old.group(0)), path.join(lib_folder, new.group(0)) )
-                print("Created symlink from " + old.group(0) + " to " + new.group(0))
+        with tools.chdir(lib_folder):
+            for dl in listdir(lib_folder):
+                old = re.search(r".*\.so((\.[0-9]+)+)$", dl)
+                new = re.search(r".*\.so", dl)
+                if old:
+                    symlink(old.group(0), new.group(0) )
+                    print("Created symlink from " + old.group(0) + " to " + new.group(0))
