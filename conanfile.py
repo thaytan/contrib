@@ -1,6 +1,8 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
-from os import path, remove
 from glob import glob
+from os import path, remove
+
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -37,10 +39,3 @@ class LibUSBConan(ConanFile):
                 autotools = AutoToolsBuildEnvironment(self)
                 autotools.configure(args=args)
                 autotools.install()
-        for f in glob(path.join(self.package_folder, "**", "*.la"), recursive=True):
-            remove(f)
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
