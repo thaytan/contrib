@@ -17,19 +17,17 @@ class IntelVaapiDriverConan(ConanFile):
     description = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
     options = {
-        "with_x11": [True, False],
-        "with_wayland": [True, False]
+        "x11": [True, False],
+        "wayland": [True, False]
     }
     default_options = (
-        "with_x11=True",
-        "with_wayland=False"
+        "x11=True",
+        "wayland=False"
     )
-
-
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -41,13 +39,12 @@ class IntelVaapiDriverConan(ConanFile):
 
     def build(self):
         args = ["--auto-features=disabled"]
-        args.append("-Dwith_x11=" + ("yes" if self.options.with_x11 else "no"))
-        args.append("-Dwith_wayland=" + ("yes" if self.options.with_wayland else "no"))
+        args.append("-Dwith_x11=" + ("yes" if self.options.x11 else "no"))
+        args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
         args.append("-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri"))
         meson = Meson(self)
-        meson.configure(source_folder="intel-vaapi-driver-" + self.version, args=args)
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
         self.env_info.LIBVA_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))
