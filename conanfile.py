@@ -21,6 +21,7 @@ class LibxcbConan(ConanFile):
         self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
         self.build_requires("xcb-proto/[>=1.13]@%s/stable" % self.user)
         self.build_requires("libxau/[>=1.0.9]@%s/stable" % self.user)
+        self.build_requires("libpthread-stubs/[>=0.4]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
