@@ -1,7 +1,9 @@
 /target
 **/*.rs.bk
+==== BASE ====
 Cargo.lock
-.idea
+.idea/
 CMakeLists.txt
-build
 cmake-build-*
+conan/
+build/

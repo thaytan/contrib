@@ -14,13 +14,28 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+extern crate byteorder;
+
+use byteorder::{BigEndian, WriteBytesExt};
 use glib::subclass;
 use gst::prelude::*;
 use gst::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
+
+#[derive(Debug, Clone)]
+struct CapsNegotiationError(&'static str);
+impl Error for CapsNegotiationError {}
+impl Display for CapsNegotiationError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "Caps negotiation error: {}", self.0)
+    }
+}
 
 // A struct representation of the `rgbddemux` element
 struct RgbdDemux {
@@ -32,6 +47,8 @@ struct RgbdDemux {
 struct RgbdDemuxInternals {
     src_pads: HashMap<String, gst::Pad>,
     flow_combiner: gst_base::UniqueFlowCombiner,
+    /// We use a 4-byte (32 bits) KLV key counter
+    kvl_id_counter: u32,
 }
 
 impl RgbdDemux {
@@ -65,7 +82,13 @@ impl RgbdDemux {
         match event.view() {
             EventView::Caps(caps) => {
                 // Call function that creates src pads according to the received Caps event
-                self.create_additional_src_pads(element, caps.get_caps())
+                match self.create_additional_src_pads(element, caps.get_caps()) {
+                    Ok(_) => true,
+                    Err(e) => {
+                        gst_error!(self.cat, obj: element, "{}", e);
+                        false
+                    }
+                }
             }
             EventView::StreamStart(_id) => {
                 // Accept any StreamStart event
@@ -92,67 +115,56 @@ impl RgbdDemux {
         }
     }
 
-    fn create_additional_src_pads(&self, element: &gst::Element, rgbd_caps: &gst::CapsRef) -> bool {
+    fn create_additional_src_pads(
+        &self,
+        element: &gst::Element,
+        rgbd_caps: &gst::CapsRef,
+    ) -> Result<(), CapsNegotiationError> {
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = if let Some(caps) = rgbd_caps.iter().next() {
-            caps
-        } else {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Invalid `video/rgbd` caps for creation of additional src pads"
-            );
-            return false;
-        };
+        let rgbd_caps = rgbd_caps.iter().next().ok_or(CapsNegotiationError(
+            "Invalid `video/rgbd` caps for creation of additional src pads",
+        ))?;
 
         // Determine what streams are contained within the caps
         let streams: Vec<&str> = if let Some(streams) = rgbd_caps.get::<&str>("streams") {
-            streams.split(',').collect()
+            Ok(streams.split(',').collect())
         } else {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "No `streams` field detected in `video/rgbd` caps"
-            );
-            return false;
-        };
+            Err(CapsNegotiationError(
+                "No `streams` field detected in `video/rgbd` caps",
+            ))
+        }?;
+
         if streams.len() == 0 {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Cannot detect any stream in `video/rgbd` caps under field `streams`"
-            );
-            return false;
+            return Err(CapsNegotiationError(
+                "Cannot detect any stream in `video/rgbd` caps under field `streams`",
+            ));
         }
 
         // Get a common framerate for all streams
-        let common_framerate = if let Some(framerate) = rgbd_caps.get::<gst::Fraction>("framerate")
-        {
-            framerate
-        } else {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Cannot detect any `framerate` in `video/rgbd` caps"
-            );
-            return false;
-        };
+        let common_framerate =
+            rgbd_caps
+                .get::<gst::Fraction>("framerate")
+                .ok_or(CapsNegotiationError(
+                    "Cannot detect any `framerate` in `video/rgbd` caps",
+                ))?;
 
         // Iterate over all streams
         for stream_name in streams.iter() {
-            // Extract `video/x-raw` caps from the `video/rgbd` caps for the particular stream
-            let new_pad_caps = if let Some(new_caps) =
-                self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate)
-            {
-                new_caps
+            // Determine the appropriate caps for the stream
+            let new_pad_caps = if *stream_name == "meta" {
+                // Get `video/meta-klv` caps if the `meta` stream is enabled
+                Ok(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]))
             } else {
-                return false;
-            };
+                self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate)
+                    .ok_or(CapsNegotiationError(
+                        "Could not get CAPS from upstream elements",
+                    ))
+            }?;
 
             // Create the new src pad with given caps and stream name
             self.create_new_src_pad(element, new_pad_caps, stream_name);
         }
-        true
+        Ok(())
     }
 
     fn extract_stream_caps(
@@ -310,7 +322,7 @@ impl RgbdDemux {
                         element,
                         &internals.src_pads,
                         additional_buffer,
-                    ));
+                    ))?;
         }
 
         // Push the main buffer to the corresponding src pad
@@ -323,6 +335,99 @@ impl RgbdDemux {
             ))
     }
 
+    /// Attempt to send the per-frame metadata that was generated by the src-element. The per-frame
+    /// metadata must be attached as a `MetaBuffer` on the buffer that holds the frame and have
+    /// a `TagMeta` that contains the word 'meta', e.g. depth_meta.
+    /// This function ignores buffers that either have an unknown tag or are un-tagged. This means
+    /// that the function will only return the Err-variant if there is no 'meta' pad or if the
+    /// pad push fails.
+    /// # Arguments
+    /// * `element` - A reference to the GStreamer element that represents the `rgbddemux`.
+    /// * `src_pads` - A HashMap of the element's pad names and the actual pads.
+    /// * `buffer` - A reference to a frame buffer, for which we should push per-frame metadata.
+    fn push_per_frame_metadata(
+        &self,
+        element: &gst::Element,
+        src_pads: &HashMap<String, gst::Pad>,
+        buffer: &gst::Buffer,
+    ) -> Result<(), gst::FlowError> {
+        // Iterate over the 'BufferMeta's attached to the frame buffer
+        for per_frame_meta in buffer.iter_meta::<BufferMeta>() {
+            // Get a mutable reference to the buffer (mutable because we want to ensure timestamping)
+            let meta_buffer = unsafe { gst::buffer::Buffer::from_glib_none(per_frame_meta.buffer) };
+            // If there is a title tag on the buffer, we know that it is a 3DQ-related buffer
+            match self.extract_tag_title(element, &meta_buffer) {
+                Some(ref meta_tag) if meta_tag.contains("meta") => {
+                    // Check if it's a meta buffer, if so timestamp it and push it on the meta-pad
+                    let meta_pad = src_pads.get("meta").ok_or(gst::FlowError::NotSupported)?;
+
+                    // Make sure the buffer timestamps are set to the same as the frame they belong to
+                    let mut klv = self.klv_serialize(element, meta_buffer).unwrap();
+                    let klv_mut = klv.get_mut().unwrap();
+                    klv_mut.set_pts(buffer.get_pts());
+                    klv_mut.set_dts(buffer.get_dts());
+
+                    meta_pad.push(klv)?;
+                }
+                Some(unknown_tag) => {
+                    gst_warning!(
+                        self.cat,
+                        obj: element,
+                        "Found an unknown buffer, where the per-frame meta should have been: `{}`",
+                        unknown_tag
+                    );
+                }
+                // We also ignore untagged buffers
+                None => {
+                    gst_warning!(
+                    self.cat,
+                    obj: element,
+                    "Ignoring an untagged buffer, could it be per-frame metadata? If so, please make sure it is tagged as meta_%s"
+                );
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Serialize the given buffer into KLV by prepending it with the key and length attributes.
+    /// # Arguments
+    /// * `element` - The gst::Element that represents the realsensesrc.
+    ///* `meta_buffer` - The buffer that should be serialized as klv.
+    fn klv_serialize(
+        &self,
+        element: &gst::Element,
+        meta_buffer: gst::Buffer,
+    ) -> Option<gst::Buffer> {
+        match self.internals.lock() {
+            Ok(mut i) => {
+                let key = i.kvl_id_counter + 1;
+                let length = meta_buffer.get_size() as u32;
+                let mut kl_bytes: Vec<u8> = vec![];
+
+                // Convert the key and length values into a byte array
+                for elem in [key, length].iter() {
+                    kl_bytes.write_u32::<BigEndian>(*elem).unwrap();
+                }
+                // Allocate a gst::Buffer for it
+                let klv = gst::Buffer::from_slice(kl_bytes);
+
+                // And update the id_counter
+                i.kvl_id_counter = key;
+                // Append the meta_buffer onto kl to get the klv-serialized byte array
+                Some(gst::Buffer::append(klv, meta_buffer))
+            }
+            _ => {
+                gst_warning!(
+                    self.cat,
+                    obj: element,
+                    "Could not obtain 'kvl_id_counter' lock."
+                );
+                None
+            }
+        }
+    }
+
     fn push_buffer_to_corresponding_pad(
         &self,
         element: &gst::Element,
@@ -330,26 +435,27 @@ impl RgbdDemux {
         buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Extract tag title from the buffer
-        let tag_title = if let Some(tag_title) = self.extract_tag_title(element, &buffer) {
-            tag_title
-        } else {
-            return Err(gst::FlowError::Error);
-        };
+        let tag_title = self
+            .extract_tag_title(element, &buffer)
+            .ok_or(gst::FlowError::Error)?;
 
         // Match the tag title with a corresponding src pad
         match src_pads.get(&(format!("src_{}", tag_title))) {
             Some(corresponding_pad) => {
+                // Check if there's a per-frame metadata buffer we need to push to the meta pad
+                self.push_per_frame_metadata(element, src_pads, &buffer)?;
+
                 // Push the buffer to the corresponding pad
-                return corresponding_pad.push(buffer);
+                corresponding_pad.push(buffer)
             }
             None => {
-                gst_error!(
+                gst_warning!(
                     self.cat,
                     obj: element,
                     "No corresponding pad for buffer with tag title `{}` exists",
                     tag_title
                 );
-                return Err(gst::FlowError::Error);
+                Err(gst::FlowError::Error)
             }
         }
     }
@@ -419,6 +525,7 @@ impl ObjectSubclass for RgbdDemux {
             internals: Mutex::new(RgbdDemuxInternals {
                 src_pads: HashMap::new(),
                 flow_combiner: gst_base::UniqueFlowCombiner::new(),
+                kvl_id_counter: 0,
             }),
         }
     }
@@ -428,16 +535,21 @@ impl ObjectSubclass for RgbdDemux {
             "RGB-D Demuxer",
             "Demuxer/RGB-D",
             "Demuxes  a single `video/rgbd` into multiple `video/x-raw`",
-            "Raphael Dürscheid <rd@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>",
+            "Raphael Dürscheid <rd@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
 
         // src pads
+        let mut src_caps = gst::Caps::new_simple("video/x-raw", &[]);
+        src_caps
+            .get_mut()
+            .unwrap()
+            .append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
         klass.add_pad_template(
             gst::PadTemplate::new(
                 "src_%s",
                 gst::PadDirection::Src,
                 gst::PadPresence::Sometimes,
-                &gst::Caps::new_simple("video/x-raw", &[]),
+                &src_caps,
             )
             .unwrap(),
         );

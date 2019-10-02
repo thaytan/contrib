@@ -7,10 +7,8 @@ import os
 def get_version():
     git = tools.Git()
     try:
-        if git.get_tag():
-            return git.get_tag()
-        else:
-            return git.get_branch()
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
     except:
         return None
 
