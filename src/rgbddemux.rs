@@ -24,6 +24,21 @@ use gst_depth_meta::tags::TagsMeta;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use byteorder::{WriteBytesExt, BigEndian};
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+use std::fmt;
+
+#[derive(Debug, Clone)]
+struct CapsNegotiationError(&'static str);
+impl Error for CapsNegotiationError {
+
+}
+impl Display for CapsNegotiationError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "Caps negotiation error: {}", self.0)
+    }
+}
+
 
 // A struct representation of the `rgbddemux` element
 struct RgbdDemux {
@@ -70,7 +85,17 @@ impl RgbdDemux {
         match event.view() {
             EventView::Caps(caps) => {
                 // Call function that creates src pads according to the received Caps event
-                self.create_additional_src_pads(element, caps.get_caps())
+                match self.create_additional_src_pads(element, caps.get_caps()) {
+                    Ok(_) => { true },
+                    Err(e) => {
+                        gst_error!(
+                            self.cat,
+                            obj: element,
+                            "{}", e
+                        );
+                        false
+                    }
+                }
             }
             EventView::StreamStart(_id) => {
                 // Accept any StreamStart event
@@ -97,73 +122,38 @@ impl RgbdDemux {
         }
     }
 
-    fn create_additional_src_pads(&self, element: &gst::Element, rgbd_caps: &gst::CapsRef) -> bool {
+    fn create_additional_src_pads(&self, element: &gst::Element, rgbd_caps: &gst::CapsRef) -> Result<(), CapsNegotiationError> {
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = if let Some(caps) = rgbd_caps.iter().next() {
-            caps
-        } else {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Invalid `video/rgbd` caps for creation of additional src pads"
-            );
-            return false;
-        };
+        let rgbd_caps = rgbd_caps.iter().next().ok_or(CapsNegotiationError("Invalid `video/rgbd` caps for creation of additional src pads"))?;
 
         // Determine what streams are contained within the caps
         let streams: Vec<&str> = if let Some(streams) = rgbd_caps.get::<&str>("streams") {
-            streams.split(',').collect()
+            Ok(streams.split(',').collect())
         } else {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "No `streams` field detected in `video/rgbd` caps"
-            );
-            return false;
-        };
+            Err(CapsNegotiationError("No `streams` field detected in `video/rgbd` caps"))
+        }?;
+
         if streams.len() == 0 {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Cannot detect any stream in `video/rgbd` caps under field `streams`"
-            );
-            return false;
+            return Err(CapsNegotiationError("Cannot detect any stream in `video/rgbd` caps under field `streams`"));
         }
 
         // Get a common framerate for all streams
-        let common_framerate = if let Some(framerate) = rgbd_caps.get::<gst::Fraction>("framerate")
-        {
-            framerate
-        } else {
-            gst_error!(
-                self.cat,
-                obj: element,
-                "Cannot detect any `framerate` in `video/rgbd` caps"
-            );
-            return false;
-        };
+        let common_framerate = rgbd_caps.get::<gst::Fraction>("framerate").ok_or(CapsNegotiationError("Cannot detect any `framerate` in `video/rgbd` caps"))?;
 
         // Iterate over all streams
         for stream_name in streams.iter() {
             // Determine the appropriate caps for the stream
             let new_pad_caps = if *stream_name == "meta" {
                 // Get `video/meta-klv` caps if the `meta` stream is enabled
-                gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)])
+                Ok(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]))
             } else {
-                // Extract `video/x-raw` caps from the `video/rgbd` caps for the particular stream
-                if let Some(new_caps) =
-                    self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate)
-                {
-                    new_caps
-                } else {
-                    return false;
-                }
-            };
+                self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate).ok_or(CapsNegotiationError("Could not get CAPS from upstream elements"))
+            }?;
 
             // Create the new src pad with given caps and stream name
             self.create_new_src_pad(element, new_pad_caps, stream_name);
         }
-        true
+        Ok(())
     }
 
     fn extract_stream_caps(

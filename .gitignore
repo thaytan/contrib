@@ -5,3 +5,4 @@ Cargo.lock
 CMakeLists.txt
 cmake-build-debug/
 conan/
+build/
