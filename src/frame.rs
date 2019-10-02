@@ -108,6 +108,8 @@ impl Frame {
     /// Check if the frame's metadata supports the given attribute. The function returns `true` if
     /// it does, `false` if not. The error variant is used to propagate any errors encountered in
     /// the librealsense code.
+    ///
+    /// Please refer to [get_metadata](#method.get_metadata) for a Rustified version.
     /// # Arguments
     /// * `attribute` - The attribute to check support for.
     /// # Example
@@ -140,6 +142,8 @@ impl Frame {
     /// Read the given metadata attribute from the frame. Please use the `supports_frame_metadata`
     /// function to check if the given metadata is supported before reading it, as librealsense may
     /// fail with an exception when reading an un-supported metadata attribute.
+    ///
+    /// Please refer to [get_metadata](#method.get_metadata) for a Rustified version.
     /// # Arguments
     /// * `attribute` - The attribute to read.
     /// # Example
@@ -168,6 +172,9 @@ impl Frame {
     }
 
     /// Get all the frame's supported metadata field represented as a `Metadata` struct.
+    ///
+    /// Please refer to [supports_frame_metadata](#method.supports_frame_metadata) or
+    /// [get_frame_metadata](#method.get_frame_metadata) for the C-like variants.
     /// # Example
     /// ```
     /// use librealsense2::pipeline::Pipeline;
