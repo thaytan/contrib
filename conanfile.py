@@ -1,7 +1,9 @@
-from conans.model import Generator
-from conans import ConanFile
-from os import path, pathsep, listdir, environ, makedirs
+from glob import glob
+from os import environ, listdir, makedirs, path, pathsep, remove
 from shutil import copy
+
+from conans import ConanFile
+from conans.model import Generator
 
 
 def replace_prefix_in_pc_file(pc_file, prefix):
@@ -44,15 +46,19 @@ class env(Generator):
         if not path.isdir(pc_output_path):
             makedirs(pc_output_path)
 
-        # Copy sources to package
+        # Replace package method
         if hasattr(conanfile, "package"):
             conanfile.pre_package = conanfile.package
         def package():
             if hasattr(conanfile, "pre_package"):
                 conanfile.pre_package()
+            # Copy sources to package
             if conanfile.settings.build_type == "Debug":
                 for ext in ("c", "cpp", "cpp", "h", "hpp", "hxx"):
                     conanfile.copy("*." + ext, "src")
+            # Delete libtool files
+            for f in glob(path.join(conanfile.package_folder, "**", "*.la"), recursive=True):
+                remove(f)
         conanfile.package = package
 
         # Copy pc files from PKG_CONFIG_SYSTEM_PATH
