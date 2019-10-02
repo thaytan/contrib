@@ -16,29 +16,26 @@
 
 extern crate byteorder;
 
+use byteorder::{BigEndian, WriteBytesExt};
 use glib::subclass;
 use gst::prelude::*;
 use gst::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
 use std::collections::HashMap;
-use std::sync::Mutex;
-use byteorder::{WriteBytesExt, BigEndian};
 use std::error::Error;
-use std::fmt::{Display, Formatter};
 use std::fmt;
+use std::fmt::{Display, Formatter};
+use std::sync::Mutex;
 
 #[derive(Debug, Clone)]
 struct CapsNegotiationError(&'static str);
-impl Error for CapsNegotiationError {
-
-}
+impl Error for CapsNegotiationError {}
 impl Display for CapsNegotiationError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "Caps negotiation error: {}", self.0)
     }
 }
-
 
 // A struct representation of the `rgbddemux` element
 struct RgbdDemux {
@@ -86,13 +83,9 @@ impl RgbdDemux {
             EventView::Caps(caps) => {
                 // Call function that creates src pads according to the received Caps event
                 match self.create_additional_src_pads(element, caps.get_caps()) {
-                    Ok(_) => { true },
+                    Ok(_) => true,
                     Err(e) => {
-                        gst_error!(
-                            self.cat,
-                            obj: element,
-                            "{}", e
-                        );
+                        gst_error!(self.cat, obj: element, "{}", e);
                         false
                     }
                 }
@@ -122,23 +115,38 @@ impl RgbdDemux {
         }
     }
 
-    fn create_additional_src_pads(&self, element: &gst::Element, rgbd_caps: &gst::CapsRef) -> Result<(), CapsNegotiationError> {
+    fn create_additional_src_pads(
+        &self,
+        element: &gst::Element,
+        rgbd_caps: &gst::CapsRef,
+    ) -> Result<(), CapsNegotiationError> {
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = rgbd_caps.iter().next().ok_or(CapsNegotiationError("Invalid `video/rgbd` caps for creation of additional src pads"))?;
+        let rgbd_caps = rgbd_caps.iter().next().ok_or(CapsNegotiationError(
+            "Invalid `video/rgbd` caps for creation of additional src pads",
+        ))?;
 
         // Determine what streams are contained within the caps
         let streams: Vec<&str> = if let Some(streams) = rgbd_caps.get::<&str>("streams") {
             Ok(streams.split(',').collect())
         } else {
-            Err(CapsNegotiationError("No `streams` field detected in `video/rgbd` caps"))
+            Err(CapsNegotiationError(
+                "No `streams` field detected in `video/rgbd` caps",
+            ))
         }?;
 
         if streams.len() == 0 {
-            return Err(CapsNegotiationError("Cannot detect any stream in `video/rgbd` caps under field `streams`"));
+            return Err(CapsNegotiationError(
+                "Cannot detect any stream in `video/rgbd` caps under field `streams`",
+            ));
         }
 
         // Get a common framerate for all streams
-        let common_framerate = rgbd_caps.get::<gst::Fraction>("framerate").ok_or(CapsNegotiationError("Cannot detect any `framerate` in `video/rgbd` caps"))?;
+        let common_framerate =
+            rgbd_caps
+                .get::<gst::Fraction>("framerate")
+                .ok_or(CapsNegotiationError(
+                    "Cannot detect any `framerate` in `video/rgbd` caps",
+                ))?;
 
         // Iterate over all streams
         for stream_name in streams.iter() {
@@ -147,7 +155,10 @@ impl RgbdDemux {
                 // Get `video/meta-klv` caps if the `meta` stream is enabled
                 Ok(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]))
             } else {
-                self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate).ok_or(CapsNegotiationError("Could not get CAPS from upstream elements"))
+                self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate)
+                    .ok_or(CapsNegotiationError(
+                        "Could not get CAPS from upstream elements",
+                    ))
             }?;
 
             // Create the new src pad with given caps and stream name
@@ -343,12 +354,11 @@ impl RgbdDemux {
         // Iterate over the 'BufferMeta's attached to the frame buffer
         for per_frame_meta in buffer.iter_meta::<BufferMeta>() {
             // Get a mutable reference to the buffer (mutable because we want to ensure timestamping)
-            let meta_buffer =
-                unsafe { gst::buffer::Buffer::from_glib_none(per_frame_meta.buffer) };
+            let meta_buffer = unsafe { gst::buffer::Buffer::from_glib_none(per_frame_meta.buffer) };
             // If there is a title tag on the buffer, we know that it is a 3DQ-related buffer
-            if let Some(meta_tag) = self.extract_tag_title(element, &meta_buffer) {
-                // Check if it's a meta buffer, if so timestamp it and push it on the meta-pad
-                if meta_tag.contains("meta") {
+            match self.extract_tag_title(element, &meta_buffer) {
+                Some(ref meta_tag) if meta_tag.contains("meta") => {
+                    // Check if it's a meta buffer, if so timestamp it and push it on the meta-pad
                     let meta_pad = src_pads.get("meta").ok_or(gst::FlowError::NotSupported)?;
 
                     // Make sure the buffer timestamps are set to the same as the frame they belong to
@@ -359,23 +369,22 @@ impl RgbdDemux {
 
                     meta_pad.push(klv)?;
                 }
-                // Else ignore it, as we do not know how to handle it
-                else {
+                Some(unknown_tag) => {
                     gst_warning!(
                         self.cat,
                         obj: element,
                         "Found an unknown buffer, where the per-frame meta should have been: `{}`",
-                        meta_tag
+                        unknown_tag
                     );
                 }
-            }
-            // We also ignore untagged buffers
-            else {
-                gst_warning!(
+                // We also ignore untagged buffers
+                None => {
+                    gst_warning!(
                     self.cat,
                     obj: element,
                     "Ignoring an untagged buffer, could it be per-frame metadata? If so, please make sure it is tagged as meta_%s"
                 );
+                }
             }
         }
         Ok(())
@@ -385,7 +394,11 @@ impl RgbdDemux {
     /// # Arguments
     /// * `element` - The gst::Element that represents the realsensesrc.
     ///* `meta_buffer` - The buffer that should be serialized as klv.
-    fn klv_serialize(&self, element: &gst::Element, meta_buffer: gst::Buffer) -> Option<gst::Buffer> {
+    fn klv_serialize(
+        &self,
+        element: &gst::Element,
+        meta_buffer: gst::Buffer,
+    ) -> Option<gst::Buffer> {
         match self.internals.lock() {
             Ok(mut i) => {
                 let key = i.kvl_id_counter + 1;
@@ -405,7 +418,11 @@ impl RgbdDemux {
                 Some(gst::Buffer::append(klv, meta_buffer))
             }
             _ => {
-                gst_warning!(self.cat, obj: element, "Could not obtain 'kvl_id_counter' lock.");
+                gst_warning!(
+                    self.cat,
+                    obj: element,
+                    "Could not obtain 'kvl_id_counter' lock."
+                );
                 None
             }
         }
@@ -508,7 +525,7 @@ impl ObjectSubclass for RgbdDemux {
             internals: Mutex::new(RgbdDemuxInternals {
                 src_pads: HashMap::new(),
                 flow_combiner: gst_base::UniqueFlowCombiner::new(),
-                kvl_id_counter: 0
+                kvl_id_counter: 0,
             }),
         }
     }
