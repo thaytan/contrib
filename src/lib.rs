@@ -14,3 +14,4 @@ pub mod pipeline;
 pub mod sensor;
 pub mod stream;
 pub mod util;
+pub mod metadata;
