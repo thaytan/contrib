@@ -244,6 +244,7 @@ struct RealsenseSrc {
 struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
+    system_time: std::time::SystemTime,
 }
 
 impl ObjectSubclass for RealsenseSrc {
@@ -264,6 +265,7 @@ impl ObjectSubclass for RealsenseSrc {
             internals: Mutex::new(RealsenseSrcInternals {
                 settings: Settings::default(),
                 state: State::default(),
+                system_time: std::time::SystemTime::now(),
             }),
         }
     }
@@ -659,12 +661,12 @@ impl BaseSrcImpl for RealsenseSrc {
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
-        let intenals = &mut *self.internals.lock().unwrap();
-        let settings = &intenals.settings;
+        let internals = &mut *self.internals.lock().unwrap();
+        let settings = &internals.settings;
         let streams = &settings.streams;
 
         // Get the RealSense pipeline
-        let pipeline = match intenals.state {
+        let pipeline = match internals.state {
             State::Started { ref pipeline } => pipeline,
             State::Stopped => {
                 unreachable!("Element is not yet started");
@@ -680,6 +682,14 @@ impl BaseSrcImpl for RealsenseSrc {
         }
         let frames = frames.unwrap();
 
+        // Calculate a common timestamp
+        let timestamp = Some(
+            std::time::SystemTime::now()
+                .duration_since(internals.system_time)
+                .unwrap_or_default()
+                .as_nanos() as u64,
+        );
+
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
@@ -692,6 +702,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 rs2::rs2_stream::RS2_STREAM_DEPTH,
                 -1,
                 &[],
+                timestamp,
             )?;
         }
 
@@ -704,6 +715,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 1,
                 &[streams.enable_depth],
+                timestamp,
             )?;
         }
 
@@ -716,6 +728,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 2,
                 &[streams.enable_depth, streams.enable_infra1],
+                timestamp,
             )?;
         }
 
@@ -732,6 +745,7 @@ impl BaseSrcImpl for RealsenseSrc {
                     streams.enable_infra1,
                     streams.enable_infra2,
                 ],
+                timestamp,
             )?;
         }
 
@@ -749,7 +763,7 @@ impl BaseSrcImpl for RealsenseSrc {
     //         }
     //         QueryView::Latency(ref mut q) => {
     //             // TODO: Determine the actual latency caused by system buffering and gstreamer copying
-    //             let settings = self.settings.lock().unwrap();
+    //             let settings = &self.internals.lock().unwrap().settings;
     //             let latency = gst::SECOND
     //                 .mul_div_floor(1, settings.streams.framerate as u64)
     //                 .unwrap();
@@ -912,6 +926,7 @@ impl RealsenseSrc {
         stream_type: rs2::rs2_stream,
         stream_id: i32,
         previous_streams: &[bool],
+        timestamp: Option<u64>,
     ) -> Result<(), gst::FlowError> {
         // Extract the frame from frames based on its type and id
         let frame = frames.iter().find(|f| {
@@ -946,6 +961,19 @@ impl RealsenseSrc {
             .unwrap()
             .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
 
+        // Extract the frame data into a new buffer
+        let mut buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
+
+        // Add tag to this new buffer
+        TagsMeta::add(buffer.get_mut().unwrap(), &mut tags);
+
+        // Set timestamp
+        if let Some(timestamp) = timestamp {
+            buffer
+                .make_mut()
+                .set_pts(gst::ClockTime::from_nseconds(timestamp));
+        };
+
         // Determine whether any of the previous streams is enabled
         let mut is_earlier_stream_enabled = false;
         for previous_stream in previous_streams.iter() {
@@ -957,17 +985,11 @@ impl RealsenseSrc {
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_earlier_stream_enabled {
-            // If any of the previous streams are enabled, simply put the frame in a new buffer and attach it as meta
-            let mut buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
-            // Add tag to this new buffer
-            TagsMeta::add(buffer.get_mut().unwrap(), &mut tags);
             // Attach this new buffer as meta to the output buffer
             BufferMeta::add(output_buffer.get_mut().unwrap(), &mut buffer);
         } else {
             // Else put this frame into the output buffer
-            *output_buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
-            // Add the tag
-            TagsMeta::add(output_buffer.get_mut().unwrap(), &mut tags);
+            *output_buffer = buffer;
         }
 
         // Release the frame
