@@ -1,6 +1,6 @@
 from glob import glob
 from os import environ, listdir, makedirs, path, pathsep, remove
-from shutil import copy
+from shutil import copy, rmtree
 
 from conans import ConanFile
 from conans.model import Generator
@@ -29,6 +29,9 @@ def replace_prefix_in_pc_file(pc_file, prefix):
 def env_prepend(var, val):
     environ[var] = val + (pathsep + environ[var] if var in environ else "")
 
+def remove_folder(folder):
+    if path.isdir(folder):
+        rmtree(folder)
 
 class env(Generator):
     def __init__(self, conanfile):
@@ -59,6 +62,9 @@ class env(Generator):
             # Delete libtool files
             for f in glob(path.join(conanfile.package_folder, "**", "*.la"), recursive=True):
                 remove(f)
+            # Delete doc, man, gdb folders
+            for folder in ("man", "doc", "gdb", "bash-completion"):
+                remove_folder(path.join(conanfile.package_folder, "share", folder))
         conanfile.package = package
 
         # Copy pc files from PKG_CONFIG_SYSTEM_PATH
