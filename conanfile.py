@@ -1,4 +1,5 @@
-from conans import ConanFile, CMake, tools
+from conans import CMake, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -18,7 +19,6 @@ class LibzmqConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
@@ -33,8 +33,3 @@ class LibzmqConan(ConanFile):
         cmake.definitions["WITH_PERF_TOOL"] = False
         cmake.configure(source_folder="%s-%s" % (self.name, self.version))
         cmake.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.cpp", "src")
-            self.copy("*.hpp", "src")
