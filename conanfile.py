@@ -23,6 +23,7 @@ class GstreamerNvV4l2(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
         self.requires("nv-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
