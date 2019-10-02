@@ -40,7 +40,7 @@ class JetsonDrivers(ConanFile):
 
         lib_folder = path.join(self.package_folder, "lib")
         for dl in listdir(lib_folder):
-            old = re.search(r".*\.so\..*", dl)
+            old = re.search(r".*\.so((\.[0-9]+)+)$", dl)
             new = re.search(r".*\.so", dl)
             if old:
                 symlink(path.join(lib_folder, old.group(0)), path.join(lib_folder, new.group(0)) )
