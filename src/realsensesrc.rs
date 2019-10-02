@@ -14,6 +14,9 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use crate::properties_d435;
+use crate::properties_d435::DEFAULT_ENABLE_METADATA;
+use crate::rs_meta::rs_meta_serialization::*;
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
@@ -22,15 +25,11 @@ use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
 use rs2;
 use std::sync::Mutex;
-use crate::rs_meta::rs_meta_serialization::*;
-use crate::properties_d435;
-use crate::properties_d435::DEFAULT_ENABLE_METADATA;
 
 // Default timeout used while waiting for frames from a realsense device in milliseconds.
 const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 const DEFAULT_LOOP_ROSBAG: bool = true;
-
 
 static PROPERTIES: [subclass::Property; 15] = [
     subclass::Property("serial", |name| {
@@ -955,46 +954,79 @@ impl RealsenseSrc {
         Ok(())
     }
 
-    fn get_frame_meta(&self, frame: &rs2::frame::Frame, element: &gst_base::BaseSrc) -> Option<Vec<u8>> {
+    fn get_frame_meta(
+        &self,
+        frame: &rs2::frame::Frame,
+        element: &gst_base::BaseSrc,
+    ) -> Option<Vec<u8>> {
         match frame.get_metadata() {
-            Ok(metadata) => {
-                match capnp_serialize(metadata) {
-                    Ok(m) => Some(m),
-                    Err(e) => {
-                        gst_warning!(
-                                self.cat,
-                                obj: element,
-                                "Failed to serialize metadata from RealSense camera: {}",
-                                e);
-                        None
-                    }
+            Ok(metadata) => match capnp_serialize(metadata) {
+                Ok(m) => Some(m),
+                Err(e) => {
+                    gst_warning!(
+                        self.cat,
+                        obj: element,
+                        "Failed to serialize metadata from RealSense camera: {}",
+                        e
+                    );
+                    None
                 }
             },
             Err(e) => {
                 gst_warning!(
-                        self.cat,
-                        obj: element,
-                        "Failed to read metadata from RealSense camera: {}",
-                        e);
+                    self.cat,
+                    obj: element,
+                    "Failed to read metadata from RealSense camera: {}",
+                    e
+                );
                 None
             }
         }
     }
 
-    fn try_add_per_frame_metadata(&self, buffer: &mut gst::Buffer, frame_meta: Option<Vec<u8>>, tag: &str) {
+    /// Attempt to add `frame_meta` as a gst meta buffer onto `buffer`. This function simply ignores
+    /// cases there `frame_meta` is `None`.
+    /// # Arguments
+    /// * `buffer` - The gst::Buffer to which the metadata should be added.
+    /// * `frame_meta` - A byte vector containing the serialized metadata.
+    /// * `tag` - The tag of the stream.
+    fn try_add_per_frame_metadata(
+        &self,
+        buffer: &mut gst::Buffer,
+        frame_meta: Option<Vec<u8>>,
+        tag: &str,
+    ) {
         // If we were able to read some metadata add it to the buffer
-        if frame_meta.is_some() {
-            let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta.unwrap());
-            let tag_name = format!("{}_meta", tag);
-            let mut tags = gst::tags::TagList::new();
-            tags.get_mut().unwrap().add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
+        match frame_meta {
+            Some(frame_meta) => {
+                let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
+                let tag_name = format!("{}_meta", tag);
+                let mut tags = gst::tags::TagList::new();
+                tags.get_mut()
+                    .unwrap()
+                    .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
 
-            TagsMeta::add(frame_meta_buffer.get_mut().unwrap(), &mut tags);
+                TagsMeta::add(frame_meta_buffer.get_mut().unwrap(), &mut tags);
 
-            BufferMeta::add(buffer.get_mut().unwrap(), &mut frame_meta_buffer);
+                BufferMeta::add(buffer.get_mut().unwrap(), &mut frame_meta_buffer);
+            }
+            _ => { /*ignore*/ }
         }
     }
 
+    /// Extract a frame from the RealSense camera, outputting it in `output_buffer` on the given
+    /// `element`. This function outputs the frame as main buffer if `previous_streams` is empty or
+    /// all `false` and as a meta buffer if `previous_streams` contains any `true`s.
+    /// # Arguments
+    /// * `element` - The element that represents the `realsensesrc`.
+    /// * `frames` - A collection of frames that was extracted from the RealSense camera (or ROSBAG)
+    /// * `output_buffer` - The buffer which the frames should be extracted into.
+    /// * `tag` - The tag to give to the buffer. This may be used to identify the type of the stream later downstream.
+    /// * `stream_type` - The type of the stream we should extract.
+    /// * `stream_id` - The id of the stream to extract.
+    /// * `previous_streams` - A list of booleans. If any is ticked, it means we should extract the next frame as secondary buffer.
+    /// * `settings` - The settings for the `realsensesrc`.
+    /// * `timestamp` - The timestamp to give to the frame.
     fn extract_frame(
         &self,
         element: &gst_base::BaseSrc,
@@ -1008,38 +1040,14 @@ impl RealsenseSrc {
         timestamp: Option<u64>,
     ) -> Result<(), gst::FlowError> {
         // Extract the frame from frames based on its type and id
-        let frame = frames.iter().find(|f| {
-            let frame_profile = f.get_profile();
-            if frame_profile.is_err() {
-                return false;
-            }
-
-            let frame_profile_data = frame_profile.unwrap().get_data();
-            if frame_profile_data.is_err() {
-                return false;
-            }
-
-            let frame_profile_data = frame_profile_data.unwrap();
-            frame_profile_data.stream == stream_type
-                && if stream_id == -1 {
-                    true
-                } else {
-                    frame_profile_data.index == stream_id
-                }
-        });
-
-        // Return error if the expected frame could no be found. It also returns error if the frame profile is not valid.
-        if frame.is_none() {
-            return Err(gst::FlowError::CustomError);
-        }
-        let frame = frame.unwrap();
+        let frame = find_frame_with_id(frames, stream_type, stream_id)
+            .ok_or(gst::FlowError::NotSupported)?;
 
         // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
-        let frame_meta  =
-            match settings.include_per_frame_metadata {
-                true => self.get_frame_meta(frame, element),
-                false => None
-            };
+        let frame_meta = match settings.include_per_frame_metadata {
+            true => self.get_frame_meta(frame, element),
+            false => None,
+        };
 
         // Create the appropriate tag
         let mut tags = gst::tags::TagList::new();
@@ -1080,6 +1088,38 @@ impl RealsenseSrc {
 
         Ok(())
     }
+}
+
+/// Attempt to find the frame for the given `stream_id` in the Vector of frames extracted from the
+/// RealSense camera. This function returns `None` on missing or erroneous frames.
+/// # Arguments
+/// * `frames` - A vector of frames extracted from librealsense.
+/// * `stream_type` - The type of the stream to look for.
+/// * `stream_id` - The id of the frame you wish to find.
+fn find_frame_with_id(
+    frames: &Vec<rs2::frame::Frame>,
+    stream_type: rs2::rs2_stream,
+    stream_id: i32,
+) -> Option<Frame> {
+    frames.iter().find(|f| {
+        let frame_profile = f.get_profile();
+        if frame_profile.is_err() {
+            return false;
+        }
+
+        let frame_profile_data = frame_profile.unwrap().get_data();
+        if frame_profile_data.is_err() {
+            return false;
+        }
+
+        let frame_profile_data = frame_profile_data.unwrap();
+        frame_profile_data.stream == stream_type
+            && if stream_id == -1 {
+                true
+            } else {
+                frame_profile_data.index == stream_id
+            }
+    })
 }
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {

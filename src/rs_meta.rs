@@ -1,13 +1,13 @@
 extern crate capnp;
 pub mod rs_meta_capnp {
     #![allow(dead_code)]
-    include!(concat!(env!("OUT_DIR"),"/src/rs_meta_capnp.rs"));
+    include!(concat!(env!("OUT_DIR"), "/src/rs_meta_capnp.rs"));
 }
 
 pub mod rs_meta_serialization {
-    use capnp::message::{Builder};
+    use crate::rs_meta::rs_meta_capnp::rs_metadata;
+    use capnp::message::Builder;
     use capnp::serialize_packed;
-    use crate::rs_meta::rs_meta_capnp::{rs_metadata};
     use std::io::Error;
 
     pub(crate) fn capnp_serialize(metadata: rs2::metadata::Metadata) -> Result<Vec<u8>, Error> {
@@ -37,7 +37,9 @@ pub mod rs_meta_serialization {
             md.set_contrast(metadata.contrast.unwrap_or(0));
             md.set_saturation(metadata.saturation.unwrap_or(0));
             md.set_sharpness(metadata.sharpness.unwrap_or(0));
-            md.set_auto_white_balance_temperature(metadata.auto_white_balance_temperature.unwrap_or(0));
+            md.set_auto_white_balance_temperature(
+                metadata.auto_white_balance_temperature.unwrap_or(0),
+            );
             md.set_backlight_compensation(metadata.backlight_compensation.unwrap_or(0));
             md.set_hue(metadata.hue.unwrap_or(0));
             md.set_gamma(metadata.gamma.unwrap_or(0));
@@ -46,7 +48,7 @@ pub mod rs_meta_serialization {
             md.set_low_light_compensation(metadata.low_light_compensation.unwrap_or(0));
         }
 
-        let mut enc : Vec<u8> = Vec::new();
+        let mut enc: Vec<u8> = Vec::new();
         serialize_packed::write_message(&mut enc, &message)?;
         Ok(enc)
     }
