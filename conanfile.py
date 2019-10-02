@@ -1,5 +1,7 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
 import os
+
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -29,7 +31,6 @@ class CairoConan(ConanFile):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("pixman/[>=0.38.4]@%s/stable" % self.user)
-        self.requires("freetype/[>=2.10.1]@%s/stable" % self.user)
         self.requires("fontconfig/[>=2.13.1]@%s/stable" % self.user)
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
 
@@ -43,11 +44,6 @@ class CairoConan(ConanFile):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
 
     def package_info(self):
         self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
