@@ -455,7 +455,7 @@ impl RgbdDemux {
                     "No corresponding pad for buffer with tag title `{}` exists",
                     tag_title
                 );
-                return Err(gst::FlowError::Error);
+                Err(gst::FlowError::Error)
             }
         }
     }
