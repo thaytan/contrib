@@ -4,9 +4,18 @@
 from conans import ConanFile, tools
 import os
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag = git.get_tag()
+        return tag if tag else git.get_branch()
+    except:
+        return None
+
+
 class RealsenseConan(ConanFile):
     name = "gst-realsense"
-    version = "0.1.0"
+    version = get_version()
     description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
     url = "https://aivero.com"
     license = "LGPL"
