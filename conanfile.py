@@ -29,11 +29,11 @@ class LibxrenderConan(ConanFile):
         self.requires("renderproto/[>=0.11.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libX11-%s.tar.gz" % self.version)
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXrender-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("libX11-" + self.version):
+        with tools.chdir("libXrender-" + self.version):
             autotools.configure(args=args)
             autotools.install()
