@@ -1,5 +1,7 @@
-from conans import ConanFile, Meson, tools
 import os
+
+from conans import ConanFile, Meson, tools
+
 
 def get_version():
     git = tools.Git()
@@ -53,13 +55,13 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvenc")
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         if self.options.webrtc:
             self.requires("libnice/[>=0.1.15]@%s/stable" % self.user)
@@ -87,11 +89,6 @@ class GStreamerPluginsBadConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-bad-" + self.version, args=args)
         meson.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
