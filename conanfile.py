@@ -84,7 +84,9 @@ class env(Generator):
         # Find bin, lib and pkgconfig paths
         bin_paths = []
         lib_paths = []
+        prefix_paths = []
         for _, cpp_info in self.deps_build_info.dependencies:
+            prefix_paths.append(cpp_info.rootpath)
             lib_path = path.join(cpp_info.rootpath, "lib")
             if path.isdir(lib_path):
                 lib_paths.append(lib_path)
@@ -104,16 +106,18 @@ class env(Generator):
 
         # Update Conan environment
         env_prepend("PATH", pathsep.join(bin_paths))
-        env_prepend("PKG_CONFIG_PATH", pc_output_path)
         env_prepend("LD_LIBRARY_PATH", pathsep.join(lib_paths))
+        env_prepend("PKG_CONFIG_PATH", pc_output_path)
+        env_prepend("CMAKE_PREFIX_PATH", pathsep.join(prefix_paths))
         if hasattr(conanfile, "source_folder"):
             env_prepend("CFLAGS", " -fdebug-prefix-map=%s=. " % conanfile.source_folder)
             env_prepend("CXXFLAGS", " -fdebug-prefix-map=%s=. " % conanfile.source_folder)
 
         # Generate env.sh
         content = "export PATH=%s:\"$PATH\"\n" % pathsep.join("\"%s\"" % p for p in bin_paths)
-        content += "export PKG_CONFIG_PATH=\"%s\":\"$PKG_CONFIG_PATH\"\n" % pc_output_path
         content += "export LD_LIBRARY_PATH=%s:\"$LD_LIBRARY_PATH\"\n" % pathsep.join("\"%s\"" for p in lib_paths)
+        content += "export PKG_CONFIG_PATH=\"%s\":\"$PKG_CONFIG_PATH\"\n" % pc_output_path
+        content += "export CMAKE_PREFIX_PATH=%s:\"$CMAKE_PREFIX_PATH\"\n" % pathsep.join("\"%s\"" for p in prefix_paths)
         for var, val in self.env.items():
             if type(val) is list:
                 content += "export {0}={1}:\"${0}\"\n".format(var, pathsep.join("\"%s\"" % p for p in val))
