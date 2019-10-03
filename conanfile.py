@@ -17,6 +17,9 @@ class GStreamerLibavConan(ConanFile):
     license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
+    
+    def build_requirements(self):
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
