@@ -1,5 +1,7 @@
-from conans import ConanFile, Meson, tools
 import os
+
+from conans import ConanFile, Meson, tools
+
 
 def get_version():
     git = tools.Git()
@@ -39,10 +41,10 @@ class GStreamerPluginsGoodConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
@@ -67,11 +69,6 @@ class GStreamerPluginsGoodConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-good-" + self.version , args=args)
         meson.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
