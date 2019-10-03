@@ -349,8 +349,14 @@ impl ObjectImpl for RealsenseSrc {
     glib_object_impl!();
 
     fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
-        let element = obj.downcast_ref::<gst_base::BaseSrc>().expect("Could not cast realsensesrc to BaseSrc");
-        let settings = &mut self.internals.lock().expect("Could not obtain lock internals mutex").settings;
+        let element = obj
+            .downcast_ref::<gst_base::BaseSrc>()
+            .expect("Could not cast realsensesrc to BaseSrc");
+        let settings = &mut self
+            .internals
+            .lock()
+            .expect("Could not obtain lock internals mutex")
+            .settings;
 
         let property = &PROPERTIES[id];
         match *property {
@@ -525,7 +531,11 @@ impl ObjectImpl for RealsenseSrc {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self.internals.lock().expect("Could not lock internals").settings;
+        let settings = &self
+            .internals
+            .lock()
+            .expect("Could not lock internals")
+            .settings;
 
         let prop = &PROPERTIES[id];
         match *prop {
@@ -567,7 +577,9 @@ impl ObjectImpl for RealsenseSrc {
     fn constructed(&self, obj: &glib::Object) {
         self.parent_constructed(obj);
 
-        let element = obj.downcast_ref::<gst_base::BaseSrc>().expect("Could not cast realsensesrc to BaseSrc");
+        let element = obj
+            .downcast_ref::<gst_base::BaseSrc>()
+            .expect("Could not cast realsensesrc to BaseSrc");
         element.set_format(gst::Format::Time);
         element.set_live(true);
     }
@@ -600,6 +612,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
         // Based on properties, enable streaming, reading from or recording to a file (with the enabled streams)
         match &settings.serial {
+            // A serial is specified. We attempt to open a live recording from the camera
             Some(serial) => {
                 // Enable the selected streams
                 Self::enable_streams(&config, &settings).map_err(|e| {
@@ -614,12 +627,13 @@ impl BaseSrcImpl for RealsenseSrc {
 
                 // Enable device with the given serial number and device configuration
                 config.enable_device(serial.to_string()).map_err(|_e| {
-                    (gst_error_msg!(
+                    gst_error_msg!(
                         gst::ResourceError::Settings,
                         ["No device with serial `{}` is connected!", serial]
-                    ))
+                    )
                 })?;
             }
+            // A serial was not specified, but a ROSBAG was, attempt to load that instead
             None if settings.rosbag_location.is_some() => {
                 let rosbag_location: &str = settings.rosbag_location.as_ref().unwrap(); // we know this always works (see match condition)
                 let rosbag_location = rosbag_location.clone();
@@ -635,6 +649,7 @@ impl BaseSrcImpl for RealsenseSrc {
                         )
                     })?;
             }
+            // Neither a serial nor a ROSBAG was specified, this is a valid configuration!
             _ => {
                 return Err(gst_error_msg!(
                     gst::ResourceError::Settings,
@@ -643,7 +658,8 @@ impl BaseSrcImpl for RealsenseSrc {
             }
         }
 
-        let pipeline = self.prepare_and_start_librealsense_pipeline(&config, settings)
+        let pipeline = self
+            .prepare_and_start_librealsense_pipeline(&config, settings)
             .map_err(|e| {
                 gst_error_msg!(
                     gst::ResourceError::Settings,
@@ -657,7 +673,11 @@ impl BaseSrcImpl for RealsenseSrc {
     }
 
     fn stop(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
-        let state = &mut self.internals.lock().expect("Could not lock internals").state;
+        let state = &mut self
+            .internals
+            .lock()
+            .expect("Could not lock internals")
+            .state;
         if let State::Stopped = *state {
             unreachable!("Element is not yet started");
         }
@@ -667,12 +687,18 @@ impl BaseSrcImpl for RealsenseSrc {
     }
 
     fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
-        let settings = &self.internals.lock().expect("Could not lock internals").settings;
+        let settings = &self
+            .internals
+            .lock()
+            .expect("Could not lock internals")
+            .settings;
 
         let mut caps = gst::Caps::truncate(caps);
         {
             let caps = caps.make_mut();
-            let s = caps.get_mut_structure(0).expect("Failed to read the realsensesrc CAPS");
+            let s = caps
+                .get_mut_structure(0)
+                .expect("Failed to read the realsensesrc CAPS");
 
             // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
             // The first stream in this string is contained in the main buffer
@@ -745,7 +771,9 @@ impl BaseSrcImpl for RealsenseSrc {
         };
 
         // Get frames with the given timeout
-        let frames = pipeline.wait_for_frames(settings.wait_for_frames_timeout).map_err(|_| {gst::FlowError::Eos})?;
+        let frames = pipeline
+            .wait_for_frames(settings.wait_for_frames_timeout)
+            .map_err(|_| gst::FlowError::Eos)?;
 
         // Calculate a common timestamp
         let timestamp = Some(
@@ -850,14 +878,30 @@ impl BaseSrcImpl for RealsenseSrc {
 }
 
 impl RealsenseSrc {
-    fn prepare_and_start_librealsense_pipeline(&self, config: &librealsense2::config::Config, settings: &Settings) -> Result<rs2::pipeline::Pipeline, RealsenseError> {
+    /// Prepare a librealsense pipeline, which can read frames from a RealSense camera, using the
+    /// given `config` and `settings`. If the preparation succeeds, the pipeline is started. The
+    /// function returns a `RealsenseError` if any of those operations fails.
+    /// # Arguments
+    /// * `config` - The librealsense configuration to use for the camera.
+    /// * `settings` - The settings for the realsensesrc.
+    fn prepare_and_start_librealsense_pipeline(
+        &self,
+        config: &librealsense2::config::Config,
+        settings: &Settings,
+    ) -> Result<rs2::pipeline::Pipeline, RealsenseError> {
         // Get context and a list of connected devices
         let context = rs2::context::Context::new()?;
 
         // Load JSON if `json-location` is defined
         let devices = context.get_devices()?;
 
-        Self::load_json(&devices, &settings)?;
+        if settings.json_location.is_some() && settings.serial.is_some() {
+            Self::load_json(
+                &devices,
+                &settings.serial.unwrap(),
+                &settings.json_location.unwrap(),
+            )?;
+        }
 
         // Start the RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context)?;
@@ -865,6 +909,10 @@ impl RealsenseSrc {
         Ok(pipeline)
     }
 
+    /// Check the settings for the realsensesrc to verify that the user of the plugin has specified
+    /// a valid configuration.
+    /// # Arguments
+    /// * `internals` - The current settings for the `realsensesrc`.
     fn check_internals(internals: &RealsenseSrcInternals) -> Result<(), gst::ErrorMessage> {
         let settings = &internals.settings;
 
@@ -896,6 +944,11 @@ impl RealsenseSrc {
         Ok(())
     }
 
+    /// Enable all the streams that has their associated property set to `true`. This function
+    /// returns an error if any streams cannot be enabled.
+    /// # Arguments
+    /// * `config` - The realsense configuration, which may be used to enable streams.
+    /// * `settings` - The settings for the realsensesrc, which in this case specifies which streams to enable.
     fn enable_streams(
         config: &rs2::config::Config,
         settings: &Settings,
@@ -951,44 +1004,52 @@ impl RealsenseSrc {
         Ok(())
     }
 
+    /// Configure the device with the given `serial` with the JSON file specified on the given
+    /// `json_location`.
+    /// # Arguments
+    /// * `devices` - A list of all available devices.
+    /// * `serial` - The serial number of the device to configure.
+    /// * `json_location` - The absolute path to the file containing the JSON configuration.
     fn load_json(
         devices: &Vec<rs2::device::Device>,
-        settings: &Settings,
+        serial: &str,
+        json_location: &str,
     ) -> Result<(), RealsenseError> {
         // Make sure a device with the selected serial is connected
-        if let Some(serial) = settings.serial.as_ref() {
-            // Find the device with the given serial, ignoring all errors
-            let device = devices.iter().find(|d| {
-                match d.get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER) {
+        // Find the device with the given serial, ignoring all errors
+        let device = devices
+            .iter()
+            .find(
+                |d| match d.get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER) {
                     Ok(device_serial) => *serial == device_serial,
                     _ => false,
-                }
-            })
-            .ok_or(RealsenseError(
-                format!("Could not find a device with id: {}", serial),
-            ))?;
+                },
+            )
+            .ok_or(RealsenseError(format!(
+                "Could not find a device with id: {}",
+                serial
+            )))?;
 
-            // Load JSON file if specified
-            match &settings.json_location {
-                Some(jl) => {
-                    if !device.is_advanced_mode_enabled()? {
-                        device.set_advanced_mode(true)?;
-                    }
-                    let json_content = std::fs::read_to_string(jl).map_err(|e| {
-                        RealsenseError (format!(
-                                "Cannot read RealSense configuration from \"{}\": {:?}",
-                                jl.clone(), e
-                            ))
-                    })?;
-
-                    device.load_json(json_content)?;
-                }
-                _ => {}
-            }
+        if !device.is_advanced_mode_enabled()? {
+            device.set_advanced_mode(true)?;
         }
+        let json_content = std::fs::read_to_string(jl).map_err(|e| {
+            RealsenseError(format!(
+                "Cannot read RealSense configuration from \"{}\": {:?}",
+                jl.clone(),
+                e
+            ))
+        })?;
+
+        device.load_json(json_content)?;
         Ok(())
     }
 
+    /// Attempt to read the metadata from the given frame and serialize it using CapnProto. If this
+    /// function returns `None`, it prints a warning to console that explains the issue.
+    /// # Arguments
+    /// * `frame` - The frame to read and serialize metadata for.
+    /// * `element` - The element that represents the realsensesrc.
     fn get_frame_meta(
         &self,
         frame: &rs2::frame::Frame,
@@ -1041,9 +1102,19 @@ impl RealsenseSrc {
                     .expect("Cannot get mutable reference to `tags`")
                     .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
 
-                TagsMeta::add(frame_meta_buffer.get_mut().expect("Could not add tags to `frame_meta_buffer`"), &mut tags);
+                TagsMeta::add(
+                    frame_meta_buffer
+                        .get_mut()
+                        .expect("Could not add tags to `frame_meta_buffer`"),
+                    &mut tags,
+                );
 
-                BufferMeta::add(buffer.get_mut().expect("Could not add `frame_meta_buffer` onto frame buffer."), &mut frame_meta_buffer);
+                BufferMeta::add(
+                    buffer
+                        .get_mut()
+                        .expect("Could not add `frame_meta_buffer` onto frame buffer."),
+                    &mut frame_meta_buffer,
+                );
             }
             _ => { /*ignore*/ }
         }
@@ -1091,11 +1162,14 @@ impl RealsenseSrc {
             .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
 
         // Extract the frame data into a new buffer
-        let frame_data = frame.get_data().map_err(|_| {gst::FlowError::Error})?;
+        let frame_data = frame.get_data().map_err(|_| gst::FlowError::Error)?;
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_data);
 
         // Add tag to this new buffer
-        TagsMeta::add(buffer.get_mut().expect("Could not add tag to frame buffer"), &mut tags);
+        TagsMeta::add(
+            buffer.get_mut().expect("Could not add tag to frame buffer"),
+            &mut tags,
+        );
 
         // Set timestamp
         if let Some(timestamp) = timestamp {
@@ -1110,13 +1184,23 @@ impl RealsenseSrc {
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_earlier_stream_enabled {
             // Attach this new buffer as meta to the output buffer
-            BufferMeta::add(output_buffer.get_mut().expect("Could not get mutable reference to `output_buffer`"), &mut buffer);
+            BufferMeta::add(
+                output_buffer
+                    .get_mut()
+                    .expect("Could not get mutable reference to `output_buffer`"),
+                &mut buffer,
+            );
         } else {
             // Else put this frame into the output buffer
             *output_buffer = buffer;
             self.try_add_per_frame_metadata(output_buffer, frame_meta, tag);
             // Add the tag
-            TagsMeta::add(output_buffer.get_mut().expect("Could not get mutable reference to `output_buffer`"), &mut tags);
+            TagsMeta::add(
+                output_buffer
+                    .get_mut()
+                    .expect("Could not get mutable reference to `output_buffer`"),
+                &mut tags,
+            );
         }
 
         // Release the frame
@@ -1137,24 +1221,19 @@ fn find_frame_with_id(
     stream_type: rs2::rs2_stream,
     stream_id: i32,
 ) -> Option<&rs2::frame::Frame> {
-    frames.iter().find(|f| {
-        match f.get_profile() {
-            Ok(profile) => {
-                match profile.get_data() {
-                    Ok(data) => {
-                        data.stream == stream_type
-                            && if stream_id == -1 {
-                            true
-                        } else {
-                            data.index == stream_id
-                        }
+    frames.iter().find(|f| match f.get_profile() {
+        Ok(profile) => match profile.get_data() {
+            Ok(data) => {
+                data.stream == stream_type
+                    && if stream_id == -1 {
+                        true
+                    } else {
+                        data.index == stream_id
                     }
-                    _ => false,
-                }
-            },
+            }
             _ => false,
-        }
-
+        },
+        _ => false,
     })
 }
 
