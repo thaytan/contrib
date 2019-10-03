@@ -13,6 +13,7 @@ class RealsenseConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = [
         "Cargo.toml",
+        "schema/*",
         "src/*",
         "build.rs"
     ]
