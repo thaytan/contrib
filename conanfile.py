@@ -1,5 +1,7 @@
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
+
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -35,11 +37,6 @@ class AutomakeConan(ConanFile):
             autotools.configure()
             autotools.make()
             autotools.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
 
     def package_info(self):
         self.env_info.AUTOMAKE = os.path.join(self.package_folder, "bin", "automake")
