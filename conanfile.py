@@ -24,6 +24,7 @@ class RealsenseConan(ConanFile):
     def requirements(self):
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
         self.requires("librealsense/[>=2.20.0]@%s/stable" % self.user)
+        self.requires("capnproto/[>=0.7.0]@%s/stable" % self.user)
 
     def build(self):
         if self.settings.build_type == 'Release':

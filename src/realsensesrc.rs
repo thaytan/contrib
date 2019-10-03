@@ -898,8 +898,8 @@ impl RealsenseSrc {
         if settings.json_location.is_some() && settings.serial.is_some() {
             Self::load_json(
                 &devices,
-                &settings.serial.unwrap(),
-                &settings.json_location.unwrap(),
+                &settings.serial.clone().unwrap(),
+                &settings.json_location.clone().unwrap(),
             )?;
         }
 
@@ -1033,10 +1033,10 @@ impl RealsenseSrc {
         if !device.is_advanced_mode_enabled()? {
             device.set_advanced_mode(true)?;
         }
-        let json_content = std::fs::read_to_string(jl).map_err(|e| {
+        let json_content = std::fs::read_to_string(json_location).map_err(|e| {
             RealsenseError(format!(
                 "Cannot read RealSense configuration from \"{}\": {:?}",
-                jl.clone(),
+                json_location.clone(),
                 e
             ))
         })?;

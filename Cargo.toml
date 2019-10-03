@@ -17,7 +17,7 @@ gstreamer-base = { version = "0.14", features = ["subclassing"] }
 gstreamer-video = "0.14"
 gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs" }
 librealsense2 = { git = "https://gitlab.com/aivero/public/librealsense-rs" }
-capnp = "0.10.1"
+capnp = { version = "0.10.1" }
 
 [build-dependencies.capnpc]
 capnpc = "0.10.1"
