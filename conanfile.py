@@ -26,7 +26,6 @@ class LibxrenderConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
-        self.requires("renderproto/[>=0.11.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXrender-%s.tar.gz" % self.version)
