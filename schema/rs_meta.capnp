@@ -1,8 +1,5 @@
 @0xcfe37f20b540297c;
 
-using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("rs_meta_capnp");
-
 struct RsMetadata {
     frameCounter @0: Int64 = 0;
     frameTimestamp @ 1: Int64 = 0;

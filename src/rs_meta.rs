@@ -1,7 +1,7 @@
 extern crate capnp;
 pub mod rs_meta_capnp {
     #![allow(dead_code)]
-    include!(concat!(env!("OUT_DIR"), "/src/rs_meta_capnp.rs"));
+    include!(concat!(env!("OUT_DIR"), "/rs_meta_capnp.rs"));
 }
 
 pub mod rs_meta_serialization {
