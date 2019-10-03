@@ -21,12 +21,12 @@ class Libx11Conan(ConanFile):
     def build_requirements(self):
         self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
         self.build_requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
-        self.build_requires("xorgproto/[>=2019.1]@%s/stable" % self.user)
         self.build_requires("xtrans/[>=1.4.0]@%s/stable" % self.user)
-        self.build_requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("xorgproto/[>=2019.1]@%s/stable" % self.user)
+        self.requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libX11-%s.tar.gz" % self.version)
