@@ -30,9 +30,6 @@ class LibxrenderConan(ConanFile):
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXrender-%s.tar.gz" % self.version)
-        with tools.chdir("libXrender-" + self.version):
-            tools.download("http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD", "config.guess", overwrite=True)
-            tools.download("http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD", "config.sub", overwrite=True)
 
     def build(self):
         args = ["--disable-static"]
