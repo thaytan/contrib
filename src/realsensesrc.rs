@@ -24,7 +24,32 @@ use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
 use rs2;
+use std::error::Error;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
+
+#[derive(Clone, Debug)]
+struct StreamEnableError(&'static str);
+impl Error for StreamEnableError {}
+impl Display for StreamEnableError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "Could not enable stream: {}", self.0)
+    }
+}
+#[derive(Clone, Debug)]
+struct RealsenseError(String);
+impl Error for RealsenseError {}
+impl Display for RealsenseError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "Could not enable stream: {}", self.0)
+    }
+}
+impl From<rs2::error::Error> for RealsenseError {
+    fn from(error: rs2::error::Error) -> Self {
+        Self(error.get_message())
+    }
+}
 
 // Default timeout used while waiting for frames from a realsense device in milliseconds.
 const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
@@ -315,7 +340,7 @@ impl ObjectSubclass for RealsenseSrc {
                 gst::PadPresence::Always,
                 &src_caps,
             )
-            .unwrap(),
+            .expect("Could not add src pad template in realsensesrc"),
         );
     }
 }
@@ -324,8 +349,8 @@ impl ObjectImpl for RealsenseSrc {
     glib_object_impl!();
 
     fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
-        let element = obj.downcast_ref::<gst_base::BaseSrc>().unwrap();
-        let settings = &mut self.internals.lock().unwrap().settings;
+        let element = obj.downcast_ref::<gst_base::BaseSrc>().expect("Could not cast realsensesrc to BaseSrc");
+        let settings = &mut self.internals.lock().expect("Could not obtain lock internals mutex").settings;
 
         let property = &PROPERTIES[id];
         match *property {
@@ -363,7 +388,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.json_location = json_location;
             }
             subclass::Property("enable-depth", ..) => {
-                let enable_depth = value.get().unwrap();
+                let enable_depth = value.get().expect(&format!("Failed to set property `enable-depth` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -374,7 +399,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enable_depth = enable_depth;
             }
             subclass::Property("enable-infra1", ..) => {
-                let enable_infra1 = value.get().unwrap();
+                let enable_infra1 = value.get().expect(&format!("Failed to set property `enable-infra` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -385,7 +410,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enable_infra1 = enable_infra1;
             }
             subclass::Property("enable-infra2", ..) => {
-                let enable_infra2 = value.get().unwrap();
+                let enable_infra2 = value.get().expect(&format!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -396,7 +421,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enable_infra2 = enable_infra2;
             }
             subclass::Property("enable-color", ..) => {
-                let enable_color = value.get().unwrap();
+                let enable_color = value.get().expect(&format!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -407,7 +432,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enable_color = enable_color;
             }
             subclass::Property("depth-width", ..) => {
-                let depth_width = value.get().unwrap();
+                let depth_width = value.get().expect(&format!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -418,7 +443,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.depth_resolution.width = depth_width;
             }
             subclass::Property("depth-height", ..) => {
-                let depth_height = value.get().unwrap();
+                let depth_height = value.get().expect(&format!("Failed to set property `depth-height` on realsensesrc. Expected an int, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -429,7 +454,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.depth_resolution.height = depth_height;
             }
             subclass::Property("color-width", ..) => {
-                let color_width = value.get().unwrap();
+                let color_width = value.get().expect(&format!("Failed to set property `color-width` on realsensesrc. Expected an int, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -440,7 +465,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.color_resolution.width = color_width;
             }
             subclass::Property("color-height", ..) => {
-                let color_height = value.get().unwrap();
+                let color_height = value.get().expect(&format!("Failed to set property `color-height` on realsensesrc. Expected an int, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -451,7 +476,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.color_resolution.height = color_height;
             }
             subclass::Property("framerate", ..) => {
-                let framerate = value.get().unwrap();
+                let framerate = value.get().expect(&format!("Failed to set property `framerate` on realsensesrc. Expected an int, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -463,7 +488,7 @@ impl ObjectImpl for RealsenseSrc {
                 // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             }
             subclass::Property("loop-rosbag", ..) => {
-                let loop_rosbag = value.get().unwrap();
+                let loop_rosbag = value.get().expect(&format!("Failed to set property `loop-rosbag` on realsensesrc. Expected a boolean, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -474,7 +499,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.loop_rosbag = loop_rosbag;
             }
             subclass::Property("wait-for-frames-timeout", ..) => {
-                let wait_for_frames_timeout = value.get().unwrap();
+                let wait_for_frames_timeout = value.get().expect(&format!("Failed to set property `wait-for-frames-timeout` on realsensesrc. Expected an int, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -485,7 +510,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.wait_for_frames_timeout = wait_for_frames_timeout;
             }
             subclass::Property("include-per-frame-metadata", ..) => {
-                let do_metadata = value.get().unwrap();
+                let do_metadata = value.get().expect(&format!("Failed to set property `include-per-frame-metadata` on realsensesrc. Expected a boolean, but got: {:?}", value));;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -500,7 +525,7 @@ impl ObjectImpl for RealsenseSrc {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self.internals.lock().unwrap().settings;
+        let settings = &self.internals.lock().expect("Could not lock internals").settings;
 
         let prop = &PROPERTIES[id];
         match *prop {
@@ -542,7 +567,7 @@ impl ObjectImpl for RealsenseSrc {
     fn constructed(&self, obj: &glib::Object) {
         self.parent_constructed(obj);
 
-        let element = obj.downcast_ref::<gst_base::BaseSrc>().unwrap();
+        let element = obj.downcast_ref::<gst_base::BaseSrc>().expect("Could not cast realsensesrc to BaseSrc");
         element.set_format(gst::Format::Time);
         element.set_live(true);
     }
@@ -553,7 +578,10 @@ impl ElementImpl for RealsenseSrc {}
 impl BaseSrcImpl for RealsenseSrc {
     fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
         // Lock the internals
-        let internals = &mut self.internals.lock().unwrap();
+        let internals = &mut self
+            .internals
+            .lock()
+            .expect("Failed to obtain internals lock.");
         let settings = &internals.settings;
 
         // Make sure that the set properties are viable
@@ -563,49 +591,65 @@ impl BaseSrcImpl for RealsenseSrc {
         rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
 
         // Create new RealSense device config
-        let config = rs2::config::Config::new().unwrap();
+        let config = rs2::config::Config::new().map_err(|e| {
+            gst_error_msg!(
+                gst::ResourceError::OpenRead,
+                [format!("Could not open RealSense device: {}", e).as_str()]
+            )
+        })?;
 
         // Based on properties, enable streaming, reading from or recording to a file (with the enabled streams)
-        if let Some(serial) = &settings.serial {
-            // Enable the selected streams
-            Self::enable_streams(&config, &settings);
+        match &settings.serial {
+            Some(serial) => {
+                // Enable the selected streams
+                Self::enable_streams(&config, &settings).map_err(|e| {
+                    gst_error_msg!(
+                        gst::ResourceError::OpenRead,
+                        [
+                            format!("Failed to enable a stream on `realsensesrc`: {:?}", e)
+                                .as_str()
+                        ]
+                    )
+                })?;
 
-            // Enable device with the given serial number and device configuration
-            if let Err(_) = config.enable_device(serial.to_string()) {
+                // Enable device with the given serial number and device configuration
+                config.enable_device(serial.to_string()).map_err(|_e| {
+                    (gst_error_msg!(
+                        gst::ResourceError::Settings,
+                        ["No device with serial `{}` is connected!", serial]
+                    ))
+                })?;
+            }
+            None if settings.rosbag_location.is_some() => {
+                let rosbag_location: &str = settings.rosbag_location.as_ref().unwrap(); // we know this always works (see match condition)
+                let rosbag_location = rosbag_location.clone();
+                config
+                    .enable_device_from_file_repeat_option(
+                        rosbag_location.to_string(),
+                        settings.loop_rosbag,
+                    )
+                    .map_err(|e| {
+                        gst_error_msg!(
+                            gst::ResourceError::Settings,
+                            ["Cannot read from \"{}\": {:?}!", rosbag_location, e]
+                        )
+                    })?;
+            }
+            _ => {
                 return Err(gst_error_msg!(
                     gst::ResourceError::Settings,
-                    ["No device with serial `{}` is connected!", serial]
+                    ["You must specify either a serial or a rosbag_location"]
                 ));
             }
-        } else {
-            // Play from rosbag file if `serial` is not defined
-            if let Some(rosbag_location) = settings.rosbag_location.as_ref() {
-                if let Err(_) = config.enable_device_from_file_repeat_option(
-                    rosbag_location.to_string(),
-                    settings.loop_rosbag,
-                ) {
-                    return Err(gst_error_msg!(
-                        gst::ResourceError::Settings,
-                        ["Cannot read from \"{}\"!", rosbag_location]
-                    ));
-                }
-            };
         }
 
-        // Get context and a list of connected devices
-        let context = rs2::context::Context::new().unwrap();
-
-        // Load JSON if `json-location` is defined
-        Self::load_json(&context.get_devices().unwrap(), &settings)?;
-
-        // Start the RealSense pipeline
-        let pipeline = rs2::pipeline::Pipeline::new(&context).unwrap();
-        if let Err(err) = pipeline.start_with_config(&config) {
-            return Err(gst_error_msg!(
-                gst::ResourceError::Settings,
-                ["Cannot initiate RealSense pipeline!\nError: {}", err]
-            ));
-        }
+        let pipeline = self.prepare_and_start_librealsense_pipeline(&config, settings)
+            .map_err(|e| {
+                gst_error_msg!(
+                    gst::ResourceError::Settings,
+                    ["Failed to prepare and start pipeline: {:?}", e]
+                )
+            })?;
         internals.state = State::Started { pipeline };
 
         gst_info!(self.cat, obj: element, "Streaming started");
@@ -613,7 +657,7 @@ impl BaseSrcImpl for RealsenseSrc {
     }
 
     fn stop(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
-        let state = &mut self.internals.lock().unwrap().state;
+        let state = &mut self.internals.lock().expect("Could not lock internals").state;
         if let State::Stopped = *state {
             unreachable!("Element is not yet started");
         }
@@ -623,12 +667,12 @@ impl BaseSrcImpl for RealsenseSrc {
     }
 
     fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
-        let settings = &self.internals.lock().unwrap().settings;
+        let settings = &self.internals.lock().expect("Could not lock internals").settings;
 
         let mut caps = gst::Caps::truncate(caps);
         {
             let caps = caps.make_mut();
-            let s = caps.get_mut_structure(0).unwrap();
+            let s = caps.get_mut_structure(0).expect("Failed to read the realsensesrc CAPS");
 
             // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
             // The first stream in this string is contained in the main buffer
@@ -688,7 +732,7 @@ impl BaseSrcImpl for RealsenseSrc {
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
-        let internals = &mut *self.internals.lock().unwrap();
+        let internals = &mut *self.internals.lock().expect("Failed to lock internals");
         let settings = &internals.settings;
         let streams = &settings.streams;
 
@@ -701,13 +745,7 @@ impl BaseSrcImpl for RealsenseSrc {
         };
 
         // Get frames with the given timeout
-        let frames = pipeline.wait_for_frames(settings.wait_for_frames_timeout);
-
-        if frames.is_err() {
-            // Stop if timeout is exceeded. This can occur also if the recording has ended.
-            return Err(gst::FlowError::Eos);
-        }
-        let frames = frames.unwrap();
+        let frames = pipeline.wait_for_frames(settings.wait_for_frames_timeout).map_err(|_| {gst::FlowError::Eos})?;
 
         // Calculate a common timestamp
         let timestamp = Some(
@@ -812,6 +850,21 @@ impl BaseSrcImpl for RealsenseSrc {
 }
 
 impl RealsenseSrc {
+    fn prepare_and_start_librealsense_pipeline(&self, config: &librealsense2::config::Config, settings: &Settings) -> Result<rs2::pipeline::Pipeline, RealsenseError> {
+        // Get context and a list of connected devices
+        let context = rs2::context::Context::new()?;
+
+        // Load JSON if `json-location` is defined
+        let devices = context.get_devices()?;
+
+        Self::load_json(&devices, &settings)?;
+
+        // Start the RealSense pipeline
+        let pipeline = rs2::pipeline::Pipeline::new(&context)?;
+        pipeline.start_with_config(&config)?;
+        Ok(pipeline)
+    }
+
     fn check_internals(internals: &RealsenseSrcInternals) -> Result<(), gst::ErrorMessage> {
         let settings = &internals.settings;
 
@@ -821,7 +874,7 @@ impl RealsenseSrc {
         }
 
         // Either `serial` or `rosbag-location` must be specified
-        if settings.serial == None && settings.rosbag_location == None {
+        if settings.serial.is_none() && settings.rosbag_location.is_none() {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!"]
@@ -843,7 +896,10 @@ impl RealsenseSrc {
         Ok(())
     }
 
-    fn enable_streams(config: &rs2::config::Config, settings: &Settings) {
+    fn enable_streams(
+        config: &rs2::config::Config,
+        settings: &Settings,
+    ) -> Result<(), StreamEnableError> {
         if settings.streams.enable_depth {
             config
                 .enable_stream(
@@ -854,7 +910,7 @@ impl RealsenseSrc {
                     rs2::rs2_format::RS2_FORMAT_Z16,
                     settings.streams.framerate,
                 )
-                .unwrap();
+                .map_err(|_e| StreamEnableError("Depth stream"))?;
         }
         if settings.streams.enable_infra1 {
             config
@@ -866,7 +922,7 @@ impl RealsenseSrc {
                     rs2::rs2_format::RS2_FORMAT_Y8,
                     settings.streams.framerate,
                 )
-                .unwrap();
+                .map_err(|_e| StreamEnableError("Infra1 stream"))?;
         }
         if settings.streams.enable_infra2 {
             config
@@ -878,7 +934,7 @@ impl RealsenseSrc {
                     rs2::rs2_format::RS2_FORMAT_Y8,
                     settings.streams.framerate,
                 )
-                .unwrap();
+                .map_err(|_e| StreamEnableError("Infra2 stream"))?;
         }
         if settings.streams.enable_color {
             config
@@ -890,65 +946,44 @@ impl RealsenseSrc {
                     rs2::rs2_format::RS2_FORMAT_RGB8,
                     settings.streams.framerate,
                 )
-                .unwrap();
+                .map_err(|_e| StreamEnableError("Color stream"))?;
         }
+        Ok(())
     }
 
     fn load_json(
         devices: &Vec<rs2::device::Device>,
         settings: &Settings,
-    ) -> Result<(), gst::ErrorMessage> {
+    ) -> Result<(), RealsenseError> {
         // Make sure a device with the selected serial is connected
         if let Some(serial) = settings.serial.as_ref() {
-            // Get the index of the matching device
-            let mut index_of_used_device: usize = 0;
-            let mut found_matching_serial = false;
-            for device in devices.iter() {
-                let serial_number = device
-                    .get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER)
-                    .unwrap();
-                if *serial == serial_number {
-                    found_matching_serial = true;
-                    break;
+            // Find the device with the given serial, ignoring all errors
+            let device = devices.iter().find(|d| {
+                match d.get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER) {
+                    Ok(device_serial) => *serial == device_serial,
+                    _ => false,
                 }
-                index_of_used_device += 1;
-            }
-
-            // Return error if there is no such device
-            if !found_matching_serial {
-                return Err(gst_error_msg!(
-                    gst::ResourceError::Settings,
-                    [&format!("No device with serial `{}` is detected", serial)]
-                ));
-            }
+            })
+            .ok_or(RealsenseError(
+                format!("Could not find a device with id: {}", serial),
+            ))?;
 
             // Load JSON file if specified
-            if let Some(json_location) = settings.json_location.as_ref() {
-                if !devices[index_of_used_device]
-                    .is_advanced_mode_enabled()
-                    .unwrap()
-                {
-                    devices[index_of_used_device]
-                        .set_advanced_mode(true)
-                        .unwrap();
+            match &settings.json_location {
+                Some(jl) => {
+                    if !device.is_advanced_mode_enabled()? {
+                        device.set_advanced_mode(true)?;
+                    }
+                    let json_content = std::fs::read_to_string(jl).map_err(|e| {
+                        RealsenseError (format!(
+                                "Cannot read RealSense configuration from \"{}\": {:?}",
+                                jl.clone(), e
+                            ))
+                    })?;
+
+                    device.load_json(json_content)?;
                 }
-                let json_content = std::fs::read_to_string(json_location);
-                if json_content.is_err() {
-                    return Err(gst_error_msg!(
-                        gst::ResourceError::Settings,
-                        [&format!(
-                            "Cannot read RealSense configuration from \"{}\"",
-                            json_location
-                        )]
-                    ));
-                }
-                let res = devices[index_of_used_device].load_json(json_content.unwrap());
-                if res.is_err() {
-                    return Err(gst_error_msg!(
-                        gst::ResourceError::Settings,
-                        [&res.unwrap_err().get_message()]
-                    ));
-                }
+                _ => {}
             }
         }
         Ok(())
@@ -1003,12 +1038,12 @@ impl RealsenseSrc {
                 let tag_name = format!("{}_meta", tag);
                 let mut tags = gst::tags::TagList::new();
                 tags.get_mut()
-                    .unwrap()
+                    .expect("Cannot get mutable reference to `tags`")
                     .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
 
-                TagsMeta::add(frame_meta_buffer.get_mut().unwrap(), &mut tags);
+                TagsMeta::add(frame_meta_buffer.get_mut().expect("Could not add tags to `frame_meta_buffer`"), &mut tags);
 
-                BufferMeta::add(buffer.get_mut().unwrap(), &mut frame_meta_buffer);
+                BufferMeta::add(buffer.get_mut().expect("Could not add `frame_meta_buffer` onto frame buffer."), &mut frame_meta_buffer);
             }
             _ => { /*ignore*/ }
         }
@@ -1052,14 +1087,15 @@ impl RealsenseSrc {
         // Create the appropriate tag
         let mut tags = gst::tags::TagList::new();
         tags.get_mut()
-            .unwrap()
+            .expect("Could not get mutable reference to `tags`")
             .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
 
         // Extract the frame data into a new buffer
-        let mut buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
+        let frame_data = frame.get_data().map_err(|_| {gst::FlowError::Error})?;
+        let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_data);
 
         // Add tag to this new buffer
-        TagsMeta::add(buffer.get_mut().unwrap(), &mut tags);
+        TagsMeta::add(buffer.get_mut().expect("Could not add tag to frame buffer"), &mut tags);
 
         // Set timestamp
         if let Some(timestamp) = timestamp {
@@ -1074,13 +1110,13 @@ impl RealsenseSrc {
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_earlier_stream_enabled {
             // Attach this new buffer as meta to the output buffer
-            BufferMeta::add(output_buffer.get_mut().unwrap(), &mut buffer);
+            BufferMeta::add(output_buffer.get_mut().expect("Could not get mutable reference to `output_buffer`"), &mut buffer);
         } else {
             // Else put this frame into the output buffer
-            *output_buffer = gst::buffer::Buffer::from_mut_slice(frame.get_data().unwrap());
+            *output_buffer = buffer;
             self.try_add_per_frame_metadata(output_buffer, frame_meta, tag);
             // Add the tag
-            TagsMeta::add(output_buffer.get_mut().unwrap(), &mut tags);
+            TagsMeta::add(output_buffer.get_mut().expect("Could not get mutable reference to `output_buffer`"), &mut tags);
         }
 
         // Release the frame
@@ -1100,25 +1136,25 @@ fn find_frame_with_id(
     frames: &Vec<rs2::frame::Frame>,
     stream_type: rs2::rs2_stream,
     stream_id: i32,
-) -> Option<Frame> {
+) -> Option<&rs2::frame::Frame> {
     frames.iter().find(|f| {
-        let frame_profile = f.get_profile();
-        if frame_profile.is_err() {
-            return false;
+        match f.get_profile() {
+            Ok(profile) => {
+                match profile.get_data() {
+                    Ok(data) => {
+                        data.stream == stream_type
+                            && if stream_id == -1 {
+                            true
+                        } else {
+                            data.index == stream_id
+                        }
+                    }
+                    _ => false,
+                }
+            },
+            _ => false,
         }
 
-        let frame_profile_data = frame_profile.unwrap().get_data();
-        if frame_profile_data.is_err() {
-            return false;
-        }
-
-        let frame_profile_data = frame_profile_data.unwrap();
-        frame_profile_data.stream == stream_type
-            && if stream_id == -1 {
-                true
-            } else {
-                frame_profile_data.index == stream_id
-            }
     })
 }
 
