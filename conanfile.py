@@ -1,5 +1,7 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
 import os
+
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -19,7 +21,8 @@ class BisonConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/%s" % (self.user, self.channel))
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("m4/[>=1.4.18]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/bison/bison-%s.tar.gz" % self.version)
