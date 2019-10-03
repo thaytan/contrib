@@ -5,7 +5,7 @@ def get_version():
     git = tools.Git()
     try:
         tag = git.get_tag()
-        return tag if tag else "1.6.8"
+        return tag if tag else "0.9.10"
     except:
         return None
 
