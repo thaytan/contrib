@@ -1,4 +1,5 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -28,7 +29,8 @@ class LibxauConan(ConanFile):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXau-%s.tar.gz" % self.version)
 
     def build(self):
+        args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
         with tools.chdir("libXau-" + self.version):
-            autotools.configure()
+            autotools.configure(args=args)
             autotools.install()
