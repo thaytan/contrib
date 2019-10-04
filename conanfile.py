@@ -1,4 +1,5 @@
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -27,13 +28,8 @@ class LibVpxConan(ConanFile):
         tools.get("https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version)
 
     def build(self):
-        args = []
+        args = ["--enable-shared", "--disable-static", "--disable-install-docs", "--disable-install-srcs"]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
