@@ -31,5 +31,5 @@ class CudaConan(ConanFile):
 
     def package(self):
         self.copy("*", dst="bin", src="cuda-toolkit/bin", keep_path=False)
-        self.copy("*", dst="lib", src="cuda-toolkit/lib64", keep_path=False)
+        self.copy("*.so*", dst="lib", src="cuda-toolkit/lib64", keep_path=False)
         self.copy("*", dst="include", src="cuda-toolkit/include", keep_path=False)
