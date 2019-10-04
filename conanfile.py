@@ -27,4 +27,9 @@ class CudaConan(ConanFile):
                        filename="cuda_%s_%s_linux.run" % (self.version, self.version_driver))
 
     def build(self):
-        self.run("sh cuda_%s_%s_linux.run --noexec --target \"%s\"" % (self.version, self.version_driver, self.package_folder))
+        self.run("sh cuda_%s_%s_linux.run --silent --override-driver-check --extract=\"%s\"" % (self.version, self.version_driver, self.build_folder))
+
+    def package(self):
+        self.copy("*", dst="bin", src="cuda-toolkit/bin", keep_path=False)
+        self.copy("*", dst="lib", src="cuda-toolkit/lib64", keep_path=False)
+        self.copy("*", dst="include", src="cuda-toolkit/include", keep_path=False)
