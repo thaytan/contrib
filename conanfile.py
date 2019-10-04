@@ -1,5 +1,7 @@
-from conans import ConanFile, Meson, tools
 import os
+
+from conans import ConanFile, Meson, tools
+
 
 def get_version():
     git = tools.Git()
@@ -35,11 +37,6 @@ class GStreamerVaapiConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="gstreamer-vaapi-" + self.version)
         meson.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
