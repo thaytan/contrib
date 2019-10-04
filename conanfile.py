@@ -1,4 +1,5 @@
-from conans import ConanFile, CMake, tools
+from conans import CMake, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -15,8 +16,13 @@ class GlfwcConan(ConanFile):
     description = "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop."
     license = "ZLIB"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=True"
+    options = {
+        "x11": [True, False],
+    }
+    default_options = (
+        "x11=True",
+    )
+    exports = "fix-x11-exts.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -24,12 +30,20 @@ class GlfwcConan(ConanFile):
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        if self.options.x11:
+            self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
+            self.requires("libxrandr/[>=1.5.2]@%s/stable" % self.user)
+            self.requires("libxinerama/[>=1.1.4]@%s/stable" % self.user)
+            self.requires("libxcursor/[>=1.2.0]@%s/stable" % self.user)
+            self.requires("libxi/[>=1.7.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/glfw/glfw/archive/%s.tar.gz" % self.version)
+        tools.patch(patch_file="fix-x11-exts.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
+        cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["GLFW_BUILD_EXAMPLES"] = False
         cmake.definitions["GLFW_BUILD_TESTS"] = False
         cmake.definitions["GLFW_BUILD_DOCS"] = False
