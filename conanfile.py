@@ -1,3 +1,5 @@
+import os
+
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
@@ -43,3 +45,7 @@ class PythonConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+        os.symlink("python3.7", os.path.join(self.package_folder, "bin", "python"))
+
+    def package_info(self):
+        self.env_info.PYTHON = os.path.join(self.package_folder, "bin", "python")
