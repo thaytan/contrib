@@ -1,3 +1,5 @@
+import os
+
 from conans import ConanFile, Meson, tools
 
 
@@ -39,4 +41,4 @@ class PangoConan(ConanFile):
 
     def package_info(self):
         self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
-        self.env_info.XDG_DATA_DIRS.append(path.join(self.package_folder, "share"))
+        self.env_info.XDG_DATA_DIRS.append(os.path.join(self.package_folder, "share"))
