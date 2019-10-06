@@ -26,13 +26,12 @@ class Libxxf86vmConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
-        self.requires("libxfixes/[>=5.0.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXdamage-%s.tar.gz" % self.version)
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXxf86vm-%s.tar.gz" % self.version)
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("libXdamage-" + self.version):
+        with tools.chdir("libXxf86vm-" + self.version):
             autotools.configure()
             autotools.install()
