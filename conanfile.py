@@ -20,6 +20,8 @@ class Libxml2Conan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
+        self.build_requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -28,7 +30,7 @@ class Libxml2Conan(ConanFile):
         tools.get("https://gitlab.gnome.org/GNOME/libxml2/-/archive/v{0}/libxml2-v{0}.tar.bz2".format(self.version))
 
     def build(self):
-        args = ["--disable-static", "--with-python=no"]
+        args = ["--disable-static"]
         with tools.chdir("%s-v%s" % (self.name, self.version)):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
