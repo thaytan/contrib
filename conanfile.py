@@ -62,8 +62,8 @@ class env(Generator):
             # Delete libtool files
             for f in glob(path.join(conanfile.package_folder, "**", "*.la"), recursive=True):
                 remove(f)
-            # Delete doc, man, gdb folders
-            for folder in ("man", "doc", "gdb", "bash-completion"):
+            # Delete unneeded folders in share
+            for folder in ("man", "doc", "gdb", "bash-completion", "gtk-doc"):
                 remove_folder(path.join(conanfile.package_folder, "share", folder))
         conanfile.package = package
 
