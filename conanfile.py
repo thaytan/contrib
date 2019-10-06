@@ -1,3 +1,5 @@
+import os
+
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
@@ -20,8 +22,8 @@ class Libxml2Conan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
         self.build_requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+        self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -31,9 +33,13 @@ class Libxml2Conan(ConanFile):
 
     def build(self):
         args = ["--disable-static"]
-        with tools.chdir("%s-v%s" % (self.name, self.version)):
+        env = {"with_python_install_dir": os.path.join(self.package_folder, "lib", "python3.6", "site-packages")}
+        with tools.chdir("%s-v%s" % (self.name, self.version)), tools.environment_append(env):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+
+    def package_info(self):
+        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "python3.6", "site-packages")
