@@ -41,3 +41,6 @@ class GdkPixbufConan(ConanFile):
             meson = Meson(self)
             meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
             meson.install()
+
+    def package_info(self):
+        self.env_info.XDG_DATA_DIRS.append(path.join(self.package_folder, "share"))
