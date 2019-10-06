@@ -1,4 +1,5 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -16,9 +17,11 @@ class LibPciAccessConan(ConanFile):
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
+    def build_requirements(self):
+        self.build_requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-%s.tar.gz" % self.version)
@@ -29,8 +32,3 @@ class LibPciAccessConan(ConanFile):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools.configure(args=args)
             autotools.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
