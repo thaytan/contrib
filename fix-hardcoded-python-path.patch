@@ -1,0 +1,10 @@
+diff --git a/itstool.in b/itstool.in
+index e64cd34..ddc5385 100755
+--- a/itstool.in
++++ b/itstool.in
+@@ -1,4 +1,4 @@
+-#!@PYTHON@ -s
++#!/usr/bin/env python3 -s
+ #
+ # Copyright (c) 2010-2018 Shaun McCance <shaunm@gnome.org>
+ #
