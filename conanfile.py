@@ -1,3 +1,5 @@
+import os
+
 from conans import ConanFile, tools
 
 
@@ -28,6 +30,10 @@ class CudaConan(ConanFile):
 
     def build(self):
         self.run("sh cuda_%s_%s_linux.run --silent --override-driver-check --extract=\"%s\"" % (self.version, self.version_driver, self.build_folder))
+        tools.rmdir("cublas")
+        tools.rmdir("cuba-samples")
+        os.remove("cuda_%s_%s_linux.run" % (self.version, self.version_driver))
+        os.remove("NVIDIA-Linux-x86_64-%s.run" % self.version_driver)
 
     def package(self):
         for toolkit in ("cuda-toolkit", "cuda-toolkit/nvvm"):
