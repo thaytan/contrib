@@ -30,6 +30,8 @@ class CudaConan(ConanFile):
         self.run("sh cuda_%s_%s_linux.run --silent --override-driver-check --extract=\"%s\"" % (self.version, self.version_driver, self.build_folder))
 
     def package(self):
-        self.copy("*", dst="bin", src="cuda-toolkit/bin", keep_path=False)
-        self.copy("*.so*", dst="lib", src="cuda-toolkit/lib64", keep_path=False)
-        self.copy("*", dst="include", src="cuda-toolkit/include", keep_path=False)
+        for toolkit in ("cuda-toolkit", "cuda-toolkit/nvvm"):
+            self.copy("*", dst="bin", src="%s/bin" % toolkit)
+            self.copy("*", dst="lib64", src="%s/lib64" % toolkit)
+            self.copy("*", dst="include", src="%s/include" % toolkit)
+        self.copy("*.bc", src="cuda-toolkit")
