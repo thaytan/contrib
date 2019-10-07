@@ -15,6 +15,14 @@ class LibVaConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"
+    options = {
+        "x11": [True, False],
+        "wayland": [True, False]
+    }
+    default_options = (
+        "x11=True",
+        "wayland=False"
+    )
     generators = "env"
 
     def build_requirements(self):
@@ -29,5 +37,8 @@ class LibVaConan(ConanFile):
 
     def build(self):
         meson = Meson(self)
+        args = ["--auto-features=disabled"]
+        args.append("-Dwith_x11=" + ("yes" if self.options.x11 else "no"))
+        args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
         meson.configure(source_folder="%s-%s" % (self.name, self.version))
         meson.install()
