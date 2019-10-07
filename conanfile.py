@@ -1,5 +1,7 @@
-from conans import ConanFile, Meson, tools
 import os
+
+from conans import ConanFile, Meson, tools
+
 
 def get_version():
     git = tools.Git()
@@ -35,10 +37,5 @@ class PythonGobjectConan(ConanFile):
         meson.configure(source_folder="pygobject-" + self.version, args=args)
         meson.install()
 
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
-
     def package_info(self):
-        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "python3.6", "site-packages")
+        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.6", "site-packages"))
