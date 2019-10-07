@@ -17,6 +17,9 @@ class LibVaConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libdrm/[>=2.4.96]@%s/stable" % self.user)
