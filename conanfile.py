@@ -31,6 +31,7 @@ class LibVaConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libdrm/[>=2.4.96]@%s/stable" % self.user)
+        self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
