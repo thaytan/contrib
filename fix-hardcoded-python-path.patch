@@ -1,10 +1,41 @@
 diff --git a/itstool.in b/itstool.in
-index e64cd34..ddc5385 100755
+index e64cd34..883caaa 100755
 --- a/itstool.in
 +++ b/itstool.in
 @@ -1,4 +1,4 @@
 -#!@PYTHON@ -s
-+#!/usr/bin/env python3 -s
++#!/usr/bin/env python3
  #
  # Copyright (c) 2010-2018 Shaun McCance <shaunm@gnome.org>
  #
+@@ -16,22 +16,23 @@
+ # with ITS Tool; if not, write to the Free Software Foundation, 59 Temple
+ # Place, Suite 330, Boston, MA  0211-1307  USA.
+ #
+-from __future__ import print_function
+-from __future__ import unicode_literals
+-
+-VERSION="@VERSION@"
+-DATADIR="@DATADIR@"
++from __future__ import print_function, unicode_literals
+ 
+ import gettext
+ import hashlib
+-import libxml2
++import io
+ import optparse
+ import os
+ import os.path
+ import re
+ import sys
+ import time
+-import io
++
++import libxml2
++
++VERSION="@VERSION@"
++DATADIR="@DATADIR@"
++
+ 
+ PY3 = sys.version_info[0] == 3
+ if PY3:
