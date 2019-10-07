@@ -16,6 +16,7 @@ class LibglvndConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
+    exports = "ignore-warnings.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -29,6 +30,7 @@ class LibglvndConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/NVIDIA/libglvnd/archive/v%s.tar.gz" % self.version)
+        tools.patch(patch_file="ignore-warnings.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         args = ["--disable-static"]
