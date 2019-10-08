@@ -27,6 +27,7 @@ class Libx11Conan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
+        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libX11-%s.tar.gz" % self.version)
