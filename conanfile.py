@@ -24,11 +24,14 @@ class GstreamerSharkConan(ConanFile):
         "recursive": True
     }
     generators = "env"
+    
+    def build_requirements(self):
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/0.1@%s/stable" % self.user)
-        self.requires("gstreamer/1.16.0@%s/stable" % self.user)
-        self.requires("graphviz/2.40.1@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("gstreamer/[>=1.16.0]@%s/stable" % self.user)
+        self.requires("graphviz/[>=2.40.1]@%s/stable" % self.user)
 
     def build(self):
         self.run("./autogen.sh --disable-gtk-doc")
