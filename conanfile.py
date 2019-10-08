@@ -26,8 +26,8 @@ def replace_prefix_in_pc_file(pc_file, prefix):
     with open(pc_file, "w") as f:
         f.write(content)
 
-def env_prepend(var, val):
-    environ[var] = val + (pathsep + environ[var] if var in environ else "")
+def env_prepend(var, val, sep=pathsep):
+    environ[var] = val + (sep + environ[var] if var in environ else "")
 
 def remove_folder(folder):
     if path.isdir(folder):
@@ -110,8 +110,8 @@ class env(Generator):
         env_prepend("PKG_CONFIG_PATH", pc_output_path)
         env_prepend("CMAKE_PREFIX_PATH", pathsep.join(prefix_paths))
         if hasattr(conanfile, "source_folder"):
-            env_prepend("CFLAGS", " -fdebug-prefix-map=%s=. " % conanfile.source_folder)
-            env_prepend("CXXFLAGS", " -fdebug-prefix-map=%s=. " % conanfile.source_folder)
+            env_prepend("CFLAGS", "-fdebug-prefix-map=%s=. " % conanfile.source_folder, " ")
+            env_prepend("CXXFLAGS", "-fdebug-prefix-map=%s=. " % conanfile.source_folder, " ")
 
         # Generate env.sh
         content = "export PATH=%s:\"$PATH\"\n" % pathsep.join("\"%s\"" % p for p in bin_paths)
