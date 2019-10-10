@@ -3,18 +3,9 @@ import os
 from conans import ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "0.51.2"
-    except:
-        return None
-
-
 class MesonConan(ConanFile):
     name = "meson"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "0.51.2")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "Apache"
     description = "High productivity build system"
@@ -28,6 +19,9 @@ class MesonConan(ConanFile):
             )
         )
 
+    def build_requirements(self):
+        self.build_requires("python-setuptools/[>=41.2.0]@%s/stable" % self.user)
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
@@ -36,7 +30,7 @@ class MesonConan(ConanFile):
         self.requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def build(self):
-        py_path = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
+        py_path = os.path.join(self.package_folder, "lib", "python", "site-packages")
         env = {"PYTHONPATH": py_path}
         os.makedirs(py_path)
         with tools.chdir("%s-%s" % (self.name, self.version)), tools.environment_append(
@@ -49,5 +43,5 @@ class MesonConan(ConanFile):
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(
-            os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
+            os.path.join(self.package_folder, "lib", "python", "site-packages")
         )
