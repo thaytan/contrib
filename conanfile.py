@@ -5,7 +5,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class M4Conan(ConanFile):
     name = "m4"
-    version = os.environ.get("GIT_TAG", "1.4.18")
+    version = tools.get_env("GIT_TAG", "1.4.18")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL3"
