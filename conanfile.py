@@ -3,18 +3,9 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.16.1"
-    except:
-        return None
-
-
 class AutomakeConan(ConanFile):
     name = "automake"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.16.1")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
