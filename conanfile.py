@@ -30,9 +30,10 @@ class BinutilsConan(ConanFile):
         with tools.environment_append(env):
             self.run("ar x binutils.deb")
             tools.unzip("data.tar.xz", destination="data")
-        with tools.chdir("data/usr/bin"):
-            for lib in os.listdir():
-                os.symlink(lib, lib.split("-")[-1])
+        if self.settings.arch == "x86_64":
+            with tools.chdir("data/usr/bin"):
+                for lib in os.listdir():
+                    os.symlink(lib, lib.split("-")[-1])
         tools.rmdir("usr")
 
     def package(self):
