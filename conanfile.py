@@ -1,4 +1,5 @@
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 def get_version():
     git = tools.Git()
@@ -8,13 +9,16 @@ def get_version():
     except:
         return None
 
+
 class LibffiConan(ConanFile):
     name = "libffi"
     version = get_version()
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
-    description = "A portable, high level programming interface to various calling conventions"
+    description = (
+        "A portable, high level programming interface to various calling conventions"
+    )
     generators = "env"
 
     def build_requirements(self):
@@ -33,7 +37,7 @@ class LibffiConan(ConanFile):
             "--disable-dependency-tracking",
             "--disable-docs",
             "--disable-static",
-            "--enable-shared"
+            "--enable-shared",
         ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("sh autogen.sh")
@@ -41,8 +45,3 @@ class LibffiConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
