@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Metadata support: The `rgbdmux` reads per-frame metadata on the frame buffers and pushes them to a sink-pad called *meta*. Similarly, if the rgbd CAPS contains a stream called *meta*, its content is also outputted on the *meta* sink.
+- Metadata support: The `rgbdmux` reads per-frame metadata on the frame buffers and pushes them to a sink-pad called *dddqmeta*. Similarly, if the rgbd CAPS contains a stream called *dddqmeta*, its content is also outputted on the *dddqmeta* sink.
 
 ## Before
 Prior to 0.1.2 this repository did not have a changelog.
