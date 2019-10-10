@@ -1,17 +1,11 @@
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.4.6"
-    except:
-        return None
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 class LibtoolConan(ConanFile):
     name = "libtool"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.4.6")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
@@ -20,6 +14,7 @@ class LibtoolConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
         self.build_requires("automake/[>=1.16.1]@%s/stable" % self.user)
         self.build_requires("help2man/[>=1.47.11]@%s/stable" % self.user)
@@ -35,13 +30,22 @@ class LibtoolConan(ConanFile):
         git.clone("https://git.savannah.gnu.org/git/gnulib.git")
         git = tools.Git(folder="gnulib-bootstrap")
         git.clone("https://github.com/gnulib-modules/bootstrap.git")
-        tools.patch(patch_file="libtool-prefix-fix.patch", base_path="%s-%s" % (self.name, self.version))
+        tools.patch(
+            patch_file="libtool-prefix-fix.patch",
+            base_path="%s-%s" % (self.name, self.version),
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("git submodule init")
-            self.run("git config --local submodule.gnulib.url \"%s/gnulib\"" % self.source_folder)
-            self.run("git config --local submodule.gl-mod/bootstrap.url \"%s/gnulib-bootstrap\"" % self.source_folder)
+            self.run(
+                'git config --local submodule.gnulib.url "%s/gnulib"'
+                % self.source_folder
+            )
+            self.run(
+                'git config --local submodule.gl-mod/bootstrap.url "%s/gnulib-bootstrap"'
+                % self.source_folder
+            )
             self.run("git submodule update")
             self.run("./bootstrap")
             autotools = AutoToolsBuildEnvironment(self)
@@ -49,13 +53,12 @@ class LibtoolConan(ConanFile):
             autotools.make()
             autotools.install()
 
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
-
     def package_info(self):
         self.env_info.LIBTOOL_PREFIX = self.package_folder
         self.env_info.LIBTOOL = os.path.join(self.package_folder, "bin", "libtool")
-        self.env_info.LIBTOOLIZE = os.path.join(self.package_folder, "bin", "libtoolize")
-        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
+        self.env_info.LIBTOOLIZE = os.path.join(
+            self.package_folder, "bin", "libtoolize"
+        )
+        self.env_info.ACLOCAL_PATH.append(
+            os.path.join(self.package_folder, "share", "aclocal")
+        )
