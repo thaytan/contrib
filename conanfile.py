@@ -8,30 +8,22 @@ class BinutilsConan(ConanFile):
     version = tools.get_env("VERSION", "2.30")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    license = "MIT"
-    description = (
-        "A portable, high level programming interface to various calling conventions"
-    )
+    license = "GPL"
+    description = "A set of programs to assemble and manipulate binary and object files"
     generators = "env"
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
-        arch_conv = {"x86_64": ("x86-64", "amd64"), "armv8": ("aarch64", "arm64")}
-        tools.get(
-            "https://mex.mirror.pkgbuild.com/core/os/x86_64/binutils-2.32-3-x86_64.pkg.tar.xz"
-        )
-        tools.download(
-            "http://security.ubuntu.com/ubuntu/pool/main/b/binutils/binutils-%s-linux-gnu_%s-%s_%s.deb"
-            % (
-                arch_conv[str(self.settings.arch)][0],
-                self.version,
-                os.environ.get("DEB_VERSION", "21ubuntu1~18.04.2"),
-                arch_conv[str(self.settings.arch)][1],
-            ),
-            filename="binutils.deb",
-        )
+        if self.settings.arch == "x86_64":
+            arch_binutils = "https://mex.mirror.pkgbuild.com/core/os/x86_64/binutils-2.32-3-x86_64.pkg.tar.xz"
+            ubuntu_binutils = "http://security.ubuntu.com/ubuntu/pool/main/b/binutils/binutils-x86-64-linux-gnu_2.30-21ubuntu1~18.04.2_amd64.deb"
+        elif self.settings.arch == "armv8":
+            arch_binutils = "http://mirror.archlinuxarm.org/aarch64/core/binutils-2.32-1-aarch64.pkg.tar.xz"
+            ubuntu_binutils = "http://ports.ubuntu.com/ubuntu-ports/pool/main/b/binutils/binutils_2.30-21ubuntu1~18.04.2_arm64.deb"
+        tools.get(arch_binutils)
+        tools.download(ubuntu_binutils, filename="binutils.deb")
 
     def build(self):
         env = {"LD_LIBRARY_PATH": "usr/lib", "PATH": "usr/bin"}
