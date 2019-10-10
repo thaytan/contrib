@@ -26,6 +26,9 @@ class GccConan(ConanFile):
         "libatomic1",
         "libcc1-0",
         "libitm1",
+        "libisl19",
+        "libmpfr6",
+        "libmpc3",
     ]
 
     def requirements(self):
