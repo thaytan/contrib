@@ -33,10 +33,11 @@ class RustConan(ConanFile):
     def build(self):
         env = {
             "RUSTUP_HOME": os.path.join(self.package_folder, "rustup"),
-            "CARGO_HOME": self.build_folder,
+            "CARGO_HOME": self.package_folder,
         }
         with tools.environment_append(env):
             self.run("sh rustup.sh -y --default-toolchain " + self.version)
 
     def package_info(self):
         self.env_info.RUSTUP_HOME = os.path.join(self.package_folder, "rustup")
+        self.env_info.CARGO_HOME = self.package_folder
