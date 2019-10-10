@@ -26,7 +26,6 @@ class GccConan(ConanFile):
         "libatomic1",
         "libcc1-0",
         "libitm1",
-        "libcilkrts5",
     ]
 
     def requirements(self):
@@ -35,7 +34,7 @@ class GccConan(ConanFile):
 
     def source(self):
         if self.settings.arch == "x86_64":
-            self.deb_pkgs.extend(["libmpx2", "libquadmath0"])
+            self.deb_pkgs.extend(["libmpx2", "libquadmath0", "libcilkrts5"])
         self.run("apt update")
         for pkg in self.deb_pkgs:
             self.run("apt download %s" % pkg)
