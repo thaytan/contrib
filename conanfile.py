@@ -1,3 +1,5 @@
+import os
+
 from conans import ConanFile, tools
 
 
@@ -9,13 +11,16 @@ def get_version():
     except:
         return None
 
+
 class RustConan(ConanFile):
     name = "rust"
     version = get_version()
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT", "Apache"
-    description = "Systems programming language focused on safety, speed and concurrency"
+    description = (
+        "Systems programming language focused on safety, speed and concurrency"
+    )
     generators = "env"
 
     def requirements(self):
@@ -27,8 +32,11 @@ class RustConan(ConanFile):
 
     def build(self):
         env = {
-            "RUSTUP_HOME": self.build_folder,
-            "CARGO_HOME": self.package_folder,
+            "RUSTUP_HOME": os.path.join(self.package_folder, "rustup"),
+            "CARGO_HOME": self.build_folder,
         }
         with tools.environment_append(env):
             self.run("sh rustup.sh -y --default-toolchain " + self.version)
+
+    def package_info(self):
+        self.env_info.RUSTUP_HOME = os.path.join(self.package_folder, "rustup")
