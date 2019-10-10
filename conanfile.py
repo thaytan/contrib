@@ -36,6 +36,7 @@ class GccConan(ConanFile):
         self.requires("binutils/[>=2.30]@%s/stable" % self.user)
 
     def source(self):
+        self.run("apt update")
         for pkg in self.deb_pkgs:
             self.run("apt download %s" % pkg)
 
