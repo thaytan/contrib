@@ -1,4 +1,4 @@
-from conans import ConanFile, Meson, tools
+from conans import ConanFile, tools
 import os
 
 def get_version():
@@ -28,7 +28,7 @@ class SccacheConan(ConanFile):
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run("RUSTC_WRAPPER=sccache cargo build --release")
+            self.run("cargo build --release")
 
     def package(self):
         self.copy(pattern="*/sccache", dst=os.path.join(self.package_folder, "bin"), keep_path=False)
