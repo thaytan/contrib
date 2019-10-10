@@ -32,3 +32,7 @@ class SccacheConan(ConanFile):
 
     def package(self):
         self.copy(pattern="*/sccache", dst=os.path.join(self.package_folder, "bin"), keep_path=False)
+
+    def package_info(self):
+       self.env_info.path.append(os.path.join(self.package_folder, "bin"))
+       self.env_info.RUSTC_WRAPPER.append("sccache")
