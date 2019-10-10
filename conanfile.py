@@ -30,8 +30,8 @@ class MesonConan(ConanFile):
         self.requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def build(self):
-        py_path = os.path.join(self.package_folder, "lib", "python", "site-packages")
-        env = {"PYTHONPATH": py_path}
+        py_path = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
+        env = {"PYTHONPATH": os.environ["PYTHONPATH"] + os.pathsep + py_path}
         os.makedirs(py_path)
         with tools.chdir("%s-%s" % (self.name, self.version)), tools.environment_append(
             env
@@ -43,5 +43,5 @@ class MesonConan(ConanFile):
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(
-            os.path.join(self.package_folder, "lib", "python", "site-packages")
+            os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
         )
