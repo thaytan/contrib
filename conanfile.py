@@ -21,7 +21,8 @@ class GStreamerDevtoolsConan(ConanFile):
         "type": "git",
         "url": "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror",
         "revision": "155-add-psnr",
-        "recursive": True
+        "recursive": True,
+        "subfolder": ("gst-devtools-" + version)
     }
 
     def build_requirements(self):
