@@ -11,7 +11,7 @@ class GccConan(ConanFile):
     license = "custom", "FDL", "GPL", "LGPL"
     description = "The GNU Compiler Collection - C and C++ frontends"
     generators = "env"
-    deb_pkgs = (
+    deb_pkgs = [
         "gcc-7",
         "g++-7",
         "cpp-7",
@@ -19,7 +19,6 @@ class GccConan(ConanFile):
         "libstdc++-7-dev",
         "libstdc++6",
         "libubsan0",
-        "libmpx2",
         "libasan4",
         "libgomp1",
         "libquadmath0",
@@ -29,13 +28,15 @@ class GccConan(ConanFile):
         "libcc1-0",
         "libitm1",
         "libcilkrts5",
-    )
+    ]
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("binutils/[>=2.30]@%s/stable" % self.user)
 
     def source(self):
+        if self.settings.arch == "x86_64":
+            self.deb_pkgs.append("libmpx2")
         self.run("apt update")
         for pkg in self.deb_pkgs:
             self.run("apt download %s" % pkg)
