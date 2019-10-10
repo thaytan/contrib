@@ -11,6 +11,7 @@ def get_version():
     except:
         return None
 
+
 class AutomakeConan(ConanFile):
     name = "automake"
     version = get_version()
@@ -22,6 +23,7 @@ class AutomakeConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
 
     def requirements(self):
@@ -29,7 +31,10 @@ class AutomakeConan(ConanFile):
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/automake/automake-%s.tar.gz" % self.version)
-        tools.patch(patch_file="automake-include-fix.patch", base_path="%s-%s" % (self.name, self.version))
+        tools.patch(
+            patch_file="automake-include-fix.patch",
+            base_path="%s-%s" % (self.name, self.version),
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
@@ -41,8 +46,14 @@ class AutomakeConan(ConanFile):
     def package_info(self):
         self.env_info.AUTOMAKE = os.path.join(self.package_folder, "bin", "automake")
         self.env_info.AUTOMAKE_DIR = os.path.join(self.package_folder, "share")
-        self.env_info.AUTOMAKE_LIBDIR = os.path.join(self.package_folder, "share", "automake-1.16")
+        self.env_info.AUTOMAKE_LIBDIR = os.path.join(
+            self.package_folder, "share", "automake-1.16"
+        )
         self.env_info.ACLOCAL = os.path.join(self.package_folder, "bin", "aclocal")
         self.env_info.ACLOCAL_DIR = os.path.join(self.package_folder, "share")
-        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal-1.16"))
-        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "share", "automake-1.16"))
+        self.env_info.ACLOCAL_PATH.append(
+            os.path.join(self.package_folder, "share", "aclocal-1.16")
+        )
+        self.env_info.PERL5LIB.append(
+            os.path.join(self.package_folder, "share", "automake-1.16")
+        )
