@@ -39,6 +39,7 @@ class PythonConan(ConanFile):
             "--enable-ipv6",
             "--with-system-expat",
             "--with-system-ffi",
+            "--without-ensurepip",
         ]
         with tools.chdir("Python-" + self.version):
             autotools = AutoToolsBuildEnvironment(self)
