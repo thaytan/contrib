@@ -14,11 +14,13 @@ class PythonConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-        self.build_requires("zlib/[>=1.2.11]@%s/stable" % self.user)
-        self.build_requires("expat/[>=2.2.7]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("expat/[>=2.2.7]@%s/stable" % self.user)
+        self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
+        self.requires("libffi/3.3-rc0@%s/stable" % self.user)
+        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
         tools.get(
@@ -32,10 +34,11 @@ class PythonConan(ConanFile):
             "--enable-shared",
             "--with-threads",
             "--with-computed-gotos",
+            "--enable-optimizations",
             "--with-lto",
             "--enable-ipv6",
             "--with-system-expat",
-            "--without-ensurepip",
+            "--with-system-ffi",
         ]
         with tools.chdir("Python-" + self.version):
             autotools = AutoToolsBuildEnvironment(self)
