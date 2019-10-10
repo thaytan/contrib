@@ -21,7 +21,6 @@ class GccConan(ConanFile):
         "libubsan0",
         "libasan4",
         "libgomp1",
-        "libquadmath0",
         "libtsan0",
         "liblsan0",
         "libatomic1",
@@ -36,7 +35,7 @@ class GccConan(ConanFile):
 
     def source(self):
         if self.settings.arch == "x86_64":
-            self.deb_pkgs.append("libmpx2")
+            self.deb_pkgs.extend(["libmpx2", "libquadmath0"])
         self.run("apt update")
         for pkg in self.deb_pkgs:
             self.run("apt download %s" % pkg)
