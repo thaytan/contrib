@@ -29,9 +29,9 @@ use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 
 #[derive(Debug, Clone)]
-struct CapsNegotiationError(&'static str);
-impl Error for CapsNegotiationError {}
-impl Display for CapsNegotiationError {
+struct RgbdDemuxingError(String);
+impl Error for RgbdDemuxingError {}
+impl Display for RgbdDemuxingError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "Caps negotiation error: {}", self.0)
     }
@@ -52,11 +52,11 @@ struct RgbdDemuxInternals {
 }
 
 impl RgbdDemux {
-    // Each function is wrapped in catch_panic_pad_function(), which will
-    // - Catch panics from the pad functions and instead of aborting the process
-    //   it will simply convert them into an error message and poison the element
-    //   instance
-    // - Extract RgbdDemux struct from the object instance and pass it to us
+    /// Each function is wrapped in catch_panic_pad_function(), which will
+    /// - Catch panics from the pad functions and instead of aborting the process
+    ///   it will simply convert them into an error message and poison the element
+    ///   instance
+    /// - Extract RgbdDemux struct from the object instance and pass it to us
     fn set_sink_pad_functions(sink_pad: &gst::Pad) {
         // Sink Event
         sink_pad.set_event_function(|pad, parent, event| {
@@ -119,24 +119,24 @@ impl RgbdDemux {
         &self,
         element: &gst::Element,
         rgbd_caps: &gst::CapsRef,
-    ) -> Result<(), CapsNegotiationError> {
+    ) -> Result<(), RgbdDemuxingError> {
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = rgbd_caps.iter().next().ok_or(CapsNegotiationError(
-            "Invalid `video/rgbd` caps for creation of additional src pads",
+        let rgbd_caps = rgbd_caps.iter().next().ok_or(RgbdDemuxingError(
+            "Invalid `video/rgbd` caps for creation of additional src pads".to_owned(),
         ))?;
 
         // Determine what streams are contained within the caps
         let streams: Vec<&str> = if let Some(streams) = rgbd_caps.get::<&str>("streams") {
             Ok(streams.split(',').collect())
         } else {
-            Err(CapsNegotiationError(
-                "No `streams` field detected in `video/rgbd` caps",
+            Err(RgbdDemuxingError(
+                "No `streams` field detected in `video/rgbd` caps".to_owned(),
             ))
         }?;
 
         if streams.len() == 0 {
-            return Err(CapsNegotiationError(
-                "Cannot detect any stream in `video/rgbd` caps under field `streams`",
+            return Err(RgbdDemuxingError(
+                "Cannot detect any stream in `video/rgbd` caps under field `streams`".to_owned(),
             ));
         }
 
@@ -144,22 +144,20 @@ impl RgbdDemux {
         let common_framerate =
             rgbd_caps
                 .get::<gst::Fraction>("framerate")
-                .ok_or(CapsNegotiationError(
-                    "Cannot detect any `framerate` in `video/rgbd` caps",
+                .ok_or(RgbdDemuxingError(
+                    "Cannot detect any `framerate` in `video/rgbd` caps".to_owned(),
                 ))?;
 
         // Iterate over all streams
         for stream_name in streams.iter() {
             // Determine the appropriate caps for the stream
-            let new_pad_caps = if *stream_name == "meta" {
+            let new_pad_caps = if stream_name.contains("meta") {
+                println!("Got meta of name: {}", stream_name);
                 // Get `video/meta-klv` caps if the `meta` stream is enabled
-                Ok(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]))
+                gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)])
             } else {
-                self.extract_stream_caps(element, stream_name, &rgbd_caps, &common_framerate)
-                    .ok_or(CapsNegotiationError(
-                        "Could not get CAPS from upstream elements",
-                    ))
-            }?;
+                self.extract_stream_caps(stream_name, &rgbd_caps, &common_framerate)?
+            };
 
             // Create the new src pad with given caps and stream name
             self.create_new_src_pad(element, new_pad_caps, stream_name);
@@ -167,55 +165,43 @@ impl RgbdDemux {
         Ok(())
     }
 
+    /// Get the downstream CAPS for the stream with the given name and upstream caps.
+    /// # Arguments
+    /// * `element` - The element that represents the `rgbddemux` in GStreamer.
+    /// * `stream_name` - The name (or Title Tag) of the stream.
+    /// * `rgbd_caps` - A reference to the overall rgbd CAPS, from which the information is extracted.
+    /// * `common_framerate` - The framerate of the streams, which is currently the same for all of them.
     fn extract_stream_caps(
         &self,
-        element: &gst::Element,
         stream_name: &str,
         rgbd_caps: &gst::StructureRef,
         common_framerate: &gst::Fraction,
-    ) -> Option<gst::Caps> {
-        // Get the format of a stream
-        let stream_format =
-            if let Some(format) = rgbd_caps.get::<&str>(&format!("{}_format", stream_name)) {
-                format
-            } else {
-                gst_error!(
-                    self.cat,
-                    obj: element,
-                    "Cannot detect any `format` in `video/rgbd` caps for `{}` stream",
-                    stream_name
-                );
-                return None;
-            };
+    ) -> Result<gst::Caps, RgbdDemuxingError> {
+        let stream_format = rgbd_caps
+            .get::<&str>(&format!("{}_format", stream_name))
+            .ok_or(RgbdDemuxingError(format!(
+                "Cannot detect any `format` in `video/rgbd` caps for `{}` stream",
+                stream_name
+            )))?;
+
         // Get the width of a stream
-        let stream_width =
-            if let Some(width) = rgbd_caps.get::<i32>(&format!("{}_width", stream_name)) {
-                width
-            } else {
-                gst_error!(
-                    self.cat,
-                    obj: element,
-                    "Cannot detect any `width` in `video/rgbd` caps for `{}` stream",
-                    stream_name
-                );
-                return None;
-            };
+        let stream_width = rgbd_caps
+            .get::<i32>(&format!("{}_width", stream_name))
+            .ok_or(RgbdDemuxingError(format!(
+                "Cannot detect any `width` in `video/rgbd` caps for `{}` stream",
+                stream_name
+            )))?;
+
         // Get the height of a stream
-        let stream_height =
-            if let Some(height) = rgbd_caps.get::<i32>(&format!("{}_height", stream_name)) {
-                height
-            } else {
-                gst_error!(
-                    self.cat,
-                    obj: element,
-                    "Cannot detect any `height` in `video/rgbd` caps for `{}` stream",
-                    stream_name
-                );
-                return None;
-            };
+        let stream_height = rgbd_caps
+            .get::<i32>(&format!("{}_height", stream_name))
+            .ok_or(RgbdDemuxingError(format!(
+                "Cannot detect any `height` in `video/rgbd` caps for `{}` stream",
+                stream_name
+            )))?;
 
         // Create caps for the new src pad
-        Some(gst::Caps::new_simple(
+        Ok(gst::Caps::new_simple(
             "video/x-raw",
             &[
                 ("format", &stream_format),
@@ -299,7 +285,7 @@ impl RgbdDemux {
             .unwrap();
     }
 
-    // Called whenever a new buffer is passed to the sink pad
+    /// Called whenever a new buffer is passed to the sink pad.
     fn sink_chain(
         &self,
         _pad: &gst::Pad,
@@ -325,6 +311,8 @@ impl RgbdDemux {
                     ))?;
         }
 
+        gst_debug!(self.cat, obj: element, "All meta buffers have been pushed");
+
         // Push the main buffer to the corresponding src pad
         internals
             .flow_combiner
@@ -348,6 +336,7 @@ impl RgbdDemux {
     fn push_per_frame_metadata(
         &self,
         element: &gst::Element,
+        buffer_tag: &str,
         src_pads: &HashMap<String, gst::Pad>,
         buffer: &gst::Buffer,
     ) -> Result<(), gst::FlowError> {
@@ -356,10 +345,16 @@ impl RgbdDemux {
             // Get a mutable reference to the buffer (mutable because we want to ensure timestamping)
             let meta_buffer = unsafe { gst::buffer::Buffer::from_glib_none(per_frame_meta.buffer) };
             // If there is a title tag on the buffer, we know that it is a 3DQ-related buffer
-            match self.extract_tag_title(element, &meta_buffer) {
-                Some(ref meta_tag) if meta_tag.contains("meta") => {
+            match self.extract_tag_title(&meta_buffer) {
+                Ok(ref meta_tag) if meta_tag == &format!("{}_meta", buffer_tag) => {
+                    gst_info!(
+                        self.cat,
+                        obj: element,
+                        "Found a per-frame metadata buffer."
+                    );
+
                     // Check if it's a meta buffer, if so timestamp it and push it on the meta-pad
-                    let meta_pad = src_pads.get("meta").ok_or(gst::FlowError::NotSupported)?;
+                    let meta_pad = src_pads.get("src_dddqmeta").ok_or(gst::FlowError::NotSupported)?;
 
                     // Make sure the buffer timestamps are set to the same as the frame they belong to
                     let mut klv = self.klv_serialize(element, meta_buffer).unwrap();
@@ -369,21 +364,20 @@ impl RgbdDemux {
 
                     meta_pad.push(klv)?;
                 }
-                Some(unknown_tag) => {
-                    gst_warning!(
+                Ok(unknown_tag) => {
+                    gst_info!(
                         self.cat,
                         obj: element,
-                        "Found an unknown buffer, where the per-frame meta should have been: `{}`",
+                        "Found an unknown buffer, where the per-frame meta could have been: `{}`",
                         unknown_tag
                     );
                 }
-                // We also ignore untagged buffers
-                None => {
+                Err(e) => {
                     gst_warning!(
-                    self.cat,
-                    obj: element,
-                    "Ignoring an untagged buffer, could it be per-frame metadata? If so, please make sure it is tagged as meta_%s"
-                );
+                        self.cat,
+                        obj: element,
+                        "{}", e
+                    );
                 }
             }
         }
@@ -428,6 +422,12 @@ impl RgbdDemux {
         }
     }
 
+    /// Pushes the given buffer to its corresponding pad. This effectively splits the stacked
+    /// buffers and routes them onto multiple pads.
+    /// # Arguments
+    /// * `element` - The element that represents the `rgbddemux` in GStreamer.
+    /// * `src_pads` - A hashmap of tags and the pad on which buffers with that tag should be pushed.
+    /// * `buffer` - The buffer that should be pushed.
     fn push_buffer_to_corresponding_pad(
         &self,
         element: &gst::Element,
@@ -436,14 +436,20 @@ impl RgbdDemux {
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Extract tag title from the buffer
         let tag_title = self
-            .extract_tag_title(element, &buffer)
-            .ok_or(gst::FlowError::Error)?;
+            .extract_tag_title(&buffer).map_err(|e| {
+            gst_error!(self.cat, obj: element, "{}", e);
+            gst::FlowError::Error
+        })?;
+
+        gst_debug!(self.cat, obj: element, "Found buffer with tag {}", tag_title);
 
         // Match the tag title with a corresponding src pad
         match src_pads.get(&(format!("src_{}", tag_title))) {
             Some(corresponding_pad) => {
                 // Check if there's a per-frame metadata buffer we need to push to the meta pad
-                self.push_per_frame_metadata(element, src_pads, &buffer)?;
+                gst_debug!(self.cat, obj: element, "Pushing per-frame meta for {}", tag_title);
+                self.push_per_frame_metadata(element, &tag_title, src_pads, &buffer)?;
+                gst_debug!(self.cat, obj: element, "Per-frame meta pushed. Now pushing buffer for {}", tag_title);
 
                 // Push the buffer to the corresponding pad
                 corresponding_pad.push(buffer)
@@ -460,50 +466,27 @@ impl RgbdDemux {
         }
     }
 
-    fn extract_tag_title(&self, element: &gst::Element, buffer: &gst::Buffer) -> Option<String> {
+    /// Extract the Title Tag from the given buffer.
+    /// # Arguments
+    /// * `element` - The element that represents the `rgbddemux` in GStreamer.
+    /// * `buffer` - The buffer from which the tag should be extracted.
+    fn extract_tag_title(&self, buffer: &gst::Buffer) -> Result<String, RgbdDemuxingError> {
         // Get GstTagList from GstBuffer
         let tag_list = match buffer.get_meta::<TagsMeta>() {
             Some(meta) => unsafe { gst::tags::TagList::from_glib_none(meta.tags) },
             None => {
-                gst_error!(
-                    self.cat,
-                    obj: element,
-                    "No meta detected in buffer `{:?}`",
-                    buffer
-                );
-                return None;
+                return Err(RgbdDemuxingError(format!("No meta detected in buffer `{:?}`", buffer)))
             }
         };
 
         // Get the tag title from GstTagList
-        let gst_tag_title = &tag_list.get::<gst::tags::Title>();
+        let gst_tag_title = &tag_list.get::<gst::tags::Title>().ok_or(RgbdDemuxingError(format!("No meta detected in buffer `{:?}`", buffer)))?;
         // Convert GstTitle to &str
-        match gst_tag_title {
-            Some(tag_title) => {
-                // Make sure the title is valid
-                match tag_title.get() {
-                    Some(title) => return Some(title.to_string()),
-                    None => {
-                        gst_error!(
-                            self.cat,
-                            obj: element,
-                            "Invalid tag title detected in buffer `{:?}`",
-                            buffer
-                        );
-                        return None;
-                    }
-                }
-            }
-            None => {
-                gst_error!(
-                    self.cat,
-                    obj: element,
-                    "No tag title detected in buffer `{:?}`",
-                    buffer
-                );
-                return None;
-            }
-        }
+        // Make sure the title is valid
+
+        let title = gst_tag_title.get().ok_or(RgbdDemuxingError(format!("Invalid tag title detected in buffer `{:?}`", buffer)))?;
+
+        Ok(title.to_string())
     }
 }
 
