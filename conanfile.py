@@ -37,7 +37,7 @@ class MesonConan(ConanFile):
             env
         ):
             self.run(
-                'python3 setup.py install --optimize=1 --prefix="%s"'
+                'python3 setup.py install --optimize=1 --prefix= --root="%s"'
                 % self.package_folder
             )
 
