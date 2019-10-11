@@ -314,21 +314,6 @@ impl ObjectSubclass for RealsenseSrc {
 
     glib_object_subclass!();
 
-    fn new() -> Self {
-        Self {
-            cat: gst::DebugCategory::new(
-                "realsensesrc",
-                gst::DebugColorFlags::empty(),
-                Some("Realsense Source"),
-            ),
-            internals: Mutex::new(RealsenseSrcInternals {
-                settings: Settings::default(),
-                state: State::default(),
-                system_time: std::time::SystemTime::now(),
-            }),
-        }
-    }
-
     fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
         klass.set_metadata(
             "Realsense Source",
@@ -361,8 +346,23 @@ impl ObjectSubclass for RealsenseSrc {
                 gst::PadPresence::Always,
                 &src_caps,
             )
-                .expect("Could not add src pad template in realsensesrc"),
+            .expect("Could not add src pad template in realsensesrc"),
         );
+    }
+
+    fn new() -> Self {
+        Self {
+            cat: gst::DebugCategory::new(
+                "realsensesrc",
+                gst::DebugColorFlags::empty(),
+                Some("Realsense Source"),
+            ),
+            internals: Mutex::new(RealsenseSrcInternals {
+                settings: Settings::default(),
+                state: State::default(),
+                system_time: std::time::SystemTime::now(),
+            }),
+        }
     }
 }
 
@@ -717,68 +717,6 @@ impl BaseSrcImpl for RealsenseSrc {
         self.parent_stop(element)
     }
 
-    fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
-        let settings = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .settings;
-
-        let mut caps = gst::Caps::truncate(caps);
-        {
-            let caps = caps.make_mut();
-            let s = caps
-                .get_mut_structure(0)
-                .expect("Failed to read the realsensesrc CAPS");
-
-            // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
-            // The first stream in this string is contained in the main buffer
-            let mut selected_streams = String::new();
-
-            if settings.streams.enable_depth {
-                // Add `depth` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"depth,");
-                s.set(
-                    "depth_format",
-                    &gst_video::VideoFormat::Gray16Le.to_string(),
-                );
-                s.set("depth_width", &settings.streams.depth_resolution.width);
-                s.set("depth_height", &settings.streams.depth_resolution.height);
-            }
-            if settings.streams.enable_infra1 {
-                // Add `infra1` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"infra1,");
-                s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_string());
-                s.set("infra1_width", &settings.streams.depth_resolution.width);
-                s.set("infra1_height", &settings.streams.depth_resolution.height);
-            }
-            if settings.streams.enable_infra2 {
-                // Add `infra2` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"infra2,");
-                s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_string());
-                s.set("infra2_width", &settings.streams.depth_resolution.width);
-                s.set("infra2_height", &settings.streams.depth_resolution.height);
-            }
-            if settings.streams.enable_color {
-                // Add `color` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"color,");
-                s.set("color_format", &gst_video::VideoFormat::Rgb.to_string());
-                s.set("color_width", &settings.streams.color_resolution.width);
-                s.set("color_height", &settings.streams.color_resolution.height);
-            }
-
-            // Pop the last ',' contained in streams (not really necessary, but nice)
-            selected_streams.pop();
-
-            // Finally add the streams to the caps
-            s.set("streams", &selected_streams.as_str());
-
-            // Fixate the framerate
-            s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
-        }
-        self.parent_fixate(element, caps)
-    }
-
     fn is_seekable(&self, _element: &gst_base::BaseSrc) -> bool {
         false
     }
@@ -878,6 +816,68 @@ impl BaseSrcImpl for RealsenseSrc {
         }
 
         Ok(output_buffer)
+    }
+
+    fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
+        let settings = &self
+            .internals
+            .lock()
+            .expect("Could not lock internals")
+            .settings;
+
+        let mut caps = gst::Caps::truncate(caps);
+        {
+            let caps = caps.make_mut();
+            let s = caps
+                .get_mut_structure(0)
+                .expect("Failed to read the realsensesrc CAPS");
+
+            // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
+            // The first stream in this string is contained in the main buffer
+            let mut selected_streams = String::new();
+
+            if settings.streams.enable_depth {
+                // Add `depth` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"depth,");
+                s.set(
+                    "depth_format",
+                    &gst_video::VideoFormat::Gray16Le.to_string(),
+                );
+                s.set("depth_width", &settings.streams.depth_resolution.width);
+                s.set("depth_height", &settings.streams.depth_resolution.height);
+            }
+            if settings.streams.enable_infra1 {
+                // Add `infra1` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"infra1,");
+                s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_string());
+                s.set("infra1_width", &settings.streams.depth_resolution.width);
+                s.set("infra1_height", &settings.streams.depth_resolution.height);
+            }
+            if settings.streams.enable_infra2 {
+                // Add `infra2` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"infra2,");
+                s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_string());
+                s.set("infra2_width", &settings.streams.depth_resolution.width);
+                s.set("infra2_height", &settings.streams.depth_resolution.height);
+            }
+            if settings.streams.enable_color {
+                // Add `color` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"color,");
+                s.set("color_format", &gst_video::VideoFormat::Rgb.to_string());
+                s.set("color_width", &settings.streams.color_resolution.width);
+                s.set("color_height", &settings.streams.color_resolution.height);
+            }
+
+            // Pop the last ',' contained in streams (not really necessary, but nice)
+            selected_streams.pop();
+
+            // Finally add the streams to the caps
+            s.set("streams", &selected_streams.as_str());
+
+            // Fixate the framerate
+            s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
+        }
+        self.parent_fixate(element, caps)
     }
 }
 
@@ -1205,10 +1205,10 @@ fn find_frame_with_id(
             Ok(data) => {
                 data.stream == stream_type
                     && if stream_id == -1 {
-                    true
-                } else {
-                    data.index == stream_id
-                }
+                        true
+                    } else {
+                        data.index == stream_id
+                    }
             }
             _ => false,
         },
