@@ -22,16 +22,19 @@ def replace_prefix_in_pc_file(pc_file, prefix):
                     break
 
         f.seek(0)
-        content=f.read().replace(old_prefix, prefix)
+        content = f.read().replace(old_prefix, prefix)
     with open(pc_file, "w") as f:
         f.write(content)
+
 
 def env_prepend(var, val, sep=pathsep):
     environ[var] = val + (sep + environ[var] if var in environ else "")
 
+
 def remove_folder(folder):
     if path.isdir(folder):
         rmtree(folder)
+
 
 class env(Generator):
     def __init__(self, conanfile):
@@ -52,6 +55,7 @@ class env(Generator):
         # Replace package method
         if hasattr(conanfile, "package"):
             conanfile.pre_package = conanfile.package
+
         def package():
             if hasattr(conanfile, "pre_package"):
                 conanfile.pre_package()
@@ -60,11 +64,14 @@ class env(Generator):
                 for ext in ("c", "cpp", "cpp", "h", "hpp", "hxx"):
                     conanfile.copy("*." + ext, "src")
             # Delete libtool files
-            for f in glob(path.join(conanfile.package_folder, "**", "*.la"), recursive=True):
+            for f in glob(
+                path.join(conanfile.package_folder, "**", "*.la"), recursive=True
+            ):
                 remove(f)
             # Delete unneeded folders in share
             for folder in ("man", "doc", "gdb", "bash-completion", "gtk-doc"):
                 remove_folder(path.join(conanfile.package_folder, "share", folder))
+
         conanfile.package = package
 
         # Copy pc files from PKG_CONFIG_SYSTEM_PATH
@@ -79,7 +86,10 @@ class env(Generator):
                         system_pcs.remove(path.splitext(pc)[0])
                         copy(path.join(pc_path, pc), pc_output_path)
             if len(system_pcs):
-                raise Exception("'%s' not available in system pkg-config directories" % ", ".join(system_pcs))
+                raise Exception(
+                    "'%s' not available in system pkg-config directories"
+                    % ", ".join(system_pcs)
+                )
 
         # Find bin, lib and pkgconfig paths
         bin_paths = []
@@ -98,11 +108,15 @@ class env(Generator):
             if path.isdir(pc_lib_path):
                 for pc in listdir(pc_lib_path):
                     copy(path.join(pc_lib_path, pc), pc_output_path)
-                    replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
+                    replace_prefix_in_pc_file(
+                        path.join(pc_output_path, pc), cpp_info.rootpath
+                    )
             if path.isdir(pc_share_path):
                 for pc in listdir(pc_share_path):
                     copy(path.join(pc_share_path, pc), pc_output_path)
-                    replace_prefix_in_pc_file(path.join(pc_output_path, pc), cpp_info.rootpath)
+                    replace_prefix_in_pc_file(
+                        path.join(pc_output_path, pc), cpp_info.rootpath
+                    )
 
         # Update Conan environment
         env_prepend("PATH", pathsep.join(bin_paths))
@@ -110,19 +124,31 @@ class env(Generator):
         env_prepend("PKG_CONFIG_PATH", pc_output_path)
         env_prepend("CMAKE_PREFIX_PATH", pathsep.join(prefix_paths))
         if hasattr(conanfile, "source_folder"):
-            env_prepend("CFLAGS", "-fdebug-prefix-map=%s=. " % conanfile.source_folder, " ")
-            env_prepend("CXXFLAGS", "-fdebug-prefix-map=%s=. " % conanfile.source_folder, " ")
+            env_prepend(
+                "CFLAGS", "-fdebug-prefix-map=%s=." % conanfile.source_folder, " "
+            )
+            env_prepend(
+                "CXXFLAGS", "-fdebug-prefix-map=%s=." % conanfile.source_folder, " "
+            )
 
         # Generate env.sh
-        content = "export PATH=%s:\"$PATH\"\n" % pathsep.join("\"%s\"" % p for p in bin_paths)
-        content += "export LD_LIBRARY_PATH=%s:\"$LD_LIBRARY_PATH\"\n" % pathsep.join("\"%s\"" for p in lib_paths)
-        content += "export PKG_CONFIG_PATH=\"%s\":\"$PKG_CONFIG_PATH\"\n" % pc_output_path
-        content += "export CMAKE_PREFIX_PATH=%s:\"$CMAKE_PREFIX_PATH\"\n" % pathsep.join("\"%s\"" for p in prefix_paths)
+        content = 'export PATH=%s:"$PATH"\n' % pathsep.join(
+            '"%s"' % p for p in bin_paths
+        )
+        content += 'export LD_LIBRARY_PATH=%s:"$LD_LIBRARY_PATH"\n' % pathsep.join(
+            '"%s"' % p for p in lib_paths
+        )
+        content += 'export PKG_CONFIG_PATH="%s":"$PKG_CONFIG_PATH"\n' % pc_output_path
+        content += 'export CMAKE_PREFIX_PATH=%s:"$CMAKE_PREFIX_PATH"\n' % pathsep.join(
+            '"%s"' % p for p in prefix_paths
+        )
         for var, val in self.env.items():
             if type(val) is list:
-                content += "export {0}={1}:\"${0}\"\n".format(var, pathsep.join("\"%s\"" % p for p in val))
+                content += 'export {0}={1}:"${0}"\n'.format(
+                    var, pathsep.join('"%s"' % p for p in val)
+                )
             else:
-                content += "export {0}={1}\n".format(var, "\"%s\"" % val)
+                content += "export {0}={1}\n".format(var, '"%s"' % val)
 
         return content
 
