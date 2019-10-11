@@ -24,7 +24,10 @@ class PythonPipConan(ConanFile):
 
     def build(self):
         with tools.chdir("pip-" + self.version):
-            self.run('python3 setup.py install --root="%s"' % self.package_folder)
+            self.run(
+                'python setup.py install --optimize=1 --prefix= --root="%s"'
+                % self.package_folder
+            )
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(
