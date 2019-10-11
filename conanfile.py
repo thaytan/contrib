@@ -29,7 +29,10 @@ class PythonSetuptoolsConan(ConanFile):
         os.makedirs(py_path)
         with tools.chdir("setuptools-" + self.version), tools.environment_append(env):
             self.run("python bootstrap.py")
-            self.run('python setup.py install --prefix="%s"' % self.package_folder)
+            self.run(
+                'python setup.py install --optimize=1 --prefix= --root="%s"'
+                % self.package_folder
+            )
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(
