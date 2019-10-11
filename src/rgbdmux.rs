@@ -219,12 +219,10 @@ impl RgbdMux {
     /// Extracts the relevant fields from the pad's CAPS and converts them into a string
     /// representation in the video/rgbd format.
     /// # Arguments
-    /// * `element` - The element that represents the rgbdmux.
     /// * `pad_caps` - A reference to the pad's CAPS.
     /// * `stream_name` - The name of the stream we're currently generating CAPS for.
     fn pad_caps_to_string(
         &self,
-        element: &gst::Element,
         pad_caps: &gst::Caps,
         stream_name: &str,
     ) -> String {
@@ -232,14 +230,14 @@ impl RgbdMux {
         pad_caps
             .iter()
             .filter_map(|caps_field| match caps_field.get_name() {
-                "framerate" => Some(format!(
-                    "{stream}_framerate={value}",
-                    stream = stream_name,
-                    value = caps_field.get::<&str>("framerate").expect(&format!(
-                        "Could not get field {} for stream {}",
-                        "framerate", stream_name
-                    ))
-                )),
+//                "framerate" => Some(format!(
+//                    "{stream}_framerate={value}",
+//                    stream = stream_name,
+//                    value = caps_field.get::<&str>("framerate").expect(&format!(
+//                        "Could not get field {} for stream {}",
+//                        "framerate", stream_name
+//                    ))
+//                )),
                 "height" => Some(format!(
                     "{stream}_height={value}",
                     stream = stream_name,
@@ -267,7 +265,6 @@ impl RgbdMux {
                 x => {
                     gst_info!(
                         self.cat,
-                        obj: element,
                         "Unknown CAPS field found: {}. Ignoring it.",
                         x
                     );
@@ -308,7 +305,7 @@ impl RgbdMux {
 
                 // Then map and filter those CAPS into a string of comma separated key-value pairs
                 // with the following format: key=value,key2=value2...
-                self.pad_caps_to_string(element, &pad_caps, pad_name)
+                self.pad_caps_to_string(&pad_caps, pad_name)
             })
             .collect::<Vec<String>>()
             .join(",");
@@ -355,4 +352,25 @@ pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
         gst::Rank::None,
         RgbdMux::get_type(),
     )
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn convert_pad_caps_to_rgbd_caps() {
+        let rgbdmux = RgbdMux {
+            cat: gst::DebugCategory::new("rgbdmux_tests", gst::DebugColorFlags::FG_CYAN, Some("Unit tests for rgbdmux")),
+            sink_pads: Mutex::new(vec![])
+        };
+        let pad_caps = gst::Caps::new_simple("video/x-raw", &[
+            ("format", &"GRAY8"),
+            ("width", &1280),
+            ("height", &720),
+        ]);
+
+        let rgbd_caps = rgbdmux.pad_caps_to_string(&pad_caps, "depth");
+
+        assert_eq!(rgbd_caps, "depth_format=GRAY8,depth_width=1280,depth_height=720");
+    }
 }
