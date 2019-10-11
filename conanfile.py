@@ -15,6 +15,7 @@ class GccConan(ConanFile):
         "gcc-7",
         "g++-7",
         "cpp-7",
+        "linux-libc-dev",
         "libc6-dev",
         "libgcc-7-dev",
         "libstdc++-7-dev",
