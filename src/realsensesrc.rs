@@ -31,23 +31,44 @@ use std::sync::Mutex;
 
 #[derive(Clone, Debug)]
 struct StreamEnableError(&'static str);
+
 impl Error for StreamEnableError {}
+
 impl Display for StreamEnableError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "Could not enable stream: {}", self.0)
     }
 }
+
 #[derive(Clone, Debug)]
 struct RealsenseError(String);
+
 impl Error for RealsenseError {}
+
 impl Display for RealsenseError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "Could not enable stream: {}", self.0)
     }
 }
+
 impl From<rs2::error::Error> for RealsenseError {
     fn from(error: rs2::error::Error) -> Self {
         Self(error.get_message())
+    }
+}
+
+impl From<RealsenseError> for gst::FlowError {
+    fn from(e: RealsenseError) -> Self {
+        gst_error!(
+            gst::DebugCategory::new(
+                "realsensesrc",
+                gst::DebugColorFlags::empty(),
+                Some("Realsense Source"),
+            ),
+            "{}",
+            e
+        );
+        gst::FlowError::Error
     }
 }
 
@@ -340,7 +361,7 @@ impl ObjectSubclass for RealsenseSrc {
                 gst::PadPresence::Always,
                 &src_caps,
             )
-            .expect("Could not add src pad template in realsensesrc"),
+                .expect("Could not add src pad template in realsensesrc"),
         );
     }
 }
@@ -416,7 +437,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enable_infra1 = enable_infra1;
             }
             subclass::Property("enable-infra2", ..) => {
-                let enable_infra2 = value.get().expect(&format!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                let enable_infra2 = value.get().expect(&format!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -427,7 +449,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enable_infra2 = enable_infra2;
             }
             subclass::Property("enable-color", ..) => {
-                let enable_color = value.get().expect(&format!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                let enable_color = value.get().expect(&format!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -438,7 +461,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enable_color = enable_color;
             }
             subclass::Property("depth-width", ..) => {
-                let depth_width = value.get().expect(&format!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));;
+                let depth_width = value.get().expect(&format!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -449,7 +473,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.depth_resolution.width = depth_width;
             }
             subclass::Property("depth-height", ..) => {
-                let depth_height = value.get().expect(&format!("Failed to set property `depth-height` on realsensesrc. Expected an int, but got: {:?}", value));;
+                let depth_height = value.get().expect(&format!("Failed to set property `depth-height` on realsensesrc. Expected an int, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -460,7 +485,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.depth_resolution.height = depth_height;
             }
             subclass::Property("color-width", ..) => {
-                let color_width = value.get().expect(&format!("Failed to set property `color-width` on realsensesrc. Expected an int, but got: {:?}", value));;
+                let color_width = value.get().expect(&format!("Failed to set property `color-width` on realsensesrc. Expected an int, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -471,7 +497,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.color_resolution.width = color_width;
             }
             subclass::Property("color-height", ..) => {
-                let color_height = value.get().expect(&format!("Failed to set property `color-height` on realsensesrc. Expected an int, but got: {:?}", value));;
+                let color_height = value.get().expect(&format!("Failed to set property `color-height` on realsensesrc. Expected an int, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -482,7 +509,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.color_resolution.height = color_height;
             }
             subclass::Property("framerate", ..) => {
-                let framerate = value.get().expect(&format!("Failed to set property `framerate` on realsensesrc. Expected an int, but got: {:?}", value));;
+                let framerate = value.get().expect(&format!("Failed to set property `framerate` on realsensesrc. Expected an int, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -494,7 +522,8 @@ impl ObjectImpl for RealsenseSrc {
                 // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             }
             subclass::Property("loop-rosbag", ..) => {
-                let loop_rosbag = value.get().expect(&format!("Failed to set property `loop-rosbag` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                let loop_rosbag = value.get().expect(&format!("Failed to set property `loop-rosbag` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -505,7 +534,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.loop_rosbag = loop_rosbag;
             }
             subclass::Property("wait-for-frames-timeout", ..) => {
-                let wait_for_frames_timeout = value.get().expect(&format!("Failed to set property `wait-for-frames-timeout` on realsensesrc. Expected an int, but got: {:?}", value));;
+                let wait_for_frames_timeout = value.get().expect(&format!("Failed to set property `wait-for-frames-timeout` on realsensesrc. Expected an int, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -516,7 +546,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.wait_for_frames_timeout = wait_for_frames_timeout;
             }
             subclass::Property("include-per-frame-metadata", ..) => {
-                let do_metadata = value.get().expect(&format!("Failed to set property `include-per-frame-metadata` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                let do_metadata = value.get().expect(&format!("Failed to set property `include-per-frame-metadata` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -754,7 +785,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
     fn create(
         &self,
-        element: &gst_base::BaseSrc,
+        _element: &gst_base::BaseSrc,
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
@@ -789,7 +820,6 @@ impl BaseSrcImpl for RealsenseSrc {
         // Attach `depth` frame if enabled
         if streams.enable_depth {
             self.extract_frame(
-                element,
                 &frames,
                 &mut output_buffer,
                 "depth",
@@ -804,7 +834,6 @@ impl BaseSrcImpl for RealsenseSrc {
         // Attach `infra1` frame if enabled
         if streams.enable_infra1 {
             self.extract_frame(
-                element,
                 &frames,
                 &mut output_buffer,
                 "infra1",
@@ -819,7 +848,6 @@ impl BaseSrcImpl for RealsenseSrc {
         // Attach `infra2` frame if enabled
         if streams.enable_infra2 {
             self.extract_frame(
-                element,
                 &frames,
                 &mut output_buffer,
                 "infra2",
@@ -834,7 +862,6 @@ impl BaseSrcImpl for RealsenseSrc {
         // Attach `color` frame if enabled
         if streams.enable_color {
             self.extract_frame(
-                element,
                 &frames,
                 &mut output_buffer,
                 "color",
@@ -852,29 +879,6 @@ impl BaseSrcImpl for RealsenseSrc {
 
         Ok(output_buffer)
     }
-
-    // fn query(&self, element: &gst_base::BaseSrc, query: &mut gst::QueryRef) -> bool {
-    //     use gst::QueryView;
-
-    //     match query.view_mut() {
-    //         QueryView::Scheduling(ref mut q) => {
-    //             q.set(gst::SchedulingFlags::SEQUENTIAL, 1, -1, 0);
-    //             q.add_scheduling_modes(&[gst::PadMode::Push]);
-    //             true
-    //         }
-    //         QueryView::Latency(ref mut q) => {
-    //             // TODO: Determine the actual latency caused by system buffering and gstreamer copying
-    //             let settings = &self.internals.lock().unwrap().settings;
-    //             let latency = gst::SECOND
-    //                 .mul_div_floor(1, settings.streams.framerate as u64)
-    //                 .unwrap();
-    //             gst_debug!(self.cat, obj: element, "Returning latency {}", latency);
-    //             q.set(true, latency, gst::CLOCK_TIME_NONE);
-    //             true
-    //         }
-    //         _ => BaseSrcImplExt::parent_query(self, element, query),
-    //     }
-    // }
 }
 
 impl RealsenseSrc {
@@ -1050,34 +1054,19 @@ impl RealsenseSrc {
     /// # Arguments
     /// * `frame` - The frame to read and serialize metadata for.
     /// * `element` - The element that represents the realsensesrc.
-    fn get_frame_meta(
-        &self,
-        frame: &rs2::frame::Frame,
-        element: &gst_base::BaseSrc,
-    ) -> Option<Vec<u8>> {
-        match frame.get_metadata() {
-            Ok(metadata) => match capnp_serialize(metadata) {
-                Ok(m) => Some(m),
-                Err(e) => {
-                    gst_warning!(
-                        self.cat,
-                        obj: element,
-                        "Failed to serialize metadata from RealSense camera: {}",
-                        e
-                    );
-                    None
-                }
-            },
-            Err(e) => {
-                gst_warning!(
-                    self.cat,
-                    obj: element,
-                    "Failed to read metadata from RealSense camera: {}",
-                    e
-                );
-                None
-            }
-        }
+    fn get_frame_meta(&self, frame: &rs2::frame::Frame) -> Result<Vec<u8>, RealsenseError> {
+        let frame_meta = frame.get_metadata().map_err(|e| {
+            RealsenseError(format!(
+                "Failed to read metadata from RealSense camera: {}",
+                e
+            ))
+        })?;
+        capnp_serialize(frame_meta).map_err(|e| {
+            RealsenseError(format!(
+                "Failed to serialize metadata from RealSense camera: {}",
+                e
+            ))
+        })
     }
 
     /// Attempt to add `frame_meta` as a gst meta buffer onto `buffer`. This function simply ignores
@@ -1086,38 +1075,28 @@ impl RealsenseSrc {
     /// * `buffer` - The gst::Buffer to which the metadata should be added.
     /// * `frame_meta` - A byte vector containing the serialized metadata.
     /// * `tag` - The tag of the stream.
-    fn try_add_per_frame_metadata(
-        &self,
-        buffer: &mut gst::Buffer,
-        frame_meta: Option<Vec<u8>>,
-        tag: &str,
-    ) {
+    fn add_per_frame_metadata(&self, buffer: &mut gst::Buffer, frame_meta: Vec<u8>, tag: &str) {
         // If we were able to read some metadata add it to the buffer
-        match frame_meta {
-            Some(frame_meta) => {
-                let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
-                let tag_name = format!("{}_meta", tag);
-                let mut tags = gst::tags::TagList::new();
-                tags.get_mut()
-                    .expect("Cannot get mutable reference to `tags`")
-                    .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
+        let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
+        let tag_name = format!("{}_meta", tag);
+        let mut tags = gst::tags::TagList::new();
+        tags.get_mut()
+            .expect("Cannot get mutable reference to `tags`")
+            .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
 
-                TagsMeta::add(
-                    frame_meta_buffer
-                        .get_mut()
-                        .expect("Could not add tags to `frame_meta_buffer`"),
-                    &mut tags,
-                );
+        TagsMeta::add(
+            frame_meta_buffer
+                .get_mut()
+                .expect("Could not add tags to `frame_meta_buffer`"),
+            &mut tags,
+        );
 
-                BufferMeta::add(
-                    buffer
-                        .get_mut()
-                        .expect("Could not add `frame_meta_buffer` onto frame buffer."),
-                    &mut frame_meta_buffer,
-                );
-            }
-            _ => { /*ignore*/ }
-        }
+        BufferMeta::add(
+            buffer
+                .get_mut()
+                .expect("Could not add `frame_meta_buffer` onto frame buffer."),
+            &mut frame_meta_buffer,
+        );
     }
 
     /// Extract a frame from the RealSense camera, outputting it in `output_buffer` on the given
@@ -1135,7 +1114,6 @@ impl RealsenseSrc {
     /// * `timestamp` - The timestamp to give to the frame.
     fn extract_frame(
         &self,
-        element: &gst_base::BaseSrc,
         frames: &Vec<rs2::frame::Frame>,
         output_buffer: &mut gst::Buffer,
         tag: &str,
@@ -1144,16 +1122,11 @@ impl RealsenseSrc {
         previous_streams: &[bool],
         settings: &Settings,
         timestamp: Option<u64>,
-    ) -> Result<(), gst::FlowError> {
+    ) -> Result<(), RealsenseError> {
         // Extract the frame from frames based on its type and id
-        let frame = find_frame_with_id(frames, stream_type, stream_id)
-            .ok_or(gst::FlowError::NotSupported)?;
-
-        // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
-        let frame_meta = match settings.include_per_frame_metadata {
-            true => self.get_frame_meta(frame, element),
-            false => None,
-        };
+        let frame = find_frame_with_id(frames, stream_type, stream_id).ok_or(RealsenseError(
+            "Failed to find a suitable frame on realsensesrc".to_owned(),
+        ))?;
 
         // Create the appropriate tag
         let mut tags = gst::tags::TagList::new();
@@ -1162,7 +1135,9 @@ impl RealsenseSrc {
             .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
 
         // Extract the frame data into a new buffer
-        let frame_data = frame.get_data().map_err(|_| gst::FlowError::Error)?;
+        let frame_data = frame
+            .get_data()
+            .map_err(|e| RealsenseError(e.get_message()))?;
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_data);
 
         // Add tag to this new buffer
@@ -1193,7 +1168,6 @@ impl RealsenseSrc {
         } else {
             // Else put this frame into the output buffer
             *output_buffer = buffer;
-            self.try_add_per_frame_metadata(output_buffer, frame_meta, tag);
             // Add the tag
             TagsMeta::add(
                 output_buffer
@@ -1203,9 +1177,14 @@ impl RealsenseSrc {
             );
         }
 
+        if settings.include_per_frame_metadata {
+            // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
+            let md = self.get_frame_meta(frame)?;
+            self.add_per_frame_metadata(output_buffer, md, tag);
+        }
+
         // Release the frame
         frame.release();
-
         Ok(())
     }
 }
@@ -1226,10 +1205,10 @@ fn find_frame_with_id(
             Ok(data) => {
                 data.stream == stream_type
                     && if stream_id == -1 {
-                        true
-                    } else {
-                        data.index == stream_id
-                    }
+                    true
+                } else {
+                    data.index == stream_id
+                }
             }
             _ => false,
         },
