@@ -48,10 +48,11 @@ class GccConan(ConanFile):
 
     def package(self):
         arch_dir = "%s-linux-gnu" % self.arch_conv[str(self.settings.arch)]
-        # Symlink bin dir
+        # Symlink arch specific paths
         with tools.chdir(self.package_folder):
-            os.mkdir("bin")
-            os.symlink("../bin", "bin/%s" % arch_dir)
+            for dir in ("bin", "lib", "include"):
+                os.mkdir(dir)
+                os.symlink("../%s" % dir, "%s/%s" % (dir, arch_dir))
             os.symlink("gcc-7", "bin/cc")
             os.symlink("gcc-7", "bin/gcc")
             os.symlink("g++-7", "bin/c++")
