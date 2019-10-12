@@ -11,7 +11,6 @@ class GccConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom", "FDL", "GPL", "LGPL"
     description = "The GNU Compiler Collection - C and C++ frontends"
-    generators = "env"
     deb_pkgs = [
         "gcc-7",
         "g++-7",
@@ -33,6 +32,8 @@ class GccConan(ConanFile):
         "libmpfr6",
         "libmpc3",
     ]
+    arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
+    generators = "env"
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -41,20 +42,17 @@ class GccConan(ConanFile):
     def source(self):
         if self.settings.arch == "x86_64":
             self.deb_pkgs.extend(["libmpx2", "libquadmath0", "libcilkrts5"])
-        self.run("apt update")
+        # self.run("apt update")
         for pkg in self.deb_pkgs:
             self.run("apt download %s" % pkg)
 
     def package(self):
-        # Symlink arch specific paths
-        arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
-        for dir in ("bin", "lib", "include"):
-            with tools.chdir(self.package_folder):
-                os.mkdir(dir)
-                os.symlink(
-                    "../%s" % dir,
-                    "%s/%s-linux-gnu" % (dir, arch_conv[str(self.settings.arch)]),
-                )
+        # Symlink bin dir
+        with tools.chdir(self.package_folder):
+            os.mkdir("bin")
+            os.symlink(
+                "../bin", "bin/%s-linux-gnu" % self.arch_conv[str(self.settings.arch)]
+            )
 
         # Extract and copy
         for file in os.listdir():
@@ -67,9 +65,23 @@ class GccConan(ConanFile):
         # Remove hardcoded path to libc_nonshared.a
         self.run(
             "sed %s/lib/%s-linux-gnu/libc.so -i -e 's/\/usr\/lib.*libc_nonshared.a/libc_nonshared.a/'"
-            % (self.package_folder, arch_conv[str(self.settings.arch)])
+            % (self.package_folder, self.arch_conv[str(self.settings.arch)])
         )
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc-7")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++-7")
+        self.env_info.CPATH.append(
+            os.path.join(
+                self.package_folder,
+                "include",
+                "include/%s-linux-gnu" % self.arch_conv[str(self.settings.arch)],
+            )
+        )
+        self.env_info.LIBRARY_PATH.append(
+            os.path.join(
+                self.package_folder,
+                "lib",
+                "lib/%s-linux-gnu" % self.arch_conv[str(self.settings.arch)],
+            )
+        )
