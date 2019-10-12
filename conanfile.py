@@ -46,9 +46,9 @@ class GccConan(ConanFile):
             self.run("apt download %s" % pkg)
 
     def package(self):
-        # Look in arch specific paths for libs and includes
+        # Symlink arch specific paths
         arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
-        for dir in ("lib", "include"):
+        for dir in ("bin", "lib", "include"):
             with tools.chdir(self.package_folder):
                 os.mkdir(dir)
                 os.symlink(
@@ -56,13 +56,13 @@ class GccConan(ConanFile):
                     "%s/%s-linux-gnu" % (dir, arch_conv[str(self.settings.arch)]),
                 )
 
+        # Extract and copy
         for file in os.listdir():
             if file.endswith(".deb"):
                 self.run("ar x " + file)
                 tools.unzip("data.tar.xz")
-        self.copy("*", dst="bin", src="usr/bin", symlinks=True)
-        self.copy("*", dst="lib", src="usr/lib", symlinks=True)
-        self.copy("*", dst="include", src="usr/include", symlinks=True)
+        for dir in ("bin", "lib", "include"):
+            self.copy("*", dst=dir, src="usr/" + dir, symlinks=True)
 
         # Remove hardcoded path to libc_nonshared.a
         self.run(
