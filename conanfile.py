@@ -68,7 +68,7 @@ class GccConan(ConanFile):
         # Remove hardcoded paths from ld scripts
         for script in (
             "libpthread.so",
-            "gcc/x86_64-linux-gnu/7/libgcc_s.so",
+            "gcc/%s/7/libgcc_s.so" % arch_dir,
             "libc.so",
             "libm.a",
             "libm.so",
