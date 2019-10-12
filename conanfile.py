@@ -77,8 +77,8 @@ class GccConan(ConanFile):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc-7")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++-7")
         self.env_info.CPATH.append(
-            os.path.join(self.package_folder, "include", "include/%s" % arch_dir)
+            os.path.join(self.package_folder, "include", arch_dir)
         )
         self.env_info.LIBRARY_PATH.append(
-            os.path.join(self.package_folder, "lib", "lib/%s" % arch_dir)
+            os.path.join(self.package_folder, "lib", arch_dir)
         )
