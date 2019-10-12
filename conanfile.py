@@ -15,6 +15,7 @@ class AutoconfConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("perl/[>=5.30.0]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
