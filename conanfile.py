@@ -42,3 +42,12 @@ class PerlConan(ConanFile):
             self.run("./Configure " + " ".join(args))
             autotools.make()
             autotools.install()
+
+    def package_info(self):
+        arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
+        platform = "%s-linux" % arch_conv[str(self.settings.arch)]
+        self.env_info.PERL5LIB.append(
+            os.path.join(
+                self.package_folder, "lib", self.version, "%s-thread-multi" % platform
+            )
+        )
