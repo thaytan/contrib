@@ -10,6 +10,7 @@ class PerlConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A highly capable, feature-rich programming language"
+    exports = "link-m-pthread.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -20,13 +21,21 @@ class PerlConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/Perl/perl5/archive/v%s.tar.gz" % self.version)
+        tools.patch(
+            patch_file="link-m-pthread.patch",
+            base_path="%s5-%s" % (self.name, self.version),
+        )
 
     def build(self):
         args = [
             "-des",
             "-Dusethreads",
+            "-Uusenm",
             "-Duseshrplib",
+            "-Duselargefiles",
             "-Dprefix=" + self.package_folder,
+            "-Dlddlflags='-shared'",
+            "-Dldflags=''",
         ]
         with tools.chdir("%s5-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
