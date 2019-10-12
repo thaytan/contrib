@@ -1,5 +1,4 @@
 import os
-from glob import glob
 
 from conans import ConanFile, tools
 
@@ -42,7 +41,7 @@ class GccConan(ConanFile):
     def source(self):
         if self.settings.arch == "x86_64":
             self.deb_pkgs.extend(["libmpx2", "libquadmath0", "libcilkrts5"])
-        self.run("apt update")
+        # self.run("apt update")
         for pkg in self.deb_pkgs:
             self.run("apt download %s" % pkg)
 
@@ -66,11 +65,19 @@ class GccConan(ConanFile):
         for dir in ("bin", "lib", "include"):
             self.copy("*", dst=dir, src="usr/" + dir, symlinks=True)
 
-        # Remove hardcoded path to libc_nonshared.a
-        self.run(
-            "sed %s/lib/%s/libc.so -i -e 's/\/usr\/lib.*libc_nonshared.a/libc_nonshared.a/'"
-            % (self.package_folder, arch_dir)
-        )
+        # Remove hardcoded paths from ld scripts
+        for script in (
+            "libpthread.so",
+            "gcc/x86_64-linux-gnu/7/libgcc_s.so",
+            "libc.so",
+            "libm.a",
+            "libm.so",
+        ):
+            self.run(
+                "sed {0}/lib/{1}/{2} -i -e 's/\/usr\/lib\/{1}\///'".format(
+                    self.package_folder, arch_dir, script
+                )
+            )
 
     def package_info(self):
         arch_dir = "%s-linux-gnu" % self.arch_conv[str(self.settings.arch)]
