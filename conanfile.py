@@ -47,12 +47,15 @@ class GccConan(ConanFile):
             self.run("apt download %s" % pkg)
 
     def package(self):
+        arch_dir = "%s-linux-gnu" % self.arch_conv[str(self.settings.arch)]
         # Symlink bin dir
         with tools.chdir(self.package_folder):
             os.mkdir("bin")
-            os.symlink(
-                "../bin", "bin/%s-linux-gnu" % self.arch_conv[str(self.settings.arch)]
-            )
+            os.symlink("../bin", "bin/%s" % arch_dir)
+            os.symlink("gcc-7", "bin/cc")
+            os.symlink("gcc-7", "bin/gcc")
+            os.symlink("g++-7", "bin/c++")
+            os.symlink("g++-7", "bin/g++")
 
         # Extract and copy
         for file in os.listdir():
@@ -64,24 +67,17 @@ class GccConan(ConanFile):
 
         # Remove hardcoded path to libc_nonshared.a
         self.run(
-            "sed %s/lib/%s-linux-gnu/libc.so -i -e 's/\/usr\/lib.*libc_nonshared.a/libc_nonshared.a/'"
-            % (self.package_folder, self.arch_conv[str(self.settings.arch)])
+            "sed %s/lib/%s/libc.so -i -e 's/\/usr\/lib.*libc_nonshared.a/libc_nonshared.a/'"
+            % (self.package_folder, arch_dir)
         )
 
     def package_info(self):
+        arch_dir = "%s-linux-gnu" % self.arch_conv[str(self.settings.arch)]
         self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc-7")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++-7")
         self.env_info.CPATH.append(
-            os.path.join(
-                self.package_folder,
-                "include",
-                "include/%s-linux-gnu" % self.arch_conv[str(self.settings.arch)],
-            )
+            os.path.join(self.package_folder, "include", "include/%s" % arch_dir)
         )
         self.env_info.LIBRARY_PATH.append(
-            os.path.join(
-                self.package_folder,
-                "lib",
-                "lib/%s-linux-gnu" % self.arch_conv[str(self.settings.arch)],
-            )
+            os.path.join(self.package_folder, "lib", "lib/%s" % arch_dir)
         )
