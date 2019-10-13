@@ -1,6 +1,6 @@
 from glob import glob
 from os import environ, listdir, makedirs, path, pathsep, remove
-from shutil import copy, rmtree
+from shutil import copy, copyfileobj, rmtree
 
 from conans import ConanFile
 from conans.model import Generator
@@ -57,6 +57,7 @@ class env(Generator):
             conanfile.pre_package = conanfile.package
 
         def package():
+            # Run original package method
             if hasattr(conanfile, "pre_package"):
                 conanfile.pre_package()
             # Copy sources to package
@@ -71,6 +72,29 @@ class env(Generator):
             # Delete unneeded folders in share
             for folder in ("man", "doc", "gdb", "bash-completion", "gtk-doc"):
                 remove_folder(path.join(conanfile.package_folder, "share", folder))
+
+            # Fix shebangs
+            for exe_name in listdir(path.join(conanfile.package_folder, "bin")):
+                try:
+                    exe_path = path.join(conanfile.package_folder, "bin", exe_name)
+                    exe = open(exe_path, "r")
+                    line = exe.readline()
+                    if "python" in line:
+                        interpreter = "python"
+                    elif "perl" in line:
+                        interpreter = "perl"
+                    elif "sh" in line:
+                        interpreter = "sh"
+                    else:
+                        interpreter = None
+                    line = "#!/usr/bin/env %s\n" % interpreter
+                    to_exe = open(exe_path, mode="w")
+                    to_exe.write(line)
+                    copyfileobj(exe, to_exe)
+                    exe.close()
+                    to_exe.close()
+                except UnicodeDecodeError:
+                    pass
 
         conanfile.package = package
 
