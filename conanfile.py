@@ -21,6 +21,7 @@ class GStreamerPluginsGoodConan(ConanFile):
     options = {
         "autodetect": [True, False],
         "rtp": [True, False],
+        "rtsp": [True, False],
         "udp": [True, False],
         "png": [True, False],
         "isomp4": [True, False],
@@ -31,6 +32,7 @@ class GStreamerPluginsGoodConan(ConanFile):
     default_options = (
         "autodetect=True",
         "rtp=True",
+        "rtsp=True",
         "udp=True",
         "png=True",
         "isomp4=True",
@@ -59,6 +61,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         args = ["--auto-features=disabled"]
         args.append("-Dautodetect=" + ("enabled" if self.options.autodetect else "disabled"))
         args.append("-Drtp=" + ("enabled" if self.options.rtp else "disabled"))
+        args.append("-Drtsp=" + ("enabled" if self.options.rtsp else "disabled"))
         args.append("-Drtpmanager=" + ("enabled" if self.options.rtp else "disabled"))
         args.append("-Dudp=" + ("enabled" if self.options.udp else "disabled"))
         args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
