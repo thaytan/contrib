@@ -11,4 +11,4 @@ class GccConan(ConanFile):
 
     def package_info(self):
         self.env_info.CC = "/usr/bin/gcc-7"
-        self.env_info.CXX = "/usr/bin/gcc-8"
+        self.env_info.CXX = "/usr/bin/gcc-7"
