@@ -10,7 +10,7 @@ class AutoconfConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL3"
     description = "A GNU tool for automatically configuring source code"
-    exports = "m4-include-fix.patch"
+    exports = "m4-include.patch", "perl-path.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -24,8 +24,10 @@ class AutoconfConan(ConanFile):
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/autoconf/autoconf-%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="m4-include-fix.patch",
-            base_path="%s-%s" % (self.name, self.version),
+            patch_file="m4-include.patch", base_path="%s-%s" % (self.name, self.version)
+        )
+        tools.patch(
+            patch_file="perl-path.patch", base_path="%s-%s" % (self.name, self.version)
         )
 
     def build(self):
