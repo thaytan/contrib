@@ -1,3 +1,6 @@
 include:
   - project: 'aivero/cloud/cicd'
     file: 'conan-ci.yml'
+
+variables:
+  APT_INSTALL: "libegl1-mesa-dev"
