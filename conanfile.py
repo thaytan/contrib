@@ -22,6 +22,9 @@ class DepthMetaConan(ConanFile):
     exports_sources = ["CMakeLists.txt", "src/*"]
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("gstreamer/[>=1.16.0]@%s/stable" % self.user)
