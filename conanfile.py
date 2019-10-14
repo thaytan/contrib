@@ -74,27 +74,28 @@ class env(Generator):
                 remove_folder(path.join(conanfile.package_folder, "share", folder))
 
             # Fix shebangs
-            for exe_name in listdir(path.join(conanfile.package_folder, "bin")):
-                try:
-                    exe_path = path.join(conanfile.package_folder, "bin", exe_name)
-                    exe = open(exe_path, "r")
-                    line = exe.readline()
-                    if "python" in line:
-                        interpreter = "python"
-                    elif "perl" in line:
-                        interpreter = "perl"
-                    elif "sh" in line:
-                        interpreter = "sh"
-                    else:
-                        interpreter = None
-                    line = "#!/usr/bin/env %s\n" % interpreter
-                    to_exe = open(exe_path, mode="w")
-                    to_exe.write(line)
-                    copyfileobj(exe, to_exe)
-                    exe.close()
-                    to_exe.close()
-                except UnicodeDecodeError:
-                    pass
+            if path.isdir(path.join(conanfile.package_folder, "bin")):
+                for exe_name in listdir(path.join(conanfile.package_folder, "bin")):
+                    try:
+                        exe_path = path.join(conanfile.package_folder, "bin", exe_name)
+                        exe = open(exe_path, "r")
+                        line = exe.readline()
+                        if "python" in line:
+                            interpreter = "python"
+                        elif "perl" in line:
+                            interpreter = "perl"
+                        elif "sh" in line:
+                            interpreter = "sh"
+                        else:
+                            interpreter = None
+                        line = "#!/usr/bin/env %s\n" % interpreter
+                        to_exe = open(exe_path, mode="w")
+                        to_exe.write(line)
+                        copyfileobj(exe, to_exe)
+                        exe.close()
+                        to_exe.close()
+                    except UnicodeDecodeError:
+                        pass
 
         conanfile.package = package
 
