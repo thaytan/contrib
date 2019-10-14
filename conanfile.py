@@ -1,22 +1,17 @@
 from conans import ConanFile, tools, Meson
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.3.0"
-    except:
-        return None
-
 class LibvaMesaDriverConan(ConanFile):
     name = "libva-mesa-driver"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.3.0")
     license = "MIT"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
+
+    def build_requirements(self):
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
