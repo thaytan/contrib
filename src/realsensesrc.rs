@@ -55,8 +55,10 @@ impl From<rs2::error::Error> for RealsenseError {
 const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 const DEFAULT_LOOP_ROSBAG: bool = true;
+// Default behaviour for adding custom timestamps to the buffers.
+const DEFAULT_DO_CUSTOM_TIMESTAMP: bool = true;
 
-static PROPERTIES: [subclass::Property; 15] = [
+static PROPERTIES: [subclass::Property; 16] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -204,6 +206,15 @@ static PROPERTIES: [subclass::Property; 15] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    subclass::Property("do-custom-timestamp", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Perform custom timestamp handling",
+            "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers.",
+            DEFAULT_DO_CUSTOM_TIMESTAMP,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
 ];
 
 // A struct containing properties
@@ -215,6 +226,7 @@ struct Settings {
     loop_rosbag: bool,
     wait_for_frames_timeout: u32,
     include_per_frame_metadata: bool,
+    do_custom_timestamp: bool,
 }
 
 struct Streams {
@@ -256,6 +268,7 @@ impl Default for Settings {
             loop_rosbag: DEFAULT_LOOP_ROSBAG,
             wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
             include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
+            do_custom_timestamp: DEFAULT_DO_CUSTOM_TIMESTAMP,
         }
     }
 }
@@ -526,6 +539,17 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.include_per_frame_metadata = do_metadata;
             }
+            subclass::Property("do-custom-timestamp", ..) => {
+                let do_custom_timestamp = value.get().expect(&format!("Failed to set property `do-custom-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `do-custom-timestamp` from {} to {}",
+                    settings.do_custom_timestamp,
+                    do_custom_timestamp
+                );
+                settings.do_custom_timestamp = do_custom_timestamp;
+            }
             _ => unimplemented!("Property is not implemented"),
         };
     }
@@ -569,6 +593,9 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("include-per-frame-metadata", ..) => {
                 Ok(settings.include_per_frame_metadata.to_value())
+            }
+            subclass::Property("do-custom-timestamp", ..) => {
+                Ok(settings.do_custom_timestamp.to_value())
             }
             _ => unimplemented!("Property is not implemented"),
         }
@@ -775,13 +802,17 @@ impl BaseSrcImpl for RealsenseSrc {
             .wait_for_frames(settings.wait_for_frames_timeout)
             .map_err(|_| gst::FlowError::Eos)?;
 
-        // Calculate a common timestamp
-        let timestamp = Some(
-            std::time::SystemTime::now()
-                .duration_since(internals.system_time)
-                .unwrap_or_default()
-                .as_nanos() as u64,
-        );
+        // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
+        let timestamp = if settings.do_custom_timestamp {
+            Some(
+                std::time::SystemTime::now()
+                    .duration_since(internals.system_time)
+                    .unwrap_or_default()
+                    .as_nanos() as u64,
+            )
+        } else {
+            None
+        };
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
@@ -1176,6 +1207,9 @@ impl RealsenseSrc {
             buffer
                 .make_mut()
                 .set_pts(gst::ClockTime::from_nseconds(timestamp));
+            buffer
+                .make_mut()
+                .set_dts(gst::ClockTime::from_nseconds(timestamp));
         };
 
         // Determine whether any of the previous streams is enabled
