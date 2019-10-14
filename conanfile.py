@@ -27,8 +27,9 @@ class GStreamerDevtoolsConan(ConanFile):
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("gstreamer/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("json-glib/[>=1.4.4]@%s/stable" % self.user)
+        self.requires("cairo/[>=1.17.2]@%s/stable" % self.user)
 
-        # Temporarely in here to give easy access to encoders etc. 
+        # Temporarely in here to give easy access to encoders etc.
         self.requires("depth-receiver/[>=0.7.1]@%s/stable" % self.user)
         if self.settings.arch == "x86_64":
             if self.options.intel:
