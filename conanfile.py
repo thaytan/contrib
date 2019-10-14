@@ -1,17 +1,9 @@
 from conans import ConanFile, Meson, tools
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.16.0"
-    except:
-        return None
-
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.16.0")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
@@ -31,16 +23,13 @@ class GStreamerDevtoolsConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("json-glib/[>=1.4.4]@%s/stable" % self.user)
 
     def build(self):
-        args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(source_folder="gst-devtools-" + self.version, args=args)
+        meson.configure(source_folder="gst-devtools-" + self.version)
         meson.install()
-
-    def package(self):
-        self.copy("*.so*", dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"), keep_path=False)
 
     def deploy(self):
         install_path = os.getcwd()
@@ -54,7 +43,7 @@ class GStreamerDevtoolsConan(ConanFile):
 
         # Libraries
         self.copy_deps("*.so*")
-        self.copy("*.so*", dst=os.path.join("lib", "gstreamer-1.0"), keep_path=False)
+        self.copy("*.so*", keep_path=True)
 
         # Pkg - config files
         deps = ["depth-*", "gstreamer*", "orc-0.4"]
@@ -72,4 +61,4 @@ class GStreamerDevtoolsConan(ConanFile):
             env_file.write("\nexport PKG_CONFIG_PATH=" + os.path.join("$PREFIX", "lib", "pkgconfig"))
             env_file.write("\nexport GST_PLUGIN_PATH=" + os.path.join("$PREFIX", "lib", "gstreamer-1.0") + ":" + os.path.join("$PREFIX", "lib", "depth_receiver"))
             env_file.write("\nexport GST_PLUGIN_SCANNER=" + os.path.join("$PREFIX", "bin", "gst-plugin-scanner"))
-
+            env_file.write("\nexport GST_VALIDATE_PLUGIN_PATH=" + os.path.join("$PREFIX", "lib", "gstreamer-1.0", "validate"))
