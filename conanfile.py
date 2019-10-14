@@ -22,6 +22,7 @@ class GstreamerColorizerConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user))
