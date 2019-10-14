@@ -21,7 +21,6 @@ class LLVMConan(ConanFile):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
-        self.requires("libxml2/[>=2.2.9]@%s/stable" % self.user)
 
     def source(self):
         tools.get(
