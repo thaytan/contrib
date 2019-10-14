@@ -1,17 +1,9 @@
 from conans import ConanFile, CMake, tools
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "3.4.6"
-    except:
-        return None
-
 class OpenCVConan(ConanFile):
     name = "opencv"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "3.4.6")
     description = "OpenCV is an open source computer vision and machine learning software library."
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD"
