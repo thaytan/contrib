@@ -44,7 +44,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "timeoverlay=True",
         "orc=True",
         "opus=True",
-        "pango=False",
+        "pango=True",
     )
     generators = "env"
 
