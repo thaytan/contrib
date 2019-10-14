@@ -40,6 +40,36 @@ class GStreamerDevtoolsConan(ConanFile):
         meson.install()
 
     def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
+        self.copy("*.so*", dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"), keep_path=False)
+
+    def deploy(self):
+        install_path = os.getcwd()
+        # Binaries
+        self.copy("*gst-*", dst="bin", keep_path=False)
+
+        # Gstreamer binaries
+        self.copy_deps("*gst-inspect-1.0", dst="bin", keep_path=False)
+        self.copy_deps("*gst-launch-1.0", dst="bin", keep_path=False)
+        self.copy_deps("*gst-plugin-scanner", dst="bin", keep_path=False)
+
+        # Libraries
+        self.copy_deps("*.so*")
+        self.copy("*.so*", dst=os.path.join("lib", "gstreamer-1.0"), keep_path=False)
+
+        # Pkg - config files
+        deps = ["depth-*", "gstreamer*", "orc-0.4"]
+        for dep in deps:
+            self.copy_deps("*%s.pc" % dep, dst="lib/pkgconfig", keep_path=False)
+
+        for pc_file in os.listdir("lib/pkgconfig"):
+            tools.replace_prefix_in_pc_file(os.path.join("lib", "pkgconfig", pc_file), install_path)
+
+        # Environment script
+        with open(os.path.join(install_path, "dddq_environment.sh"), "w+") as env_file:
+            env_file.write("export PREFIX=" + install_path)
+            env_file.write("\nexport PATH=" + os.path.join("$PREFIX", "bin") + ":$PATH")
+            env_file.write("\nexport LD_LIBRARY_PATH=" + os.path.join("$PREFIX", "lib") + ":"  + os.path.join("$PREFIX", "lib/gstreamer-1.0") + ":$LD_LIBRARY_PATH")
+            env_file.write("\nexport PKG_CONFIG_PATH=" + os.path.join("$PREFIX", "lib", "pkgconfig"))
+            env_file.write("\nexport GST_PLUGIN_PATH=" + os.path.join("$PREFIX", "lib", "gstreamer-1.0") + ":" + os.path.join("$PREFIX", "lib", "depth_receiver"))
+            env_file.write("\nexport GST_PLUGIN_SCANNER=" + os.path.join("$PREFIX", "bin", "gst-plugin-scanner"))
+
