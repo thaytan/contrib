@@ -31,7 +31,10 @@ class GStreamerPluginsBadConan(ConanFile):
         "dtls": [True, False],
         "mpegtsmux": [True, False],
         "mpegtsdemux": [True, False],
-        "debugutils": [True, False]
+        "debugutils": [True, False],
+        "opencv": [True, False],
+        "closedcaption": [True, False],
+        "aiveropatchlatency": [True, False],
     }
     default_options = (
         "introspection=True",
@@ -46,6 +49,9 @@ class GStreamerPluginsBadConan(ConanFile):
         "mpegtsmux=True",
         "mpegtsdemux=True",
         "debugutils=True",
+        "opencv=False",
+        "closedcaption=False",
+        "aiveropatchlatency=False",
     )
     generators = "env"
 
@@ -67,10 +73,15 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("libnice/[>=0.1.15]@%s/stable" % self.user)
         if self.options.srtp:
             self.requires("libsrtp/[>=2.2.0]@%s/stable" % self.user)
+        if self.options.opencv:
+            self.requires("opencv/[>=3.4.8]@%s/stable" % self.user)
+        if self.options.closedcaption:
+            self.requires("pango/[>=1.4.3]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
-        tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad-" + self.version))
+        if self.options.aiveropatchlatency:
+            tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad-" + self.version))
 
     def build(self):
         args = ["--auto-features=disabled", "-Dgl_api=opengl"]
@@ -83,6 +94,8 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dmpegtsmux=" + ("enabled" if self.options.mpegtsmux else "disabled"))
         args.append("-Dmpegtsdemux=" + ("enabled" if self.options.mpegtsdemux else "disabled"))
         args.append("-Ddebugutils=" + ("enabled" if self.options.debugutils else "disabled"))
+        args.append("-Dopencv=" + ("enabled" if self.options.opencv else "disabled"))
+        args.append("-Dclosedcaption=" + ("enabled" if self.options.closedcaption else "disabled"))
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
