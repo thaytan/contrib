@@ -301,6 +301,7 @@ impl RgbdDemux {
             let additional_buffer = unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) };
 
             // Push the additional buffer to the corresponding src pad
+            // Do NOT insert `?` at the end of `update_flow()` or `push_buffer_to_corresponding_pad()`
             let _flow_combiner_result =
                 internals
                     .flow_combiner
@@ -308,7 +309,7 @@ impl RgbdDemux {
                         element,
                         &internals.src_pads,
                         additional_buffer,
-                    ))?;
+                    ));
         }
 
         gst_debug!(self.cat, obj: element, "All meta buffers have been pushed");
