@@ -2,18 +2,9 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.16.0"
-    except:
-        return None
-
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.16.0")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
@@ -54,8 +45,8 @@ class GStreamerPluginsGoodConan(ConanFile):
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
 
     def source(self):
-        git = tools.Git(folder="gst-plugins-good-" + self.version)
-        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0")
+        tools.get("https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/archive/%s/gst-plugins-good-%s.tar.gz" 
+        % (self.version, self.version) )
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -70,7 +61,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Dvpx=" + ("enabled" if self.options.vpx else "disabled"))
         args.append("-Dmultifile=" + ("enabled" if self.options.multifile else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-good-" + self.version , args=args)
+        meson.configure(source_folder="gst-plugins-good-%s" % self.version , args=args)
         meson.install()
 
     def package_info(self):
