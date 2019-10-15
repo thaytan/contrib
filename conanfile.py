@@ -76,8 +76,10 @@ class env(Generator):
             # Fix shebangs
             if path.isdir(path.join(conanfile.package_folder, "bin")):
                 for exe_name in listdir(path.join(conanfile.package_folder, "bin")):
+                    exe_path = path.join(conanfile.package_folder, "bin", exe_name)
+                    if path.isdir(exe_path):
+                        continue
                     try:
-                        exe_path = path.join(conanfile.package_folder, "bin", exe_name)
                         exe = open(exe_path, "r")
                         line = exe.readline()
                         if "python" in line:
