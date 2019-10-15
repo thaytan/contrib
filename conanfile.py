@@ -2,18 +2,9 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.43.0"
-    except:
-        return None
-
 class PangoConan(ConanFile):
     name = "pango"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.44.6-2")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A library for layout and rendering of text"
     license = "GPL"
@@ -35,6 +26,8 @@ class PangoConan(ConanFile):
 
     def build(self):
         args = ["--auto-features=disabled"]
+        args.append("-Dgtk_doc=false")
+        args.append("-Dinstall-tests=false")
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
