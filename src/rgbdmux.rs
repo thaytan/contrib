@@ -95,6 +95,7 @@ impl ElementImpl for RgbdMux {
 
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
+        gst_debug!(self.cat, obj: element, "release_pad: {}", pad_name);
         self.sink_pads.lock().unwrap().retain(|x| *x != pad_name);
 
         self.renegotiate_downstream_caps(element);
@@ -176,6 +177,13 @@ impl AggregatorImpl for RgbdMux {
                 return None;
             }
             Some(name) => {
+                let mut sink_pads = self.sink_pads.lock().expect("Cannot lock sink_pads");
+                gst_debug!(
+                    self.cat,
+                    obj: aggregator,
+                    "create_new_pad for name: {}",
+                    name
+                );
                 // Create new sink pad from the template
                 let new_sink_pad = gst::Pad::new_from_template(
                     &aggregator.get_pad_template("sink_%s").unwrap(),
@@ -185,7 +193,7 @@ impl AggregatorImpl for RgbdMux {
                 .unwrap();
 
                 // Drop all buffers on already existing pads (if any)
-                for pad_name in self.sink_pads.lock().unwrap().iter() {
+                for pad_name in sink_pads.iter() {
                     loop {
                         if aggregator
                             .get_static_pad(pad_name)
@@ -200,11 +208,8 @@ impl AggregatorImpl for RgbdMux {
                     }
                 }
 
-                let elm = aggregator.upcast_ref::<gst::Element>();
-                self.renegotiate_downstream_caps(elm);
-
                 // Insert the new sink pad name into the struct
-                self.sink_pads.lock().unwrap().push(name.to_string());
+                sink_pads.push(name.to_string());
 
                 // Activate the sink pad
                 new_sink_pad.set_active(true).unwrap();
@@ -213,66 +218,76 @@ impl AggregatorImpl for RgbdMux {
             }
         }
     }
+
+    fn update_src_caps(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        _caps: &gst::Caps,
+    ) -> Result<gst::Caps, gst::FlowError> {
+        gst_debug!(self.cat, "update_src_caps");
+        let no_sink_pads = {
+            self.sink_pads
+                .lock()
+                .expect("Could not lock sink pads")
+                .len()
+        };
+        match no_sink_pads {
+            0 => Err(gst_base::AGGREGATOR_FLOW_NEED_DATA), // https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html?gi-language=c#GST_AGGREGATOR_FLOW_NEED_DATA
+            _ => Ok(self.get_current_downstream_caps(aggregator.upcast_ref::<gst::Element>())),
+        }
+    }
+
+    fn fixate_src_caps(&self, aggregator: &gst_base::Aggregator, _caps: gst::Caps) -> gst::Caps {
+        let elm = aggregator.upcast_ref::<gst::Element>();
+        gst_debug!(self.cat, obj: elm, "fixate_src_caps");
+        {
+            let sps = self.sink_pads.lock().expect("Could not lock sink_pads");
+            gst_debug!(self.cat, obj: elm, "Streams: {}", sps.join(", "));
+        }
+        self.get_current_downstream_caps(elm)
+    }
 }
 
 impl RgbdMux {
-    /// Extracts the relevant fields from the pad's CAPS and converts them into a string
-    /// representation in the video/rgbd format.
+    /// Extracts the relevant fields from the pad's CAPS and converts them into a tuple containing
+    /// the field's name as the first and its value as second.
     /// # Arguments
     /// * `pad_caps` - A reference to the pad's CAPS.
-    /// * `stream_name` - The name of the stream we're currently generating CAPS for.
-    fn pad_caps_to_string(
+    /// * `pad_name` - The name of the stream we're currently generating CAPS for.
+    fn push_sink_caps_format(
         &self,
         pad_caps: &gst::Caps,
-        stream_name: &str,
-    ) -> String {
+        pad_name: &str,
+        src_caps: &mut gst::StructureRef,
+    ) {
+        let pad_caps = pad_caps.iter().next().expect("Got empty CAPS in rgbdmux");
+        let stream_name = &pad_name[5..];
+
         // Filter out all CAPS we don't care about and map those we do into strings
-        pad_caps
-            .iter()
-            .filter_map(|caps_field| match caps_field.get_name() {
-//                "framerate" => Some(format!(
-//                    "{stream}_framerate={value}",
-//                    stream = stream_name,
-//                    value = caps_field.get::<&str>("framerate").expect(&format!(
-//                        "Could not get field {} for stream {}",
-//                        "framerate", stream_name
-//                    ))
-//                )),
-                "height" => Some(format!(
-                    "{stream}_height={value}",
-                    stream = stream_name,
-                    value = caps_field.get::<&str>("height").expect(&format!(
-                        "Could not get field {} for stream {}",
-                        "height", stream_name
-                    ))
-                )),
-                "width" => Some(format!(
-                    "{stream}_width={value}",
-                    stream = stream_name,
-                    value = caps_field.get::<&str>("width").expect(&format!(
-                        "Could not get field {} for stream {}",
-                        "width", stream_name
-                    ))
-                )),
-                "format" => Some(format!(
-                    "{stream}_format={value}",
-                    stream = stream_name,
-                    value = caps_field.get::<&str>("format").expect(&format!(
-                        "Could not get field {} for stream {}",
-                        "format", stream_name
-                    ))
-                )),
-                x => {
+        for (field, value) in pad_caps.iter() {
+            match field {
+                "format" => {
+                    let src_field_name = format!("{}_{}", stream_name, field);
+                    src_caps.set(&src_field_name, &value.get::<&str>().unwrap());
+                }
+                "width" => {
+                    let src_field_name = format!("{}_{}", stream_name, field);
+                    src_caps.set(&src_field_name, &value.get::<i32>().unwrap());
+                }
+                "height" => {
+                    let src_field_name = format!("{}_{}", stream_name, field);
+                    src_caps.set(&src_field_name, &value.get::<i32>().unwrap());
+                }
+                _ => {
                     gst_info!(
                         self.cat,
-                        "Unknown CAPS field found: {}. Ignoring it.",
-                        x
+                        "Ignored CAPS field {} of stream {}",
+                        field,
+                        stream_name,
                     );
-                    None
                 }
-            })
-            .collect::<Vec<String>>()
-            .join(",")
+            }
+        }
     }
 
     /// Get the current downstream CAPS. The downstream CAPS are generated based on the current sink
@@ -287,43 +302,49 @@ impl RgbdMux {
             .expect("Failed to obtain `sink_pads` lock.");
 
         // Join all the pad names to create the 'streams' section of the CAPS
-        let streams = sink_pads.join(",");
+        let streams = sink_pads
+            .iter()
+            .map(|s| &s[5..])
+            .collect::<Vec<&str>>()
+            .join(",");
+
+        // TODO: Remove hardcoded framerate
+        let mut downstream_caps = gst::Caps::new_simple(
+            "video/rgbd",
+            &[
+                ("streams", &streams),
+                ("framerate", &gst::Fraction::new(30, 1)),
+            ],
+        );
+        let mut_caps = downstream_caps
+            .make_mut()
+            .get_mut_structure(0)
+            .expect("Could not get mutable CAPS in rgbdmux");
 
         // Map the caps into their corresponding stream formats
-        let stream_caps = sink_pads
-            .iter()
-            .map(|pad_name| {
-                // First find the current CAPS of Pad we're currently dealing with
-                let pad_caps = element
-                    .get_static_pad(&format!("sink_{}", pad_name))
-                    .expect(&format!(
-                        "Could not get static pad from aggregator with name `{}`",
-                        pad_name
-                    ))
-                    .get_current_caps()
-                    .expect(&format!("Failed to get CAPS from `{}`", pad_name));
-
-                // Then map and filter those CAPS into a string of comma separated key-value pairs
-                // with the following format: key=value,key2=value2...
-                self.pad_caps_to_string(&pad_caps, pad_name)
-            })
-            .collect::<Vec<String>>()
-            .join(",");
+        for pad_name in sink_pads.iter() {
+            // First find the current CAPS of Pad we're currently dealing with
+            let pad_caps = element
+                .get_static_pad(pad_name)
+                .expect(&format!(
+                    "Could not get static pad from aggregator with name `{}`",
+                    pad_name
+                ))
+                .get_current_caps();
+            match pad_caps {
+                Some(pc) => self.push_sink_caps_format(&pc, pad_name, mut_caps),
+                None => { /*ignore*/ }
+            }
+        }
 
         gst_info!(
             self.cat,
             obj: element,
-            "stream_caps were found to be: {}.",
-            stream_caps
+            "stream_caps were found to be: {:?}.",
+            downstream_caps
         );
 
-        // TODO: Remove hardcoded framerate
-        gst::Caps::from_string(&format!(
-            "video/rgbd,streams=\"{streams}\",framerate=30/1,{stream_caps}",
-            streams = streams,
-            stream_caps = stream_caps
-        ))
-        .expect("Failed to create downstream CAPS")
+        downstream_caps.to_owned()
     }
 
     /// Generates and sends new CAPS for the downstream elements. This function automatically
@@ -331,6 +352,7 @@ impl RgbdMux {
     /// # Arguments
     /// * `element` - The element that represents the `rgbdmux`.
     fn renegotiate_downstream_caps(&self, element: &gst::Element) {
+        gst_debug!(self.cat, obj: element, "renegotiate_downstream_caps");
         // Figure out the new caps the element should output
         let ds_caps = self.get_current_downstream_caps(element);
         // And send a CAPS event downstream
@@ -355,22 +377,27 @@ pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
 }
 
 mod tests {
-    use super::*;
-
     #[test]
-    fn convert_pad_caps_to_rgbd_caps() {
+    fn convert_depth_only_caps_to_rgbd() {
+        gst::init().expect("Failed to gst::init() in convert_pad_caps_to_rgbd_caps");
         let rgbdmux = RgbdMux {
-            cat: gst::DebugCategory::new("rgbdmux_tests", gst::DebugColorFlags::FG_CYAN, Some("Unit tests for rgbdmux")),
-            sink_pads: Mutex::new(vec![])
+            cat: gst::DebugCategory::new(
+                "rgbdmux_tests",
+                gst::DebugColorFlags::FG_CYAN,
+                Some("Unit tests for rgbdmux"),
+            ),
+            sink_pads: Mutex::new(vec![]),
         };
-        let pad_caps = gst::Caps::new_simple("video/x-raw", &[
-            ("format", &"GRAY8"),
-            ("width", &1280),
-            ("height", &720),
-        ]);
+        let pad_caps = gst::Caps::new_simple(
+            "video/x-raw",
+            &[("format", &"GRAY8"), ("width", &1280), ("height", &720)],
+        );
 
-        let rgbd_caps = rgbdmux.pad_caps_to_string(&pad_caps, "depth");
+        let rgbd_caps = rgbdmux.get_caps_fields(&pad_caps, "depth");
 
-        assert_eq!(rgbd_caps, "depth_format=GRAY8,depth_width=1280,depth_height=720");
+        assert_eq!(
+            rgbd_caps,
+            "depth_format=GRAY8,depth_width=1280,depth_height=720"
+        );
     }
 }
