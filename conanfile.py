@@ -27,7 +27,7 @@ class PangoConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("fribidi/[>=1.0.5]@%s/stable" % self.user)
-        self.requires("cairo/[>=1.17.2]@%s/stable" % self.user)
+        self.requires("cairo/[>=1.16.0]@%s/stable" % self.user)
         self.requires("harfbuzz/[>=2.6.1]@%s/stable" % self.user)
 
     def source(self):
