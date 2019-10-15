@@ -33,6 +33,8 @@ class CairoConan(ConanFile):
         self.requires("pixman/[>=0.38.4]@%s/stable" % self.user)
         self.requires("fontconfig/[>=2.13.1]@%s/stable" % self.user)
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
+        self.requires("libxrender/[>=0.9.10]@%s/stable" % self.user)
+        self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/cairo/cairo/-/archive/{0}/cairo-{0}.tar.gz".format(self.version))
