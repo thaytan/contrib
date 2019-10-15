@@ -31,7 +31,7 @@ class GStreamerDevtoolsConan(ConanFile):
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("gstreamer/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("json-glib/[>=1.4.4]@%s/stable" % self.user)
-        self.requires("cairo/[>=1.17.2]@%s/stable" % self.user)
+        self.requires("cairo/[>=1.16.0]@%s/stable" % self.user)
 
     def build(self):
         meson = Meson(self)
