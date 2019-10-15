@@ -34,6 +34,7 @@ class GStreamerDevtoolsConan(ConanFile):
         self.requires("cairo/[>=1.17.2]@%s/stable" % self.user)
         self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
         self.requires("libxrender/[>=0.9.10]@%s/stable" % self.user)
+        self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def build(self):
         meson = Meson(self)
