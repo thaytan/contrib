@@ -61,7 +61,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         if self.options.opus:
             self.requires("opus/[>=1.3.1]@%s/stable" % self.user)
         if self.options.pango:
-            self.requires("pango/[>=1.43.0]@%s/stable" % self.user)
+            self.requires("pango/[>=1.43.0, include_prerelease=True]@%s/stable" % self.user)
         if self.options.x11:
             self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
 
