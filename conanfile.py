@@ -35,6 +35,7 @@ class CairoConan(ConanFile):
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         self.requires("libxrender/[>=0.9.10]@%s/stable" % self.user)
         self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
+        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/cairo/cairo/-/archive/{0}/cairo-{0}.tar.gz".format(self.version))
