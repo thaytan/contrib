@@ -28,6 +28,11 @@ class RgbdConan(ConanFile):
     ]
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("rust/[>=1.38.0]@%s/stable" % self.user)
+        self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
