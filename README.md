@@ -73,7 +73,7 @@ udpsink host=127.0.0.1 port=9000
 **Receiving:**
 ```
 gst-launch-1.0 tsdemux name=mpegts_demux rgbdmux name=decoded_mux rgbddemux name=decoded_demux \
-udpsrc address=127.0.0.1 port=9000 caps="application/x-rtp,media=video,payload=33,clock-rate=90000,encoding-name=MP2T" ! \
+udpsrc port=9000 caps="application/x-rtp,media=video,payload=33,clock-rate=90000,encoding-name=MP2T" ! \
 queue max-size-time=100000000 ! rtpbin ! rtpmp2tdepay ! \
 mpegts_demux.sink \
 mpegts_demux.video_0_0000 ! queue ! h264parse ! vaapidecodebin ! videoconvert ! video/x-raw,format=GRAY8 ! decoded_mux.sink_depth \
@@ -87,4 +87,31 @@ decoded_demux.src_depth ! queue ! glimagesink \
 decoded_demux.src_color ! queue ! glimagesink \
 decoded_demux.src_infra1 ! queue ! glimagesink \
 decoded_demux.src_infra2 ! queue ! glimagesink
+```
+
+**Receiver pipeline taken from receiver-cli:**
+This pipeline currently doesn't work, but it is very nice for debugging, when running with `GST_DEBUG=3` 
+and optionally `GST_DEBUG="3,dddqdec:6"` (or any other element).
+
+```
+tsdemux name=demuxer identity name=enc_id_map identity name=enc_layer_data \
+identity name=enc_infra1 identity name=dec_id_map identity name=dec_layer_data identity name=dec_infra1 \
+rgbddemux name=decoded_demux rgbdmux name=decoded_mux \
+dddqdec name=adc bit-depth=8 number-of-layers=6 near-cut=300 far-cut=700 idmap-correction=1 decoding-strategy=saurus \
+identity name=decoded_but_muxed \
+rtpbin name=rtpbin udpsrc name=udpsrc port=9000 caps=application/x-rtp,media=video,payload=33,clock-rate=90000,encoding-name=MP2T ! \
+queue max-size-time=100000000 ! rtpbin.recv_rtp_sink_0 rtpbin. ! rtpmp2tdepay name=mpegts_depay ! demuxer.sink \
+demuxer.video_0_0000 ! queue ! enc_id_map.sink \
+demuxer.video_0_0001 ! queue ! enc_layer_data.sink \
+demuxer.video_0_0003 ! queue ! enc_infra1.sink \
+enc_id_map.src ! queue ! h264parse ! avdec_h264 ! dec_id_map.sink \
+enc_layer_data.src ! queue ! h264parse ! avdec_h264 ! dec_layer_data.sink \
+enc_infra1.src ! queue ! h264parse ! avdec_h264 ! dec_infra1.sink \
+dec_id_map.src ! queue ! videoconvert name=one ! video/x-raw,format=GRAY8 ! decoded_mux.sink_depth \
+dec_layer_data.src ! queue ! videoconvert name=two ! video/x-raw,format=RGB ! decoded_mux.sink_layer \
+dec_infra1.src ! queue ! videoconvert name=three ! video/x-raw,format=RGB ! decoded_mux.sink_infra1 \
+decoded_mux.src ! adc.sink adc.src ! decoded_but_muxed.sink \
+decoded_but_muxed.src ! decoded_demux.sink \
+decoded_demux.src_depth ! queue name=queue_decoded_demux_src_depth ! colorizer preset=1 near-cut=300 far-cut=700 ! glimagesink \
+decoded_demux.src_infra1 ! queue name=queue_decoded_demux_src_infra1 ! glimagesink 
 ```
