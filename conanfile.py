@@ -27,7 +27,7 @@ class GstreamerNvV4l2(ConanFile):
 
     def requirements(self):
         self.requires("nv-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
-        self.requires("jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("gstreamer/%s@%s/stable" % (self.gst_version, self.user))
         self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
         self.requires("deepstream/[>=4.0]@%s/stable" % self.user)
