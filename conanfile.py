@@ -3,8 +3,8 @@ import os
 from conans import ConanFile, tools
 
 
-class GstreamerJetsonPluginsConan(ConanFile):
-    name = "gstreamer-jetson-plugins"
+class GstreamerNvJetsonPluginsConan(ConanFile):
+    name = "gstreamer-nv-jetson-plugins"
     version = tools.get_env("GIT_TAG", "32.2.1")
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
