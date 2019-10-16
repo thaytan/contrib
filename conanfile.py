@@ -4,8 +4,8 @@ from os import listdir, path, symlink
 from conans import ConanFile, tools
 
 
-class JetsonDrivers(ConanFile):
-    name = "jetson-drivers"
+class NvJetsonDrivers(ConanFile):
+    name = "nv-jetson-drivers"
     version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
