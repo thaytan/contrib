@@ -20,7 +20,19 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
+use std::error::Error;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
+
+#[derive(Debug, Clone)]
+struct MuxingError(&'static str);
+impl Error for MuxingError {}
+impl Display for MuxingError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "RGBD muxing error: {}", self.0)
+    }
+}
 
 // A struct representation of the `rgbdmux` element
 struct RgbdMux {
@@ -56,15 +68,20 @@ impl ObjectSubclass for RgbdMux {
         );
 
         // sink pads
+        let mut sink_caps = gst::Caps::new_simple("video/x-raw", &[]);
+        sink_caps
+            .get_mut()
+            .expect("Could not get mutable reference to sink_caps")
+            .append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
         klass.add_pad_template(
             gst::PadTemplate::new_with_gtype(
                 "sink_%s",
                 gst::PadDirection::Sink,
                 gst::PadPresence::Request,
-                &gst::Caps::new_simple("video/x-raw", &[]),
+                &sink_caps,
                 gst_base::AggregatorPad::static_type(),
             )
-            .unwrap(),
+            .expect("Could not add sink-pad template to class"),
         );
 
         // src pad
@@ -76,7 +93,7 @@ impl ObjectSubclass for RgbdMux {
                 &gst::Caps::new_simple("video/rgbd", &[]),
                 gst_base::AggregatorPad::static_type(),
             )
-            .unwrap(),
+            .expect("Could not add src-pad template to class"),
         );
     }
 }
@@ -88,15 +105,21 @@ impl ObjectImpl for RgbdMux {
 impl ElementImpl for RgbdMux {
     fn release_pad(&self, element: &gst::Element, pad: &gst::Pad) {
         // De-activate the pad
-        pad.set_active(false).unwrap();
+        pad.set_active(false)
+            .expect(&format!("Could not deactivate a sink-pad: {:?}", pad));
 
         // Remove the pad from the element
-        element.remove_pad(pad).unwrap();
+        element
+            .remove_pad(pad)
+            .expect(&format!("Could not remove a sink-pad: {:?}", pad));
 
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
         gst_debug!(self.cat, obj: element, "release_pad: {}", pad_name);
-        self.sink_pads.lock().unwrap().retain(|x| *x != pad_name);
+        self.sink_pads
+		.lock()
+            	.expect("Could not lock sink_pads")
+		.retain(|x| *x != pad_name);
 
         self.renegotiate_downstream_caps(element);
     }
@@ -109,7 +132,7 @@ impl AggregatorImpl for RgbdMux {
         _timeout: bool,
     ) -> std::result::Result<gst::FlowSuccess, gst::FlowError> {
         // Get the list of available names
-        let sink_pad_names = &self.sink_pads.lock().unwrap();
+        let sink_pad_names = &self.sink_pads.lock().expect("Could not lock sink_pads");
         let mut sink_pad_names_iter = sink_pad_names.iter();
 
         // TODO (minor): Consider making `depth` stream always first/located in the main buffer if it is enabled
@@ -117,46 +140,29 @@ impl AggregatorImpl for RgbdMux {
         // Put the first buffer in the list into the main buffer
         let first_sink_pad_name = sink_pad_names_iter
             .next()
-            .expect("unable to get next sinkpad");
-        let mut main_output_buffer = aggregator
-            .get_static_pad(first_sink_pad_name)
-            .expect("Unable to get static pad")
-            .downcast::<gst_base::AggregatorPad>()
-            .expect("Unable to downcast")
-            .pop_buffer()
-            .expect("Unable to pop buffer");
-
-        // Add tag title according to the main stream name (remove `sink_` from sink pad name)
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .unwrap()
-            .add::<gst::tags::Title>(&&first_sink_pad_name[5..], gst::TagMergeMode::Append);
-        TagsMeta::add(main_output_buffer.get_mut().unwrap(), &mut tags);
+            .ok_or(gst::FlowError::NotLinked)?;
+        let mut main_output_buffer = self
+            .get_tagged_buffer(aggregator, first_sink_pad_name)
+            .map_err(|e| {
+                gst_error!(self.cat, "{}", e);
+                gst::FlowError::Error
+            })?;
 
         // Attach the rest of the streams as meta to the main buffer
         for sink_pad_name in sink_pad_names_iter {
-            // Get a reference to the sink pad with the given name
-            let sink_pad = &aggregator
-                .get_static_pad(sink_pad_name)
-                .unwrap()
-                .downcast::<gst_base::AggregatorPad>()
-                .unwrap();
-
-            // Extract the buffer
-            let mut additional_output_buffer = sink_pad
-                .pop_buffer()
-                .expect("Unable to pop additional buffers");
-
-            // Add tag title according to the stream name (remove `sink_` from sink pad name)
-            let mut tags = gst::tags::TagList::new();
-            tags.get_mut()
-                .unwrap()
-                .add::<gst::tags::Title>(&&sink_pad_name[5..], gst::TagMergeMode::Append);
-            TagsMeta::add(additional_output_buffer.make_mut(), &mut tags);
+            // Extract and tag a buffer from the given sink pad
+            let mut additional_output_buffer = self
+                .get_tagged_buffer(aggregator, sink_pad_name)
+                .map_err(|e| {
+                    gst_error!(self.cat, "{}", e);
+                    gst::FlowError::Error
+                })?;
 
             // Attach the additional buffer to the main buffer
             BufferMeta::add(
-                main_output_buffer.get_mut().unwrap(),
+                main_output_buffer
+                    .get_mut()
+                    .expect("Could not get mutable reference to main buffer"),
                 &mut additional_output_buffer,
             );
         }
@@ -186,20 +192,24 @@ impl AggregatorImpl for RgbdMux {
                 );
                 // Create new sink pad from the template
                 let new_sink_pad = gst::Pad::new_from_template(
-                    &aggregator.get_pad_template("sink_%s").unwrap(),
+                    &aggregator
+                        .get_pad_template("sink_%s")
+                        .expect("Could not find sink-pad template"),
                     Some(name),
                 )
                 .downcast::<gst_base::AggregatorPad>()
-                .unwrap();
+                .expect("Could not cast pad to AggregatorPad");
 
                 // Drop all buffers on already existing pads (if any)
                 for pad_name in sink_pads.iter() {
                     loop {
                         if aggregator
                             .get_static_pad(pad_name)
-                            .unwrap()
+                            .expect(
+                                format!("Could not get static pad with name {}", pad_name).as_str(),
+                            )
                             .downcast::<gst_base::AggregatorPad>()
-                            .unwrap()
+                            .expect("Could not downcast pad to AggregatorPad")
                             .drop_buffer()
                             == false
                         {
@@ -212,7 +222,9 @@ impl AggregatorImpl for RgbdMux {
                 sink_pads.push(name.to_string());
 
                 // Activate the sink pad
-                new_sink_pad.set_active(true).unwrap();
+                new_sink_pad
+                    .set_active(true)
+                    .expect("Failed to activate `rgbdmux` sink pad");
 
                 Some(new_sink_pad)
             }
@@ -249,6 +261,36 @@ impl AggregatorImpl for RgbdMux {
 }
 
 impl RgbdMux {
+    /// Get a buffer from the pad with the given `pad_name` on the given `aggregator`. This function
+    /// also tags the buffer with a correct title tag.
+    /// # Arguments
+    /// * `aggregator` - The aggregator that holds a pad with the given name.
+    /// * `pad_name` - The name of the pad to read a buffer from.
+    fn get_tagged_buffer(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        pad_name: &str,
+    ) -> Result<gst::Buffer, MuxingError> {
+        let mut buffer = aggregator
+            .get_static_pad(pad_name)
+            .expect(format!("Could not get static pad with name {}", pad_name).as_str())
+            .downcast::<gst_base::AggregatorPad>()
+            .expect("Could not downcast pad to AggregatorPad")
+            .pop_buffer()
+            .ok_or(MuxingError("No buffer available on static pad"))?;
+
+        // Add tag title according to the main stream name (remove `sink_` from sink pad name)
+        let mut tags = gst::tags::TagList::new();
+        tags.get_mut()
+            .ok_or(MuxingError("Could not get mutable reference to tags"))?
+            .add::<gst::tags::Title>(&&pad_name[5..], gst::TagMergeMode::Append);
+        let mut_buffer = buffer
+            .get_mut()
+            .ok_or(MuxingError("Could not get mutable reference to buffer"))?;
+        TagsMeta::add(mut_buffer, &mut tags);
+        Ok(buffer)
+    }
+
     /// Extracts the relevant fields from the pad's CAPS and converts them into a tuple containing
     /// the field's name as the first and its value as second.
     /// # Arguments

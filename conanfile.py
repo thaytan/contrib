@@ -7,10 +7,8 @@ import os
 def get_version():
     git = tools.Git()
     try:
-        if git.get_tag():
-            return git.get_tag()
-        else:
-            return git.get_branch()
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
     except:
         return None
 
@@ -30,11 +28,10 @@ class RgbdConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("rust/[>=1.38.0]@%s/stable" % self.user)
+        self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
 
     def build(self):
