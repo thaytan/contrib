@@ -45,8 +45,8 @@ class GstreamerNvJetsonV4l2(ConanFile):
 
     def build(self):
         env = {
-            "LIB_INSTALL_DIR": path.join(
-                self.deps_cpp_info[self.jetson_driver_name].rootpath, "lib"
+            "LIB_INSTALL_DIR": os.path.join(
+                self.deps_cpp_info["nv-jetson-drivers"].rootpath, "lib"
             )
         }
         with tools.chdir("gst-v4l2"), tools.environment_append(env):
