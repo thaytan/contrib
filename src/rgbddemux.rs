@@ -101,7 +101,7 @@ impl RgbdDemux {
     /// * `element` - The element that represents the `rgbddemux` in GStreamer.
     /// * `event` - The event that should be handled.
     fn sink_event(&self, element: &gst::Element, event: gst::Event) -> bool {
-        gst_debug!(self.cat, obj: element, "sink_event");
+        gst_debug!(self.cat, obj: element, "sink_event in direction {}", if event.is_upstream() {"upstream"} else {"downstream"});
         use gst::EventView;
         match event.view() {
             EventView::Caps(caps) => {
@@ -135,7 +135,7 @@ impl RgbdDemux {
                 for src_pad in src_pads.values() {
                     // Forward the event to all src pads
                     // Set flow combiner to false if sending an event to any src pad fails
-                    bool_flow_combiner = src_pad.send_event(event.clone());
+                    bool_flow_combiner = src_pad.push_event(event.clone());
                 }
                 bool_flow_combiner
             }
@@ -274,26 +274,26 @@ impl RgbdDemux {
         // Create the src pad with these caps
         let new_src_pad = gst::Pad::new_from_template(
             &element
-                .get_pad_template("sink")
-                .expect("No sink pad template registered in rgbddemux"),
+                .get_pad_template("src_%s")
+                .expect("No src pad template registered in rgbddemux"),
             Some(new_src_pad_name),
         );
 
         // Add the src pad to the element and activate it
         element
             .add_pad(&new_src_pad)
-            .expect("Could not add src pad template in rgbddemux");
+            .expect("Could not add src pad in rgbddemux");
         new_src_pad
             .set_active(true)
             .expect("Could not activate new src pad in rgbddemux");
 
         // Push events on this src pad. It is assumed here that the pad is already linked and the downstream element accepts the caps.
-        new_src_pad.send_event(
+        new_src_pad.push_event(
             gst::event::Event::new_stream_start(stream_name)
                 .group_id(gst::util_group_id_next())
                 .build(),
         );
-        new_src_pad.send_event(gst::event::Event::new_caps(&new_pad_caps).build());
+        new_src_pad.push_event(gst::event::Event::new_caps(&new_pad_caps).build());
 
         // Add the new pad to the internals
         internals.flow_combiner.add_pad(&new_src_pad);

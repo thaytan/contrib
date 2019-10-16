@@ -110,7 +110,7 @@ enc_infra1.src ! queue ! h264parse ! avdec_h264 ! dec_infra1.sink \
 dec_id_map.src ! queue ! videoconvert name=one ! video/x-raw,format=GRAY8 ! decoded_mux.sink_depth \
 dec_layer_data.src ! queue ! videoconvert name=two ! video/x-raw,format=RGB ! decoded_mux.sink_layer \
 dec_infra1.src ! queue ! videoconvert name=three ! video/x-raw,format=RGB ! decoded_mux.sink_infra1 \
-decoded_mux.src ! adc.sink adc.src ! decoded_but_muxed.sink \
+decoded_mux.src ! video/rgbd,streams=\"layer,idmap,infra1\",framerate=30/1,idmap_format=GRAY8,idmap_width=1280,idmap_height=720,layer_format=RGB,layer_width=2560,layer_height=720,infra1_format=RGB,infra1_width=1280,infra1_height=720 ! adc.sink adc.src ! decoded_but_muxed.sink \
 decoded_but_muxed.src ! decoded_demux.sink \
 decoded_demux.src_depth ! queue name=queue_decoded_demux_src_depth ! colorizer preset=1 near-cut=300 far-cut=700 ! glimagesink \
 decoded_demux.src_infra1 ! queue name=queue_decoded_demux_src_infra1 ! glimagesink 
