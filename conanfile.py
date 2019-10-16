@@ -1,7 +1,21 @@
-from conans import ConanFile, tools
-from os import symlink, path
+from os import path, symlink
 
-pc_content = """
+from conans import ConanFile, tools
+
+pc_v4lconvert = """
+prefix=%s
+exec_prefix=${prefix}/bin
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: libv4lconvert
+Description: v4l2 device access library
+Version: %s
+Libs: -L${libdir} -lv4lconvert
+Cflags: -I${includedir}
+"""
+
+pc_v4l2 = """
 prefix=%s
 exec_prefix=${prefix}/bin
 includedir=${prefix}/include
@@ -16,17 +30,10 @@ Libs.private: -lpthread
 Cflags: -I${includedir}
 """
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "32.2.1"
-    except:
-        return None
 
-class V4l2(ConanFile):
-    name = "nv-v4l2"
-    version = get_version()
+class NvJetsonV4l2(ConanFile):
+    name = "nv-jetson-v4l2"
+    version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
@@ -35,31 +42,46 @@ class V4l2(ConanFile):
     default_options = ("jetson=TX2",)
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.requires("nv-v4lconvert/[>=%s]@%s/stable" % (self.version, self.user))
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
+            tools.get(
+                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2"
+                % self.version.replace(".", "-")
+            )
         elif self.options.jetson == "Nano":
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
+            tools.get(
+                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2"
+                % self.version.replace(".", "-")
+            )
         else:
-            raise KeyError( "Unknown option: " + self.options.jetson)
+            raise KeyError("Unknown option: " + self.options.jetson)
 
         tools.untargz("public_sources/v4l2_libs_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
 
     def build(self):
-        # Hack to workaround hardcoded library path
-        env = {"DEST_DIR": path.join(self.deps_cpp_info["nv-v4lconvert"].rootpath, "lib")}
+        with tools.chdir("libv4lconvert"):
+            self.run("make")
+            symlink("libnvv4lconvert.so", "libv4lconvert.so")
+        with open("libv4lconvert.pc", "w") as pc:
+            pc.write(pc_v4lconvert % (self.package_folder, self.version))
+
+        # Make looks for libs in DEST_DIR
+        env = {"DEST_DIR": path.join(self.source_folder, "libv4lconvert")}
         with tools.chdir("libv4l2"), tools.environment_append(env):
             self.run("make")
             symlink("libnvv4l2.so", "libv4l2.so")
+
         with open("libv4l2.pc", "w") as pc:
-            pc.write(pc_content % (self.package_folder, self.version))
+            pc.write(pc_v4l2 % (self.package_folder, self.version))
 
     def package(self):
-        self.copy("*.so*", dst="lib", keep_path=False)
+        self.copy("*.so*", dst="lib", keep_path=False, links=True)
         self.copy("*.h", dst="include", keep_path=False)
-        self.copy("libv4l2.pc", dst="lib/pkgconfig", keep_path=False)
+        self.copy("*.pc", dst="lib/pkgconfig", keep_path=False)
