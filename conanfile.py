@@ -172,7 +172,9 @@ class env(Generator):
             '"%s"' % p for p in prefix_paths
         )
         content += 'export SOURCE_PATH=%s:"$SOURCE_PATH"\n' % pathsep.join(
-            '"%s"' % p for p in path.join(prefix_paths, "src") if path.isdir(p)
+            '"%s"' % path.join(p, "src")
+            for p in prefix_paths
+            if path.isdir(path.join(p, "src"))
         )
         for var, val in self.env.items():
             if type(val) is list:
