@@ -64,11 +64,13 @@ class env(Generator):
             if conanfile.settings.build_type == "Debug":
                 for ext in ("c", "cpp", "cpp", "h", "hpp", "hxx"):
                     conanfile.copy("*." + ext, "src")
+
             # Delete libtool files
             for f in glob(
                 path.join(conanfile.package_folder, "**", "*.la"), recursive=True
             ):
                 remove(f)
+
             # Delete unneeded folders in share
             for folder in ("man", "doc", "gdb", "bash-completion", "gtk-doc"):
                 remove_folder(path.join(conanfile.package_folder, "share", folder))
@@ -168,6 +170,9 @@ class env(Generator):
         content += 'export PKG_CONFIG_PATH="%s":"$PKG_CONFIG_PATH"\n' % pc_output_path
         content += 'export CMAKE_PREFIX_PATH=%s:"$CMAKE_PREFIX_PATH"\n' % pathsep.join(
             '"%s"' % p for p in prefix_paths
+        )
+        content += 'export SOURCE_PATH=%s:"$SOURCE_PATH"\n' % pathsep.join(
+            '"%s"' % p for p in path.join(prefix_paths, "src") if path.isdir(p)
         )
         for var, val in self.env.items():
             if type(val) is list:
