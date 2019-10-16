@@ -1,7 +1,6 @@
 from conans import ConanFile, Meson, tools
 import os
 
-
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
     version = tools.get_env("GIT_TAG", "1.16.0")
