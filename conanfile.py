@@ -3,18 +3,9 @@ import os
 from conans import ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.38.0"
-    except:
-        return None
-
-
 class RustConan(ConanFile):
     name = "rust"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.38.0")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT", "Apache"
@@ -32,12 +23,22 @@ class RustConan(ConanFile):
 
     def build(self):
         env = {
-            "RUSTUP_HOME": os.path.join(self.package_folder, "rustup"),
-            "CARGO_HOME": self.package_folder,
+            "HOME": self.build_folder,  # To avoid rustup writing to $HOME/.profile
+            "RUSTUP_HOME": self.build_folder,
+            "CARGO_HOME": self.build_folder,
         }
         with tools.environment_append(env):
             self.run("sh rustup.sh -y --default-toolchain " + self.version)
 
-    def package_info(self):
-        self.env_info.RUSTUP_HOME = os.path.join(self.package_folder, "rustup")
-        self.env_info.CARGO_HOME = self.package_folder
+    def package(self):
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
+        src = os.path.join(
+            "toolchains", "%s-%s-unknown-linux-gnu" % (self.version, arch)
+        )
+        self.copy("*", src=os.path.join(src, "bin"), dst="bin", keep_path=False)
+        self.copy("*.so*", src=os.path.join(src, "lib"), dst="lib", keep_path=False)
+        self.copy(
+            "*",
+            src=os.path.join(src, "lib", "rustlib"),
+            dst=os.path.join("lib", "rustlib"),
+        )
