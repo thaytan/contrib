@@ -20,6 +20,7 @@ class GstreamerNvV4l2(ConanFile):
     default_options = ("jetson=TX2",)
     generators = "env"
     gst_version = "[>=1.16.0]"
+    jetson_driver_name="nv-jetson-drivers"
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -27,7 +28,7 @@ class GstreamerNvV4l2(ConanFile):
 
     def requirements(self):
         self.requires("nv-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
-        self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("%s/[>=%s]@%s/stable" % (self.jetson_driver_name, self.version, self.user))
         self.requires("gstreamer/%s@%s/stable" % (self.gst_version, self.user))
         self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
         self.requires("deepstream/[>=4.0]@%s/stable" % self.user)
@@ -45,7 +46,7 @@ class GstreamerNvV4l2(ConanFile):
 
     def build(self):
         env = {
-            "LIB_INSTALL_DIR": path.join(self.deps_cpp_info["jetson-drivers"].rootpath, "lib")
+            "LIB_INSTALL_DIR": path.join(self.deps_cpp_info["%s" % self.jetson_driver_name].rootpath, "lib")
         }
         with tools.chdir("gst-v4l2"), tools.environment_append(env):
             self.run("make")
