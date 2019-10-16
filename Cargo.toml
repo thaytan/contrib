@@ -1,7 +1,7 @@
 [package]
 name = "gstreamer-depth-meta"
-version = "0.2.0"
-authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
+version = "0.2.1"
+authors = ["Niclas Moeslund Overby <noverby@prozum.dk>", "Tobias Morell <tobias.morell@aivero.com>"]
 description = "Rust bindings to gstreamer-depth-meta"
 license = "Apache 2.0"
 edition = "2018"

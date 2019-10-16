@@ -24,6 +24,16 @@ impl BufferMeta {
     pub fn get(buffer: &mut BufferRef) -> &BufferMeta {
         unsafe { &*sys::buffer_meta_get(buffer.as_mut_ptr()) }
     }
+
+    pub fn remove(buffer: &mut BufferRef, meta_buffer: &mut BufferMeta) -> bool {
+        let result = unsafe { sys::buffer_meta_remove(buffer.as_mut_ptr(), meta_buffer.as_mut_ptr()) };
+        if result == 0 {
+            false
+        }
+        else {
+            true
+        }
+    }
 }
 
 unsafe impl MetaAPI for BufferMeta {

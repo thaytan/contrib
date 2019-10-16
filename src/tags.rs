@@ -24,6 +24,16 @@ impl TagsMeta {
     pub fn get(buffer: &mut BufferRef) -> &TagsMeta {
         unsafe { &*sys::tags_meta_get(buffer.as_mut_ptr()) }
     }
+
+    pub fn remove(buffer: &mut BufferRef, meta_tags: &mut gst::TagList) -> bool {
+        let result = unsafe { sys::tags_meta_remove(buffer.as_mut_ptr(), meta_tags.as_mut_ptr()) };
+        if result == 0 {
+            false
+        }
+        else {
+            true
+        }
+    }
 }
 
 unsafe impl MetaAPI for TagsMeta {
