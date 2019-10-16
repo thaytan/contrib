@@ -115,3 +115,12 @@ decoded_but_muxed.src ! decoded_demux.sink \
 decoded_demux.src_depth ! queue name=queue_decoded_demux_src_depth ! colorizer preset=1 near-cut=300 far-cut=700 ! glimagesink \
 decoded_demux.src_infra1 ! queue name=queue_decoded_demux_src_infra1 ! glimagesink 
 ```
+
+**Using the dddqdecbin**
+```
+dddqdecbin name=decbin dddqdec_properties="bit-depth:=8;number-of-layers:=6;near-cut:=300;far-cut:=700;idmap-correction:=1;decoding-strategy:=saurus" \
+rtpbin name=rtpbin udpsrc name=udpsrc port=9000 caps=application/x-rtp,media=video,payload=33,clock-rate=90000,encoding-name=MP2T ! \
+queue max-size-time=100000000 ! rtpbin.recv_rtp_sink_0 rtpbin. ! rtpmp2tdepay name=mpegts_depay ! decbin. \
+decbin.src_depth ! queue name=queue_decoded_demux_src_depth ! colorizer preset=1 near-cut=300 far-cut=700 ! glimagesink \
+decbin.src_infra1 ! queue name=queue_decoded_demux_src_infra1 ! glimagesink 
+```
