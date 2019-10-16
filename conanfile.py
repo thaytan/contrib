@@ -1,52 +1,53 @@
+import os
+
 from conans import ConanFile, tools
-from os import path
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "32.2.1"
-    except:
-        return None
 
-class GstreamerNvV4l2(ConanFile):
-    name = "gstreamer-nv-v4l2"
-    version = get_version()
+class GstreamerNvJetsonV4l2(ConanFile):
+    name = "gstreamer-nv-jetson-v4l2"
+    version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
-    description = "NVIDIA built Accelerated GStreamer Plugins"
+    description = "NVIDIA jetson v4l2 element"
     url = "https://developer.nvidia.com/embedded/linux-tegra"
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     generators = "env"
-    gst_version = "[>=1.16.0]"
-    jetson_driver_name="nv-jetson-drivers"
+    gst_version = "1.16.0"
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
-        self.requires("nv-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
-        self.requires("%s/[>=%s]@%s/stable" % (self.jetson_driver_name, self.version, self.user))
-        self.requires("gstreamer/%s@%s/stable" % (self.gst_version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
-        self.requires("deepstream/[>=4.0]@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("nv-jetson-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires(
+            "gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user)
+        )
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
+            tools.get(
+                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2"
+                % self.version.replace(".", "-")
+            )
         elif self.options.jetson == "Nano":
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
+            tools.get(
+                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2"
+                % self.version.replace(".", "-")
+            )
         else:
-            raise KeyError( "Unknown option: " + self.options.jetson)
-
+            raise KeyError("Unknown option: " + self.options.jetson)
         tools.untargz("public_sources/gst-nvvideo4linux2_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
 
     def build(self):
         env = {
-            "LIB_INSTALL_DIR": path.join(self.deps_cpp_info["%s" % self.jetson_driver_name].rootpath, "lib")
+            "LIB_INSTALL_DIR": path.join(
+                self.deps_cpp_info[self.jetson_driver_name].rootpath, "lib"
+            )
         }
         with tools.chdir("gst-v4l2"), tools.environment_append(env):
             self.run("make")
@@ -55,5 +56,6 @@ class GstreamerNvV4l2(ConanFile):
         self.copy("*.so*", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.env_info.GST_PLUGIN_PATH.append(path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(
+            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
+        )
