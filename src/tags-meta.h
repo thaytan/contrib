@@ -18,5 +18,6 @@ GType tags_meta_api_get_type(void);
 const GstMetaInfo *tags_meta_get_info(void);
 TagsMeta *tags_meta_get(GstBuffer *buffer);
 TagsMeta *tags_meta_add(GstBuffer *buffer, GstTagList *tags);
+gboolean tags_meta_remove(GstBuffer *buffer, GstTagList *tags);
 
 G_END_DECLS

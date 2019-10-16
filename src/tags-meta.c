@@ -62,3 +62,16 @@ TagsMeta *tags_meta_add(GstBuffer *buffer, GstTagList *meta_tags) {
 
     return meta;
 }
+
+gboolean tags_meta_remove(GstBuffer *buffer, GstTagList *meta_tags) {
+    gboolean ret;
+
+    g_return_val_if_fail(GST_IS_BUFFER (buffer), FALSE);
+
+    ret = gst_buffer_remove_meta(buffer, GST_META_CAST(meta_tags));
+
+    if (ret) {
+        tags_meta_free(GST_META_CAST(meta_tags), buffer);
+    }
+    return ret;
+}
