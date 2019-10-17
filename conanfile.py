@@ -1,16 +1,9 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.42.1"
-    except:
-        return None
 
 class GraphvizConan(ConanFile):
     name = "graphviz"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.42.1")
     license = "EPL"
     description = "Graph Visualization Tools"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
@@ -26,7 +19,10 @@ class GraphvizConan(ConanFile):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://www2.graphviz.org/Packages/stable/portable_source/graphviz-%s.tar.gz" % self.version)
+        tools.get(
+            "https://www2.graphviz.org/Packages/stable/portable_source/graphviz-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
