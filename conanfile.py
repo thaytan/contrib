@@ -18,9 +18,13 @@ def replace_prefix_in_pc_file(pc_file, prefix):
         if not old_prefix:
             for l in f:
                 if "libdir=" in l:
-                    old_prefix = l.split("=")[1][:-1]
+                    old_prefix = l.split("=")[1][:-5]
                     break
-
+                if "includedir=" in l:
+                    old_prefix = l.split("=")[1][:-9]
+                    break
+        if not old_prefix:
+            raise Exception("Could not find package prefix in '%s'" % pc_file)
         f.seek(0)
         content = f.read().replace(old_prefix, prefix)
     with open(pc_file, "w") as f:
