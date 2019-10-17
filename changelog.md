@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2019-10-17
+### Added
+- `do-custom-timestamp` property to `realsensesrc`
+### Modified
+- The way in which timestamps are computed
+
+## [0.1.3] - 2019-09-25
+### Added
+- Custom timestamps
 
 ## [0.1.0] - 2019-09-19
 ### Added

@@ -772,8 +772,8 @@ impl BaseSrcImpl for RealsenseSrc {
         // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
         let timestamp = if settings.do_custom_timestamp {
             Some(
-                // This computation is similar to `gst_element_get_current_clock_time` that will be available in 1.18
-                // https://gstreamer.freedesktop.org/documentation/gstreamer/gstelement.html?gi-language=c#gst_element_get_current_clock_time
+                // This computation is similar to `gst_element_get_current_running_time` that will be available in 1.18
+                // https://gstreamer.freedesktop.org/documentation/gstreamer/gstelement.html?gi-language=c#gst_element_get_current_running_time
                 element
                     .get_clock()
                     .expect("Could not get the clock of `realsensesrc`")
