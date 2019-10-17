@@ -316,7 +316,6 @@ struct RealsenseSrc {
 struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
-    system_time: std::time::SystemTime,
 }
 
 impl ObjectSubclass for RealsenseSrc {
@@ -373,7 +372,6 @@ impl ObjectSubclass for RealsenseSrc {
             internals: Mutex::new(RealsenseSrcInternals {
                 settings: Settings::default(),
                 state: State::default(),
-                system_time: std::time::SystemTime::now(),
             }),
         }
     }
@@ -750,7 +748,7 @@ impl BaseSrcImpl for RealsenseSrc {
 
     fn create(
         &self,
-        _element: &gst_base::BaseSrc,
+        element: &gst_base::BaseSrc,
         _offset: u64,
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
@@ -774,10 +772,13 @@ impl BaseSrcImpl for RealsenseSrc {
         // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
         let timestamp = if settings.do_custom_timestamp {
             Some(
-                std::time::SystemTime::now()
-                    .duration_since(internals.system_time)
-                    .unwrap_or_default()
-                    .as_nanos() as u64,
+                // This computation is similar to `gst_element_get_current_clock_time` that will be available in 1.18
+                // https://gstreamer.freedesktop.org/documentation/gstreamer/gstelement.html?gi-language=c#gst_element_get_current_clock_time
+                element
+                    .get_clock()
+                    .expect("Could not get the clock of `realsensesrc`")
+                    .get_time()
+                    - element.get_base_time(),
             )
         } else {
             None
@@ -1152,7 +1153,7 @@ impl RealsenseSrc {
         stream_id: i32,
         previous_streams: &[bool],
         settings: &Settings,
-        timestamp: Option<u64>,
+        timestamp: Option<gst::ClockTime>,
     ) -> Result<(), RealsenseError> {
         // Extract the frame from frames based on its type and id
         let frame = find_frame_with_id(frames, stream_type, stream_id).ok_or(RealsenseError(
@@ -1171,20 +1172,17 @@ impl RealsenseSrc {
             .map_err(|e| RealsenseError(e.get_message()))?;
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_data);
 
+        let buffer_mut_ref = buffer
+            .get_mut()
+            .expect("Could not get a mutable reference to the buffer");
+
         // Add tag to this new buffer
-        TagsMeta::add(
-            buffer.get_mut().expect("Could not add tag to frame buffer"),
-            &mut tags,
-        );
+        TagsMeta::add(buffer_mut_ref, &mut tags);
 
         // Set timestamp
         if let Some(timestamp) = timestamp {
-            buffer
-                .make_mut()
-                .set_pts(gst::ClockTime::from_nseconds(timestamp));
-            buffer
-                .make_mut()
-                .set_dts(gst::ClockTime::from_nseconds(timestamp));
+            buffer_mut_ref.set_pts(timestamp);
+            buffer_mut_ref.set_dts(timestamp);
         };
 
         // Determine whether any of the previous streams is enabled
