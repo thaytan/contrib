@@ -2,6 +2,7 @@ import os
 
 from conans import ConanFile, Meson, tools
 
+
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
     version = tools.get_env("GIT_TAG", "1.16.0")
@@ -39,30 +40,42 @@ class GStreamerPluginsGoodConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires(
+            "gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user)
+        )
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         if self.options.vpx:
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/archive/%s/gst-plugins-good-%s.tar.gz" 
-        % (self.version, self.version) )
+        tools.get(
+            "https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/archive/%s/gst-plugins-good-%s.tar.gz"
+            % (self.version, self.version)
+        )
 
     def build(self):
         args = ["--auto-features=disabled"]
-        args.append("-Dautodetect=" + ("enabled" if self.options.autodetect else "disabled"))
+        args.append(
+            "-Dautodetect=" + ("enabled" if self.options.autodetect else "disabled")
+        )
         args.append("-Drtp=" + ("enabled" if self.options.rtp else "disabled"))
         args.append("-Drtsp=" + ("enabled" if self.options.rtsp else "disabled"))
         args.append("-Drtpmanager=" + ("enabled" if self.options.rtp else "disabled"))
         args.append("-Dudp=" + ("enabled" if self.options.udp else "disabled"))
         args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
         args.append("-Disomp4=" + ("enabled" if self.options.isomp4 else "disabled"))
-        args.append("-Dvideofilter=" + ("enabled" if self.options.videofilter else "disabled"))
+        args.append(
+            "-Dvideofilter=" + ("enabled" if self.options.videofilter else "disabled")
+        )
         args.append("-Dvpx=" + ("enabled" if self.options.vpx else "disabled"))
-        args.append("-Dmultifile=" + ("enabled" if self.options.multifile else "disabled"))
+        args.append(
+            "-Dmultifile=" + ("enabled" if self.options.multifile else "disabled")
+        )
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-good-%s" % self.version , args=args)
+        meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args)
         meson.install()
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(
+            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
+        )
