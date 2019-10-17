@@ -14,6 +14,7 @@ class GstreamerNvJetsonV4l2(ConanFile):
     default_options = ("jetson=TX2",)
     generators = "env"
     gst_version = "1.16.0"
+    exports_sources = {"patches/*"}
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -43,6 +44,8 @@ class GstreamerNvJetsonV4l2(ConanFile):
             raise KeyError("Unknown option: " + self.options.jetson)
         tools.untargz("public_sources/gst-nvvideo4linux2_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
+        tools.patch(patch_file="patches/gstv4l2.c.patch")
+        tools.patch(patch_file="patches/gstv4l2videoenc.c.patch")
 
     def build(self):
         env = {
@@ -54,7 +57,7 @@ class GstreamerNvJetsonV4l2(ConanFile):
             self.run("make")
 
     def package(self):
-        self.copy("*.so*", dst="lib", keep_path=False)
+        self.copy("*.so*", dst="lib/gstreamer-1.0", keep_path=False)
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(
