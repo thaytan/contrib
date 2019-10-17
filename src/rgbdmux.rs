@@ -103,6 +103,11 @@ impl ObjectImpl for RgbdMux {
 }
 
 impl ElementImpl for RgbdMux {
+    /// This function provides a custom implementation to what should happen when request pads are
+    /// released.
+    /// # Arguments
+    /// * `element` - The element that represents `rgbdmux` in GStreamer.
+    /// * `pad` - The pad that is soon to be released.
     fn release_pad(&self, element: &gst::Element, pad: &gst::Pad) {
         // De-activate the pad
         pad.set_active(false)
@@ -121,6 +126,7 @@ impl ElementImpl for RgbdMux {
             .expect("Could not lock sink_pads")
             .retain(|x| *x != pad_name);
 
+        // TODO: We should check whether we're in the process of shutting down before calling this
         self.renegotiate_downstream_caps(element);
     }
 }
@@ -169,6 +175,13 @@ impl AggregatorImpl for RgbdMux {
         self.finish_buffer(aggregator, main_output_buffer)
     }
 
+    /// This function is called when a peer element requests a pad. It provides a custom implementation
+    /// for how the pad should be created.
+    /// # Arguments
+    /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
+    /// * `_templ` - (not used) The template that should be used in pad creation.
+    /// * `req_name` - The requested name for the pad.
+    /// * `_caps` - (not used) The CAPS to use for the pad.
     fn create_new_pad(
         &self,
         aggregator: &gst_base::Aggregator,
@@ -177,12 +190,7 @@ impl AggregatorImpl for RgbdMux {
         _caps: Option<&gst::Caps>,
     ) -> Option<gst_base::AggregatorPad> {
         match req_name {
-            // Make sure the name is valid
-            None => {
-                gst_error!(self.cat, obj: aggregator, "Invalid request pad name");
-                return None;
-            }
-            Some(name) => {
+            Some(name) if name.starts_with("sink_") => {
                 let mut sink_pads = self.sink_pads.lock().expect("Cannot lock sink_pads");
                 gst_debug!(
                     self.cat,
@@ -227,35 +235,49 @@ impl AggregatorImpl for RgbdMux {
                     .expect("Failed to activate `rgbdmux` sink pad");
 
                 Some(new_sink_pad)
+            },
+            _ => {
+                gst_error!(self.cat, obj: aggregator, "Invalid request pad name. Only sink pads may be requested.");
+                return None
             }
         }
     }
 
+    /// This function is called during CAPS negotiation. It can be used to decide on a CAPS format
+    /// or delay the negotiation until sufficient data is present to decide on the CAPS (in this
+    /// case when an upstream element has requested sink pads)
+    /// # Arguments
+    /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
+    ///* `_caps` - (not used) The CAPS that is currently negotiated for the element.
     fn update_src_caps(
         &self,
         aggregator: &gst_base::Aggregator,
         _caps: &gst::Caps,
     ) -> Result<gst::Caps, gst::FlowError> {
         gst_debug!(self.cat, "update_src_caps");
+        // Check how many sink pads has been created
         let no_sink_pads = {
             self.sink_pads
                 .lock()
                 .expect("Could not lock sink pads")
                 .len()
         };
+        // if no sink pads are present, we're not ready to negotiate CAPS, otherwise do the negotiation
         match no_sink_pads {
-            0 => Err(gst_base::AGGREGATOR_FLOW_NEED_DATA), // https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html?gi-language=c#GST_AGGREGATOR_FLOW_NEED_DATA
+            0 => Err(gst_base::AGGREGATOR_FLOW_NEED_DATA), // we're not ready to decide on CAPS yet
             _ => Ok(self.get_current_downstream_caps(aggregator.upcast_ref::<gst::Element>())),
         }
     }
 
+    /// This function is used to hint the type of CAPS we're expecting in the element.
+    /// Right now the function simply ignores the suggested CAPS and pushes the one generated from
+    /// the video/rgbd CAPS.
+    /// # Arguments
+    /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
+    ///* `_caps` - (not used) The CAPS that is currently negotiated for the element. 
     fn fixate_src_caps(&self, aggregator: &gst_base::Aggregator, _caps: gst::Caps) -> gst::Caps {
         let elm = aggregator.upcast_ref::<gst::Element>();
         gst_debug!(self.cat, obj: elm, "fixate_src_caps");
-        {
-            let sps = self.sink_pads.lock().expect("Could not lock sink_pads");
-            gst_debug!(self.cat, obj: elm, "Streams: {}", sps.join(", "));
-        }
         self.get_current_downstream_caps(elm)
     }
 }
@@ -414,30 +436,4 @@ pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
         gst::Rank::None,
         RgbdMux::get_type(),
     )
-}
-
-mod tests {
-    #[test]
-    fn convert_depth_only_caps_to_rgbd() {
-        gst::init().expect("Failed to gst::init() in convert_pad_caps_to_rgbd_caps");
-        let rgbdmux = RgbdMux {
-            cat: gst::DebugCategory::new(
-                "rgbdmux_tests",
-                gst::DebugColorFlags::FG_CYAN,
-                Some("Unit tests for rgbdmux"),
-            ),
-            sink_pads: Mutex::new(vec![]),
-        };
-        let pad_caps = gst::Caps::new_simple(
-            "video/x-raw",
-            &[("format", &"GRAY8"), ("width", &1280), ("height", &720)],
-        );
-
-        let rgbd_caps = rgbdmux.get_caps_fields(&pad_caps, "depth");
-
-        assert_eq!(
-            rgbd_caps,
-            "depth_format=GRAY8,depth_width=1280,depth_height=720"
-        );
-    }
 }
