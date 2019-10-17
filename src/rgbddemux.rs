@@ -101,7 +101,16 @@ impl RgbdDemux {
     /// * `element` - The element that represents the `rgbddemux` in GStreamer.
     /// * `event` - The event that should be handled.
     fn sink_event(&self, element: &gst::Element, event: gst::Event) -> bool {
-        gst_debug!(self.cat, obj: element, "sink_event in direction {}", if event.is_upstream() {"upstream"} else {"downstream"});
+        gst_debug!(
+            self.cat,
+            obj: element,
+            "sink_event in direction {}",
+            if event.is_upstream() {
+                "upstream"
+            } else {
+                "downstream"
+            }
+        );
         use gst::EventView;
         match event.view() {
             EventView::Caps(caps) => {
@@ -183,7 +192,7 @@ impl RgbdDemux {
         for stream_name in streams.iter() {
             // Determine the appropriate caps for the stream
             let new_pad_caps = if stream_name.contains("meta") {
-                println!("Got meta of name: {}", stream_name);
+                gst_info!(self.cat, obj: element, "Got meta of name: {}", stream_name);
                 // Get `video/meta-klv` caps if the `meta` stream is enabled
                 gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)])
             } else {
@@ -191,7 +200,7 @@ impl RgbdDemux {
             };
 
             // Create the new src pad with given caps and stream name
-            self.create_new_src_pad(element, new_pad_caps, stream_name);
+            self.create_new_src_pad(element, new_pad_caps, stream_name, None);
         }
         Ok(())
     }
@@ -253,7 +262,9 @@ impl RgbdDemux {
         element: &gst::Element,
         new_pad_caps: gst::Caps,
         stream_name: &str,
-    ) {
+        template: Option<gst::PadTemplate>,
+    ) -> gst::Pad {
+        gst_debug!(self.cat, obj: element, "create_new_src_pad for {}", stream_name);
         // Lock the internals
         let internals = &mut *self.internals.lock().expect("Could not lock internals");
 
@@ -261,45 +272,58 @@ impl RgbdDemux {
         let new_src_pad_name = &format!("src_{}", stream_name);
 
         // In case such pad already exists (during re-negotiation), release the existing pad
-        if internals.src_pads.get(&new_src_pad_name.to_string()).is_some() {
-            gst_info!(
-                self.cat,
-                obj: element,
-                "Pad `{}` already exists. Releasing...",
-                new_src_pad_name
-            );
-            self.release_src_pad(element, new_src_pad_name, internals);
-        }
-
-        // Create the src pad with these caps
-        let new_src_pad = gst::Pad::new_from_template(
-            &element
-                .get_pad_template("src_%s")
-                .expect("No src pad template registered in rgbddemux"),
-            Some(new_src_pad_name),
-        );
-
-        // Add the src pad to the element and activate it
-        element
-            .add_pad(&new_src_pad)
-            .expect("Could not add src pad in rgbddemux");
-        new_src_pad
-            .set_active(true)
-            .expect("Could not activate new src pad in rgbddemux");
-
-        // Push events on this src pad. It is assumed here that the pad is already linked and the downstream element accepts the caps.
-        new_src_pad.push_event(
-            gst::event::Event::new_stream_start(stream_name)
-                .group_id(gst::util_group_id_next())
-                .build(),
-        );
-        new_src_pad.push_event(gst::event::Event::new_caps(&new_pad_caps).build());
-
-        // Add the new pad to the internals
-        internals.flow_combiner.add_pad(&new_src_pad);
-        internals
+        let pad = match internals
             .src_pads
-            .insert(new_src_pad_name.to_string(), new_src_pad);
+            .get(&new_src_pad_name.to_string())
+        {
+            Some(pad) => {
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Pad `{}` already exists. Reusing...",
+                    new_src_pad_name
+                );
+                pad.clone()
+            },
+            None => {
+                // Create the src pad with these caps
+                let new_src_pad = gst::Pad::new_from_template(
+                    &template.unwrap_or(
+                        element
+                            .get_pad_template("src_%s")
+                            .expect("No src pad template registered in rgbddemux"),
+                    ),
+                    Some(new_src_pad_name),
+                );
+
+                // Add the src pad to the element and activate it
+                element
+                    .add_pad(&new_src_pad)
+                    .expect("Could not add src pad in rgbddemux");
+                new_src_pad
+                    .set_active(true)
+                    .expect("Could not activate new src pad in rgbddemux");
+
+                // Push events on this src pad. It is assumed here that the pad is already linked and the downstream element accepts the caps.
+                new_src_pad.push_event(
+                    gst::event::Event::new_stream_start(stream_name)
+                        .group_id(gst::util_group_id_next())
+                        .build(),
+                );
+
+                // Add the new pad to the internals
+                internals.flow_combiner.add_pad(&new_src_pad);
+                internals
+                    .src_pads
+                    .insert(new_src_pad_name.to_string(), new_src_pad.clone());
+
+                new_src_pad
+            }
+        };
+
+        pad.push_event(gst::event::Event::new_caps(&new_pad_caps).build());
+
+        pad
     }
 
     /// Release a src pad from the `rgbddemux`, dropping all its buffers and removing it from the element.
@@ -307,7 +331,12 @@ impl RgbdDemux {
     /// * `element` - The element that represents the `rgbddemux` in GStreamer.
     /// * `src_pad_name` - The name of the src pad to release.
     /// * `internals` - A locked reference to the `rgbddemux`'s internal state.
-    fn release_src_pad(&self, element: &gst::Element, src_pad_name: &str, internals: &mut RgbdDemuxInternals) {
+    fn release_src_pad(
+        &self,
+        element: &gst::Element,
+        src_pad_name: &str,
+        internals: &mut RgbdDemuxInternals,
+    ) {
         // Get reference to the pad with given name
         let src_pad = &internals.src_pads.get(src_pad_name).expect(&format!(
             "No src pad with name `{}` in rgbddemux",
@@ -358,30 +387,40 @@ impl RgbdDemux {
             let additional_buffer = unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) };
 
             // Push the additional buffer to the corresponding src pad
-            let _flow_combiner_result =
-                internals
-                    .flow_combiner
-                    .update_flow(self.push_buffer_to_corresponding_pad(
-                        &internals.src_pads,
-                        additional_buffer,
-                    ).map_err(|e| {
-                        gst_warning!(self.cat, obj: element, "Failed to push a stacked buffer: {}", e);
+            let _flow_combiner_result = internals.flow_combiner.update_flow(
+                self.push_buffer_to_corresponding_pad(&internals.src_pads, additional_buffer)
+                    .map_err(|e| {
+                        gst_warning!(
+                            self.cat,
+                            obj: element,
+                            "Failed to push a stacked buffer: {}",
+                            e
+                        );
                         gst::FlowError::Error
-                    }));
+                    }),
+            );
         }
 
-        gst_debug!(self.cat, obj: element, "All meta buffers have been pushed");
+        gst_debug!(
+            self.cat,
+            obj: element,
+            "All meta buffers have been pushed. Now pushing a buffer, tagged: {:?}:",
+            self.extract_tag_title(&main_buffer)
+        );
 
         // Push the main buffer to the corresponding src pad
-        internals
-            .flow_combiner
-            .update_flow(self.push_buffer_to_corresponding_pad(
-                &internals.src_pads,
-                main_buffer,
-            ).map_err(|e| {
-                gst_warning!(self.cat, obj: element, "Failed to push a main buffer: {}", e);
-                gst::FlowError::Error
-            }))
+        internals.flow_combiner.update_flow(
+            self.push_buffer_to_corresponding_pad(&internals.src_pads, main_buffer)
+                .map_err(|e| {
+                    gst_error!(
+                        self.cat,
+                        obj: element,
+                        "Failed to push a main buffer: {}",
+                        e
+                    );
+                    gst::FlowError::Error
+                }),
+        ) // missing ; means fail if we cannot push main buffer.
     }
 
     /// Push the given buffer to the src pad that was allocated for it.
@@ -398,14 +437,25 @@ impl RgbdDemux {
         let tag_title = self.extract_tag_title(&buffer)?;
 
         // Match the tag title with a corresponding src pad
-        let src_pad = src_pads.get(&(format!("src_{}", tag_title))).ok_or(RgbdDemuxingError(format!("No corresponding pad for buffer with tag title `{}` exists", tag_title)))?;
+        let src_pad = src_pads
+            .get(&(format!("src_{}", tag_title)))
+            .ok_or(RgbdDemuxingError(format!(
+                "No corresponding pad for buffer with tag title `{}` exists",
+                tag_title
+            )))?;
 
         // Check if there's a per-frame metadata buffer we need to push to the meta pad
         gst_debug!(self.cat, "Pushing per-frame meta for {}", tag_title);
         self.push_per_frame_metadata(&tag_title, src_pads, &buffer)?;
-        gst_debug!(self.cat, "Per-frame meta pushed. Now pushing buffer for {}", tag_title);
+        gst_debug!(
+            self.cat,
+            "Per-frame meta pushed. Now pushing buffer for {}",
+            tag_title
+        );
 
-        src_pad.push(buffer).map_err(|_| RgbdDemuxingError("Failed to push buffer onto its corresponding pad".to_owned()))
+        src_pad.push(buffer).map_err(|_| {
+            RgbdDemuxingError("Failed to push buffer onto its corresponding pad".to_owned())
+        })
     }
 
     /// Extract the Title tag from the given buffer.
@@ -413,12 +463,26 @@ impl RgbdDemux {
     /// * `buffer` - The buffer from which the title tag should be extracted.
     fn extract_tag_title(&self, buffer: &gst::Buffer) -> Result<String, RgbdDemuxingError> {
         // Get GstTagList from GstBuffer
-        let meta = buffer.get_meta::<TagsMeta>().ok_or(RgbdDemuxingError(format!("No meta detected in buffer `{:?}`", buffer)))?;
+        let meta = buffer
+            .get_meta::<TagsMeta>()
+            .ok_or(RgbdDemuxingError(format!(
+                "No meta detected in buffer `{:?}`",
+                buffer
+            )))?;
         let tag_list = unsafe { gst::tags::TagList::from_glib_none(meta.tags) };
 
         // Get the tag title from GstTagList
-        let gst_tag_title = &tag_list.get::<gst::tags::Title>().ok_or(RgbdDemuxingError(format!("No tag title detected in buffer `{:?}`", buffer)))?;
-        let title = gst_tag_title.get().ok_or(RgbdDemuxingError(format!("Invalid tag title detected in buffer `{:?}`", buffer)))?;
+        let gst_tag_title =
+            &tag_list
+                .get::<gst::tags::Title>()
+                .ok_or(RgbdDemuxingError(format!(
+                    "No tag title detected in buffer `{:?}`",
+                    buffer
+                )))?;
+        let title = gst_tag_title.get().ok_or(RgbdDemuxingError(format!(
+            "Invalid tag title detected in buffer `{:?}`",
+            buffer
+        )))?;
         Ok(title.to_string())
     }
 
@@ -444,13 +508,12 @@ impl RgbdDemux {
             // If there is a title tag on the buffer, we know that it is a 3DQ-related buffer
             match self.extract_tag_title(&meta_buffer) {
                 Ok(ref meta_tag) if meta_tag == &format!("{}_meta", buffer_tag) => {
-                    gst_info!(
-                        self.cat,
-                        "Found a per-frame metadata buffer."
-                    );
+                    gst_info!(self.cat, "Found a per-frame metadata buffer.");
 
                     // Check if it's a meta buffer, if so timestamp it and push it on the meta-pad
-                    let meta_pad = src_pads.get("src_dddqmeta").ok_or(RgbdDemuxingError("No pad called `src_dddqmeta` on `rgbddemux`".to_owned()))?;
+                    let meta_pad = src_pads.get("src_dddqmeta").ok_or(RgbdDemuxingError(
+                        "No pad called `src_dddqmeta` on `rgbddemux`".to_owned(),
+                    ))?;
 
                     // Make sure the buffer timestamps are set to the same as the frame they belong to
                     let mut klv = self.klv_serialize(meta_buffer).unwrap();
@@ -458,7 +521,9 @@ impl RgbdDemux {
                     klv_mut.set_pts(buffer.get_pts());
                     klv_mut.set_dts(buffer.get_dts());
 
-                    meta_pad.push(klv).map_err(|e| RgbdDemuxingError(format!("Failed to push a meta buffer: {}", e)))?;
+                    meta_pad.push(klv).map_err(|e| {
+                        RgbdDemuxingError(format!("Failed to push a meta buffer: {}", e))
+                    })?;
                 }
                 Ok(unknown_tag) => {
                     gst_info!(
@@ -468,10 +533,7 @@ impl RgbdDemux {
                     );
                 }
                 Err(e) => {
-                    gst_warning!(
-                        self.cat,
-                        "{}", e
-                    );
+                    gst_warning!(self.cat, "{}", e);
                 }
             }
         }
@@ -481,10 +543,7 @@ impl RgbdDemux {
     /// Serialize the given buffer into KLV by prepending it with the key and length attributes.
     /// # Arguments
     ///* `meta_buffer` - The buffer that should be serialized as klv.
-    fn klv_serialize(
-        &self,
-        meta_buffer: gst::Buffer,
-    ) -> Option<gst::Buffer> {
+    fn klv_serialize(&self, meta_buffer: gst::Buffer) -> Option<gst::Buffer> {
         match self.internals.lock() {
             Ok(mut i) => {
                 let key = i.kvl_id_counter + 1;
@@ -504,15 +563,11 @@ impl RgbdDemux {
                 Some(gst::Buffer::append(klv, meta_buffer))
             }
             _ => {
-                gst_warning!(
-                    self.cat,
-                    "Could not obtain 'kvl_id_counter' lock."
-                );
+                gst_warning!(self.cat, "Could not obtain 'kvl_id_counter' lock.");
                 None
             }
         }
     }
-
 }
 
 impl ObjectSubclass for RgbdDemux {
@@ -600,7 +655,32 @@ impl ObjectImpl for RgbdDemux {
     }
 }
 
-impl ElementImpl for RgbdDemux {}
+impl ElementImpl for RgbdDemux {
+    fn request_new_pad(
+        &self,
+        element: &gst::Element,
+        templ: &gst::PadTemplate,
+        name: Option<String>,
+        caps: Option<&gst::Caps>,
+    ) -> Option<gst::Pad> {
+        gst_debug!(
+            self.cat,
+            obj: element,
+            "Requesting new pad with name {:?}",
+            name
+        );
+        let name = name.unwrap_or("src_%s".to_string());
+        Some(
+            self.create_new_src_pad(
+                element,
+                caps.unwrap_or(&gst::Caps::new_simple("video/rgbd", &[]))
+                    .clone(),
+                &name[4..], // strip the src_ away
+                Some(templ.clone())
+            ),
+        )
+    }
+}
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     gst::Element::register(

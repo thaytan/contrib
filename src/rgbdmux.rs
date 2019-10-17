@@ -117,9 +117,9 @@ impl ElementImpl for RgbdMux {
         let pad_name = pad.get_name().as_str().to_string();
         gst_debug!(self.cat, obj: element, "release_pad: {}", pad_name);
         self.sink_pads
-		.lock()
-            	.expect("Could not lock sink_pads")
-		.retain(|x| *x != pad_name);
+            .lock()
+            .expect("Could not lock sink_pads")
+            .retain(|x| *x != pad_name);
 
         self.renegotiate_downstream_caps(element);
     }
@@ -284,9 +284,7 @@ impl RgbdMux {
         tags.get_mut()
             .ok_or(MuxingError("Could not get mutable reference to tags"))?
             .add::<gst::tags::Title>(&&pad_name[5..], gst::TagMergeMode::Append);
-        let mut_buffer = buffer
-            .get_mut()
-            .ok_or(MuxingError("Could not get mutable reference to buffer"))?;
+        let mut_buffer = buffer.make_mut();
         TagsMeta::add(mut_buffer, &mut tags);
         Ok(buffer)
     }
