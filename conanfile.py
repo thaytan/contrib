@@ -18,7 +18,7 @@ class GstreamerNvJetsonPluginsConan(ConanFile):
         self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
 
     def package(self):
-        self.copy("*.so")
+        self.copy(pattern="*.so" ,excludes="*libgstnvvideo4linux2.so*")
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(
