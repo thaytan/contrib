@@ -63,16 +63,3 @@ BufferMeta *buffer_meta_add(GstBuffer *buffer, GstBuffer *meta_buffer) {
 
   return meta;
 }
-
-gboolean buffer_meta_remove(GstBuffer *buffer, BufferMeta *meta_buffer) {
-    gboolean ret;
-
-    g_return_val_if_fail(GST_IS_BUFFER (buffer), FALSE);
-
-    ret = gst_buffer_remove_meta(buffer, GST_META_CAST(meta_buffer));
-
-    if (ret) {
-        buffer_meta_free(GST_META_CAST(meta_buffer), buffer);
-    }
-    return ret;
-}
