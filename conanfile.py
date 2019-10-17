@@ -11,7 +11,7 @@ class LLVMConan(ConanFile):
         "Collection of modular and reusable compiler and toolchain technologies"
     )
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    settings = "os", "compiler", "build_type", "arch"
+    settings = "os", "compiler", "arch"
     generators = "env"
 
     def build_requirements(self):
@@ -28,7 +28,7 @@ class LLVMConan(ConanFile):
         )
 
     def build(self):
-        cmake = CMake(self, generator="Ninja")
+        cmake = CMake(self, generator="Ninja", build_type="Release")
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
