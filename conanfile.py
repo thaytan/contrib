@@ -65,7 +65,10 @@ class env(Generator):
             if hasattr(conanfile, "pre_package"):
                 conanfile.pre_package()
             # Copy sources to package
-            if conanfile.settings.build_type == "Debug":
+            if (
+                "build_type" in conanfile.settings.fields
+                and conanfile.settings.build_type == "Debug"
+            ):
                 for ext in ("c", "cpp", "cpp", "h", "hpp", "hxx"):
                     conanfile.copy("*." + ext, "src")
 
