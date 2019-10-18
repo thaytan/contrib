@@ -235,10 +235,14 @@ impl AggregatorImpl for RgbdMux {
                     .expect("Failed to activate `rgbdmux` sink pad");
 
                 Some(new_sink_pad)
-            },
+            }
             _ => {
-                gst_error!(self.cat, obj: aggregator, "Invalid request pad name. Only sink pads may be requested.");
-                return None
+                gst_error!(
+                    self.cat,
+                    obj: aggregator,
+                    "Invalid request pad name. Only sink pads may be requested."
+                );
+                return None;
             }
         }
     }
@@ -274,7 +278,7 @@ impl AggregatorImpl for RgbdMux {
     /// the video/rgbd CAPS.
     /// # Arguments
     /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
-    ///* `_caps` - (not used) The CAPS that is currently negotiated for the element. 
+    ///* `_caps` - (not used) The CAPS that is currently negotiated for the element.
     fn fixate_src_caps(&self, aggregator: &gst_base::Aggregator, _caps: gst::Caps) -> gst::Caps {
         let elm = aggregator.upcast_ref::<gst::Element>();
         gst_debug!(self.cat, obj: elm, "fixate_src_caps");
