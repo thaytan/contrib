@@ -34,10 +34,16 @@ impl Display for MuxingError {
     }
 }
 
+const FRAME_DURATION: u64 = 250;
+// TODO: make this duration
+
+const DROP_ALL_BUFFERS_IF_ONE_IS_MISSING: bool = true;
+
 // A struct representation of the `rgbdmux` element
 struct RgbdMux {
     cat: gst::DebugCategory,
     sink_pads: Mutex<Vec<String>>,
+    previous_timestamp: Mutex<gst::ClockTime>,
 }
 
 impl ObjectSubclass for RgbdMux {
@@ -56,6 +62,7 @@ impl ObjectSubclass for RgbdMux {
                 Some("RGB-D Muxer"),
             ),
             sink_pads: Mutex::new(Vec::new()),
+            previous_timestamp: Mutex::new(gst::CLOCK_TIME_NONE),
         }
     }
 
@@ -64,7 +71,7 @@ impl ObjectSubclass for RgbdMux {
             "RGB-D Muxer",
             "Muxer/RGB-D",
             "Muxes multiple `video/x-raw` into a single `video/rgbd`",
-            "Andrej Orsula <andrej.orsula@aivero.com>",
+            "Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
 
         // sink pads
@@ -136,43 +143,42 @@ impl AggregatorImpl for RgbdMux {
         &self,
         aggregator: &gst_base::Aggregator,
         _timeout: bool,
-    ) -> std::result::Result<gst::FlowSuccess, gst::FlowError> {
+    ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Get the list of available names
         let sink_pad_names = &self.sink_pads.lock().expect("Could not lock sink_pads");
-        let mut sink_pad_names_iter = sink_pad_names.iter();
 
-        // TODO (minor): Consider making `depth` stream always first/located in the main buffer if it is enabled
+        // TODO: determine whether it is necessary to make all the buffers drop if one is missing
+        // TODO: otherwise, let `check_synchronisation()` deal with it
 
-        // Put the first buffer in the list into the main buffer
-        let first_sink_pad_name = sink_pad_names_iter
-            .next()
-            .ok_or(gst::FlowError::NotLinked)?;
-        let mut main_output_buffer = self
-            .get_tagged_buffer(aggregator, first_sink_pad_name)
-            .map_err(|e| {
-                gst_error!(self.cat, "{}", e);
-                gst::FlowError::Error
-            })?;
+        // TODO: send gap event downstream if there is a discontinuity expected
 
-        // Attach the rest of the streams as meta to the main buffer
-        for sink_pad_name in sink_pad_names_iter {
-            // Extract and tag a buffer from the given sink pad
-            let mut additional_output_buffer = self
-                .get_tagged_buffer(aggregator, sink_pad_name)
-                .map_err(|e| {
-                    gst_error!(self.cat, "{}", e);
-                    gst::FlowError::Error
-                })?;
-
-            // Attach the additional buffer to the main buffer
-            BufferMeta::add(
-                main_output_buffer
-                    .get_mut()
-                    .expect("Could not get mutable reference to main buffer"),
-                &mut additional_output_buffer,
-            );
+        // Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers.
+        let res = self.drop_buffers_if_one_missing(aggregator, sink_pad_names);
+        if res.is_err() {
+            // If all buffers were dropped, return CustomError
+            println!("`drop_buffers_if_one_missing()` finished!");
+            return Err(gst::FlowError::CustomError);
         }
-        self.finish_buffer(aggregator, main_output_buffer)
+
+        // Make sure the streams are synchronised
+        if self
+            .check_synchronisation(aggregator, sink_pad_names)
+            .is_err()
+        {
+            // If buffers lacking behind were dropped, return CustomError1
+            println!("`check_synchronisation()` finished!");
+            return Err(gst::FlowError::CustomError1);
+        }
+
+        // Mux all buffers to a single output buffer.
+        let output_buffer = self.mux_buffers(aggregator, sink_pad_names);
+        if output_buffer.is_err() {
+            // If muxing is not successful, do ... TODO: finish comment
+            // TODO: currently `mux_buffers()` never returns an error
+        }
+
+        // Finish the buffer if all went fine
+        self.finish_buffer(aggregator, output_buffer.unwrap())
     }
 
     /// This function is called when a peer element requests a pad. It provides a custom implementation
@@ -284,35 +290,264 @@ impl AggregatorImpl for RgbdMux {
         gst_debug!(self.cat, obj: elm, "fixate_src_caps");
         self.get_current_downstream_caps(elm)
     }
+
+    /// Called when the element needs to know the running time of the next rendered buffer for live pipelines.
+    /// This causes deadline based aggregation to occur. Returning GST_CLOCK_TIME_NONE causes the element to
+    /// wait for buffers on all sink pads before aggregating.
+    /// # Arguments
+    /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
+    fn get_next_time(&self, _aggregator: &gst_base::Aggregator) -> gst::ClockTime {
+        println!(
+            "`get_next_time()`: {:#?}",
+            *self.previous_timestamp.lock().unwrap() + gst::ClockTime::from_mseconds(FRAME_DURATION)
+        );
+        *self.previous_timestamp.lock().unwrap() + gst::ClockTime::from_mseconds(FRAME_DURATION)
+    }
 }
 
 impl RgbdMux {
+    /// Check whether the streams are synchronised based on their pts timestamps.
+    /// If the streams are not synchronised, buffers that are bedind get dropped and error is returned.
+    /// # Arguments
+    /// * `aggregator` - The aggregator to consider.
+    /// * `sink_pad_names` - The vector containing all sink pad names.
+    /// # Returns
+    /// * `Err(MuxingError)` - if frames
+    #[inline]
+    fn check_synchronisation(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        sink_pad_names: &Vec<String>,
+    ) -> Result<(), MuxingError> {
+        // Create a vector for storing timestamps of all buffers
+        let mut timestamps: Vec<(&String, gst::ClockTime)> =
+            Vec::with_capacity(sink_pad_names.len());
+
+        // Iterate over all sink pads
+        for sink_pad_name in sink_pad_names.iter() {
+            // Get the sink pad given its name
+            let sink_pad = Self::get_aggregator_pad(aggregator, sink_pad_name);
+
+            // Extract a buffer from the given sink pad
+            let buffer = sink_pad.peek_buffer();
+
+            // Skip to the next pad if there is no buffer queued
+            if buffer.is_none() {
+                continue;
+            }
+            let buffer = buffer.unwrap();
+
+            // Push the timestamp with the corresponing pad name
+            timestamps.push((sink_pad_name, buffer.as_ref().get_pts()));
+        }
+
+        println!("timestamps: {:#?}", timestamps);
+
+        // Find miximum and maximum timestamp
+        let min = timestamps
+            .iter()
+            .min()
+            .ok_or(MuxingError("No buffer was received"))?;
+        let max = timestamps
+            .iter()
+            .max()
+            .ok_or(MuxingError("No buffer was received"))?;
+
+        // Update the current timestamp
+        *self.previous_timestamp.lock().unwrap() = max.1;
+
+        // If min and max timestamps are equal, the streams are synchronised
+        if min.1 == max.1 {
+            return Ok(());
+        }
+
+        // If the streams are not synchronised, drop frames that are behind
+        gst_info!(
+            self.cat,
+            obj: aggregator,
+            "Dropped buffers to synchronise the streams"
+        );
+
+        // Iterate over timestamps and drop all buffers that have timestamp
+        // equal to the min timestamp (those that are behind)
+        for timestamp in timestamps.iter() {
+            if min.1 == timestamp.1 {
+                // Get sink pad with the given name
+                let sink_pad = Self::get_aggregator_pad(aggregator, timestamp.0);
+                // Drop the buffer
+                sink_pad.drop_buffer();
+            }
+        }
+
+        // Return error
+        Err(MuxingError("Dropped buffers to synchronise the streams"))
+    }
+
+    /// Mux all buffers to a single output buffer. All buffers are properly tagget with a title.
+    /// # Arguments
+    /// * `aggregator` - The aggregator to consider.
+    /// * `sink_pad_names` - The vector containing all sink pad names.
+    #[inline]
+    fn mux_buffers(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        sink_pad_names: &Vec<String>,
+    ) -> Result<gst::Buffer, MuxingError> {
+        // Place a buffer from the first pad into the main buffer
+        // If there is no buffer, leave the main buffer empty
+        let mut main_buffer = Self::get_tagged_buffer(aggregator, &sink_pad_names[0])
+            .unwrap_or_else(|_e| {
+                gst_info!(
+                    self.cat,
+                    obj: aggregator,
+                    "No buffer is queued on main `{}` pad. Leaving the buffer empty.",
+                    sink_pad_names[0]
+                );
+                gst::Buffer::new()
+            });
+
+        // Get a mutable reference to the main buffer
+        let main_buffer_mut_ref = main_buffer
+            .get_mut()
+            .expect("Could not get mutable reference to main buffer");
+
+        // Iterate over all other sink pads, excluding the first one
+        for sink_pad_name in sink_pad_names.iter().skip(1) {
+            // Get a buffer that was queue on the sink pad and tag it with a title
+            let buffer = Self::get_tagged_buffer(aggregator, sink_pad_name);
+
+            // Check whether a buffer was received, otherwise skip
+            if buffer.is_err() {
+                gst_info!(
+                    self.cat,
+                    obj: aggregator,
+                    "No buffer is queued on `{}` pad. Skipping.",
+                    sink_pad_name
+                );
+                continue;
+            }
+            let mut buffer = buffer.unwrap();
+
+            // Attach to the main bufer
+            BufferMeta::add(main_buffer_mut_ref, &mut buffer);
+        }
+        // Return the main buffer
+        Ok(main_buffer)
+    }
+
     /// Get a buffer from the pad with the given `pad_name` on the given `aggregator`. This function
     /// also tags the buffer with a correct title tag.
     /// # Arguments
     /// * `aggregator` - The aggregator that holds a pad with the given name.
     /// * `pad_name` - The name of the pad to read a buffer from.
+    #[inline]
     fn get_tagged_buffer(
-        &self,
         aggregator: &gst_base::Aggregator,
         pad_name: &str,
     ) -> Result<gst::Buffer, MuxingError> {
-        let mut buffer = aggregator
+        // Get the sink pad given its name
+        let sink_pad = Self::get_aggregator_pad(aggregator, pad_name);
+
+        // Extract a buffer from the given sink pad
+        let mut buffer = sink_pad
+            .pop_buffer()
+            .ok_or(MuxingError("No buffer queued on one of the pads"))?;
+
+        // Get a mutable reference to the buffer
+        let buffer_mut = buffer.get_mut().expect(&format!(
+            "Could not get a mutable reference to buffer on `{}` pad",
+            pad_name
+        ));
+        // Get the stream name by truncating the "sink_" prefix
+        let stream_name = &pad_name[5..];
+
+        // Tag the buffer
+        Self::tag_buffer(buffer_mut, stream_name);
+
+        // Return the tagged buffer
+        Ok(buffer)
+    }
+
+    /// Get a pad with the given `pad_name` on the given `aggregator`.
+    /// # Arguments
+    /// * `aggregator` - The aggregator that holds a pad with the given name.
+    /// * `pad_name` - The name of the pad to get.
+    #[inline]
+    fn get_aggregator_pad(
+        aggregator: &gst_base::Aggregator,
+        pad_name: &str,
+    ) -> gst_base::AggregatorPad {
+        aggregator
             .get_static_pad(pad_name)
             .expect(format!("Could not get static pad with name {}", pad_name).as_str())
             .downcast::<gst_base::AggregatorPad>()
             .expect("Could not downcast pad to AggregatorPad")
-            .pop_buffer()
-            .ok_or(MuxingError("No buffer available on static pad"))?;
+    }
 
-        // Add tag title according to the main stream name (remove `sink_` from sink pad name)
+    /// Tags a `buffer` with a title tag based on the `stream_name`.
+    /// # Arguments
+    /// * `buffer` - The buffer to tag.
+    /// * `stream_name` - The name to use for the title tag.
+    #[inline]
+    fn tag_buffer(buffer: &mut gst::BufferRef, stream_name: &str) {
         let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .ok_or(MuxingError("Could not get mutable reference to tags"))?
-            .add::<gst::tags::Title>(&&pad_name[5..], gst::TagMergeMode::Append);
-        let mut_buffer = buffer.make_mut();
-        TagsMeta::add(mut_buffer, &mut tags);
-        Ok(buffer)
+        tags.make_mut()
+            .add::<gst::tags::Title>(&stream_name, gst::TagMergeMode::Append);
+        TagsMeta::add(buffer, &mut tags);
+    }
+
+    /// Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers and return error.
+    /// # Arguments
+    /// * `aggregator` - The aggregator to consider.
+    /// * `sink_pad_names` - The vector containing all sink pad names.
+    #[inline]
+    fn drop_buffers_if_one_missing(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        sink_pad_names: &Vec<String>,
+    ) -> Result<(), MuxingError> {
+        // Iterate over all sink pads
+        for sink_pad_name in sink_pad_names.iter() {
+            // Get the sink pad given its name
+            let sink_pad = Self::get_aggregator_pad(aggregator, sink_pad_name);
+
+            // Check whether the aggregator pad has a buffer available
+            if !sink_pad.has_buffer() {
+                gst_info!(
+                    self.cat,
+                    obj: aggregator,
+                    "No buffer is queued on `{}` pad. Dropping all other buffers.",
+                    sink_pad_name
+                );
+
+                // Drop all buffers
+                if DROP_ALL_BUFFERS_IF_ONE_IS_MISSING {
+                    Self::drop_all_queued_buffers(aggregator, sink_pad_names);
+                }
+
+                // Return Err
+                return Err(MuxingError(
+                    "A pad did not have a queued buffer. Dropped all other buffers.",
+                ));
+            }
+        }
+        // Return Ok if all pads have a queued buffer
+        Ok(())
+    }
+
+    /// Drop all queued buffers on the given `aggregator`.
+    /// # Arguments
+    /// * `aggregator` - The aggregator to drop all queued buffers for.
+    /// * `sink_pad_names` - The vector containing all sink pad names.
+    #[inline]
+    fn drop_all_queued_buffers(aggregator: &gst_base::Aggregator, sink_pad_names: &Vec<String>) {
+        // Iterate over all sink pads
+        for sink_pad_name in sink_pad_names.iter() {
+            // Get the sink pad given its name
+            let sink_pad = Self::get_aggregator_pad(aggregator, sink_pad_name);
+            // Drop all buffers present on this pad
+            while sink_pad.drop_buffer() {}
+        }
     }
 
     /// Extracts the relevant fields from the pad's CAPS and converts them into a tuple containing
@@ -320,6 +555,7 @@ impl RgbdMux {
     /// # Arguments
     /// * `pad_caps` - A reference to the pad's CAPS.
     /// * `pad_name` - The name of the stream we're currently generating CAPS for.
+    #[inline]
     fn push_sink_caps_format(
         &self,
         pad_caps: &gst::Caps,
@@ -360,6 +596,7 @@ impl RgbdMux {
     /// pads on the muxer.
     /// # Arguments
     /// * `element` - The element that represents the `rgbdmux`.
+    #[inline]
     fn get_current_downstream_caps(&self, element: &gst::Element) -> gst::Caps {
         // First lock sink_pads, so that we may iterate it
         let sink_pads = self
@@ -417,6 +654,7 @@ impl RgbdMux {
     /// generates CAPS based on the sink_pads of the muxer and their current CAPS.
     /// # Arguments
     /// * `element` - The element that represents the `rgbdmux`.
+    #[inline]
     fn renegotiate_downstream_caps(&self, element: &gst::Element) {
         gst_debug!(self.cat, obj: element, "renegotiate_downstream_caps");
         // Figure out the new caps the element should output
