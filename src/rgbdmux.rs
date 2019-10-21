@@ -310,7 +310,7 @@ impl RgbdMux {
         tags.get_mut()
             .ok_or(MuxingError("Could not get mutable reference to tags"))?
             .add::<gst::tags::Title>(&&pad_name[5..], gst::TagMergeMode::Append);
-        let mut_buffer = buffer.make_mut();
+        let mut_buffer = buffer.get_mut().ok_or(MuxingError("Could not get mutable reference to buffer"))?;
         TagsMeta::add(mut_buffer, &mut tags);
         Ok(buffer)
     }
