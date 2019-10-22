@@ -1,5 +1,5 @@
 from glob import glob
-from os import environ, listdir, makedirs, path, pathsep, remove
+from os import chmod, environ, listdir, makedirs, path, pathsep, remove
 from shutil import copy, copyfileobj, rmtree
 
 from conans import ConanFile
@@ -192,6 +192,76 @@ class env(Generator):
                 content += "export {0}={1}\n".format(var, '"%s"' % val)
 
         return content
+
+
+class tools(Generator):
+    def __init__(self, conanfile):
+        super().__init__(conanfile)
+        self.env = conanfile.env
+
+    @property
+    def filename(self):
+        pass
+
+    @property
+    def content(self):
+        conanfile = self.conanfile
+        if not path.isdir(self.output_path):
+            makedirs(self.output_path)
+
+        # Find bin, lib and pkgconfig paths
+        bin_paths = []
+        lib_paths = []
+        prefix_paths = []
+        for _, cpp_info in self.deps_build_info.dependencies:
+            prefix_paths.append(cpp_info.rootpath)
+            lib_path = path.join(cpp_info.rootpath, "lib")
+            if path.isdir(lib_path):
+                lib_paths.append(lib_path)
+            bin_path = path.join(cpp_info.rootpath, "bin")
+            if path.isdir(bin_path):
+                bin_paths.append(bin_path)
+
+        # Generate wrapper bins
+        env_vars = 'export PATH=%s:"$PATH"\n' % pathsep.join(
+            '"%s"' % p for p in bin_paths
+        )
+        env_vars += 'export LD_LIBRARY_PATH=%s:"$LD_LIBRARY_PATH"\n' % pathsep.join(
+            '"%s"' % p for p in lib_paths
+        )
+        env_vars += 'export SOURCE_PATH=%s:"$SOURCE_PATH"\n' % pathsep.join(
+            '"%s"' % path.join(p, "src")
+            for p in prefix_paths
+            if path.isdir(path.join(p, "src"))
+        )
+        for var, val in self.env.items():
+            if type(val) is list:
+                env_vars += 'export {0}={1}:"${0}"\n'.format(
+                    var, pathsep.join('"%s"' % p for p in val)
+                )
+            else:
+                env_vars += "export {0}={1}\n".format(var, '"%s"' % val)
+
+        # Find rootpath
+        # 'dependencies' is not indexable
+        for _, cpp_info in self.deps_build_info.dependencies:
+            rootpath = cpp_info.rootpath
+            break
+
+        # Generate executable wrappers
+        bin_path = path.join(rootpath, "bin")
+        if not path.isdir(bin_path):
+            return ""
+        for exe_name in listdir(bin_path):
+            exe_path = path.join(bin_path, exe_name)
+            exe_out_path = path.join(self.output_path, exe_name)
+            with open(exe_out_path, "w") as exe:
+                exe.write("#!/usr/bin/env sh\n")
+                exe.write(env_vars)
+                exe.write('exec %s "$@"' % exe_path)
+            chmod(exe_out_path, 0o775)
+
+        return {}
 
 
 class EnvPackage(ConanFile):
