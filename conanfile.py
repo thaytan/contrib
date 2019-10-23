@@ -21,6 +21,7 @@ class PythonConan(ConanFile):
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+        self.requires("bzip2/[>=1.0.8]@%s/stable" % self.user)
 
     def source(self):
         tools.get(
