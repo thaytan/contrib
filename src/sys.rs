@@ -32,7 +32,6 @@ extern "C" {
         buffer: *mut gst_sys::GstBuffer,
         buffer_meta: *mut gst_sys::GstBuffer,
     ) -> *mut BufferMeta;
-    pub fn buffer_meta_remove(buffer: *mut gst_sys::GstBuffer, tags_meta: *mut gst_sys::GstBuffer) -> glib::types::Type::Bool;
     pub fn tags_meta_api_get_type() -> glib_sys::GType;
     pub fn tags_meta_get_info() -> *const gst_sys::GstMetaInfo;
     pub fn tags_meta_get(buffer: *mut gst_sys::GstBuffer) -> *mut TagsMeta;
@@ -40,5 +39,4 @@ extern "C" {
         buffer: *mut gst_sys::GstBuffer,
         tags_meta: *mut gst_sys::GstTagList,
     ) -> *mut TagsMeta;
-    pub fn tags_meta_remove(buffer: *mut gst_sys::GstBuffer, tags_meta: *mut gst_sys::GstTagList) -> glib::types::Type::Bool;
 }

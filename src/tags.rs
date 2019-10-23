@@ -11,6 +11,23 @@ use crate::sys;
 pub use crate::sys::TagsMeta;
 
 impl TagsMeta {
+    /// Adds a TagList as metadata onto the given `buffer`.
+    /// # Arguments
+    /// * `buffer` - The buffer onto which the TagList should be added.
+    /// * `meta_tags` - The TagsList that should be added as metadata.
+    /// # Example
+    /// ```
+    /// use gstreamer_depth_meta::tags::TagsMeta;
+    /// gstreamer::init().unwrap();
+    /// let mut main_buffer = gstreamer::Buffer::new();
+    /// let mut tags = gstreamer::tags::TagList::new();
+    /// tags.get_mut().unwrap()
+    ///     .add::<gstreamer::tags::Title>(&"example-tag", gstreamer::TagMergeMode::Append);
+    /// TagsMeta::add(
+    ///    main_buffer.make_mut(),
+    ///    &mut tags,
+    /// );
+    /// ```
     pub fn add<'a>(
         buffer: &'a mut BufferRef,
         meta_tags: &mut gst::TagList,
@@ -23,16 +40,6 @@ impl TagsMeta {
 
     pub fn get(buffer: &mut BufferRef) -> &TagsMeta {
         unsafe { &*sys::tags_meta_get(buffer.as_mut_ptr()) }
-    }
-
-    pub fn remove(buffer: &mut BufferRef, meta_tags: &mut gst::TagList) -> bool {
-        let result = unsafe { sys::tags_meta_remove(buffer.as_mut_ptr(), meta_tags.as_mut_ptr()) };
-        if result == 0 {
-            false
-        }
-        else {
-            true
-        }
     }
 }
 
@@ -49,5 +56,56 @@ impl fmt::Debug for TagsMeta {
         f.debug_struct("TagsMeta")
             .field("tags", &self.tags)
             .finish()
+    }
+}
+
+mod tests {
+    use super::*;
+
+    fn get_tags(tag: &str) -> gst::TagList {
+        let mut tags = gst::tags::TagList::new();
+        tags.get_mut().unwrap().add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
+        tags
+    }
+
+    #[test]
+    fn add_and_get_expect_tags_equal() {
+        // Arrange
+        gst::init().unwrap();
+        let input_title = "example-tag";
+        let mut buffer = gst::Buffer::new();
+        let mut tags = get_tags(input_title);
+
+        // Act
+        TagsMeta::add(buffer.make_mut(), &mut tags);
+
+        // Assert
+        // convert get the Title tag from the MetaAPI
+        let meta = buffer.get_meta::<TagsMeta>().unwrap();
+        let tag_list = unsafe { gst::tags::TagList::from_glib_none(meta.tags) };
+
+        // Get the tag title from GstTagList
+        let gst_tag_title = &tag_list.get::<gst::tags::Title>().unwrap();
+        let title = gst_tag_title.get().unwrap();
+
+        assert_eq!(input_title, title);
+    }
+
+    #[test]
+    fn add_and_remove_expect_no_tags_present() {
+        // Arrange
+        gst::init().unwrap();
+        let input_title = "example-tag";
+        let mut buffer = gst::Buffer::new();
+        let mut tags = get_tags(input_title);
+        let tags_meta = TagsMeta::add(buffer.make_mut(), &mut tags);
+
+        // Act
+        tags_meta.remove();
+
+        // Assert
+        for i in buffer.iter_meta::<TagsMeta>() {
+            assert_eq!(true, false, "A TagsMeta was still present on the buffer: {:#?}", i)
+        }
     }
 }
