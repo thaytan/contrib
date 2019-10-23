@@ -3,18 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "3.3"
-    except:
-        return None
-
 class BisonConan(ConanFile):
     name = "bison"
-    version = get_version()
-    url = "https://gitlab.com/aivero/public/conan/conan-bison"
+    version = tools.get_env("GIT_TAG", "3.3")
+    url = "https://gitlab.com/aivero/public/conan/conan" + name
     description = "Bison is a general-purpose parser generator"
     license = "GPL-3.0-or-later"
     settings = "os", "arch", "compiler", "build_type"
@@ -34,4 +26,6 @@ class BisonConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.BISON_PKGDATADIR = os.path.join(self.package_folder, "share", "bison")
+        self.env_info.BISON_PKGDATADIR = os.path.join(
+            self.package_folder, "share", "bison"
+        )
