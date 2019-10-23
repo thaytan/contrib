@@ -6,7 +6,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class GdbConan(ConanFile):
     name = "gdb"
     version = tools.get_env("GIT_TAG", "8.3")
-    url = "https://gitlab.com/aivero/public/conan/conan-bison"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "The GNU Debugger"
     license = "GPL3"
     settings = "os", "arch", "compiler", "build_type"
@@ -15,6 +15,7 @@ class GdbConan(ConanFile):
     def build_requirements(self):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
+        self.build_requires("texinfo/[>=6.6]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
