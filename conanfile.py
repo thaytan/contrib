@@ -24,8 +24,8 @@ class Bzip2Conan(ConanFile):
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
-            self.run("make -f Makefile-libbz2_so")
-            autotools.make(target="bzip2")
+            self.run("make -f Makefile-libbz2_so CC=%s" % tools.get_env("CC"))
+            autotools.make(target="bzip2", args=["CC=%s" % tools.get_env("CC")])
             autotools.install(args=["PREFIX=" + self.package_folder])
 
     def package(self):
