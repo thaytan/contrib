@@ -9,7 +9,7 @@ class NodejsConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Evented I/O for V8 javascript"
     license = "MIT"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "arch", "compiler"
     generators = "env"
 
     def build_requirements(self):
@@ -28,6 +28,6 @@ class NodejsConan(ConanFile):
     def build(self):
         args = ["--without-npm", "--shared-openssl", "--shared-zlib"]
         with tools.chdir("node-%s" % self.version):
-            autotools = AutoToolsBuildEnvironment(self)
+            autotools = AutoToolsBuildEnvironment(self, build_type="Release")
             autotools.configure(args=args)
             autotools.install()
