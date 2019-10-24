@@ -1110,7 +1110,7 @@ impl RealsenseSrc {
     fn add_per_frame_metadata(&self, buffer: &mut gst::Buffer, frame_meta: Vec<u8>, tag: &str) {
         // If we were able to read some metadata add it to the buffer
         let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
-        let tag_name = format!("{}_meta", tag);
+        let tag_name = format!("{}meta", tag);
         let mut tags = gst::tags::TagList::new();
         tags.get_mut()
             .expect("Cannot get mutable reference to `tags`")
@@ -1188,6 +1188,13 @@ impl RealsenseSrc {
         // Determine whether any of the previous streams is enabled
         let is_earlier_stream_enabled = previous_streams.iter().any(|s| *s);
 
+        // Check if we should attach RealSense per-frame meta and do that if so
+        if settings.include_per_frame_metadata {
+            // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
+            let md = self.get_frame_meta(frame)?;
+            self.add_per_frame_metadata(&mut buffer, md, tag);
+        }
+
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_earlier_stream_enabled {
             // Attach this new buffer as meta to the output buffer
@@ -1207,12 +1214,6 @@ impl RealsenseSrc {
                     .expect("Could not get mutable reference to `output_buffer`"),
                 &mut tags,
             );
-        }
-
-        if settings.include_per_frame_metadata {
-            // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
-            let md = self.get_frame_meta(frame)?;
-            self.add_per_frame_metadata(output_buffer, md, tag);
         }
 
         // Release the frame
