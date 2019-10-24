@@ -28,6 +28,6 @@ class NodejsConan(ConanFile):
     def build(self):
         args = ["--without-npm", "--shared-openssl", "--shared-zlib"]
         with tools.chdir("node-%s" % self.version):
-            autotools = AutoToolsBuildEnvironment(self, build_type="Release")
+            autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()
