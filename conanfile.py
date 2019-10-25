@@ -79,7 +79,7 @@ class env(Generator):
                 remove(f)
 
             # Delete unneeded folders in share
-            for folder in ("man", "doc", "gdb", "bash-completion", "gtk-doc"):
+            for folder in ("man", "doc", "bash-completion", "gtk-doc"):
                 remove_folder(path.join(conanfile.package_folder, "share", folder))
 
             # Fix shebangs
