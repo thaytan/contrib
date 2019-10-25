@@ -31,6 +31,6 @@ class GdbConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.PYTHONPATH = os.path.join(
-            self.package_folder, "share", "gdb", "python"
+        self.env_info.PYTHONPATH.append(
+            os.path.join(self.package_folder, "share", "gdb", "python")
         )
