@@ -36,6 +36,8 @@ const DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS: bool = true;
 /// A flag that determines whether to send gap events if buffers are
 /// explicitly dropped
 const DEFAULT_SEND_GAP_EVENTS: bool = false;
+/// Default framerate of the streams
+const DEFAULT_FRAMERATE: i32 = 30;
 
 static PROPERTIES: [subclass::Property; 3] = [
     subclass::Property("drop-if-missing", |name| {
@@ -101,6 +103,8 @@ struct RgbdMuxClockInternals {
     previous_timestamp: gst::ClockTime,
     /// The duration of one frameset
     frameset_duration: gst::ClockTime,
+    /// Framerate of the streams
+    framerate: gst::Fraction,
 }
 
 /// A struct containing properties
@@ -134,6 +138,7 @@ impl ObjectSubclass for RgbdMux {
                 },
             }),
             clock_internals: Mutex::new(RgbdMuxClockInternals {
+                framerate: gst::Fraction::new(DEFAULT_FRAMERATE, 1),
                 previous_timestamp: gst::CLOCK_TIME_NONE,
                 frameset_duration: gst::CLOCK_TIME_NONE,
             }),
@@ -802,6 +807,20 @@ impl RgbdMux {
                     let src_field_name = format!("{}_{}", stream_name, field);
                     src_caps.set(&src_field_name, &value.get::<i32>().unwrap());
                 }
+                "framerate" => {
+                    let clock_internals = &mut self
+                        .clock_internals
+                        .lock()
+                        .expect("Could not lock clock internals");
+                    clock_internals.framerate = value.get::<gst::Fraction>().unwrap();
+                    // Update also the frameset_duration based on framerate
+                    let (num, den): (i32, i32) = clock_internals.framerate.into();
+                    let framerate_fraction = num as f32 / den as f32;
+                    // Add 25% to the duration
+                    clock_internals.frameset_duration = gst::ClockTime::from_nseconds(
+                        (1.25 * 10_f32.powi(9) / framerate_fraction) as u64,
+                    );
+                }
                 _ => {
                     gst_info!(
                         self.cat,
@@ -834,14 +853,21 @@ impl RgbdMux {
             .collect::<Vec<&str>>()
             .join(",");
 
-        // TODO: Remove hardcoded framerate
         let mut downstream_caps = gst::Caps::new_simple(
             "video/rgbd",
             &[
                 ("streams", &streams),
-                ("framerate", &gst::Fraction::new(30, 1)),
+                (
+                    "framerate",
+                    &self
+                        .clock_internals
+                        .lock()
+                        .expect("Could not lock clock internals")
+                        .framerate,
+                ),
             ],
         );
+
         let mut_caps = downstream_caps
             .make_mut()
             .get_mut_structure(0)
@@ -862,14 +888,6 @@ impl RgbdMux {
                 None => { /*ignore*/ }
             }
         }
-
-        // Update the frameset_duration based on framerate
-        // TODO: fix
-        // Few extra ms are added just to reduce the number of drops
-        self.clock_internals
-            .lock()
-            .expect("Could not lock internals")
-            .frameset_duration = gst::ClockTime::from_nseconds(1200000000 / 30);
 
         gst_info!(
             self.cat,
