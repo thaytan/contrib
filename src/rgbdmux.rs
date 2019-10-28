@@ -596,7 +596,6 @@ impl RgbdMux {
     /// * `sink_pad_names` - The vector containing all sink pad names.
     /// # Returns
     /// * `Err(MuxingError)` - if frames
-    /// TODO: fix
     #[inline]
     fn check_synchronisation(
         &self,
