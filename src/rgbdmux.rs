@@ -32,7 +32,7 @@ const DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING: bool = true;
 /// A flag that determines what to do if the timestamps (pts) of the
 /// received buffers differ. If set to true, the buffers that are
 /// behind, i.e. those that have the smallest pts, get dropped.
-const DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS: bool = false;
+const DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS: bool = true;
 /// A flag that determines whether to send gap events if buffers are
 /// explicitly dropped
 const DEFAULT_SEND_GAP_EVENTS: bool = false;
@@ -297,8 +297,10 @@ impl AggregatorImpl for RgbdMux {
 
         if internals.settings.drop_if_missing {
             // Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers.
-            let res = self.drop_buffers_if_one_missing(aggregator, sink_pad_names);
-            if res.is_err() {
+            if self
+                .drop_buffers_if_one_missing(aggregator, sink_pad_names)
+                .is_err()
+            {
                 // If all buffers were dropped
                 if internals.settings.send_gap_events {
                     // Send gap event downstream
@@ -320,8 +322,8 @@ impl AggregatorImpl for RgbdMux {
                     // Send gap event downstream
                     self.send_gap_event(aggregator);
                 }
-                // Return CustomError1
-                return Err(gst::FlowError::CustomError1);
+                // Return CustomError
+                return Err(gst::FlowError::CustomError);
             }
         }
 
@@ -453,7 +455,7 @@ impl AggregatorImpl for RgbdMux {
     /// This causes deadline based aggregation to occur. Returning GST_CLOCK_TIME_NONE causes the element to
     /// wait for buffers on all sink pads before aggregating.
     /// # Arguments
-    /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
+    /// * `_aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
     fn get_next_time(&self, _aggregator: &gst_base::Aggregator) -> gst::ClockTime {
         let clock_internals = &self
             .clock_internals
@@ -601,8 +603,73 @@ impl RgbdMux {
         aggregator: &gst_base::Aggregator,
         sink_pad_names: &Vec<String>,
     ) -> Result<(), MuxingError> {
+        // Get timestamps of buffers queued on the sink pads
+        let timestamps: Vec<(String, gst::ClockTime)> =
+            self.get_timestamps(aggregator, sink_pad_names);
+
+        // Find all sink pads, which have timestamps that are behind
+        // Assign min to the first pad
+        let mut sink_pads_with_late_timestamps: Vec<&String> = vec![&timestamps[0].0];
+        let mut min_timestamp = &timestamps[0].1;
+        // Iterate over all timestamps except the first one
+        for (sink_pad_name, timestamp) in timestamps.iter().skip(1) {
+            if timestamp == min_timestamp {
+                // If the pad's buffer has the same timestamp, add it to the list
+                sink_pads_with_late_timestamps.push(&sink_pad_name);
+            } else if timestamp < min_timestamp {
+                // If the timestamp is smaller, clear the list and add the current pad
+                sink_pads_with_late_timestamps.clear();
+                sink_pads_with_late_timestamps.push(&sink_pad_name);
+                // Update the minimum
+                min_timestamp = &timestamp;
+            }
+        }
+
+        // If all pads share the same timestamp, they are synchronised
+        if sink_pads_with_late_timestamps.len() == sink_pad_names.len() {
+            return Ok(());
+        }
+
+        // If the streams are not synchronised, iterate over timestamps and
+        // drop all buffers that have timestamp equal to the min timestamp, i.e.
+        // (those that are behind)
+        for sink_pad_name_with_late_timestamp in sink_pads_with_late_timestamps.iter() {
+            // Get sink pad with the given name
+            let sink_pad = Self::get_aggregator_pad(aggregator, &sink_pad_name_with_late_timestamp);
+            // Drop the buffer
+            sink_pad.drop_buffer();
+        }
+
+        // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
+        self.clock_internals
+            .lock()
+            .expect("Could not lock internals")
+            .previous_timestamp = gst::CLOCK_TIME_NONE;
+
+        gst_info!(
+            self.cat,
+            obj: aggregator,
+            "Dropped buffers to synchronise the streams"
+        );
+
+        // Return error
+        Err(MuxingError("Dropped buffers to synchronise the streams"))
+    }
+
+    /// Returns timestamps of buffers queued on the sink pads
+    /// # Arguments
+    /// * `aggregator` - The aggregator to consider.
+    /// * `sink_pad_names` - The vector containing all sink pad names.
+    /// # Returns
+    /// * `Vec<(String, gst::ClockTime)>` - A pair if sink pad names and the corresponding pts
+    #[inline]
+    fn get_timestamps(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        sink_pad_names: &Vec<String>,
+    ) -> Vec<(String, gst::ClockTime)> {
         // Create a vector for storing timestamps of all buffers
-        let mut timestamps: Vec<(&String, gst::ClockTime)> =
+        let mut timestamps: Vec<(String, gst::ClockTime)> =
             Vec::with_capacity(sink_pad_names.len());
 
         // Iterate over all sink pads
@@ -620,52 +687,11 @@ impl RgbdMux {
             let buffer = buffer.unwrap();
 
             // Push the timestamp with the corresponing pad name
-            timestamps.push((sink_pad_name, buffer.as_ref().get_pts()));
+            timestamps.push((sink_pad_name.to_string(), buffer.as_ref().get_pts()));
         }
 
-        println!("timestamps: {:#?}", timestamps);
-
-        // Find miximum and maximum timestamp
-        let min = timestamps
-            .iter()
-            .min()
-            .ok_or(MuxingError("No buffer was received"))?;
-        let max = timestamps
-            .iter()
-            .max()
-            .ok_or(MuxingError("No buffer was received"))?;
-
-        // If min and max timestamps are equal, the streams are synchronised
-        if min.1 == max.1 {
-            return Ok(());
-        }
-
-        // If the streams are not synchronised, drop frames that are behind
-        gst_info!(
-            self.cat,
-            obj: aggregator,
-            "Dropped buffers to synchronise the streams"
-        );
-
-        // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
-        self.clock_internals
-            .lock()
-            .expect("Could not lock internals")
-            .previous_timestamp = gst::CLOCK_TIME_NONE;
-
-        // Iterate over timestamps and drop all buffers that have timestamp
-        // equal to the min timestamp (those that are behind)
-        for timestamp in timestamps.iter() {
-            if min.1 == timestamp.1 {
-                // Get sink pad with the given name
-                let sink_pad = Self::get_aggregator_pad(aggregator, timestamp.0);
-                // Drop the buffer
-                sink_pad.drop_buffer();
-            }
-        }
-
-        // Return error
-        Err(MuxingError("Dropped buffers to synchronise the streams"))
+        // Return the timestamps
+        timestamps
     }
 
     /// Mux all buffers to a single output buffer. All buffers are properly tagget with a title.
