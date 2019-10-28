@@ -544,7 +544,7 @@ impl RgbdMux {
 
             // Check whether the aggregator pad has a buffer available
             if !sink_pad.has_buffer() {
-                gst_info!(
+                gst_warning!(
                     self.cat,
                     obj: aggregator,
                     "No buffer is queued on `{}` pad. Dropping all other buffers.",
@@ -645,7 +645,7 @@ impl RgbdMux {
             .expect("Could not lock internals")
             .previous_timestamp = gst::CLOCK_TIME_NONE;
 
-        gst_info!(
+        gst_warning!(
             self.cat,
             obj: aggregator,
             "Dropped buffers to synchronise the streams"
