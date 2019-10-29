@@ -9,6 +9,7 @@ def get_version():
     except:
         return None
 
+
 class MesaConan(ConanFile):
     name = "mesa"
     version = get_version()
@@ -16,12 +17,8 @@ class MesaConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "An open-source implementation of the OpenGL specification"
-    options = {
-        "x11": [True, False],
-    }
-    default_options = (
-        "x11=True",
-    )
+    options = {"x11": [True, False]}
+    default_options = ("x11=True",)
     generators = "env"
 
     def build_requirements(self):
@@ -29,9 +26,11 @@ class MesaConan(ConanFile):
         self.build_requires("gettext/[>=0.20.1]@%s/stable" % self.user)
         self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
         self.build_requires("flex/[>=2.6.4]@%s/stable" % self.user)
+        self.build_requires("python-mako/[>=1.1.0]@%s/stable" % self.user)
         self.build_requires("zlib/[>=1.2.11]@%s/stable" % self.user)
         self.build_requires("expat/[>=2.2.7]@%s/stable" % self.user)
         self.build_requires("libdrm/[>=2.4.99]@%s/stable" % self.user)
+        self.build_requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
         if self.options.x11:
             self.build_requires("libx11/[>=1.6.8]@%s/stable" % self.user)
             self.build_requires("libxext/[>=1.3.4]@%s/stable" % self.user)
@@ -46,7 +45,15 @@ class MesaConan(ConanFile):
         tools.get("https://mesa.freedesktop.org/archive/mesa-%s.tar.xz" % self.version)
 
     def build(self):
-        args = ["--auto-features=disabled", "--wrap-mode=nofallback", "-Dplatforms=x11", "-Ddri-drivers=i915,i965", "-Dvulkan-drivers=", "-Dgallium-drivers="]
+        args = [
+            "--auto-features=disabled",
+            "--wrap-mode=nofallback",
+            "-Dglvnd=true",
+            "-Dplatforms=x11",
+            "-Ddri-drivers=i915,i965",
+            "-Dvulkan-drivers=",
+            "-Dgallium-drivers=",
+        ]
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
