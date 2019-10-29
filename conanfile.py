@@ -50,10 +50,11 @@ class MesaConan(ConanFile):
             "--wrap-mode=nofallback",
             "-Dglvnd=true",
             "-Dplatforms=x11",
-            "-Ddri-drivers=i915,i965",
             "-Dvulkan-drivers=",
             "-Dgallium-drivers=",
         ]
+        if self.settings.arch == "x86_64":
+            args.append("-Ddri-drivers=i915,i965")
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
