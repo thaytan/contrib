@@ -302,33 +302,21 @@ impl AggregatorImpl for RgbdMux {
 
         if internals.settings.drop_if_missing {
             // Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers.
-            if self
-                .drop_buffers_if_one_missing(aggregator, sink_pad_names)
-                .is_err()
-            {
-                // If all buffers were dropped
-                if internals.settings.send_gap_events {
-                    // Send gap event downstream
-                    self.send_gap_event(aggregator);
-                }
-                // Return CustomError
-                return Err(gst::FlowError::CustomError);
+            self.drop_buffers_if_one_missing(aggregator, sink_pad_names)
+                .map_err(|_| gst::FlowError::CustomError)?;
+            if internals.settings.send_gap_events {
+                // Send gap event downstream
+                self.send_gap_event(aggregator);
             }
         }
 
         if internals.settings.drop_to_synchronise {
             // Make sure the streams are synchronised
-            if self
-                .check_synchronisation(aggregator, sink_pad_names)
-                .is_err()
-            {
-                // If buffers lacking behind were dropped
-                if internals.settings.send_gap_events {
-                    // Send gap event downstream
-                    self.send_gap_event(aggregator);
-                }
-                // Return CustomError
-                return Err(gst::FlowError::CustomError);
+            self.check_synchronisation(aggregator, sink_pad_names)
+                .map_err(|_| gst::FlowError::CustomError)?;
+            if internals.settings.send_gap_events {
+                // Send gap event downstream
+                self.send_gap_event(aggregator);
             }
         }
 
