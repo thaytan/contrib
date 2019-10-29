@@ -3,17 +3,9 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.16.0"
-    except:
-        return None
-
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.16.0")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
@@ -50,8 +42,11 @@ class GStreamerPluginsBaseConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("mesa/[>=19.2.0]@%s/stable" % self.user)
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
+            self.build_requires(
+                "gobject-introspection/[>=1.59.3]@%s/stable" % self.user
+            )
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -61,23 +56,39 @@ class GStreamerPluginsBaseConan(ConanFile):
         if self.options.opus:
             self.requires("opus/[>=1.3.1]@%s/stable" % self.user)
         if self.options.pango:
-            self.requires("pango/[>=1.43.0, include_prerelease=True]@%s/stable" % self.user)
+            self.requires(
+                "pango/[>=1.43.0, include_prerelease=True]@%s/stable" % self.user
+            )
         if self.options.x11:
             self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--auto-features=disabled", "-Dgl_platform=egl"]
-        args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
+        args.append(
+            "-Dintrospection="
+            + ("enabled" if self.options.introspection else "disabled")
+        )
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dx11=" + ("enabled" if self.options.x11 else "disabled"))
-        args.append("-Dvideotestsrc=" + ("enabled" if self.options.videotestsrc else "disabled"))
-        args.append("-Dvideoconvert=" + ("enabled" if self.options.videoconvert else "disabled"))
+        args.append(
+            "-Dvideotestsrc=" + ("enabled" if self.options.videotestsrc else "disabled")
+        )
+        args.append(
+            "-Dvideoconvert=" + ("enabled" if self.options.videoconvert else "disabled")
+        )
         args.append("-Dapp=" + ("enabled" if self.options.app else "disabled"))
-        args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
-        args.append("-Dtypefind=" + ("enabled" if self.options.typefind else "disabled"))
+        args.append(
+            "-Dplayback=" + ("enabled" if self.options.playback else "disabled")
+        )
+        args.append(
+            "-Dtypefind=" + ("enabled" if self.options.typefind else "disabled")
+        )
         args.append("-Dorc=" + ("enabled" if self.options.orc else "disabled"))
         args.append("-Dopus=" + ("enabled" if self.options.opus else "disabled"))
         args.append("-Dpango=" + ("enabled" if self.options.pango else "disabled"))
@@ -86,4 +97,6 @@ class GStreamerPluginsBaseConan(ConanFile):
         meson.install()
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(
+            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
+        )
