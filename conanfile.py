@@ -47,7 +47,7 @@ class GstreamerNvJetsonEgl(ConanFile):
     def build(self):
         with tools.chdir("gstegl_src/gst-egl"):
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
+            autotools.configure()
             autotools.make()
             autotools.install()
 
