@@ -1,18 +1,9 @@
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "19.2.0"
-    except:
-        return None
-
-
 class MesaConan(ConanFile):
     name = "mesa"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "19.2.0")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
@@ -30,7 +21,6 @@ class MesaConan(ConanFile):
         self.build_requires("zlib/[>=1.2.11]@%s/stable" % self.user)
         self.build_requires("expat/[>=2.2.7]@%s/stable" % self.user)
         self.build_requires("libdrm/[>=2.4.99]@%s/stable" % self.user)
-        self.build_requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
         if self.options.x11:
             self.build_requires("libx11/[>=1.6.8]@%s/stable" % self.user)
             self.build_requires("libxext/[>=1.3.4]@%s/stable" % self.user)
@@ -40,6 +30,7 @@ class MesaConan(ConanFile):
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://mesa.freedesktop.org/archive/mesa-%s.tar.xz" % self.version)
