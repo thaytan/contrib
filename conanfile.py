@@ -48,10 +48,8 @@ class GStreamerPluginsGoodConan(ConanFile):
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/archive/%s/gst-plugins-good-%s.tar.gz"
-            % (self.version, self.version)
-        )
+        git = tools.Git(folder="gst-plugins-good-" + self.version)
+        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0")
 
     def build(self):
         args = ["--auto-features=disabled"]
