@@ -60,7 +60,7 @@ class MesaConan(ConanFile):
         if self.settings.arch == "x86_64":
             args.append("-Ddri-drivers=i915,i965")
         if self.settings.arch == "armv8":
-            args.append("-Ddri-drivers=tegra")
+            args.append("-Dgallium-drivers=tegra")
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
