@@ -389,7 +389,7 @@ impl RgbdDemux {
                     );
                     gst::FlowError::Error
                 }),
-        ); // missing ; means fail if we cannot push main buffer.
+        ); // removing ; means fail if we cannot push main buffer.
         Ok(gst::FlowSuccess::Ok)
     }
 
