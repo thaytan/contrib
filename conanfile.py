@@ -1,17 +1,9 @@
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.4.99"
-    except:
-        return None
-
 class LibdrmConan(ConanFile):
     name = "libdrm"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.4.99")
     license = "MIT"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Direct Rendering Manager headers and kernel modules"
@@ -29,7 +21,12 @@ class LibdrmConan(ConanFile):
         tools.get("http://dri.freedesktop.org/libdrm/libdrm-%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--auto-features=disabled", "-Dradeon=false", "-Damdgpu=false", "-Dnouveau=false"]
+        args = [
+            "--auto-features=disabled",
+            "-Dradeon=false",
+            "-Damdgpu=false",
+            "-Dnouveau=true",
+        ]
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
