@@ -54,8 +54,7 @@ class GstreamerNvJetsonEgl(ConanFile):
             self.package_folder, "lib", "pkgconfig", "gstreamer-egl-1.0.pc"
         )
         self.run(
-            'sed -i "s/Requires: .*/Requires: gstreamer-1.0 libglvnd libx11/" %s'
-            % pc_path
+            'sed -i "s/Requires: .*/Requires: gstreamer-1.0 libglvnd x11/" %s' % pc_path
         )
         self.run('sed -i "s/Libs: .*/Libs: -L{libdir} -lgstegl-1.0/" %s' % pc_path)
         self.run('sed -i "s/Cflags: .*/Cflags: -I{includedir}/" %s' % pc_path)
