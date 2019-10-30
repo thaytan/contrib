@@ -1,5 +1,5 @@
-from conans import ConanFile, Meson, tools
 import os
+from conans import ConanFile, Meson, tools
 
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
@@ -24,13 +24,19 @@ class GStreamerDevtoolsConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_reqires("git/[>=2.32.0]@&s/stable" & self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires(
+            "gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user)
+        )
         self.requires("json-glib/[>=1.4.4]@%s/stable" % self.user)
-        self.requires("cairo/[>=1.16.0]@%s/stable" % self.user)
+
+    def source(self):
+        git = tools.Git("gst-devtools-" + self.version)
+        git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "aivero_mse_compare_changes")
+
 
     def build(self):
         meson = Meson(self)
