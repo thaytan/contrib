@@ -787,6 +787,10 @@ impl BaseSrcImpl for RealsenseSrc {
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
+        let framerate = streams.framerate;
+        let frame_duration = std::time::Duration::from_secs_f32(framerate as f32 / 1 as f32);
+        let gst_clock_frame_duration = gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64);
+
         // Attach `depth` frame if enabled
         if streams.enable_depth {
             self.extract_frame(
@@ -798,6 +802,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 &[],
                 settings,
                 timestamp,
+                gst_clock_frame_duration
             )?;
         }
 
@@ -812,6 +817,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 &[streams.enable_depth],
                 settings,
                 timestamp,
+                gst_clock_frame_duration
             )?;
         }
 
@@ -826,6 +832,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 &[streams.enable_depth, streams.enable_infra1],
                 settings,
                 timestamp,
+                gst_clock_frame_duration
             )?;
         }
 
@@ -844,6 +851,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 ],
                 settings,
                 timestamp,
+                gst_clock_frame_duration
             )?;
         }
 
@@ -1154,6 +1162,7 @@ impl RealsenseSrc {
         previous_streams: &[bool],
         settings: &Settings,
         timestamp: Option<gst::ClockTime>,
+        frame_duration: gst::ClockTime,
     ) -> Result<(), RealsenseError> {
         // Extract the frame from frames based on its type and id
         let frame = find_frame_with_id(frames, stream_type, stream_id).ok_or(RealsenseError(
@@ -1184,6 +1193,7 @@ impl RealsenseSrc {
             buffer_mut_ref.set_pts(timestamp);
             buffer_mut_ref.set_dts(timestamp);
         };
+        buffer_mut_ref.set_duration(frame_duration);
 
         // Determine whether any of the previous streams is enabled
         let is_earlier_stream_enabled = previous_streams.iter().any(|s| *s);
