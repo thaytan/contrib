@@ -24,7 +24,7 @@ class GStreamerDevtoolsConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
-        self.build_requires("git/[>=2.32.0]@&s/stable" & self.user)
+        self.build_requires("git/[>=2.32.0]@&s/stable" % self.user)
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
