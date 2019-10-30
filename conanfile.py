@@ -50,6 +50,12 @@ class GstreamerNvJetsonEgl(ConanFile):
             autotools.configure()
             autotools.make()
             autotools.install()
+        pc_path = os.path.join(self.package_folder, "pkgconfig", "gstreamer-egl-1.0.pc")
+        self.run(
+            'sed "s/Requires: .*/Requires: gstreamer-1.0 libglvnd libx11/" %s' % pc_path
+        )
+        self.run('sed "s/Libs: .*/Libs: -L{libdir} -lgstegl-1.0/" %s' % pc_path)
+        self.run('sed "s/Cflags: .*/Cflags: -I{includedir}/" %s' % pc_path)
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(
