@@ -34,9 +34,8 @@ class GStreamerDevtoolsConan(ConanFile):
         self.requires("json-glib/[>=1.4.4]@%s/stable" % self.user)
 
     def source(self):
-        git = tools.Git("gst-devtools-" + self.version)
+        git = tools.Git(folder="src/gst-devtools-" + self.version)
         git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "aivero_mse_compare_changes")
-
 
     def build(self):
         meson = Meson(self)
@@ -44,5 +43,5 @@ class GStreamerDevtoolsConan(ConanFile):
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         args.append("-Dtests=" + ("enabled" if self.options.tests else "disabled"))
         args.append("-Dnls=" + ("enabled" if self.options.nls else "disabled"))
-        meson.configure(source_folder="gst-devtools-" + self.version, args=args)
+        meson.configure(source_folder="src/gst-devtools-" + self.version, args=args)
         meson.install()
