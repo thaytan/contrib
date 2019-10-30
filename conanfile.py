@@ -17,7 +17,7 @@ class GstreamerNvJetsonEgl(ConanFile):
 
     def build_requirements(self):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("mesa/[>=19.2.0]@%s/stable" % self.user)
         self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
 
     def requirements(self):
