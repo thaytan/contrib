@@ -789,7 +789,8 @@ impl BaseSrcImpl for RealsenseSrc {
 
         let framerate = streams.framerate;
         let frame_duration = std::time::Duration::from_secs_f32(framerate as f32 / 1 as f32);
-        let gst_clock_frame_duration = gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64);
+        let gst_clock_frame_duration =
+            gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64);
 
         // Attach `depth` frame if enabled
         if streams.enable_depth {
@@ -802,7 +803,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 &[],
                 settings,
                 timestamp,
-                gst_clock_frame_duration
+                gst_clock_frame_duration,
             )?;
         }
 
@@ -817,7 +818,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 &[streams.enable_depth],
                 settings,
                 timestamp,
-                gst_clock_frame_duration
+                gst_clock_frame_duration,
             )?;
         }
 
@@ -832,7 +833,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 &[streams.enable_depth, streams.enable_infra1],
                 settings,
                 timestamp,
-                gst_clock_frame_duration
+                gst_clock_frame_duration,
             )?;
         }
 
@@ -851,7 +852,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 ],
                 settings,
                 timestamp,
-                gst_clock_frame_duration
+                gst_clock_frame_duration,
             )?;
         }
 
@@ -1115,21 +1116,38 @@ impl RealsenseSrc {
     /// * `buffer` - The gst::Buffer to which the metadata should be added.
     /// * `frame_meta` - A byte vector containing the serialized metadata.
     /// * `tag` - The tag of the stream.
-    fn add_per_frame_metadata(&self, buffer: &mut gst::Buffer, frame_meta: Vec<u8>, tag: &str) {
+    /// * `timestamp` - The timestamp of the buffer.
+    /// * `frame_duration` - The duration of the buffer.
+    fn add_per_frame_metadata(
+        &self,
+        buffer: &mut gst::Buffer,
+        frame_meta: Vec<u8>,
+        tag: &str,
+        timestamp: Option<gst::ClockTime>,
+        duration: gst::ClockTime,
+    ) {
         // If we were able to read some metadata add it to the buffer
         let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
+
         let tag_name = format!("{}meta", tag);
         let mut tags = gst::tags::TagList::new();
         tags.get_mut()
             .expect("Cannot get mutable reference to `tags`")
             .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
 
-        TagsMeta::add(
+        let frame_meta_mut =
             frame_meta_buffer
                 .get_mut()
-                .expect("Could not add tags to `frame_meta_buffer`"),
+                .expect("Could not add tags to `frame_meta_buffer`");
+        TagsMeta::add(
+            frame_meta_mut,
             &mut tags,
         );
+        if let Some(ts) = timestamp {
+            frame_meta_mut.set_dts(ts);
+            frame_meta_mut.set_pts(ts);
+        }
+        frame_meta_mut.set_duration(duration);
 
         BufferMeta::add(
             buffer
@@ -1202,7 +1220,7 @@ impl RealsenseSrc {
         if settings.include_per_frame_metadata {
             // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
             let md = self.get_frame_meta(frame)?;
-            self.add_per_frame_metadata(&mut buffer, md, tag);
+            self.add_per_frame_metadata(&mut buffer, md, tag, timestamp, frame_duration);
         }
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
