@@ -1,9 +1,19 @@
 import os
 from conans import ConanFile, Meson, tools
 
+def get_version():
+    git = tools.Git()
+    try:
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
+    except:
+        return None
+
+
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
-    version = tools.get_env("GIT_TAG", "1.16.0")
+    version = get_version()
+    gst_version = tools.get_env("GIT_TAG", "1.16.0")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
@@ -11,10 +21,10 @@ class GStreamerDevtoolsConan(ConanFile):
     generators = "env"
     scm = {
         "type": "git",
-        "url": "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror",
+        "url": "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git",
         "revision": "fixed-rebased-psnr",
         "recursive": True,
-        "subfolder": ("gst-devtools-" + version)
+        "subfolder": ("src/gst-devtools-" + version)
     }
     options = {"gtk_doc": [True, False],
                "introspection": [True, False],
@@ -29,13 +39,9 @@ class GStreamerDevtoolsConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires(
-            "gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user)
+            "gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user)
         )
         self.requires("json-glib/[>=1.4.4]@%s/stable" % self.user)
-
-    def source(self):
-        git = tools.Git(folder="src/gst-devtools-" + self.version)
-        git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "aivero_mse_compare_changes")
 
     def build(self):
         meson = Meson(self)
