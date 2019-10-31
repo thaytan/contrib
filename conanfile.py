@@ -12,7 +12,7 @@ class GStreamerDevtoolsConan(ConanFile):
     scm = {
         "type": "git",
         "url": "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror",
-        "revision": "rebased-155-add-psnr",
+        "revision": "fixed-rebased-psnr",
         "recursive": True,
         "subfolder": ("gst-devtools-" + version)
     }
