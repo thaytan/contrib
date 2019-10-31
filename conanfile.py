@@ -32,6 +32,7 @@ class RealsenseConan(ConanFile):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
+        self.build_requires("clang/[>=9.0.0]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
