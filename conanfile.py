@@ -3,19 +3,11 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "0.1.15"
-    except:
-        return None
-
 class LibNiceConan(ConanFile):
     name = "libnice"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "0.1.15")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    description = "An implementation of the IETF’s Interactive Connectivity Establishment (ICE) standard"
+    description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
     options = {"gstreamer": [True, False]}
@@ -37,10 +29,14 @@ class LibNiceConan(ConanFile):
 
     def build(self):
         args = ["--auto-features=disabled"]
-        args.append("-Dgstreamer=" + ("enabled" if self.options.gstreamer else "disabled"))
+        args.append(
+            "-Dgstreamer=" + ("enabled" if self.options.gstreamer else "disabled")
+        )
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(
+            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
+        )
