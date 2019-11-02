@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rgbdmux` - Dropping of all other frames if one of the sink pads does not have a buffer queued, see property `drop-if-missing`.
 - `rgbdmux` - Synchronisation of buffers by dropping buffers that are late, see property `drop-to-synchronise`.
 
-## 0.1.3
+## 0.1.5
 
 ### Added
 - Metadata support: The `rgbddemux` reads per-frame metadata on the frame buffers and pushes them to a sink-pad called *dddqmeta*. Similarly, if the rgbd CAPS contains a stream called *dddqmeta*, its content is also outputted on the *dddqmeta* sink.
