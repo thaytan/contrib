@@ -28,7 +28,12 @@ class Deepstream(ConanFile):
         tools.untargz(
             "deepstream_sdk_v%s_jetson/binaries.tbz2" % self.version, self.source_folder
         )
-        tools.rmdir("deepstream_sdk_v%s_jetson" % self.version)
 
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
+        self.copy(
+            "*",
+            dst="include",
+            src="deepstream_sdk_v%s_jetson/sources/includes" % self.version,
+            keep_path=False,
+        )
