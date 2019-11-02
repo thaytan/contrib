@@ -577,8 +577,8 @@ impl RgbdMux {
         for sink_pad_name in sink_pad_names.iter() {
             // Get the sink pad given its name
             let sink_pad = Self::get_aggregator_pad(aggregator, sink_pad_name);
-            // Drop all buffers present on this pad
-            while sink_pad.drop_buffer() {}
+            // Drop the buffer present on this pad
+            sink_pad.drop_buffer();
         }
     }
 
@@ -599,37 +599,24 @@ impl RgbdMux {
         let timestamps: Vec<(String, gst::ClockTime)> =
             self.get_timestamps(aggregator, sink_pad_names);
 
-        // Find all sink pads, which have timestamps that are behind
-        // Assign min to the first pad
-        let mut sink_pads_with_late_timestamps: Vec<&String> = vec![&timestamps[0].0];
-        let mut min_timestamp = &timestamps[0].1;
-        // Iterate over all timestamps except the first one
-        for (sink_pad_name, timestamp) in timestamps.iter().skip(1) {
-            if timestamp == min_timestamp {
-                // If the pad's buffer has the same timestamp, add it to the list
-                sink_pads_with_late_timestamps.push(&sink_pad_name);
-            } else if timestamp < min_timestamp {
-                // If the timestamp is smaller, clear the list and add the current pad
-                sink_pads_with_late_timestamps.clear();
-                sink_pads_with_late_timestamps.push(&sink_pad_name);
-                // Update the minimum
-                min_timestamp = &timestamp;
-            }
-        }
+        // Get the min and max timestamps of the queued buffers
+        let min_pts = &timestamps.iter().map(|(_, pts)| pts).min().unwrap();
+        let max_pts = &timestamps.iter().map(|(_, pts)| pts).max().unwrap();
 
-        // If all pads share the same timestamp, they are synchronised
-        if sink_pads_with_late_timestamps.len() == sink_pad_names.len() {
+        // If all timestamps are the same, the streams are already synchronised
+        if min_pts == max_pts {
             return Ok(());
         }
 
-        // If the streams are not synchronised, iterate over timestamps and
-        // drop all buffers that have timestamp equal to the min timestamp, i.e.
-        // (those that are behind)
-        for sink_pad_name_with_late_timestamp in sink_pads_with_late_timestamps.iter() {
-            // Get sink pad with the given name
-            let sink_pad = Self::get_aggregator_pad(aggregator, &sink_pad_name_with_late_timestamp);
-            // Drop the buffer
-            sink_pad.drop_buffer();
+        // If he streams are not synchronised, iterature over all buffers and
+        // drop those that are late
+        for (sink_pad_name, timestamp) in timestamps.iter() {
+            if timestamp < max_pts {
+                // Get sink pad with the given name
+                let sink_pad = Self::get_aggregator_pad(aggregator, sink_pad_name);
+                // Drop the buffer
+                sink_pad.drop_buffer();
+            }
         }
 
         // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
@@ -660,30 +647,23 @@ impl RgbdMux {
         aggregator: &gst_base::Aggregator,
         sink_pad_names: &Vec<String>,
     ) -> Vec<(String, gst::ClockTime)> {
-        // Create a vector for storing timestamps of all buffers
-        let mut timestamps: Vec<(String, gst::ClockTime)> =
-            Vec::with_capacity(sink_pad_names.len());
-
-        // Iterate over all sink pads
-        for sink_pad_name in sink_pad_names.iter() {
-            // Get the sink pad given its name
-            let sink_pad = Self::get_aggregator_pad(aggregator, sink_pad_name);
-
-            // Extract a buffer from the given sink pad
-            let buffer = sink_pad.peek_buffer();
-
-            // Skip to the next pad if there is no buffer queued
-            if buffer.is_none() {
-                continue;
-            }
-            let buffer = buffer.unwrap();
-
-            // Push the timestamp with the corresponing pad name
-            timestamps.push((sink_pad_name.to_string(), buffer.as_ref().get_pts()));
-        }
-
-        // Return the timestamps
-        timestamps
+        sink_pad_names
+            .iter()
+            // Extract aggregator pads based on their names
+            .map(|sink_pad_name| {
+                (
+                    sink_pad_name,
+                    Self::get_aggregator_pad(aggregator, sink_pad_name),
+                )
+            })
+            // Get buffers if they are queued on the pads
+            .filter_map(|(sink_pad_name, sink_pad)| match sink_pad.peek_buffer() {
+                Some(buffer) => Some((sink_pad_name, buffer)),
+                _ => None,
+            })
+            // Get pts timestamps for all buffers and collect into vector
+            .map(|(sink_pad_name, buffer)| (sink_pad_name.to_string(), buffer.get_pts()))
+            .collect::<Vec<(String, gst::ClockTime)>>()
     }
 
     /// Mux all buffers to a single output buffer. All buffers are properly tagget with a title.
