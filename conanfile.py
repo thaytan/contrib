@@ -34,6 +34,7 @@ class PythonConan(ConanFile):
         args = [
             "--enable-shared",
             "--with-threads",
+            "--with-ssl",
             "--with-computed-gotos",
             "--enable-optimizations",
             "--with-lto",
