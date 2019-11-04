@@ -4,14 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<<<<<<< CHANGELOG.md
 ## [Unreleased]
 
 ## 0.1.5
 
 ### Added
-- `rgbdmux` - Dropping of all other frames if one of the sink pads does not have a buffer queued, see property `drop-if-missing`.
+- `rgbdmux` - Optional deadline based aggregation, which results in dropping all other buffers if one of the sink pads does not have a buffer queued, see properties `drop-if-missing` and `deadline-multiplier`.
 - `rgbdmux` - Synchronisation of buffers by dropping buffers that are late, see property `drop-to-synchronise`.
+
+### Changed
+- `rgbdmux` - Split `internals` into `sink_pads` and `settings` to avoid the possibility of deadlock caused by Mutex, which was introduced by the new additions.
 
 
 ## 0.1.4

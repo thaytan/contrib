@@ -55,7 +55,7 @@ static PROPERTIES: [subclass::Property; 4] = [
         glib::ParamSpec::float(
             name,
             "Deadline multiplier",
-            "Determines the duration of the deadline for the deadline based aggregation. The deadline duration is inversely proportional to the framerate and `deadline-multiplier` is applied as `deadline-multiplier`/`framerate`.",
+            "Determines the duration of the deadline for the deadline based aggregation. The deadline duration is inversely proportional to the framerate and `deadline-multiplier` is applied as `deadline-multiplier`/`framerate`. Applicable only if `drop-if-missing` is enabled.",
             std::f32::MIN_POSITIVE,
             std::f32::MAX,
             DEFAULT_DEADLINE_MULTIPLIER,
