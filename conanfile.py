@@ -33,8 +33,7 @@ class PythonConan(ConanFile):
     def build(self):
         args = [
             "--enable-shared",
-            "--with-threads",
-            "--with-ssl",
+            "--with-openssl=%s" % self.deps_cpp_info["openssl"].rootpath,
             "--with-computed-gotos",
             "--enable-optimizations",
             "--with-lto",
