@@ -806,15 +806,13 @@ impl RgbdMux {
 
                     // If deadline based aggregation is selected, update the `frameset_duration`
                     clock_internals.frameset_duration = if settings.drop_if_missing {
-                        // Update also the `frameset_duration` based on `framerate`
+                        // Update also the `frameset_duration` based on `framerate` and
+                        // `deadline-multiplier` property
                         let (num, den): (i32, i32) = clock_internals.framerate.into();
-                        let framerate_fraction = num as f32 / den as f32;
-                        // Set the frameset duration according to `deadline-multiplier` property
-                        // Expression `10_f32.powi(9)` is for conversion to nanoseconds
-                        gst::ClockTime::from_nseconds(
-                            (10_f32.powi(9) * settings.deadline_multiplier / framerate_fraction)
-                                as u64,
-                        )
+                        let frame_duration = std::time::Duration::from_secs_f32(
+                            settings.deadline_multiplier * (num as f32 / den as f32),
+                        );
+                        gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64)
                     } else {
                         gst::CLOCK_TIME_NONE
                     }
