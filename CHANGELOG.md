@@ -6,14 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## 0.1.5
+
+## 0.1.6
 
 ### Added
-- `rgbdmux` - Optional deadline based aggregation, which results in dropping all other buffers if one of the sink pads does not have a buffer queued, see properties `drop-if-missing` and `deadline-multiplier`.
-- `rgbdmux` - Synchronisation of buffers by dropping buffers that are late, see property `drop-to-synchronise`.
+- `rgbdmux` - If `drop-if-missing` is set to false, there is no deadline for the aggregation. This makes deadline based aggregation optional. If `drop-if-missing` is set to true, the behaviour is identical to `0.1.5`.
+- `rgbdmux` - Added `deadline-multiplier` property that controls the duration of deadline if `drop-if-missing` is enabled.
 
 ### Changed
 - `rgbdmux` - Split `internals` into `sink_pads` and `settings` to avoid the possibility of deadlock caused by Mutex, which was introduced by the new additions.
+
+
+## 0.1.5
+
+### Added
+- `rgbdmux` - Dropping of all other frames if one of the sink pads does not have a buffer queued, see property `drop-if-missing`.
+- `rgbdmux` - Synchronisation of buffers by dropping buffers that are late, see property `drop-to-synchronise`.
 
 
 ## 0.1.4
@@ -36,4 +44,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Before
 Prior to 0.1.2 this repository did not have a changelog.
-
