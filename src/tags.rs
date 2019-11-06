@@ -10,6 +10,8 @@ use glib::translate::from_glib;
 use crate::sys;
 pub use crate::sys::TagsMeta;
 
+/// The TagsMeta API is intended to allow developers to add Tags onto gst buffers, which can be used
+/// to identify different buffers from each other.
 impl TagsMeta {
     /// Adds a TagList as metadata onto the given `buffer`.
     /// # Arguments
@@ -38,6 +40,9 @@ impl TagsMeta {
         }
     }
 
+    /// Gets the first [TagsMeta](struct.TagsMeta.html) attached onto the given `buffer`.
+    /// # Arguments
+    /// * `buffer` - A reference to the buffer, from which the [TagsMeta](struct.TagsMeta.html) should be read.
     pub fn get(buffer: &mut BufferRef) -> &TagsMeta {
         unsafe { &*sys::tags_meta_get(buffer.as_mut_ptr()) }
     }
@@ -81,7 +86,7 @@ mod tests {
 
         // Assert
         // convert get the Title tag from the MetaAPI
-        let meta = buffer.get_meta::<TagsMeta>().unwrap();
+        let meta = TagsMeta::get(buffer.get_mut().unwrap());
         let tag_list = unsafe { gst::tags::TagList::from_glib_none(meta.tags) };
 
         // Get the tag title from GstTagList
