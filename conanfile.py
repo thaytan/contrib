@@ -55,9 +55,6 @@ class GStreamerRtspServerConan(ConanFile):
         self.env_info.GST_PLUGIN_PATH.append(
             os.path.join(self.package_folder, "lib", "gstreamer-1.0")
         )
-        self.env_info.GST_PLUGIN_SCANNER = os.path.join(
-            self.package_folder, "bin", "gstreamer-1.0", "gst-plugin-scanner"
-        )
         self.env_info.GI_TYPELIB_PATH.append(
             os.path.join(self.package_folder, "lib", "girepository-1.0")
         )
