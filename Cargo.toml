@@ -1,6 +1,6 @@
 [package]
 name = "librealsense2"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
 description = "Rust bindings for librealsense2"
 license = "MIT"
