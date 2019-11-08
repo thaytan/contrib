@@ -131,7 +131,9 @@ class env(Generator):
         bin_paths = []
         lib_paths = []
         prefix_paths = []
-        for _, cpp_info in self.deps_build_info.dependencies:
+        pkg_names = []
+        for pkg_name, cpp_info in self.deps_build_info.dependencies:
+            pkg_names.append(pkg_name)
             prefix_paths.append(cpp_info.rootpath)
             lib_path = path.join(cpp_info.rootpath, "lib")
             if path.isdir(lib_path):
@@ -161,12 +163,15 @@ class env(Generator):
         env_prepend("CMAKE_PREFIX_PATH", pathsep.join(prefix_paths))
         if hasattr(conanfile, "source_folder"):
             env_prepend(
-                "CFLAGS", "-fdebug-prefix-map=%s=." % conanfile.source_folder, " "
+                "CFLAGS",
+                "-fdebug-prefix-map=%s=%s" % (conanfile.source_folder, conanfile.name),
+                " ",
             )
             env_prepend(
-                "CXXFLAGS", "-fdebug-prefix-map=%s=." % conanfile.source_folder, " "
+                "CXXFLAGS",
+                "-fdebug-prefix-map=%s=%s" % (conanfile.source_folder, conanfile.name),
+                " ",
             )
-
         # Generate env.sh
         content = 'export PATH=%s:"$PATH"\n' % pathsep.join(
             '"%s"' % p for p in bin_paths
@@ -178,10 +183,9 @@ class env(Generator):
         content += 'export CMAKE_PREFIX_PATH=%s:"$CMAKE_PREFIX_PATH"\n' % pathsep.join(
             '"%s"' % p for p in prefix_paths
         )
-        content += 'export SOURCE_PATH=%s:"$SOURCE_PATH"\n' % pathsep.join(
-            '"%s"' % path.join(p, "src")
-            for p in prefix_paths
-            if path.isdir(path.join(p, "src"))
+        content += 'export SOURCE_MAP=%s:"$SOURCE_MAP"\n' % pathsep.join(
+            '"%s|%s"' % (pkg_names[i], path.join(prefix_paths[i], "src"))
+            for i in range(len(prefix_paths))
         )
         for var, val in self.env.items():
             if type(val) is list:
