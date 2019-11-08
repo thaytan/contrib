@@ -1,5 +1,6 @@
 [requires]
+env-generator/[>=1.0.0]@aivero/stable
 gstreamer-depth-meta/[>=0.2.1]@aivero/stable
 
 [generators]
-virtualenv
+env
