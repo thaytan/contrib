@@ -2,6 +2,7 @@ use crate::config::Config;
 use crate::context::Context;
 use crate::error::Error;
 use crate::pipeline::Pipeline;
+use crate::pipeline_profile::PipelineProfile;
 use crate::stream_profile::{StreamData, StreamResolution};
 use rs2;
 use rs2::rs2_camera_info::*;
@@ -55,7 +56,7 @@ pub fn start_device_with_index(config: &mut Config, index: usize) -> Result<Pipe
         Err(Error::default())
     } else {
         let serial = devices[index].get_info(RS2_CAMERA_INFO_SERIAL_NUMBER)?;
-        config.enable_device(serial)?;
+        config.enable_device(&serial)?;
         let pipeline = Pipeline::new(&context)?;
         pipeline.start_with_config(config)?;
         Ok(pipeline)
@@ -75,10 +76,9 @@ pub struct StreamInfo {
 /// **Return value:**
 /// * **Ok(Vec<StreamInfo>)** on success.
 /// * **Err(Error)** on failure.
-pub fn get_info_all_streams(pipeline: &Pipeline) -> Result<Vec<StreamInfo>, Error> {
+pub fn get_info_all_streams(pipeline_profile: &PipelineProfile) -> Result<Vec<StreamInfo>, Error> {
     let mut info_all_streams: Vec<StreamInfo> = Vec::new();
 
-    let pipeline_profile = pipeline.get_active_profile()?;
     let streams = pipeline_profile.get_streams()?;
 
     for stream_profile in streams.iter() {

@@ -19,10 +19,6 @@ impl Drop for Context {
     }
 }
 
-// TODO: Make sure these are required, and if so, implement them properly
-unsafe impl Send for Context {}
-unsafe impl Sync for Context {}
-
 impl Context {
     /// Creates `RealSense` `Context` that is required for the rest of the API, while utlising the
     /// current version.
@@ -88,11 +84,11 @@ impl Context {
         unimplemented!()
     }
 
-    pub fn load_device(&self, _file: &String) -> Result<Playback, Error> {
+    pub fn load_device(&self, _file: &str) -> Result<Playback, Error> {
         unimplemented!()
     }
 
-    pub fn unload_device(&self, _file: &String) -> Result<(), Error> {
+    pub fn unload_device(&self, _file: &str) -> Result<(), Error> {
         unimplemented!()
     }
 

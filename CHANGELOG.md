@@ -7,13 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
-## [0.6.0] - 2019-XX-XX
+## [0.6.0] - 2019-11-11
 ### Added
-- 
-### Removed
-- 
+- Add new features
+- Add documentation, README and CHANGELOG
+- Add function prototypes
+- Add file prototypes
+- Add few high-level functionalities
 ### Modified
-- 
+- Standardise naming with C/C++ API, deprecate old names
+- Make handles to C objects public only to the crate
+#### Breaking changes
+- The following methods now take `&str` as parameter instead of `String`:
+  - `Config::enable_device()`
+  - `Config::enable_device_from_file()`
+  - `Config::enable_device_from_file_repeat_option()`
+  - `Config::enable_record_to_file()`
+  - `Device::load_json()`
+
 
 ## [0.5.0]
 ### Added

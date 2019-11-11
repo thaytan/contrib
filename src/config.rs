@@ -132,7 +132,7 @@ impl Config {
     /// **Return value:**
     /// * **Ok()** on success.
     /// * **Err(Error)** on failure.
-    pub fn enable_device(&self, serial: String) -> Result<(), Error> {
+    pub fn enable_device(&self, serial: &str) -> Result<(), Error> {
         let mut error = Error::default();
         let s = std::ffi::CString::new(serial).expect("Failed to create CString");
         unsafe {
@@ -159,7 +159,7 @@ impl Config {
     /// **Return value:**
     /// * **Ok()** on success.
     /// * **Err(Error)** on failure.
-    pub fn enable_device_from_file(&self, file: String) -> Result<(), Error> {
+    pub fn enable_device_from_file(&self, file: &str) -> Result<(), Error> {
         let mut error = Error::default();
         let s = std::ffi::CString::new(file).expect("Failed to create CString");
         unsafe {
@@ -189,7 +189,7 @@ impl Config {
     /// * **Err(Error)** on failure.
     pub fn enable_device_from_file_repeat_option(
         &self,
-        file: String,
+        file: &str,
         repeat: bool,
     ) -> Result<(), Error> {
         let mut error = Error::default();
@@ -219,7 +219,7 @@ impl Config {
     /// **Return value:**
     /// * **Ok()** on success.
     /// * **Err(Error)** on failure.
-    pub fn enable_record_to_file(&self, file: String) -> Result<(), Error> {
+    pub fn enable_record_to_file(&self, file: &str) -> Result<(), Error> {
         let mut error = Error::default();
         let s = std::ffi::CString::new(file).expect("Failed to create CString");
         unsafe {
@@ -266,10 +266,10 @@ impl Config {
     /// **Return value:**
     /// * **Ok()** on success.
     /// * **Err(Error)** on failure.
-    pub fn disable_indexed_stream(&self, stream: &rs2_stream, index: &i32) -> Result<(), Error> {
+    pub fn disable_indexed_stream(&self, stream: rs2_stream, index: i32) -> Result<(), Error> {
         let mut error = Error::default();
         unsafe {
-            rs2::rs2_config_disable_indexed_stream(self.handle, *stream, *index, error.inner());
+            rs2::rs2_config_disable_indexed_stream(self.handle, stream, index, error.inner());
         }
         if error.check() {
             Err(error)
@@ -318,7 +318,7 @@ impl Config {
     /// **Return value:**
     /// * **Ok(PipelineProfile)** on success.
     /// * **Err(Error)** on failure.
-    pub fn resolve(&self, pipe: Pipeline) -> Result<PipelineProfile, Error> {
+    pub fn resolve(&self, pipe: &Pipeline) -> Result<PipelineProfile, Error> {
         let mut error = Error::default();
         let pipe_profile = PipelineProfile {
             handle: unsafe { rs2::rs2_config_resolve(self.handle, pipe.handle, error.inner()) },
@@ -340,7 +340,7 @@ impl Config {
     /// **Return value:**
     /// * **Ok(bool)** on success, determining whether the `Config` is valid.
     /// * **Err(Error)** on failure.
-    pub fn can_resolve(&self, pipe: Pipeline) -> Result<bool, Error> {
+    pub fn can_resolve(&self, pipe: &Pipeline) -> Result<bool, Error> {
         let mut error = Error::default();
         let ret = unsafe { rs2::rs2_config_can_resolve(self.handle, pipe.handle, error.inner()) };
         if error.check() {

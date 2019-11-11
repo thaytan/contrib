@@ -23,5 +23,3 @@ pub use config::rs2_format;
 pub use config::rs2_stream;
 pub use device::rs2_camera_info;
 pub use log::rs2_log_severity;
-
-//TODO: Consider inlining some functions

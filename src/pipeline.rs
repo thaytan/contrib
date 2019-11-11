@@ -1,4 +1,5 @@
 use crate::context::Context;
+use crate::config::Config;
 use crate::error::Error;
 use crate::frame::Frame;
 use crate::pipeline_profile::PipelineProfile;
@@ -24,7 +25,6 @@ impl Drop for Pipeline {
     }
 }
 
-// TODO: Make sure these are required, and if so, implement them properly
 unsafe impl Send for Pipeline {}
 unsafe impl Sync for Pipeline {}
 
@@ -94,7 +94,7 @@ impl Pipeline {
     /// * **Err(Error)** on failure.
     pub fn start_with_config(
         &self,
-        rs2_config: &crate::config::Config,
+        rs2_config: &Config,
     ) -> Result<PipelineProfile, Error> {
         let mut error = Error::default();
         let profile = PipelineProfile {

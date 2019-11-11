@@ -17,9 +17,6 @@ impl Drop for PipelineProfile {
     }
 }
 
-// TODO: Make sure these are required, and if so, implement them properly
-unsafe impl Send for PipelineProfile {}
-unsafe impl Sync for PipelineProfile {}
 
 impl PipelineProfile {
     /// Retrieve the `Device` used by the `Pipeline`. The `Device` class provides the application

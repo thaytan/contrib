@@ -7,7 +7,6 @@ pub struct StreamProfile {
     pub(crate) handle: *mut rs2::rs2_stream_profile,
 }
 
-// TODO: Make sure to release if cloning is implemented.
 /// Safe releasing of the `rs2_stream_profile` handle is required only if it is cloned.
 impl Drop for StreamProfile {
     fn drop(&mut self) {
@@ -16,10 +15,6 @@ impl Drop for StreamProfile {
         // }
     }
 }
-
-// TODO: Make sure these are required, and if so, implement them properly
-unsafe impl Send for StreamProfile {}
-unsafe impl Sync for StreamProfile {}
 
 /// Helper struct that contains data from `StreamProfile`
 pub struct StreamData {
@@ -44,6 +39,7 @@ impl Default for StreamData {
 }
 
 /// Helper struct that contains resolution from `StreamProfile`
+#[derive(PartialEq, Clone)]
 pub struct StreamResolution {
     pub width: i32,
     pub height: i32,

@@ -187,7 +187,7 @@ impl Device {
     /// **Return value:**
     /// * **Ok()** on success.
     /// * **Err(Error)** on failure.
-    pub fn load_json(&self, json_content: String) -> Result<(), Error> {
+    pub fn load_json(&self, json_content: &str) -> Result<(), Error> {
         let mut error = Error::default();
 
         unsafe {
@@ -215,7 +215,7 @@ impl Device {
     /// **Return value:**
     /// * **Ok()** on success.
     /// * **Err(Error)** on failure.
-    pub fn load_json_file_path(&self, json_path: &String) -> Result<(), Error> {
+    pub fn load_json_file_path(&self, json_path: &str) -> Result<(), Error> {
         if !self.is_advanced_mode_enabled()? {
             self.set_advanced_mode(true)?;
         }
@@ -223,7 +223,7 @@ impl Device {
             "Cannot read RealSense JSON configuration from file \"{}\"",
             json_path
         ));
-        self.load_json(json_content)?;
+        self.load_json(&json_content)?;
         Ok(())
     }
 }
