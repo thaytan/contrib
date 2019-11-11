@@ -1,6 +1,6 @@
 from glob import glob
 from os import chmod, environ, listdir, makedirs, path, pathsep, remove
-from shutil import copy, copyfileobj, rmtree
+from shutil import copy, rmtree
 
 from conans import ConanFile
 from conans.model import Generator
@@ -89,22 +89,20 @@ class env(Generator):
                     if path.isdir(exe_path):
                         continue
                     try:
-                        exe = open(exe_path, "r")
-                        line = exe.readline()
-                        if "python" in line:
+                        with open(exe_path, "r") as exe:
+                            lines = exe.readlines()
+                        shebang = lines.pop(0)
+                        if "python" in shebang:
                             interpreter = "python"
-                        elif "perl" in line:
+                        elif "perl" in shebang:
                             interpreter = "perl"
-                        elif "sh" in line:
+                        elif "sh" in shebang:
                             interpreter = "sh"
                         else:
                             interpreter = None
-                        line = "#!/usr/bin/env %s\n" % interpreter
-                        to_exe = open(exe_path, mode="w")
-                        to_exe.write(line)
-                        copyfileobj(exe, to_exe)
-                        exe.close()
-                        to_exe.close()
+                        lines.insert(0, "#!/usr/bin/env %s\n" % interpreter)
+                        with open(exe_path, mode="w") as exe:
+                            exe.write("\n".join(lines))
                     except UnicodeDecodeError:
                         pass
 
