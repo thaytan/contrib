@@ -102,7 +102,7 @@ class env(Generator):
                             interpreter = None
                         lines.insert(0, "#!/usr/bin/env %s\n" % interpreter)
                         with open(exe_path, mode="w") as exe:
-                            exe.write("\n".join(lines))
+                            exe.writelines(lines)
                     except UnicodeDecodeError:
                         pass
 
