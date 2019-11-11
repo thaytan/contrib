@@ -37,7 +37,7 @@ class Gtk3Conan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("cairo/[>=1.17.2]@%s/stable" % self.user)
+        self.requires("cairo/[>=1.16.0]@%s/stable" % self.user)
         self.requires("libepoxy/[>=1.5.3]@%s/stable" % self.user)
         self.requires("atk/[>=2.35.1]@%s/stable" % self.user)
         self.requires("at-spi2-atk/[>=2.34.0]@%s/stable" % self.user)
