@@ -24,9 +24,10 @@ class GdbConan(ConanFile):
         tools.get("https://ftp.gnu.org/gnu/gdb/gdb-%s.tar.gz" % self.version)
 
     def build(self):
+        args = ["--enable-tui=yes"]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
+            autotools.configure(args=args)
             autotools.make()
             autotools.install()
 
