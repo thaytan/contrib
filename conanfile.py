@@ -4,17 +4,9 @@ from os import environ, path, pathsep
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.38.2"
-    except:
-        return None
-
 class GdkPixbufConan(ConanFile):
     name = "gdk-pixbuf"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.38.2")
     description = "An image loading library"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
