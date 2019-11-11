@@ -4,8 +4,8 @@ use crate::record_playback::Playback;
 use crate::sensor::Sensor;
 use rs2;
 
-/// Struct representation of `Context` that wraps around `rs2_context` handle. The `Context` is
-/// required for the rest of the API.
+/// Struct representation of [`Context`](struct.Context.html) that wraps around `rs2_context` 
+/// handle. The [`Context`](struct.Context.html) is required for the rest of the API.
 pub struct Context {
     pub(crate) handle: *mut rs2::rs2_context,
 }
@@ -20,8 +20,8 @@ impl Drop for Context {
 }
 
 impl Context {
-    /// Creates `RealSense` `Context` that is required for the rest of the API, while utlising the
-    /// current version.
+    /// Creates `RealSense` [`Context`](struct.Context.html) that is required for the rest of the 
+    /// API, while utlising the current version.
     ///
     /// # Returns
     /// * `Ok(Context)` on success.
@@ -38,8 +38,8 @@ impl Context {
         }
     }
 
-    /// Creates `RealSense` `Context` that is required for the rest of the API, while utlising the
-    /// current version.
+    /// Creates `RealSense` [`Context`](struct.Context.html) that is required for the rest of the 
+    /// API, while utlising the current version.
     ///
     /// # Returns
     /// * `Ok(Context)` on success.

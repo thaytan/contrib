@@ -6,8 +6,8 @@ use rs2;
 // Expose `rs2_camera_info` for external use.
 pub use rs2::rs2_camera_info;
 
-/// Struct representation of a `Device` that wraps around `rs2_device` handle, which exposes the
-/// functionality of RealSense devices.
+/// Struct representation of a [`Device`](struct.Device.html) that wraps around `rs2_device` handle,
+///  which exposes the functionality of RealSense devices.
 pub struct Device {
     pub(crate) handle: *mut rs2::rs2_device,
 }
@@ -22,7 +22,8 @@ impl Drop for Device {
 }
 
 impl Device {
-    /// Create a static snapshot of all connected `Sensor`s within a specific `Device`.
+    /// Create a static snapshot of all connected [`Sensor`](struct.Sensor.html)s within a specific 
+    /// [`Device`](struct.Device.html).
     ///
     /// # Returns
     /// * `Ok(Vec<Sensor>)` on success.
@@ -54,7 +55,7 @@ impl Device {
         self.query_sensors()
     }
 
-    /// Check if a specific camera `info` is supported by the `Device`.
+    /// Check if a specific camera `info` is supported by the [`Device`](struct.Device.html).
     ///
     /// # Arguments
     /// * `info` - The parameter to check for support.
@@ -94,7 +95,7 @@ impl Device {
         }
     }
 
-    /// Send hardware reset request to the `Device`.
+    /// Send hardware reset request to the [`Device`](struct.Device.html).
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -111,9 +112,9 @@ impl Device {
         }
     }
 
-    /// Update `Device` to the provided firmware, the device must be extendable to
-    /// `RS2_EXTENSION_UPDATABLE`. This call is executed on the caller's thread and it supports
-    /// progress notifications via the optional callback.
+    /// Update [`Device`](struct.Device.html) to the provided firmware, the device must be 
+    /// extendable to `RS2_EXTENSION_UPDATABLE`. This call is executed on the caller's thread and 
+    /// it supports progress notifications via the optional callback.
     ///
     /// # Arguments
     /// * `info` - The parameter to check for support.
@@ -130,7 +131,7 @@ impl Device {
         unimplemented!();
     }
 
-    /// Send hardware reset request to the `Device`.
+    /// Send hardware reset request to the [`Device`](struct.Device.html).
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -152,7 +153,7 @@ impl Device {
         }
     }
 
-    /// Enable or disable advanced mode for a `Device`.
+    /// Enable or disable advanced mode for a [`Device`](struct.Device.html).
     ///
     /// # Arguments
     /// * `enable` - The desired state of advanced mode after callback.
@@ -207,7 +208,7 @@ impl Device {
         }
     }
 
-    /// Configure `Device` with JSON file specified by `json_path`.
+    /// Configure [`Device`](struct.Device.html) with JSON file specified by `json_path`.
     ///
     /// # Arguments
     /// * `json_path` - The absolute path to JSON file.

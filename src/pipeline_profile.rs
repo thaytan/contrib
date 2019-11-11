@@ -3,7 +3,8 @@ use crate::error::Error;
 use crate::stream_profile::StreamProfile;
 use rs2;
 
-/// Struct representation of `Pipeline` that wraps around `rs2_pipeline_profile` handle.
+/// Struct representation of [`Pipeline`](struct.Pipeline.html) that wraps around 
+/// `rs2_pipeline_profile` handle.
 pub struct PipelineProfile {
     pub(crate) handle: *mut rs2::rs2_pipeline_profile,
 }
@@ -18,14 +19,20 @@ impl Drop for PipelineProfile {
 }
 
 impl PipelineProfile {
-    /// Retrieve the `Device` used by the `Pipeline`. The `Device` class provides the application
-    /// access to control camera additional settings - get `Device` information, sensor options
-    /// information, options value query and set, sensor specific extensions. Since the `Pipeline`
-    /// controls the `Device` streams configuration, activation state and frames reading, calling
-    /// the `Device` API functions, which execute those operations, results in unexpected behavior.
-    /// The `Pipeline` streaming `Device` is selected during `Pipeline::start()`. `Device`s of
-    /// profiles, which are not returned by `Pipeline::start()` or `Pipeline::get_active_profile()`,
-    ///  are not guaranteed to be used by the `Pipeline`.
+    /// Retrieve the [`Device`](struct.Device.html) used by the [`Pipeline`](struct.Pipeline.html). 
+    /// The [`Device`](struct.Device.html) class provides the application access to control camera 
+    /// additional settings - get [`Device`](struct.Device.html) information, sensor options 
+    /// information, options value query and set, sensor specific extensions. Since the 
+    /// [`Pipeline`](struct.Pipeline.html) controls the [`Device`](struct.Device.html) streams 
+    /// configuration, activation state and frames reading, calling the 
+    /// [`Device`](struct.Device.html) API functions, which execute those operations, results in 
+    /// unexpected behavior. The [`Pipeline`](struct.Pipeline.html) streaming 
+    /// [`Device`](struct.Device.html) is selected during 
+    /// [`Pipeline::start()`](struct.Pipeline.html#method.start). 
+    /// [`Device`](struct.Device.html)s of profiles, which are not returned by 
+    /// [`Pipeline::start()`](struct.Pipeline.html#method.start) or 
+    /// [`Pipeline::get_active_profile()`](struct.Pipeline.html#method.get_active_profile), 
+    /// are not guaranteed to be used by the [`Pipeline`](struct.Pipeline.html).
     ///
     /// # Returns
     /// * `Ok(Device)` on success.
@@ -42,7 +49,8 @@ impl PipelineProfile {
         }
     }
 
-    /// Retrieve the selected `StreamProfile`s, which are enabled in this `PipelineProfile`.
+    /// Retrieve the selected [`StreamProfile`](struct.StreamProfile.html)s, which are enabled in 
+    /// this [`PipelineProfile`](struct.PipelineProfile.html).
     ///
     /// # Returns
     /// * `Ok(Vec<StreamProfile>)` on success.
@@ -72,8 +80,8 @@ impl PipelineProfile {
         }
     }
 
-    /// Retrieve the `StreamProfile` that is enabled for the specified `Stream` in this
-    /// `PipelineProfile`.
+    /// Retrieve the [`StreamProfile`](struct.StreamProfile.html) that is enabled for the specified 
+    /// stream in this [`PipelineProfile`](struct.PipelineProfile.html).
     ///
     /// # Arguments
     /// * `stream_type` - Stream type of the desired profile.

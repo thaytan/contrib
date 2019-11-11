@@ -7,9 +7,10 @@ use rs2;
 pub use rs2::rs2_format;
 pub use rs2::rs2_stream;
 
-/// Struct representation of configuration `Config` that wraps around `rs2_config` handle. The
-/// `Config` allows, in combination with `Pipeline`, to request filters for the streams and
-/// `Device` selection and configuration.
+/// Struct representation of configuration [`Config`](struct.Config.html) that wraps around 
+/// `rs2_config` handle. The [`Config`](struct.Config.html) allows, in combination with 
+/// [`Pipeline`](struct.Pipeline.html), to request filters for the streams and 
+/// [`Device`](struct.Device.html) selection and configuration.
 pub struct Config {
     pub(crate) handle: *mut rs2::rs2_config,
 }
@@ -24,12 +25,16 @@ impl Drop for Config {
 }
 
 impl Config {
-    /// Create a `Config` instance. The `Config` allows `Pipeline` users to request filters for the
-    /// `Pipeline` `Stream`s and `Device` selection and configuration. This is an optional step in
-    /// `Pipeline` creation, as the `Pipeline` resolves its streaming `Device` internally. `Config`
-    /// provides its users a way to set the filters and test if there is no conflict with the
-    /// pipeline requirements from the `Device`. It also allows the user to find a matching
-    /// `Device` for the config filters and the `Pipeline`, in order to select a `Device`
+    /// Create a [`Config`](struct.Config.html) instance. The [`Config`](struct.Config.html) allows 
+    /// [`Pipeline`](struct.Pipeline.html) users to request filters for the 
+    /// [`Pipeline`](struct.Pipeline.html) streams and [`Device`](struct.Device.html) selection 
+    /// and configuration. This is an optional step in [`Pipeline`](struct.Pipeline.html) creation, 
+    /// as the [`Pipeline`](struct.Pipeline.html) resolves its streaming 
+    /// [`Device`](struct.Device.html) internally. [`Config`](struct.Config.html) provides its 
+    /// users a way to set the filters and test if there is no conflict with the pipeline 
+    /// requirements from the [`Device`](struct.Device.html). It also allows the user to find a 
+    /// matching [`Device`](struct.Device.html) for the config filters and the 
+    /// [`Pipeline`](struct.Pipeline.html), in order to select a [`Device`](struct.Device.html) 
     /// explicitly, and modify its controls before streaming starts.
     ///
     /// # Returns
@@ -47,21 +52,25 @@ impl Config {
         }
     }
 
-    /// Enable a `Device` `Stream` explicitly, with selected parameters. The method allows the
-    /// application to request a `Stream` with specific configuration. If no `Stream` is explicitly
-    /// enabled, the `Pipeline` configures the `Device` and its `Stream`s according to the
-    /// attached computer vision modules and processing blocks requirements, or default
-    /// configuration for the first available `Device`. The application can configure any of the
-    /// input `Stream` parameters according to its requirement, or set to 0 for don't care value.
-    /// The `Config` accumulates the application calls for enable configuration methods, until the
-    /// configuration is applied. Multiple enable `Stream` calls for the same `Stream` with
-    /// conflicting parameters override each other, and the last call is maintained. Upon calling
-    /// `resolve()`, the `Config` checks for conflicts between the application configuration
-    /// requests and the attached computer vision modules and processing blocks requirements, and
-    /// fails if conflicts are found. Before `resolve()` is called, no conflict check is done.
+    /// Enable a [`Device`](struct.Device.html) stream explicitly, with selected parameters. The 
+    /// method allows the application to request a stream with specific configuration. If no 
+    /// stream is explicitly enabled, the [`Pipeline`](struct.Pipeline.html) configures the 
+    /// [`Device`](struct.Device.html) and its streams according to the attached computer vision 
+    /// modules and processing blocks requirements, or default configuration for the first 
+    /// available [`Device`](struct.Device.html). The application can configure any of the input 
+    /// stream parameters according to its requirement, or set to 0 for don't care value. The 
+    /// [`Config`](struct.Config.html) accumulates the application calls for enable configuration 
+    /// methods, until the configuration is applied. Multiple enable stream calls for the same 
+    /// stream with conflicting parameters override each other, and the last call is maintained. 
+    /// Upon calling [`Config::resolve()`](struct.Config.html#method.resolve), the 
+    /// [`Config`](struct.Config.html) checks for conflicts between the application configuration 
+    /// requests and the attached computer vision modules and processing blocks requirements, and 
+    /// fails if conflicts are found. Before 
+    /// [`Config::resolve()`](struct.Config.html#method.resolve) is called, no conflict check is 
+    /// done.
     ///    
     /// # Arguments
-    /// * `stream` - Stream type to be enabled.
+    /// * stream - Stream type to be enabled.
     /// * `index` - Stream index, used for multiple streams of the same type. -1 indicates any.
     /// * `width` - Stream image width - for images streams. 0 indicates any.
     /// * `height` - Stream image height - for images streams. 0 indicates any.
@@ -101,10 +110,13 @@ impl Config {
         }
     }
 
-    /// Enable all `Device` `Stream`s explicitly. The conditions and behavior of this method are
-    /// similar to those of `enable_stream()`. This filter enables all raw `Streams` of the
-    /// selected `Device`. The `Device` is either selected explicitly by the application, or by the
-    /// `Pipeline` requirements or default. The list of `Stream`s is `Device` dependent.
+    /// Enable all [`Device`](struct.Device.html) streams explicitly. The conditions and behavior 
+    /// of this method are similar to those of 
+    /// [`Config::enable_stream()`](struct.Config.html#method.enable_stream). This filter enables 
+    /// all raw `Streams` of the selected [`Device`](struct.Device.html). The 
+    /// [`Device`](struct.Device.html) is either selected explicitly by the application, or by the 
+    /// [`Pipeline`](struct.Pipeline.html) requirements or default. The list of streams is 
+    /// [`Device`](struct.Device.html) dependent.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -121,13 +133,18 @@ impl Config {
         }
     }
 
-    /// Select a specific `Device` explicitly by its `serial` number, to be used by the `Pipeline`.
-    /// The conditions and behavior of this method are similar to those of `enable_stream()`. This
-    /// method is required if the application needs to set `Device` or `Sensor` settings prior to
-    /// `Pipeline` streaming, to enforce the `Pipeline` to use the configured `Device`.
+    /// Select a specific [`Device`](struct.Device.html) explicitly by its `serial` number, to be 
+    /// used by the [`Pipeline`](struct.Pipeline.html).The conditions and behavior of this method 
+    /// are similar to those of 
+    /// [`Config::enable_stream()`](struct.Config.html#method.enable_stream). This method is 
+    /// required if the application needs to set [`Device`](struct.Device.html) or 
+    /// [`Sensor`](struct.Sensor.html) settings prior to [`Pipeline`](struct.Pipeline.html) 
+    /// streaming, to enforce the [`Pipeline`](struct.Pipeline.html) to use the configured 
+    /// [`Device`](struct.Device.html).
     ///    
     /// # Arguments
-    /// * `serial` - `Device` serial number, as returned by `RS2_CAMERA_INFO_SERIAL_NUMBER`.
+    /// * `serial` - [`Device`](struct.Device.html) serial number, as returned by 
+    /// `RS2_CAMERA_INFO_SERIAL_NUMBER`.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -146,15 +163,18 @@ impl Config {
         }
     }
 
-    /// Select a recorded `Device` from a `file`, to be used by the `Pipeline` through playback.
-    /// The `Device` available `Stream`s are as recorded to the `file`, and `resolve()` considers
-    /// only this `Device` and configuration as available. This request cannot be used if
-    /// `enable_record_to_file()` is called for the current `Config`, and vise versa. By default,
-    /// playback is repeated once the file ends. To control this, see
-    /// 'enable_device_from_file_repeat_option()'.
+    /// Select a recorded [`Device`](struct.Device.html) from a `file`, to be used by the 
+    /// [`Pipeline`](struct.Pipeline.html) through playback. The [`Device`](struct.Device.html) 
+    /// available streams are as recorded to the `file`, and 
+    /// [`Config::resolve()`](struct.Config.html#method.resolve) considers only this 
+    /// [`Device`](struct.Device.html) and configuration as available. This request cannot be used 
+    /// if [`Config::enable_record_to_file()`](struct.Config.html#method.enable_record_to_file) is 
+    /// called for the current [`Config`](struct.Config.html), and vise versa. By default, playback 
+    /// is repeated once the file ends. To control this, see 
+    /// [`Config::enable_device_from_file_repeat_option()`](struct.Config.html#method.enable_device_from_file_repeat_option).
     ///    
     /// # Arguments
-    /// * `file` - The playback file of the `Device`.
+    /// * `file` - The playback file of the [`Device`](struct.Device.html).
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -173,13 +193,16 @@ impl Config {
         }
     }
 
-    /// Select a recorded `Device` from a `file`, to be used by the `Pipeline` through playback.
-    /// The `Device` available `Stream`s are as recorded to the `file`, and `resolve()` considers
-    /// only this `Device` and configuration as available. This request cannot be used if
-    /// `enable_record_to_file()` is called for the current `Config`, and vise versa.
+    /// Select a recorded [`Device`](struct.Device.html) from a `file`, to be used by the 
+    /// [`Pipeline`](struct.Pipeline.html) through playback. The [`Device`](struct.Device.html) 
+    /// available streams are as recorded to the `file`, and 
+    /// [`Config::resolve()`](struct.Config.html#method.resolve) considers only this 
+    /// [`Device`](struct.Device.html) and configuration as available. This request cannot be used 
+    /// if [`Config::enable_record_to_file()`](struct.Config.html#method.enable_record_to_file) is 
+    /// called for the current [`Config`](struct.Config.html), and vise versa.
     ///    
     /// # Arguments
-    /// * `file` - The playback file of the `Device`.
+    /// * `file` - The playback file of the [`Device`](struct.Device.html).
     /// * `repeat` - If true, when file ends the playback starts again, in an infinite loop. If
     /// false, when `file` ends playback does not start again, and should by stopped manually by
     /// the user.
@@ -210,8 +233,10 @@ impl Config {
         }
     }
 
-    /// Requires that the resolved `Device` would be recorded to file. This request cannot be used
-    /// if `enable_device_from_file()` is called for the current `Config`, and vise versa.
+    /// Requires that the resolved [`Device`](struct.Device.html) would be recorded to file. This 
+    /// request cannot be used if 
+    /// [`Config::enable_device_from_file()`](struct.Config.html#method.enable_device_from_file) is 
+    /// called for the current [`Config`](struct.Config.html), and vise versa.
     ///    
     /// # Arguments
     /// * `file` - The desired file for the output record.
@@ -233,12 +258,12 @@ impl Config {
         }
     }
 
-    /// Disable a `Device` `Stream` explicitly, to remove any requests on this `Stream` `type`. The
-    /// stream can still be enabled due to `Pipeline` computer vision module request. This call
-    /// removes any filter on the `Stream` configuration.
+    /// Disable a [`Device`](struct.Device.html) stream explicitly, to remove any requests on this 
+    /// stream `type`. The stream can still be enabled due to [`Pipeline`](struct.Pipeline.html) 
+    /// computer vision module request. This call removes any filter on the stream configuration.
     ///    
     /// # Arguments
-    ///	* `stream` - `Stream` type, for which the filters are cleared.
+    ///	* stream - stream type, for which the filters are cleared.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -255,13 +280,14 @@ impl Config {
         }
     }
 
-    /// Disable a `Device` indexed `Stream` explicitly, to remove any requests on this
-    /// `StreamProfile`. The `Stream` can still be enabled due to `Pipeline` computer vision module
-    /// request. This call removes any filter on the `Stream` configuration.
+    /// Disable a [`Device`](struct.Device.html) indexed stream explicitly, to remove any requests 
+    /// on this [`StreamProfile`](struct.StreamProfile.html). The stream can still be enabled due 
+    /// to [`Pipeline`](struct.Pipeline.html) computer vision module request. This call removes any 
+    /// filter on the stream configuration.
     ///    
     /// # Arguments
-    ///	* `stream` - `Stream type`, for which the filters are cleared.
-    ///	* `index` - `Stream index`, for which the filters are cleared.
+    ///	* `stream` - Stream type, for which the filters are cleared.
+    ///	* `index` - Stream index, for which the filters are cleared.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -278,9 +304,10 @@ impl Config {
         }
     }
 
-    /// Disable all `Device` `Stream`s explicitly, to remove any requests on the `StreamsProfile`s.
-    /// The `Stream`s can still be enabled due to `Pipeline` computer vision module request. This
-    /// call removes any filter on the `Stream` configuration.
+    /// Disable all [`Device`](struct.Device.html) streams explicitly, to remove any requests on 
+    /// the [`StreamsProfile`](struct.StreamsProfile.html)s. The streams can still be enabled due 
+    /// to [`Pipeline`](struct.Pipeline.html) computer vision module request. This call removes any 
+    /// filter on the stream configuration.
     ///    
     /// # Returns
     /// * `Ok()` on success.
@@ -297,23 +324,31 @@ impl Config {
         }
     }
 
-    /// Resolve the configuration filters, to find a matching `Device` and `StreamsProfile`s. The
-    /// method resolves the user configuration filters for the `Device` and `Stream`s, and combines
-    /// them with the requirements of the computer vision modules and processing blocks attached to
-    /// the pipeline. If there are no conflicts of requests, it looks for an available `Device`,
-    /// which can satisfy all requests, and selects the first matching `StreamConfiguration`. In
-    /// the absence of any request, the `rs2::config` selects the first available `Device` and the
-    /// first color and `depth` `StreamConfiguration`s. The `PipelineProfile` selection during
-    /// `start()` follows the same method. Thus, the selected profile is the same, if no change
-    /// occurs to the available `Device`s occurs. Resolving the `Pipeline` configuration provides
-    /// the application access to the pipeline selected `Device` for advanced control. The returned
-    /// configuration is not applied to the `Device`, so the application doesn't own the `Device`
-    /// `Sensor`s. However, the application can call `enable_device()`, to enforce the `Device`
-    /// returned by this method is selected by `Pipeline` `start()`, and configure the `Device` and
-    /// `Sensor`s options or extensions before streaming starts.
+    /// Resolve the configuration filters, to find a matching [`Device`](struct.Device.html) and 
+    /// [`StreamsProfile`](struct.StreamsProfile.html)s. The method resolves the user configuration 
+    /// filters for the [`Device`](struct.Device.html) and streams, and combines them with the 
+    /// requirements of the computer vision modules and processing blocks attached to the pipeline. 
+    /// If there are no conflicts of requests, it looks for an available 
+    /// [`Device`](struct.Device.html), which can satisfy all requests, and selects the first 
+    /// matching stream configuration. In the absence of any request, the 
+    /// [`Config`](struct.Config.html) selects the first available [`Device`](struct.Device.html) 
+    /// and the first color and `depth` stream configurations. The 
+    /// [`PipelineProfile`](struct.PipelineProfile.html) selection during 
+    /// [`Pipeline::start()`](struct.Pipeline.html#method.start) follows the same method. Thus, 
+    /// the selected profile is the same, if no change occurs to the available 
+    /// [`Device`](struct.Device.html)s occurs. Resolving the [`Pipeline`](struct.Pipeline.html) 
+    /// configuration provides the application access to the pipeline selected 
+    /// [`Device`](struct.Device.html) for advanced control. The returned configuration is not 
+    /// applied to the [`Device`](struct.Device.html), so the application doesn't own the 
+    /// [`Device`](struct.Device.html) [`Sensor`](struct.Sensor.html)s. However, the application 
+    /// can call `enable_device()`, to enforce the [`Device`](struct.Device.html) returned by this 
+    /// method is selected by [`Pipeline::start()`](struct.Pipeline.html#method.start), and 
+    /// configure the [`Device`](struct.Device.html) and [`Sensor`](struct.Sensor.html)s options or 
+    /// extensions before streaming starts.
     ///    
     /// # Arguments
-    ///	* `pipe` - The `Pipeline` for which the selected filters are applied.
+    ///	* `pipe` - The [`Pipeline`](struct.Pipeline.html) for which the selected filters are 
+    /// applied.
     ///
     /// # Returns
     /// * `Ok(PipelineProfile)` on success.
@@ -331,14 +366,17 @@ impl Config {
         }
     }
 
-    /// Check if the `Config` can resolve the configuration filters, to find a matching `Device`
-    /// and `StreamProfile`s. The resolution conditions are as described in `resolve()`.
+    /// Check if the [`Config`](struct.Config.html) can resolve the configuration filters, to find 
+    /// a matching [`Device`](struct.Device.html) and 
+    /// [`StreamProfile`](struct.StreamProfile.html)s. The resolution conditions are as described 
+    /// in [`Config::resolve()`](struct.Config.html#method.resolve).
     ///    
     /// # Arguments
-    ///	* `pipe` - The pipeline for which the selected filters are applied.
+    ///	* `pipe` - The [`Pipeline`](struct.Pipeline.html) for which the selected filters are 
+    /// applied.
     ///
     /// # Returns
-    /// * `Ok(bool)` on success, determining whether the `Config` is valid.
+    /// * `Ok(bool)` on success, determining whether the [`Config`](struct.Config.html) is valid.
     /// * `Err(Error)` on failure.
     pub fn can_resolve(&self, pipe: &Pipeline) -> Result<bool, Error> {
         let mut error = Error::default();

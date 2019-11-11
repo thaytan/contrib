@@ -7,7 +7,7 @@ use crate::stream_profile::{StreamData, StreamResolution};
 use rs2;
 use rs2::rs2_camera_info::*;
 
-/// Print to STDOUT what RealSense `Device`s are connected.
+/// Print to STDOUT what RealSense [`Device`](struct.Device.html)s are connected.
 ///
 /// # Returns
 /// * `Ok()` on success.
@@ -39,11 +39,14 @@ pub fn list_connected_devices() -> Result<(), Error> {
     Ok(())
 }
 
-/// Start a connected `Device` with the corresponding `config` and `index`.
+/// Start a connected [`Device`](struct.Device.html) with the corresponding 
+/// [`Config`](struct.Config.html) and `index`.
 ///
 /// # Arguments
-/// * `config` - A `Config` with requested filters on the `Pipeline` configuration.
-/// * `index` - An index of the `Device`. Set to 0 to enable first connected device.
+/// * [`Config`](struct.Config.html) - A [`Config`](struct.Config.html) with requested filters on 
+/// the [`Pipeline`](struct.Pipeline.html) configuration.
+/// * `index` - An index of the [`Device`](struct.Device.html). Set to 0 to enable first connected 
+/// device.
 ///
 /// # Returns
 /// * `Ok(Pipeline)` on success.
@@ -68,10 +71,12 @@ pub struct StreamInfo {
     pub data: StreamData,
     pub resolution: StreamResolution,
 }
-/// Retrieve information about all enabled streams based on a running `Pipeline`.
+/// Retrieve information about all enabled streams based on a running 
+/// [`Pipeline`](struct.Pipeline.html).
 ///
 /// # Arguments
-/// * `pipeline` - The `Pipeline` to extract the info from.
+/// * [`Pipeline`](struct.Pipeline.html) - The [`Pipeline`](struct.Pipeline.html) to extract the 
+/// info from.
 ///
 /// # Returns
 /// * `Ok(Vec<StreamInfo>)` on success.
