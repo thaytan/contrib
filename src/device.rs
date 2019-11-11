@@ -24,9 +24,9 @@ impl Drop for Device {
 impl Device {
     /// Create a static snapshot of all connected `Sensor`s within a specific `Device`.
     ///
-    /// **Return value:**
-    /// * **Ok(Vec<Sensor>)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Vec<Sensor>)` on success.
+    /// * `Err(Error)` on failure.
     pub fn query_sensors(&self) -> Result<Vec<Sensor>, Error> {
         let mut error = Error::default();
         let sensor_list = unsafe { rs2::rs2_query_sensors(self.handle, error.inner()) };
@@ -56,20 +56,20 @@ impl Device {
 
     /// Check if a specific camera `info` is supported by the `Device`.
     ///
-    /// **Parameters:**
-    /// * **info** - The parameter to check for support.
+    /// # Arguments
+    /// * `info` - The parameter to check for support.
     ///
-    /// **Return value:**
-    /// * **Ok(bool)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(bool)` on success.
+    /// * `Err(Error)` on failure.
     pub fn supports_info(&self, _info: rs2_camera_info) -> Result<bool, Error> {
         unimplemented!()
     }
 
     /// Retrieve camera specific information, like versions of various internal components.
     ///    
-    /// **Parameters:**
-    /// * **info** - The camera info type to retrieve. Valid values are: `RS2_CAMERA_INFO_NAME`,
+    /// # Arguments
+    /// * `info` - The camera info type to retrieve. Valid values are: `RS2_CAMERA_INFO_NAME`,
     /// `RS2_CAMERA_INFO_SERIAL_NUMBER`, `RS2_CAMERA_INFO_FIRMWARE_VERSION`,
     /// `RS2_CAMERA_INFO_RECOMMENDED_FIRMWARE_VERSION`, `RS2_CAMERA_INFO_PHYSICAL_PORT`,
     /// `RS2_CAMERA_INFO_DEBUG_OP_CODE`, `RS2_CAMERA_INFO_ADVANCED_MODE`,
@@ -78,9 +78,9 @@ impl Device {
     /// `RS2_CAMERA_INFO_ASIC_SERIAL_NUMBER`, `RS2_CAMERA_INFO_FIRMWARE_UPDATE_ID`,
     /// `RS2_CAMERA_INFO_COUNT`
     ///
-    /// **Return value:**
-    /// * **Ok(String)** on success, containing the value under the info field.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(String)` on success, containing the value under the info field.
+    /// * `Err(Error)` on failure.
     pub fn get_info(&self, info: rs2_camera_info) -> Result<String, Error> {
         let mut error = Error::default();
         let ret;
@@ -96,9 +96,9 @@ impl Device {
 
     /// Send hardware reset request to the `Device`.
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn hardware_reset(&self) -> Result<(), Error> {
         let mut error = Error::default();
         unsafe {
@@ -115,26 +115,26 @@ impl Device {
     /// `RS2_EXTENSION_UPDATABLE`. This call is executed on the caller's thread and it supports
     /// progress notifications via the optional callback.
     ///
-    /// **Parameters:**
-    /// * **info** - The parameter to check for support.
-    /// * **fw_image** - Firmware image buffer.
-    /// * **fw_image_size** - Firmware image buffer size.
-    /// * **callback** - Optional callback for update progress notifications, the progress value is
+    /// # Arguments
+    /// * `info` - The parameter to check for support.
+    /// * `fw_image` - Firmware image buffer.
+    /// * `fw_image_size` - Firmware image buffer size.
+    /// * `callback` - Optional callback for update progress notifications, the progress value is
     /// normailzed to 1.
-    /// * **client_data** - Optional client data for the callback.
+    /// * `client_data` - Optional client data for the callback.
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn update_firmware(&self) -> Result<(), Error> {
         unimplemented!();
     }
 
     /// Send hardware reset request to the `Device`.
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn is_advanced_mode_enabled(&self) -> Result<bool, Error> {
         let mut error = Error::default();
         let is_enabled: &mut i32 = &mut (-1);
@@ -154,12 +154,12 @@ impl Device {
 
     /// Enable or disable advanced mode for a `Device`.
     ///
-    /// **Parameters:**
-    /// * **enable** - The desired state of advanced mode after callback.
+    /// # Arguments
+    /// * `enable` - The desired state of advanced mode after callback.
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn set_advanced_mode(&self, enable: bool) -> Result<(), Error> {
         let mut error = Error::default();
         if enable == true {
@@ -181,12 +181,12 @@ impl Device {
 
     /// Configure device with JSON.
     ///
-    /// **Parameters:**
-    /// * **json_content** - The content of the JSON configuration.
+    /// # Arguments
+    /// * `json_content` - The content of the JSON configuration.
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn load_json(&self, json_content: &str) -> Result<(), Error> {
         let mut error = Error::default();
 
@@ -209,12 +209,12 @@ impl Device {
 
     /// Configure `Device` with JSON file specified by `json_path`.
     ///
-    /// **Parameters:**
-    /// * **json_path** - The absolute path to JSON file.
+    /// # Arguments
+    /// * `json_path` - The absolute path to JSON file.
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn load_json_file_path(&self, json_path: &str) -> Result<(), Error> {
         if !self.is_advanced_mode_enabled()? {
             self.set_advanced_mode(true)?;

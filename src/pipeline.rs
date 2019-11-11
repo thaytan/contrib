@@ -1,5 +1,5 @@
-use crate::context::Context;
 use crate::config::Config;
+use crate::context::Context;
 use crate::error::Error;
 use crate::frame::Frame;
 use crate::pipeline_profile::PipelineProfile;
@@ -31,12 +31,12 @@ unsafe impl Sync for Pipeline {}
 impl Pipeline {
     /// Create a new `Pipeline` instance.
     ///
-    /// **Parameters:**
-    /// * **ctx** - The `Context` for which to create a new `Pipeline`.
+    /// # Arguments
+    /// * `ctx` - The `Context` for which to create a new `Pipeline`.
     ///
-    /// **Return value:**
-    /// * **Ok(Pipeline)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Pipeline)` on success.
+    /// * `Err(Error)` on failure.
     pub fn new(ctx: &Context) -> Result<Pipeline, Error> {
         let mut error = Error::default();
         let pipeline = Pipeline {
@@ -57,9 +57,9 @@ impl Pipeline {
     /// stopped. Starting the `Pipeline` is possible only when it is not started. If the `Pipeline`
     /// was started, an exception is raised.
     ///
-    /// **Return value:**
-    /// * **Ok(PipelineProfile)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(PipelineProfile)` on success.
+    /// * `Err(Error)` on failure.
     pub fn start(&self) -> Result<PipelineProfile, Error> {
         let mut error = Error::default();
         let profile = PipelineProfile {
@@ -86,16 +86,13 @@ impl Pipeline {
     ///  call and `Pipeline` start, in case `Device`s are connected or disconnected, or another
     /// application acquires ownership of a device.
     ///
-    /// **Parameters:**
-    /// * **config** - A `Config` with requested filters on the `Pipeline` configuration.
+    /// # Arguments
+    /// * `config` - A `Config` with requested filters on the `Pipeline` configuration.
     ///
-    /// **Return value:**
-    /// * **Ok(PipelineProfile)** on success.
-    /// * **Err(Error)** on failure.
-    pub fn start_with_config(
-        &self,
-        rs2_config: &Config,
-    ) -> Result<PipelineProfile, Error> {
+    /// # Returns
+    /// * `Ok(PipelineProfile)` on success.
+    /// * `Err(Error)` on failure.
+    pub fn start_with_config(&self, rs2_config: &Config) -> Result<PipelineProfile, Error> {
         let mut error = Error::default();
         let profile = PipelineProfile {
             handle: unsafe {
@@ -115,9 +112,9 @@ impl Pipeline {
     /// any frame reference it owns. The method takes effect only after `start()` was called,
     /// otherwise an exception is raised.
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn stop(&self) -> Result<(), Error> {
         let mut error = Error::default();
         unsafe {
@@ -141,12 +138,12 @@ impl Pipeline {
     /// memory resources to produce new `Frame`s, and the following call to this method shall fail
     /// to retrieve new frames, until resources become available.
     ///
-    /// **Parameters:**
-    /// * **timeout** - Max time in milliseconds to wait until `Error` is returned.
+    /// # Arguments
+    /// * `timeout` - Max time in milliseconds to wait until `Error` is returned.
     ///
-    /// **Return value:**
-    /// * **Ok(Vec<Frame>)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Vec<Frame>)` on success.
+    /// * `Err(Error)` on failure.
     pub fn wait_for_frames(&self, timeout: u32) -> Result<Vec<Frame>, Error> {
         let mut error = Error::default();
         unsafe {
@@ -181,12 +178,12 @@ impl Pipeline {
     /// history, the device may lack memory resources to produce new `Frame`s, and the following
     /// call to this method shall fail to retrieve new `Frame`s, until resources are retained.
     ///
-    /// **Parameters:**
-    /// * **timeout** - Max time in milliseconds to wait until `Error` is returned.
+    /// # Arguments
+    /// * `timeout` - Max time in milliseconds to wait until `Error` is returned.
     ///
-    /// **Return value:**
-    /// * **Ok(Vec<Frame>)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Vec<Frame>)` on success.
+    /// * `Err(Error)` on failure.
     pub fn try_wait_for_frames(&self, _timeout: u32) -> Result<Vec<Frame>, Error> {
         unimplemented!();
     }
@@ -202,9 +199,9 @@ impl Pipeline {
     /// `Frame`s, and the following calls to this method shall return no new `Frame`s, until
     /// resources become available.
     ///
-    /// **Return value:**
-    /// * **Ok(Vec<Frame>)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Vec<Frame>)` on success.
+    /// * `Err(Error)` on failure.
     pub fn poll_for_frames(&self) -> Result<Vec<Frame>, Error> {
         unimplemented!();
     }
@@ -215,12 +212,12 @@ impl Pipeline {
     /// `start()` and `stop()`. After stop() is called, the `Pipeline` doesn't own the device, thus,
     ///  the `Pipeline` selected device may change in subsequent activations.
     ///
-    /// **Parameters:**
-    /// * **timeout** - Max time in milliseconds to wait until `Error` is returned.
+    /// # Arguments
+    /// * `timeout` - Max time in milliseconds to wait until `Error` is returned.
     ///
-    /// **Return value:**
-    /// * **Ok(PipelineProfile)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(PipelineProfile)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_active_profile(&self) -> Result<PipelineProfile, Error> {
         let mut error = Error::default();
         let profile = PipelineProfile {

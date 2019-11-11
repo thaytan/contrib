@@ -6,9 +6,9 @@ pub use rs2::rs2_log_severity;
 
 /// Determine the level of severity to be logged to console.
 ///
-/// **Return value:**
-/// * **Ok()** on success.
-/// * **Err(Error)** on failure.
+/// # Returns
+/// * `Ok()` on success.
+/// * `Err(Error)` on failure.
 pub fn log_to_console(min_severity: rs2_log_severity) -> Result<(), Error> {
     let mut error = Error::default();
     unsafe {

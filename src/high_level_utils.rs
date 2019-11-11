@@ -9,9 +9,9 @@ use rs2::rs2_camera_info::*;
 
 /// Print to STDOUT what RealSense `Device`s are connected.
 ///
-/// **Return value:**
-/// * **Ok()** on success.
-/// * **Err(Error)** on failure.
+/// # Returns
+/// * `Ok()` on success.
+/// * `Err(Error)` on failure.
 pub fn list_connected_devices() -> Result<(), Error> {
     let context = Context::new()?;
     let devices = context.query_devices()?;
@@ -41,13 +41,13 @@ pub fn list_connected_devices() -> Result<(), Error> {
 
 /// Start a connected `Device` with the corresponding `config` and `index`.
 ///
-/// **Parameters:**
-/// * **config** - A `Config` with requested filters on the `Pipeline` configuration.
-/// * **index** - An index of the `Device`. Set to 0 to enable first connected device.
+/// # Arguments
+/// * `config` - A `Config` with requested filters on the `Pipeline` configuration.
+/// * `index` - An index of the `Device`. Set to 0 to enable first connected device.
 ///
-/// **Return value:**
-/// * **Ok(Pipeline)** on success.
-/// * **Err(Error)** on failure.
+/// # Returns
+/// * `Ok(Pipeline)` on success.
+/// * `Err(Error)` on failure.
 pub fn start_device_with_index(config: &mut Config, index: usize) -> Result<Pipeline, Error> {
     let context = Context::new()?;
     let devices = context.query_devices()?;
@@ -70,12 +70,12 @@ pub struct StreamInfo {
 }
 /// Retrieve information about all enabled streams based on a running `Pipeline`.
 ///
-/// **Parameters:**
-/// * **pipeline** - The `Pipeline` to extract the info from.
+/// # Arguments
+/// * `pipeline` - The `Pipeline` to extract the info from.
 ///
-/// **Return value:**
-/// * **Ok(Vec<StreamInfo>)** on success.
-/// * **Err(Error)** on failure.
+/// # Returns
+/// * `Ok(Vec<StreamInfo>)` on success.
+/// * `Err(Error)` on failure.
 pub fn get_info_all_streams(pipeline_profile: &PipelineProfile) -> Result<Vec<StreamInfo>, Error> {
     let mut info_all_streams: Vec<StreamInfo> = Vec::new();
 

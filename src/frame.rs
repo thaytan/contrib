@@ -27,18 +27,18 @@ impl Frame {
 
     /// Retrieve `Frame`'s parent `Sensor`.
     ///
-    /// **Return value:**
-    /// * **Ok(Sensor)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Sensor)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_sensor(&self) -> Result<Sensor, Error> {
         unimplemented!();
     }
 
     /// Retrieve timestamp from `Frame` in milliseconds.
     ///
-    /// **Return value:**
-    /// * **Ok(f64)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(f64)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_timestamp(&self) -> Result<f64, Error> {
         let mut error = Error::default();
         let timestamp = unsafe { rs2::rs2_get_frame_timestamp(self.handle, error.inner()) };
@@ -54,9 +54,9 @@ impl Frame {
     /// timestamp might come from the device) this method is used to check if two timestamp values
     /// are comparable (generated from the same clock).
     ///
-    /// **Return value:**
-    /// * **Ok()** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_timestamp_domain(&self) -> Result<(), Error> {
         unimplemented!()
     }
@@ -67,10 +67,14 @@ impl Frame {
     /// metadata attribute. Please refer to [get_metadata](#method.get_metadata) for a Rustified
     /// version.
     ///
-    /// **Parameters:**
-    /// * **attribute** - The attribute to read.
+    /// # Arguments
+    /// * `attribute` - The attribute to read.
     ///
-    /// **Example:**
+    /// # Returns
+    /// * `Ok(i64)` on success.
+    /// * `Err(Error)` on failure.
+    ///
+    /// # Example
     /// ```
     /// use librealsense2::pipeline::Pipeline;
     /// use librealsense2::context::Context;
@@ -84,10 +88,6 @@ impl Frame {
     ///     }
     ///     else { None };
     /// ```
-    ///
-    /// **Return value:**
-    /// * **Ok(i64)** on success.
-    /// * **Err(Error)** on failure.
     pub fn get_frame_metadata(&self, attribute: MetadataAttribute) -> Result<i64, Error> {
         let mut error = Error::default();
         let value = unsafe {
@@ -107,10 +107,14 @@ impl Frame {
     /// Check if the `Frame`'s metadata supports the given attribute. Please refer to [get_metadata]
     ///  (#method.get_metadata) for a Rustified version.
     ///
-    /// **Parameters:**
-    /// * **attribute** - The attribute to check support for.
+    /// # Arguments
+    /// * `attribute` - The attribute to check support for.
     ///
-    /// **Example:**
+    /// # Returns
+    /// * `Ok(bool)` on success, `true` if supported and `false` if not.
+    /// * `Err(Error)` on failure.
+    ///
+    /// # Example
     /// ```
     /// use librealsense2::pipeline::Pipeline;
     /// use librealsense2::context::Context;
@@ -123,10 +127,7 @@ impl Frame {
     /// }
     /// else { println!("frames[0] does not support the 'Contrast' metadata.") };
     /// ```
-    ///
-    /// **Return value:**
-    /// * **Ok(bool)** on success, `true` if supported and `false` if not.
-    /// * **Err(Error)** on failure.
+
     pub fn supports_frame_metadata(&self, attribute: MetadataAttribute) -> Result<bool, Error> {
         let mut error = Error::default();
         let meta_supported = unsafe {
@@ -149,7 +150,11 @@ impl Frame {
     /// refer to [supports_frame_metadata](#method.supports_frame_metadata) or
     /// [get_frame_metadata](#method.get_frame_metadata) for the C-like variants.
     ///
-    /// **Example:**
+    /// # Returns
+    /// * `Ok(Metadata)` on success.
+    /// * `Err(Error)` on failure.
+    ///
+    /// # Example
     /// ```
     /// use librealsense2::pipeline::Pipeline;
     /// use librealsense2::context::Context;
@@ -159,10 +164,6 @@ impl Frame {
     /// let metadata = frames[0].get_metadata().unwrap();
     /// println!("frames[0]'s contrast is {}", metadata.contrast.unwrap());
     /// ```
-    ///
-    /// **Return value:**
-    /// * **Ok(Metadata)** on success.
-    /// * **Err(Error)** on failure.
     pub fn get_metadata(&self) -> Result<Metadata, Error> {
         let mut error = Error::default();
         let mut meta_values: HashMap<u32, i64> = HashMap::new();
@@ -192,9 +193,9 @@ impl Frame {
 
     /// Retrieve the `Frame` number.
     ///
-    /// **Return value:**
-    /// * **Ok(u64)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(u64)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_frame_number(&self) -> Result<u64, Error> {
         let mut error = Error::default();
         let frame_number = unsafe { rs2::rs2_get_frame_number(self.handle, error.inner()) };
@@ -207,9 +208,9 @@ impl Frame {
 
     /// Retrieve the height of a `Frame` in pixels.
     ///
-    /// **Return value:**
-    /// * **Ok(i32)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(i32)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_height(&self) -> Result<i32, Error> {
         let mut error = Error::default();
         let height = unsafe { rs2::rs2_get_frame_height(self.handle, error.inner()) };
@@ -222,9 +223,9 @@ impl Frame {
 
     /// Retrieve the width of a `Frame` in pixels.
     ///
-    /// **Return value:**
-    /// * **Ok(i32)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(i32)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_width(&self) -> Result<i32, Error> {
         let mut error = Error::default();
         let width = unsafe { rs2::rs2_get_frame_width(self.handle, error.inner()) };
@@ -238,9 +239,9 @@ impl Frame {
     /// Retrieve bits per pixels in the `Frame` image (note that bits per pixel is not necessarily
     /// divided by 8, as in 12bpp)
     ///
-    /// **Return value:**
-    /// * **Ok(i32)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(i32)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_bits_per_pixel(&self) -> Result<i32, Error> {
         let mut error = Error::default();
         let bpp = unsafe { rs2::rs2_get_frame_bits_per_pixel(self.handle, error.inner()) };
@@ -253,9 +254,9 @@ impl Frame {
 
     /// Retrieve `Frame` stride in bytes (number of bytes from start of line to start of next line).
     ///
-    /// **Return value:**
-    /// * **Ok(i32)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(i32)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_stride(&self) -> Result<i32, Error> {
         let mut error = Error::default();
         let stride = unsafe { rs2::rs2_get_frame_stride_in_bytes(self.handle, error.inner()) };
@@ -268,9 +269,9 @@ impl Frame {
 
     /// Retrieve the data size of a `Frame` in bytes.
     ///
-    /// **Return value:**
-    /// * **Ok(i32)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(i32)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_size(&self) -> Result<i32, Error> {
         let width = self.get_width()?;
         let height = self.get_height()?;
@@ -280,9 +281,9 @@ impl Frame {
 
     /// Retrieve the size of a `Frame` in memory.
     ///
-    /// **Return value:**
-    /// * **Ok(i32)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(i32)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_data_size(&self) -> Result<i32, Error> {
         let mut error = Error::default();
         let size = unsafe { rs2::rs2_get_frame_data_size(self.handle, error.inner()) };
@@ -296,9 +297,9 @@ impl Frame {
     // TODO: Consider returning slice instead of vector
     /// Retrieve the data from `Frame`.
     ///
-    /// **Return value:**
-    /// * **Ok(Vec<u8>)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Vec<u8>)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_data(&self) -> Result<Vec<u8>, Error> {
         let mut error = Error::default();
         let data = unsafe {
@@ -314,9 +315,9 @@ impl Frame {
 
     /// Retrieve the `StreamProfile` that was used to start the stream of this `Frame`.
     ///
-    /// **Return value:**
-    /// * **Ok(StreamProfile)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(StreamProfile)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_stream_profile(&self) -> Result<StreamProfile, Error> {
         let mut error = Error::default();
         let profile = StreamProfile {

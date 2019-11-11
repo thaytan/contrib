@@ -23,9 +23,9 @@ impl Context {
     /// Creates `RealSense` `Context` that is required for the rest of the API, while utlising the
     /// current version.
     ///
-    /// **Return value:**
-    /// * **Ok(Context)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Context)` on success.
+    /// * `Err(Error)` on failure.
     pub fn new() -> Result<Context, Error> {
         let mut error = Error::default();
         let context = Context {
@@ -41,9 +41,9 @@ impl Context {
     /// Creates `RealSense` `Context` that is required for the rest of the API, while utlising the
     /// current version.
     ///
-    /// **Return value:**
-    /// * **Ok(Context)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Context)` on success.
+    /// * `Err(Error)` on failure.
     pub fn query_devices(&self) -> Result<Vec<Device>, Error> {
         let mut error = Error::default();
         let device_list = unsafe { rs2::rs2_query_devices(self.handle, error.inner()) };

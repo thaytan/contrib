@@ -58,9 +58,9 @@ impl Default for StreamResolution {
 impl StreamProfile {
     /// Extract common parameters of a `StreamProfile`.
     ///
-    /// **Return value:**
-    /// * **Ok(StreamData)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(StreamData)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_data(&self) -> Result<StreamData, Error> {
         let mut error = Error::default();
         let mut data = StreamData::default();
@@ -84,9 +84,9 @@ impl StreamProfile {
 
     /// Extract resolution of the `Stream` described by `StreamProfile`.
     ///
-    /// **Return value:**
-    /// * **Ok(StreamResolution)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(StreamResolution)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_resolution(&self) -> Result<StreamResolution, Error> {
         let mut error = Error::default();
         let mut resolution = StreamResolution::default();
@@ -107,22 +107,22 @@ impl StreamProfile {
 
     /// Obtain intrinsics of a `StreamProfile`.
     ///
-    /// **Return value:**
-    /// * **Ok(rs2_intrinsics)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(rs2_intrinsics)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_intrinsics(&self) -> Result<rs2::rs2_intrinsics, Error> {
         unimplemented!()
     }
 
     /// Obtain extrinsics between two `StreamProfile`s.
     ///    
-    /// **Parameters:**
-    /// **from** - Origin `StreamProfile`.
-    /// **to** - Target `StreamProfile`.
+    /// # Arguments
+    /// * `from` - Origin `StreamProfile`.
+    /// * `to` - Target `StreamProfile`.
     ///
-    /// **Return value:**
-    /// * **Ok(rs2_extrinsics)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(rs2_extrinsics)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_extrinsics(_from: &Self, _to: &Self) -> Result<rs2::rs2_extrinsics, Error> {
         unimplemented!()
     }

@@ -48,8 +48,8 @@ impl Error {
 
     /// Check the value of `Error`.
     ///
-    /// **Return value:**
-    /// * **bool** that returs `true` if the struct `Error` contains an error that occured and
+    /// # Returns
+    /// * `bool` that returs `true` if the struct `Error` contains an error that occured and
     /// false if everything went fine.
     pub fn check(&self) -> bool {
         !self.handle.is_null()

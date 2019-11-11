@@ -17,7 +17,6 @@ impl Drop for PipelineProfile {
     }
 }
 
-
 impl PipelineProfile {
     /// Retrieve the `Device` used by the `Pipeline`. The `Device` class provides the application
     /// access to control camera additional settings - get `Device` information, sensor options
@@ -28,9 +27,9 @@ impl PipelineProfile {
     /// profiles, which are not returned by `Pipeline::start()` or `Pipeline::get_active_profile()`,
     ///  are not guaranteed to be used by the `Pipeline`.
     ///
-    /// **Return value:**
-    /// * **Ok(Device)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Device)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_device(&self) -> Result<Device, Error> {
         let mut error = Error::default();
         let device = Device {
@@ -45,9 +44,9 @@ impl PipelineProfile {
 
     /// Retrieve the selected `StreamProfile`s, which are enabled in this `PipelineProfile`.
     ///
-    /// **Return value:**
-    /// * **Ok(Vec<StreamProfile>)** on success.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(Vec<StreamProfile>)` on success.
+    /// * `Err(Error)` on failure.
     pub fn get_streams(&self) -> Result<Vec<StreamProfile>, Error> {
         let mut error = Error::default();
         unsafe {
@@ -76,14 +75,14 @@ impl PipelineProfile {
     /// Retrieve the `StreamProfile` that is enabled for the specified `Stream` in this
     /// `PipelineProfile`.
     ///
-    /// **Parameters:**
-    /// * **stream_type** - Stream type of the desired profile.
-    /// * **stream_index** - Stream index of the desired profile, with -1 for any matching.
+    /// # Arguments
+    /// * `stream_type` - Stream type of the desired profile.
+    /// * `stream_index` - Stream index of the desired profile, with -1 for any matching.
     ///
-    /// **Return value:**
-    /// * **Ok(StreamProfile)** on success if such stream exist.
-    /// * **Ok(None)** on success if no such stream exists.
-    /// * **Err(Error)** on failure.
+    /// # Returns
+    /// * `Ok(StreamProfile)` on success if such stream exist.
+    /// * `Ok(None)` on success if no such stream exists.
+    /// * `Err(Error)` on failure.
     pub fn get_stream(
         &self,
         stream_type: rs2::rs2_stream,
