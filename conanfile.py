@@ -3,22 +3,13 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.0.6"
-    except:
-        return None
-
 class ItstoolConan(ConanFile):
     name = "itstool"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.0.6")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL3"
     description = "XML to PO and back again"
-    exports = "fix-hardcoded-python-path.patch"
     generators = "env"
 
     def build_requirements(self):
@@ -31,7 +22,6 @@ class ItstoolConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/itstool/itstool/archive/%s.tar.gz" % self.version)
-        tools.patch(patch_file="fix-hardcoded-python-path.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
