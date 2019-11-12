@@ -20,6 +20,7 @@ class GdbConan(ConanFile):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
         self.requires("ncurses/[>=6.1]@%s/stable" % self.user)
+        self.requires("readline/[>=8.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/gdb/gdb-%s.tar.gz" % self.version)
