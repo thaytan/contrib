@@ -17,7 +17,7 @@ impl Drop for Sensor {
 }
 
 impl Sensor {
-    /// Retrieve the [`StreamProfile`](struct.StreamProfile.html)s of a 
+    /// Retrieve the [`StreamProfile`](/librealsense2/stream_profile/struct.StreamProfile.html)s of a 
     /// [`Sensor`](struct.Sensor.html).
     ///
     /// # Returns

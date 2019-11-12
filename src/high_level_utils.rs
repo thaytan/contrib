@@ -7,7 +7,7 @@ use crate::stream_profile::{StreamData, StreamResolution};
 use rs2;
 use rs2::rs2_camera_info::*;
 
-/// Print to STDOUT what RealSense [`Device`](struct.Device.html)s are connected.
+/// Print to STDOUT what RealSense [`Device`](/librealsense2/device/struct.Device.html)s are connected.
 ///
 /// # Returns
 /// * `Ok()` on success.
@@ -39,13 +39,14 @@ pub fn list_connected_devices() -> Result<(), Error> {
     Ok(())
 }
 
-/// Start a connected [`Device`](struct.Device.html) with the corresponding 
-/// [`Config`](struct.Config.html) and `index`.
+/// Start a connected [`Device`](/librealsense2/device/struct.Device.html) with the corresponding 
+/// [`Config`](/librealsense2/config/struct.Config.html) and `index`.
 ///
 /// # Arguments
-/// * [`Config`](struct.Config.html) - A [`Config`](struct.Config.html) with requested filters on 
-/// the [`Pipeline`](struct.Pipeline.html) configuration.
-/// * `index` - An index of the [`Device`](struct.Device.html). Set to 0 to enable first connected 
+/// * [`Config`](/librealsense2/config/struct.Config.html) - A
+/// [`Config`](/librealsense2/config/struct.Config.html) with requested filters on
+/// the [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) configuration.
+/// * `index` - An index of the [`Device`](/librealsense2/device/struct.Device.html). Set to 0 to enable first connected 
 /// device.
 ///
 /// # Returns
@@ -72,10 +73,10 @@ pub struct StreamInfo {
     pub resolution: StreamResolution,
 }
 /// Retrieve information about all enabled streams based on a running 
-/// [`Pipeline`](struct.Pipeline.html).
+/// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html).
 ///
 /// # Arguments
-/// * [`Pipeline`](struct.Pipeline.html) - The [`Pipeline`](struct.Pipeline.html) to extract the 
+/// * [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) - The [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) to extract the 
 /// info from.
 ///
 /// # Returns

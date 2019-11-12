@@ -7,7 +7,7 @@ use rs2;
 
 /// Struct representation of [`Pipeline`](struct.Pipeline.html) that wraps around `rs2_pipeline` 
 /// handle. The [`Pipeline`](struct.Pipeline.html) simplifies the user interaction with the 
-/// [`Device`](struct.Device.html) and computer vision processing modules. The class abstracts the 
+/// [`Device`](/librealsense2/device/struct.Device.html) and computer vision processing modules. The class abstracts the 
 /// camera configuration and streaming, and the vision modules triggering and threading. It lets 
 /// the application focus on the computer vision output of the modules, or the device output data. 
 /// The [`Pipeline`](struct.Pipeline.html) can manage computer vision modules, which are 
@@ -33,7 +33,7 @@ impl Pipeline {
     /// Create a new [`Pipeline`](struct.Pipeline.html) instance.
     ///
     /// # Arguments
-    /// * `ctx` - The [`Context`](struct.Context.html) for which to create a new 
+    /// * `ctx` - The [`Context`](/librealsense2/context/struct.Context.html) for which to create a new 
     /// [`Pipeline`](struct.Pipeline.html).
     ///
     /// # Returns
@@ -52,7 +52,7 @@ impl Pipeline {
     }
 
     /// Start the [`Pipeline`](struct.Pipeline.html) streaming with its default configuration. The 
-    /// pipeline streaming loop captures samples from the [`Device`](struct.Device.html), and 
+    /// pipeline streaming loop captures samples from the [`Device`](/librealsense2/device/struct.Device.html), and 
     /// delivers them to the attached computer vision modules and processing blocks, according to 
     /// each module requirements and threading model. During the loop execution, the application 
     /// can access the camera streams by calling 
@@ -78,8 +78,8 @@ impl Pipeline {
     }
 
     /// Start the [`Pipeline`](struct.Pipeline.html) streaming according to the 
-    /// [`Config`](struct.Config.html). The [`Pipeline`](struct.Pipeline.html) streaming loop 
-    /// captures samples from the [`Device`](struct.Device.html), and delivers them to the attached 
+    /// [`Config`](/librealsense2/config/struct.Config.html). The [`Pipeline`](struct.Pipeline.html) streaming loop 
+    /// captures samples from the [`Device`](/librealsense2/device/struct.Device.html), and delivers them to the attached 
     /// computer vision modules and processing blocks, according to each module requirements and 
     /// threading model. During the loop execution, the application can access the camera streams 
     /// by calling [`Pipeline::wait_for_frames()`](struct.Pipeline.html#method.wait_for_frames) or 
@@ -87,20 +87,20 @@ impl Pipeline {
     /// loop runs until the [`Pipeline`](struct.Pipeline.html) is stopped. Starting the 
     /// [`Pipeline`](struct.Pipeline.html) is possible only when it is not started. If the 
     /// [`Pipeline`](struct.Pipeline.html) was started, an exception is raised. The 
-    /// [`Pipeline`](struct.Pipeline.html) selects and activates the [`Device`](struct.Device.html) 
+    /// [`Pipeline`](struct.Pipeline.html) selects and activates the [`Device`](/librealsense2/device/struct.Device.html) 
     /// upon start, according to configuration or a default configuration. The 
     /// [`Pipeline`](struct.Pipeline.html) tries to activate the 
-    /// [`Config::resolve()`](struct.Config.html#method.resolve) result. If the application 
+    /// [`Config::resolve()`](/librealsense2/config/struct.Config.html#method.resolve) result. If the application 
     /// requests are conflicting with [`Pipeline`](struct.Pipeline.html) computer vision modules or 
-    /// no matching [`Device`](struct.Device.html) is available on the platform, the method fails. 
-    /// Available configurations and [`Device`](struct.Device.html)s may change between 
-    /// [`Config::resolve()`](struct.Config.html#method.resolve) call and 
+    /// no matching [`Device`](/librealsense2/device/struct.Device.html) is available on the platform, the method fails. 
+    /// Available configurations and [`Device`](/librealsense2/device/struct.Device.html)s may change between 
+    /// [`Config::resolve()`](/librealsense2/config/struct.Config.html#method.resolve) call and 
     /// [`Pipeline::start()`](struct.Pipeline.html#method.start), in case 
-    /// [`Device`](struct.Device.html)s are connected or disconnected, or another application 
+    /// [`Device`](/librealsense2/device/struct.Device.html)s are connected or disconnected, or another application 
     /// acquires ownership of a device.
     ///
     /// # Arguments
-    /// * [`Config`](struct.Config.html) - A [`Config`](struct.Config.html) with requested filters on the [`Pipeline`](struct.Pipeline.html) configuration.
+    /// * [`Config`](/librealsense2/config/struct.Config.html) - A [`Config`](/librealsense2/config/struct.Config.html) with requested filters on the [`Pipeline`](struct.Pipeline.html) configuration.
     ///
     /// # Returns
     /// * `Ok(PipelineProfile)` on success.
@@ -142,21 +142,21 @@ impl Pipeline {
         }
     }
 
-    /// Wait until a new set of [`Frame`](struct.Frame.html)s becomes available. The 
-    /// [`Frame`](struct.Frame.html)s set includes time-synchronized [`Frame`](struct.Frame.html)s 
+    /// Wait until a new set of [`Frame`](/librealsense2/frame/struct.Frame.html)s becomes available. The 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s set includes time-synchronized [`Frame`](/librealsense2/frame/struct.Frame.html)s 
     /// of each enabled stream in the pipeline. In case of different frame rates of the streams, 
-    /// the [`Frame`](struct.Frame.html)s set include a matching frame of the slow stream, which 
-    /// may have been included in previous [`Frame`](struct.Frame.html)s set. The method blocks the 
-    /// calling thread,  and fetches the latest unread [`Frame`](struct.Frame.html)s set. Device 
-    /// [`Frame`](struct.Frame.html)s, which were produced while the function wasn't called, are 
+    /// the [`Frame`](/librealsense2/frame/struct.Frame.html)s set include a matching frame of the slow stream, which 
+    /// may have been included in previous [`Frame`](/librealsense2/frame/struct.Frame.html)s set. The method blocks the 
+    /// calling thread,  and fetches the latest unread [`Frame`](/librealsense2/frame/struct.Frame.html)s set. Device 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s, which were produced while the function wasn't called, are 
     /// dropped. To avoid frame drops, this method should be called as fast as the device frame 
-    /// rate. The application can maintain the [`Frame`](struct.Frame.html)s handles to defer 
+    /// rate. The application can maintain the [`Frame`](/librealsense2/frame/struct.Frame.html)s handles to defer 
     /// processing. However, if the application maintains too long history, the device may lack 
-    /// memory resources to produce new [`Frame`](struct.Frame.html)s, and the following call to 
+    /// memory resources to produce new [`Frame`](/librealsense2/frame/struct.Frame.html)s, and the following call to 
     /// this method shall fail to retrieve new frames, until resources become available.
     ///
     /// # Arguments
-    /// * `timeout` - Max time in milliseconds to wait until [`Error`](struct.Error.html) is 
+    /// * `timeout` - Max time in milliseconds to wait until [`Error`](/librealsense2/error/struct.Error.html) is 
     /// returned.
     ///
     /// # Returns
@@ -187,20 +187,20 @@ impl Pipeline {
         }
     }
 
-    /// Wait until a new set of [`Frame`](struct.Frame.html)s becomes available. The 
-    /// [`Frame`](struct.Frame.html)s set includes time-synchronized [`Frame`](struct.Frame.html)s 
+    /// Wait until a new set of [`Frame`](/librealsense2/frame/struct.Frame.html)s becomes available. The 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s set includes time-synchronized [`Frame`](/librealsense2/frame/struct.Frame.html)s 
     /// of each enabled stream in the pipeline. The method blocks the calling thread, and fetches 
-    /// the latest unread [`Frame`](struct.Frame.html)s set. Device [`Frame`](struct.Frame.html)s, 
+    /// the latest unread [`Frame`](/librealsense2/frame/struct.Frame.html)s set. Device [`Frame`](/librealsense2/frame/struct.Frame.html)s, 
     /// which were produced while the function wasn't called, are dropped. To avoid 
-    /// [`Frame`](struct.Frame.html) drops, this method should be called as fast as the device 
-    /// [`Frame`](struct.Frame.html) rate. The application can maintain the 
-    /// [`Frame`](struct.Frame.html)s handles to defer processing. However, if the application 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html) drops, this method should be called as fast as the device 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html) rate. The application can maintain the 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s handles to defer processing. However, if the application 
     /// maintains too long history, the device may lack memory resources to produce new 
-    /// [`Frame`](struct.Frame.html)s, and the following call to this method shall fail to retrieve 
-    /// new [`Frame`](struct.Frame.html)s, until resources are retained.
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s, and the following call to this method shall fail to retrieve 
+    /// new [`Frame`](/librealsense2/frame/struct.Frame.html)s, until resources are retained.
     ///
     /// # Arguments
-    /// * `timeout` - Max time in milliseconds to wait until [`Error`](struct.Error.html) is 
+    /// * `timeout` - Max time in milliseconds to wait until [`Error`](/librealsense2/error/struct.Error.html) is 
     /// returned.
     ///
     /// # Returns
@@ -210,19 +210,19 @@ impl Pipeline {
         unimplemented!();
     }
 
-    /// Check if a new set of [`Frame`](struct.Frame.html)s is available and retrieve the latest 
-    /// undelivered set. The [`Frame`](struct.Frame.html)s set includes time-synchronized 
-    /// [`Frame`](struct.Frame.html)s of each enabled stream in the 
+    /// Check if a new set of [`Frame`](/librealsense2/frame/struct.Frame.html)s is available and retrieve the latest 
+    /// undelivered set. The [`Frame`](/librealsense2/frame/struct.Frame.html)s set includes time-synchronized 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s of each enabled stream in the 
     /// [`Pipeline`](struct.Pipeline.html). The method returns without blocking the calling thread, 
-    /// with status of new [`Frame`](struct.Frame.html)s available or not. If available, it fetches 
-    /// the latest [`Frame`](struct.Frame.html)s set. Device [`Frame`](struct.Frame.html)s, which 
+    /// with status of new [`Frame`](/librealsense2/frame/struct.Frame.html)s available or not. If available, it fetches 
+    /// the latest [`Frame`](/librealsense2/frame/struct.Frame.html)s set. Device [`Frame`](/librealsense2/frame/struct.Frame.html)s, which 
     /// were produced while the function wasn't called, are dropped. To avoid 
-    /// [`Frame`](struct.Frame.html) drops, this method should be called as fast as the device 
-    /// [`Frame`](struct.Frame.html) rate. The application can maintain the 
-    /// [`Frame`](struct.Frame.html)s handles to defer processing. However, if the application 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html) drops, this method should be called as fast as the device 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html) rate. The application can maintain the 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s handles to defer processing. However, if the application 
     /// maintains too long history, the device may lack memory resources to produce new 
-    /// [`Frame`](struct.Frame.html)s, and the following calls to this method shall return no new 
-    /// [`Frame`](struct.Frame.html)s, until resources become available.
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s, and the following calls to this method shall return no new 
+    /// [`Frame`](/librealsense2/frame/struct.Frame.html)s, until resources become available.
     ///
     /// # Returns
     /// * `Ok(Vec<Frame>)` on success.
@@ -231,7 +231,7 @@ impl Pipeline {
         unimplemented!();
     }
 
-    /// Return the active [`Device`](struct.Device.html) and streams profiles, used by the 
+    /// Return the active [`Device`](/librealsense2/device/struct.Device.html) and streams profiles, used by the 
     /// [`Pipeline`](struct.Pipeline.html) as [`PipelineProfile`](struct.PipelineProfile.html). The 
     /// [`Pipeline`](struct.Pipeline.html) streams profiles are selected during 
     /// [`Pipeline::start()`](struct.Pipeline.html#method.start). The method returns a valid result 
@@ -243,7 +243,7 @@ impl Pipeline {
     /// [`Pipeline`](struct.Pipeline.html) selected device may change in subsequent activations.
     ///
     /// # Arguments
-    /// * `timeout` - Max time in milliseconds to wait until [`Error`](struct.Error.html) is 
+    /// * `timeout` - Max time in milliseconds to wait until [`Error`](/librealsense2/error/struct.Error.html) is 
     /// returned.
     ///
     /// # Returns

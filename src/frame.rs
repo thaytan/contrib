@@ -316,8 +316,8 @@ impl Frame {
         Ok(data)
     }
 
-    /// Retrieve the [`StreamProfile`](struct.StreamProfile.html) that was used to start the stream 
-    /// of this [`Frame`](struct.Frame.html).
+    /// Retrieve the [`StreamProfile`](/librealsense2/stream_profile/struct.StreamProfile.html) that
+    /// was used to start the stream of this [`Frame`](struct.Frame.html).
     ///
     /// # Returns
     /// * `Ok(StreamProfile)` on success.

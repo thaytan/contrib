@@ -70,14 +70,8 @@ impl Device {
     /// Retrieve camera specific information, like versions of various internal components.
     ///    
     /// # Arguments
-    /// * `info` - The camera info type to retrieve. Valid values are: `RS2_CAMERA_INFO_NAME`,
-    /// `RS2_CAMERA_INFO_SERIAL_NUMBER`, `RS2_CAMERA_INFO_FIRMWARE_VERSION`,
-    /// `RS2_CAMERA_INFO_RECOMMENDED_FIRMWARE_VERSION`, `RS2_CAMERA_INFO_PHYSICAL_PORT`,
-    /// `RS2_CAMERA_INFO_DEBUG_OP_CODE`, `RS2_CAMERA_INFO_ADVANCED_MODE`,
-    /// `RS2_CAMERA_INFO_PRODUCT_ID`, `RS2_CAMERA_INFO_CAMERA_LOCKED`,
-    /// `RS2_CAMERA_INFO_USB_TYPE_DESCRIPTOR`, `RS2_CAMERA_INFO_PRODUCT_LINE`,
-    /// `RS2_CAMERA_INFO_ASIC_SERIAL_NUMBER`, `RS2_CAMERA_INFO_FIRMWARE_UPDATE_ID`,
-    /// `RS2_CAMERA_INFO_COUNT`
+    /// * `info` - The camera info type to retrieve. Please see
+    /// [rs2_camera_info](/librealsense2/device/enum.rs2_camera_info.html) for more information.
     ///
     /// # Returns
     /// * `Ok(String)` on success, containing the value under the info field.
