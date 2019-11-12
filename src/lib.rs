@@ -1,3 +1,5 @@
+#![doc(html_logo_url = "https://2iexix426zex1jl94h409m26-wpengine.netdna-ssl.com/wp-content/uploads/2018/09/jira-logo-transparent.png")]
+
 extern crate librealsense2_sys as rs2;
 
 pub mod config;
