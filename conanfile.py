@@ -38,3 +38,8 @@ class NcursesConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+
+    def package_info(self):
+        self.env_info.TERMINFO = os.path.join(
+            self.package_folder, "share", "terminfo"
+        )
