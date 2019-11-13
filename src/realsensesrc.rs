@@ -189,28 +189,22 @@ static PROPERTIES: [subclass::Property; 16] = [
     }),
 ];
 
-// An enum containing the current state of the RealSense pipeline
-enum State {
-    Stopped,
-    Started { pipeline: rs2::pipeline::Pipeline },
-}
-
-impl Default for State {
-    fn default() -> State {
-        State::Stopped
-    }
-}
-
-// A struct representation of the `realsensesrc` element
+/// A struct representation of the `realsensesrc` element
 struct RealsenseSrc {
     cat: gst::DebugCategory,
     internals: Mutex<RealsenseSrcInternals>,
 }
 
-// Internals of the element that are under Mutex
+/// Internals of the element that are under Mutex
 struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
+}
+
+/// An enum containing the current state of the RealSense pipeline
+enum State {
+    Stopped,
+    Started { pipeline: rs2::pipeline::Pipeline },
 }
 
 impl ObjectSubclass for RealsenseSrc {
@@ -266,7 +260,7 @@ impl ObjectSubclass for RealsenseSrc {
             ),
             internals: Mutex::new(RealsenseSrcInternals {
                 settings: Settings::default(),
-                state: State::default(),
+                state: State::Stopped,
             }),
         }
     }
