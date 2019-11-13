@@ -1,6 +1,6 @@
 [package]
 name = "gst-realsense"
-version = "0.1.4"
+version = "0.1.6"
 authors = ["Niclas Moeslund Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
 license = "LGPL"
 description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
@@ -15,8 +15,8 @@ glib = { version = "0.8" }
 gstreamer = { version = "0.14", features = ["subclassing"] }
 gstreamer-base = { version = "0.14", features = ["subclassing"] }
 gstreamer-video = "0.14"
-gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs" }
-librealsense2 = { git = "https://gitlab.com/aivero/public/librealsense-rs" }
+gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", tag="0.2.1" }
+librealsense2 = { git = "https://gitlab.com/aivero/public/librealsense-rs", tag="1.0.0" }
 capnp = { version = "0.10.1" }
 
 [build-dependencies.capnpc]

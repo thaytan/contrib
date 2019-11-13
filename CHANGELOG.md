@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2019-11-13
+
 ### Added
 - Fixed issues related to playback from rosbag recording.
   - Streams no longer loop if not all streams contained within rosbag are enabled.
@@ -17,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Rename certain deprecated method so that these are identical to C/C++ API.
 - Moved 4 booleans, i.e. `enable_x`, under `EnabledStreams` as the new code benefits from it.
 - Use `StreamResolution` struct definition from `librealsense-rs` instead of a local copy of it.
-
+- Split structs into multiple files, i.e. create `enabled_streams.rs`, `settings.rs`, `errors.rs` and `properties.rs`.
 ### Patched
 - Also set timestamp and buffer duration on per-frame metadata buffers.
 
