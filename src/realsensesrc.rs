@@ -14,10 +14,8 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enabled_streams::EnabledStreams;
-use crate::properties_d435;
-use crate::properties_d435::DEFAULT_ENABLE_METADATA;
 use crate::rs_meta::rs_meta_serialization::*;
+use crate::settings::*;
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
@@ -26,7 +24,6 @@ use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
 use rs2;
 use rs2::high_level_utils::StreamInfo;
-use rs2::stream_profile::StreamResolution;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -75,13 +72,6 @@ impl From<RealsenseError> for gst::FlowError {
     }
 }
 
-// Default timeout used while waiting for frames from a realsense device in milliseconds.
-const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
-// Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
-const DEFAULT_LOOP_ROSBAG: bool = true;
-// Default behaviour for adding custom timestamps to the buffers.
-const DEFAULT_DO_CUSTOM_TIMESTAMP: bool = true;
-
 static PROPERTIES: [subclass::Property; 16] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
@@ -115,7 +105,7 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Enable Depth",
             "Enables depth stream.",
-            properties_d435::DEFAULT_ENABLE_DEPTH,
+            DEFAULT_ENABLE_DEPTH,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -124,7 +114,7 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Enable Infra1",
             "Enables infra1 stream.",
-            properties_d435::DEFAULT_ENABLE_INFRA1,
+            DEFAULT_ENABLE_INFRA1,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -133,7 +123,7 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Enable Infra2",
             "Enables infra2 stream.",
-            properties_d435::DEFAULT_ENABLE_INFRA2,
+            DEFAULT_ENABLE_INFRA2,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -142,7 +132,7 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Enable Color",
             "Enables color stream.",
-            properties_d435::DEFAULT_ENABLE_COLOR,
+            DEFAULT_ENABLE_COLOR,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -151,9 +141,9 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Depth Width",
             "Width of the depth and infra1/infra2 frames.",
-            properties_d435::DEPTH_MIN_WIDTH,
-            properties_d435::DEPTH_MAX_WIDTH,
-            properties_d435::DEFAULT_DEPTH_WIDTH,
+            DEPTH_MIN_WIDTH,
+            DEPTH_MAX_WIDTH,
+            DEFAULT_DEPTH_WIDTH,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -162,9 +152,9 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Depth Height",
             "Height of the depth and infra1/infra2 frames.",
-            properties_d435::DEPTH_MIN_HEIGHT,
-            properties_d435::DEPTH_MAX_HEIGHT,
-            properties_d435::DEFAULT_DEPTH_HEIGHT,
+            DEPTH_MIN_HEIGHT,
+            DEPTH_MAX_HEIGHT,
+            DEFAULT_DEPTH_HEIGHT,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -173,9 +163,9 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Color Width",
             "Width of the color frame.",
-            properties_d435::COLOR_MIN_WIDTH,
-            properties_d435::COLOR_MAX_WIDTH,
-            properties_d435::DEFAULT_COLOR_WIDTH,
+            COLOR_MIN_WIDTH,
+            COLOR_MAX_WIDTH,
+            DEFAULT_COLOR_WIDTH,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -184,9 +174,9 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Color Height",
             "Height of the color frame.",
-            properties_d435::COLOR_MIN_HEIGHT,
-            properties_d435::COLOR_MAX_HEIGHT,
-            properties_d435::DEFAULT_COLOR_HEIGHT,
+            COLOR_MIN_HEIGHT,
+            COLOR_MAX_HEIGHT,
+            DEFAULT_COLOR_HEIGHT,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -195,9 +185,9 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Framerate",
             "Common framerate of the selected streams.",
-            properties_d435::MIN_FRAMERATE,
-            properties_d435::MAX_FRAMERATE,
-            properties_d435::DEFAULT_FRAMERATE,
+            MIN_FRAMERATE,
+            MAX_FRAMERATE,
+            DEFAULT_FRAMERATE,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -226,7 +216,7 @@ static PROPERTIES: [subclass::Property; 16] = [
             name,
             "Include Per Frame Metadata",
             "Adds librealsense2's per-frame metadata as an additional buffer on the video stream.",
-            properties_d435::DEFAULT_ENABLE_METADATA,
+            DEFAULT_ENABLE_METADATA,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -240,56 +230,6 @@ static PROPERTIES: [subclass::Property; 16] = [
         )
     }),
 ];
-
-// A struct containing properties
-struct Settings {
-    serial: Option<String>,
-    rosbag_location: Option<String>,
-    json_location: Option<String>,
-    streams: Streams,
-    loop_rosbag: bool,
-    wait_for_frames_timeout: u32,
-    include_per_frame_metadata: bool,
-    do_custom_timestamp: bool,
-}
-
-struct Streams {
-    enabled_streams: EnabledStreams,
-    depth_resolution: StreamResolution,
-    color_resolution: StreamResolution,
-    framerate: i32,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Settings {
-            rosbag_location: None,
-            serial: None,
-            json_location: None,
-            streams: Streams {
-                enabled_streams: EnabledStreams {
-                    depth: properties_d435::DEFAULT_ENABLE_DEPTH,
-                    infra1: properties_d435::DEFAULT_ENABLE_INFRA1,
-                    infra2: properties_d435::DEFAULT_ENABLE_INFRA2,
-                    color: properties_d435::DEFAULT_ENABLE_COLOR,
-                },
-                depth_resolution: StreamResolution {
-                    width: properties_d435::DEFAULT_DEPTH_WIDTH,
-                    height: properties_d435::DEFAULT_DEPTH_HEIGHT,
-                },
-                color_resolution: StreamResolution {
-                    width: properties_d435::DEFAULT_COLOR_WIDTH,
-                    height: properties_d435::DEFAULT_COLOR_HEIGHT,
-                },
-                framerate: properties_d435::DEFAULT_FRAMERATE,
-            },
-            loop_rosbag: DEFAULT_LOOP_ROSBAG,
-            wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
-            include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
-            do_custom_timestamp: DEFAULT_DO_CUSTOM_TIMESTAMP,
-        }
-    }
-}
 
 // An enum containing the current state of the RealSense pipeline
 enum State {
@@ -342,8 +282,8 @@ impl ObjectSubclass for RealsenseSrc {
                 (
                     "framerate",
                     &gst::FractionRange::new(
-                        gst::Fraction::new(properties_d435::MIN_FRAMERATE, 1),
-                        gst::Fraction::new(properties_d435::MAX_FRAMERATE, 1),
+                        gst::Fraction::new(MIN_FRAMERATE, 1),
+                        gst::Fraction::new(MAX_FRAMERATE, 1),
                     ),
                 ),
             ],

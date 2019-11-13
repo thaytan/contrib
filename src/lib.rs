@@ -11,6 +11,7 @@ mod enabled_streams;
 mod properties_d435;
 mod realsensesrc;
 mod rs_meta;
+mod settings;
 
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     realsensesrc::register(plugin)?;

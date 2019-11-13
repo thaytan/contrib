@@ -1,3 +1,4 @@
+/// Helper structs that contains information about what streams are enabled
 pub(crate) struct EnabledStreams {
     pub(crate) depth: bool,
     pub(crate) infra1: bool,
