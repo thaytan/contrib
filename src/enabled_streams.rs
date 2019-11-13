@@ -21,7 +21,7 @@ impl EnabledStreams {
     }
 
     /// Determines whether there are any conflict between `enabled_streams` and
-    /// `rosbag_enabled_streams`
+    /// `available_streams`
     ///
     /// # Arguments
     /// * `enabled_streams` - The streams that are enabled.
