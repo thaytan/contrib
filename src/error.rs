@@ -2,7 +2,8 @@ use crate::low_level_utils::cstring_to_string;
 use rs2;
 use std::{error, fmt};
 
-/// Struct representation of an [`Error`](struct.Error.html) that wraps around `rs2_error` handle.
+/// Struct representation of an [`Error`](../error/struct.Error.html) that wraps around
+/// `rs2_error` handle.
 #[derive(Debug)]
 pub struct Error {
     pub(crate) handle: *mut rs2::rs2_error,
@@ -17,7 +18,7 @@ impl Drop for Error {
     }
 }
 
-/// Default constructor of [`Error`](struct.Error.html) that contains no error.
+/// Default constructor of [`Error`](../error/struct.Error.html) that contains no error.
 impl Default for Error {
     fn default() -> Self {
         Self {
@@ -26,14 +27,14 @@ impl Default for Error {
     }
 }
 
-/// Define the source of [`Error`](struct.Error.html).
+/// Define the source of [`Error`](../error/struct.Error.html).
 impl error::Error for Error {
     fn description(&self) -> &str {
         "RealSense Error"
     }
 }
 
-/// Formatting of [`Error`](struct.Error.html).
+/// Formatting of [`Error`](../error/struct.Error.html).
 impl fmt::Display for Error {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str(self.get_message().as_str())
@@ -46,10 +47,11 @@ impl Error {
         &mut self.handle as *mut *mut rs2::rs2_error
     }
 
-    /// Check the value of [`Error`](struct.Error.html).
+    /// Check the value of [`Error`](../error/struct.Error.html).
     ///
     /// # Returns
-    /// * `bool` that returs `true` if the struct [`Error`](struct.Error.html) contains an error 
+    /// * `bool` that returs `true` if the struct [`Error`](../error/struct.Error.html)
+    /// contains an error
     /// that occured and
     /// false if everything went fine.
     pub fn check(&self) -> bool {

@@ -7,10 +7,11 @@ use rs2;
 pub use rs2::rs2_format;
 pub use rs2::rs2_stream;
 
-/// Struct representation of configuration [`Config`](struct.Config.html) that wraps around 
-/// `rs2_config` handle. The [`Config`](struct.Config.html) allows, in combination with 
-/// [Pipeline](/librealsense2/pipeline/struct.Pipeline.html), to request filters for the streams and
-/// [`Device`](/librealsense2/device/struct.Device.html) selection and configuration.
+/// Struct representation of configuration [`Config`](../config/struct.Config.html)
+/// that wraps around `rs2_config` handle. The [`Config`](../config/struct.Config.html)
+/// allows, in combination with [`Pipeline`](../pipeline/struct.Pipeline.html), to
+/// request filters for the streams and [`Device`](../device/struct.Device.html)
+/// selection and configuration.
 pub struct Config {
     pub(crate) handle: *mut rs2::rs2_config,
 }
@@ -25,17 +26,21 @@ impl Drop for Config {
 }
 
 impl Config {
-    /// Create a [`Config`](struct.Config.html) instance. The [`Config`](struct.Config.html) allows 
-    /// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) users to request filters for the 
-    /// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) streams and [`Device`](struct.Device.html) selection 
-    /// and configuration. This is an optional step in [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) creation, 
-    /// as the [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) resolves its streaming 
-    /// [`Device`](struct.Device.html) internally. [`Config`](struct.Config.html) provides its 
-    /// users a way to set the filters and test if there is no conflict with the pipeline 
-    /// requirements from the [`Device`](struct.Device.html). It also allows the user to find a 
-    /// matching [`Device`](struct.Device.html) for the config filters and the 
-    /// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html), in order to select a [`Device`](struct.Device.html) 
-    /// explicitly, and modify its controls before streaming starts.
+    /// Create a [`Config`](../config/struct.Config.html) instance. The
+    /// [`Config`](../config/struct.Config.html) allows
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html) users to request filters for the
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html) streams and
+    /// [`Device`](../device/struct.Device.html) selection and configuration. This is
+    /// an optional step in [`Pipeline`](../pipeline/struct.Pipeline.html) creation, as
+    /// the [`Pipeline`](../pipeline/struct.Pipeline.html) resolves its streaming
+    /// [`Device`](../device/struct.Device.html) internally.
+    /// [`Config`](../config/struct.Config.html) provides its users a way to set the
+    /// filters and test if there is no conflict with the pipeline requirements from the
+    /// [`Device`](../device/struct.Device.html). It also allows the user to find a
+    /// matching [`Device`](../device/struct.Device.html) for the config filters and
+    /// the [`Pipeline`](../pipeline/struct.Pipeline.html), in order to select a
+    /// [`Device`](../device/struct.Device.html) explicitly, and modify its controls
+    /// before streaming starts.
     ///
     /// # Returns
     /// * `Ok(Config)` on success.
@@ -52,25 +57,28 @@ impl Config {
         }
     }
 
-    /// Enable a [`Device`](struct.Device.html) stream explicitly, with selected parameters. The 
-    /// method allows the application to request a stream with specific configuration. If no 
-    /// stream is explicitly enabled, the [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) configures the 
-    /// [`Device`](struct.Device.html) and its streams according to the attached computer vision 
-    /// modules and processing blocks requirements, or default configuration for the first 
-    /// available [`Device`](struct.Device.html). The application can configure any of the input 
-    /// stream parameters according to its requirement, or set to 0 for don't care value. The 
-    /// [`Config`](struct.Config.html) accumulates the application calls for enable configuration 
-    /// methods, until the configuration is applied. Multiple enable stream calls for the same 
-    /// stream with conflicting parameters override each other, and the last call is maintained. 
-    /// Upon calling [`Config::resolve()`](struct.Config.html#method.resolve), the 
-    /// [`Config`](struct.Config.html) checks for conflicts between the application configuration 
-    /// requests and the attached computer vision modules and processing blocks requirements, and 
-    /// fails if conflicts are found. Before 
-    /// [`Config::resolve()`](struct.Config.html#method.resolve) is called, no conflict check is 
-    /// done.
-    ///    
+    /// Enable a [`Device`](../device/struct.Device.html) stream explicitly, with
+    /// selected parameters. The method allows the application to request a stream with specific
+    /// configuration. If no stream is explicitly enabled, the
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html) configures the
+    /// [`Device`](../device/struct.Device.html) and its streams according to the
+    /// attached computer vision modules and processing blocks requirements, or default
+    /// configuration for the first available
+    /// [`Device`](../device/struct.Device.html). The application can configure any of
+    /// the input stream parameters according to its requirement, or set to 0 for don't care value.
+    /// The [`Config`](../config/struct.Config.html) accumulates the application calls
+    /// for enable configuration methods, until the configuration is applied. Multiple enable
+    /// stream calls for the same stream with conflicting parameters override each other, and the
+    /// last call is maintained. Upon calling
+    /// [`Config::resolve()`](../config/struct.Config.html#method.resolve), the
+    /// [`Config`](../config/struct.Config.html) checks for conflicts between the
+    /// application configuration requests and the attached computer vision modules and processing
+    /// blocks requirements, and fails if conflicts are found. Before
+    /// [`Config::resolve()`](../config/struct.Config.html#method.resolve) is called,
+    /// no conflict check is done.
+    ///
     /// # Arguments
-    /// * stream - Stream type to be enabled.
+    /// * `stream` - Stream type to be enabled.
     /// * `index` - Stream index, used for multiple streams of the same type. -1 indicates any.
     /// * `width` - Stream image width - for images streams. 0 indicates any.
     /// * `height` - Stream image height - for images streams. 0 indicates any.
@@ -110,13 +118,15 @@ impl Config {
         }
     }
 
-    /// Enable all [`Device`](struct.Device.html) streams explicitly. The conditions and behavior 
-    /// of this method are similar to those of 
-    /// [`Config::enable_stream()`](struct.Config.html#method.enable_stream). This filter enables 
-    /// all raw `Streams` of the selected [`Device`](struct.Device.html). The 
-    /// [`Device`](struct.Device.html) is either selected explicitly by the application, or by the 
-    /// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) requirements or default. The list of streams is 
-    /// [`Device`](struct.Device.html) dependent.
+    /// Enable all [`Device`](../device/struct.Device.html) streams explicitly. The
+    /// conditions and behavior of this method are similar to those of
+    /// [`Config::enable_stream()`](../config/struct.Config.html#method.enable_stream).
+    /// This filter enables all raw `Streams` of the selected
+    /// [`Device`](../device/struct.Device.html). The
+    /// [`Device`](../device/struct.Device.html) is either selected explicitly by the
+    /// application, or by the [`Pipeline`](../pipeline/struct.Pipeline.html)
+    /// requirements or default. The list of streams is
+    /// [`Device`](../device/struct.Device.html) dependent.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -133,18 +143,21 @@ impl Config {
         }
     }
 
-    /// Select a specific [`Device`](struct.Device.html) explicitly by its `serial` number, to be 
-    /// used by the [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html).The conditions and behavior of this method 
-    /// are similar to those of 
-    /// [`Config::enable_stream()`](struct.Config.html#method.enable_stream). This method is 
-    /// required if the application needs to set [`Device`](struct.Device.html) or 
-    /// [`Sensor`](struct.Sensor.html) settings prior to [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) 
-    /// streaming, to enforce the [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) to use the configured 
-    /// [`Device`](struct.Device.html).
-    ///    
+    /// Select a specific [`Device`](../device/struct.Device.html) explicitly by its
+    /// `serial` number, to be used by the
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html).The conditions and behavior of
+    /// this method are similar to those of
+    /// [`Config::enable_stream()`](../config/struct.Config.html#method.enable_stream).
+    /// This method is required if the application needs to set
+    /// [`Device`](../device/struct.Device.html) or
+    /// [`Sensor`](../sensor/struct.Sensor.html) settings prior to
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html) streaming, to enforce the
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html) to use the configured
+    /// [`Device`](../device/struct.Device.html).
+    ///
     /// # Arguments
-    /// * `serial` - [`Device`](struct.Device.html) serial number, as returned by 
-    /// `RS2_CAMERA_INFO_SERIAL_NUMBER`.
+    /// * `serial` - [`Device`](../device/struct.Device.html) serial number, as
+    /// returned by `RS2_CAMERA_INFO_SERIAL_NUMBER`.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -163,18 +176,20 @@ impl Config {
         }
     }
 
-    /// Select a recorded [`Device`](struct.Device.html) from a `file`, to be used by the 
-    /// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) through playback. The [`Device`](struct.Device.html) 
-    /// available streams are as recorded to the `file`, and 
-    /// [`Config::resolve()`](struct.Config.html#method.resolve) considers only this 
-    /// [`Device`](struct.Device.html) and configuration as available. This request cannot be used 
-    /// if [`Config::enable_record_to_file()`](struct.Config.html#method.enable_record_to_file) is 
-    /// called for the current [`Config`](struct.Config.html), and vise versa. By default, playback 
-    /// is repeated once the file ends. To control this, see 
-    /// [`Config::enable_device_from_file_repeat_option()`](struct.Config.html#method.enable_device_from_file_repeat_option).
-    ///    
+    /// Select a recorded [`Device`](../device/struct.Device.html) from a `file`, to be
+    /// used by the [`Pipeline`](../pipeline/struct.Pipeline.html) through playback.
+    /// The [`Device`](../device/struct.Device.html) available streams are as recorded
+    /// to the `file`, and
+    /// [`Config::resolve()`](../config/struct.Config.html#method.resolve) considers
+    /// only this [`Device`](../device/struct.Device.html) and configuration as
+    /// available. This request cannot be used if
+    /// [`Config::enable_record_to_file()`](../config/struct.Config.html#method.enable_record_to_file)
+    /// is called for the current [`Config`](../config/struct.Config.html), and vise
+    /// versa. By default, playback is repeated once the file ends. To control this, see
+    /// [`Config::enable_device_from_file_repeat_option()`](../config/struct.Config.html#method.enable_device_from_file_repeat_option).
+    ///
     /// # Arguments
-    /// * `file` - The playback file of the [`Device`](struct.Device.html).
+    /// * `file` - The playback file of the [`Device`](../device/struct.Device.html).
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -193,16 +208,19 @@ impl Config {
         }
     }
 
-    /// Select a recorded [`Device`](struct.Device.html) from a `file`, to be used by the 
-    /// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) through playback. The [`Device`](struct.Device.html) 
-    /// available streams are as recorded to the `file`, and 
-    /// [`Config::resolve()`](struct.Config.html#method.resolve) considers only this 
-    /// [`Device`](struct.Device.html) and configuration as available. This request cannot be used 
-    /// if [`Config::enable_record_to_file()`](struct.Config.html#method.enable_record_to_file) is 
-    /// called for the current [`Config`](struct.Config.html), and vise versa.
-    ///    
+    /// Select a recorded [`Device`](../device/struct.Device.html) from a `file`, to be
+    /// used by the [`Pipeline`](../pipeline/struct.Pipeline.html) through playback.
+    /// The [`Device`](../device/struct.Device.html) available streams are as recorded
+    /// to the `file`, and
+    /// [`Config::resolve()`](../config/struct.Config.html#method.resolve) considers
+    /// only this [`Device`](../device/struct.Device.html) and configuration as
+    /// available. This request cannot be used if
+    /// [`Config::enable_record_to_file()`](../config/struct.Config.html#method.enable_record_to_file)
+    /// is called for the current [`Config`](../config/struct.Config.html), and vise
+    /// versa.
+    ///
     /// # Arguments
-    /// * `file` - The playback file of the [`Device`](struct.Device.html).
+    /// * `file` - The playback file of the [`Device`](../device/struct.Device.html).
     /// * `repeat` - If true, when file ends the playback starts again, in an infinite loop. If
     /// false, when `file` ends playback does not start again, and should by stopped manually by
     /// the user.
@@ -233,11 +251,12 @@ impl Config {
         }
     }
 
-    /// Requires that the resolved [`Device`](struct.Device.html) would be recorded to file. This 
-    /// request cannot be used if 
-    /// [`Config::enable_device_from_file()`](struct.Config.html#method.enable_device_from_file) is 
-    /// called for the current [`Config`](struct.Config.html), and vise versa.
-    ///    
+    /// Requires that the resolved [`Device`](../device/struct.Device.html) would be
+    /// recorded to file. This request cannot be used if
+    /// [`Config::enable_device_from_file()`](../config/struct.Config.html#method.enable_device_from_file)
+    /// is called for the current [`Config`](../config/struct.Config.html), and vise
+    /// versa.
+    ///
     /// # Arguments
     /// * `file` - The desired file for the output record.
     ///
@@ -258,10 +277,11 @@ impl Config {
         }
     }
 
-    /// Disable a [`Device`](struct.Device.html) stream explicitly, to remove any requests on this 
-    /// stream `type`. The stream can still be enabled due to [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) 
-    /// computer vision module request. This call removes any filter on the stream configuration.
-    ///    
+    /// Disable a [`Device`](../device/struct.Device.html) stream explicitly, to remove
+    /// any requests on this stream `type`. The stream can still be enabled due to
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html) computer vision module request.
+    /// This call removes any filter on the stream configuration.
+    ///
     /// # Arguments
     ///	* stream - stream type, for which the filters are cleared.
     ///
@@ -280,11 +300,11 @@ impl Config {
         }
     }
 
-    /// Disable a [`Device`](struct.Device.html) indexed stream explicitly, to remove any requests 
-    /// on this [`StreamProfile`](struct.StreamProfile.html). The stream can still be enabled due 
-    /// to [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) computer vision module request. This call removes any 
-    /// filter on the stream configuration.
-    ///    
+    /// Disable a [`Device`](../device/struct.Device.html) indexed stream explicitly,
+    /// to remove any requests on this [`StreamProfile`](../stream_profile/struct.Pipeline.html).
+    /// The stream can still be enabled due to [`Pipeline`](../pipeline/struct.Pipeline.html)
+    /// computer vision module request. This call removes any filter on the stream configuration.
+    ///
     /// # Arguments
     ///	* `stream` - Stream type, for which the filters are cleared.
     ///	* `index` - Stream index, for which the filters are cleared.
@@ -304,11 +324,11 @@ impl Config {
         }
     }
 
-    /// Disable all [`Device`](struct.Device.html) streams explicitly, to remove any requests on 
-    /// the [`StreamsProfile`](struct.StreamsProfile.html)s. The streams can still be enabled due 
-    /// to [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) computer vision module request. This call removes any 
-    /// filter on the stream configuration.
-    ///    
+    /// Disable all [`Device`](../device/struct.Device.html) streams explicitly, to
+    /// remove any requests on the [`StreamsProfile`](struct.StreamsProfile.html)s. The streams can
+    /// still be enabled due to [`Pipeline`](../pipeline/struct.Pipeline.html) computer
+    /// vision module request. This call removes any filter on the stream configuration.
+    ///
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(Error)` on failure.
@@ -324,31 +344,37 @@ impl Config {
         }
     }
 
-    /// Resolve the configuration filters, to find a matching [`Device`](struct.Device.html) and 
-    /// [`StreamsProfile`](struct.StreamsProfile.html)s. The method resolves the user configuration 
-    /// filters for the [`Device`](struct.Device.html) and streams, and combines them with the 
-    /// requirements of the computer vision modules and processing blocks attached to the pipeline. 
-    /// If there are no conflicts of requests, it looks for an available 
-    /// [`Device`](struct.Device.html), which can satisfy all requests, and selects the first 
-    /// matching stream configuration. In the absence of any request, the 
-    /// [`Config`](struct.Config.html) selects the first available [`Device`](struct.Device.html) 
-    /// and the first color and `depth` stream configurations. The 
-    /// [`PipelineProfile`](struct.PipelineProfile.html) selection during 
-    /// [`Pipeline::start()`](/librealsense2/pipeline/struct.Pipeline.html#method.start) follows the same method. Thus, 
-    /// the selected profile is the same, if no change occurs to the available 
-    /// [`Device`](struct.Device.html)s occurs. Resolving the [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) 
-    /// configuration provides the application access to the pipeline selected 
-    /// [`Device`](struct.Device.html) for advanced control. The returned configuration is not 
-    /// applied to the [`Device`](struct.Device.html), so the application doesn't own the 
-    /// [`Device`](struct.Device.html) [`Sensor`](struct.Sensor.html)s. However, the application 
-    /// can call `enable_device()`, to enforce the [`Device`](struct.Device.html) returned by this 
-    /// method is selected by [`Pipeline::start()`](/librealsense2/pipeline/struct.Pipeline.html#method.start), and 
-    /// configure the [`Device`](struct.Device.html) and [`Sensor`](struct.Sensor.html)s options or 
-    /// extensions before streaming starts.
-    ///    
+    /// Resolve the configuration filters, to find a matching
+    /// [`Device`](../device/struct.Device.html) and
+    /// [`StreamsProfile`](struct.StreamsProfile.html)s. The method resolves the user configuration
+    /// filters for the [`Device`](../device/struct.Device.html) and streams, and
+    /// combines them with the requirements of the computer vision modules and processing blocks
+    /// attached to the pipeline. If there are no conflicts of requests, it looks for an available
+    /// [`Device`](../device/struct.Device.html), which can satisfy all requests, and
+    /// selects the first matching stream configuration. In the absence of any request, the
+    /// [`Config`](../config/struct.Config.html) selects the first available
+    /// [`Device`](../device/struct.Device.html) and the first color and `depth` stream
+    /// configurations. The
+    /// [`PipelineProfile`](../pipeline_profile/struct.PipelineProfile.html) selection during
+    /// [`Pipeline::start()`](../pipeline/struct.Pipeline.html#method.start) follows
+    /// the same method. Thus, the selected profile is the same, if no change occurs to the
+    /// available [`Device`](../device/struct.Device.html)s occurs. Resolving the
+    /// [`Pipeline`](../pipeline/struct.Pipeline.html) configuration provides the
+    /// application access to the pipeline selected
+    /// [`Device`](../device/struct.Device.html) for advanced control. The returned
+    /// configuration is not applied to the [`Device`](../device/struct.Device.html),
+    /// so the application doesn't own the [`Device`](../device/struct.Device.html)
+    /// [`Sensor`](../sensor/struct.Sensor.html)s. However, the application can call
+    /// `enable_device()`, to enforce the [`Device`](../device/struct.Device.html)
+    /// returned by this method is selected by
+    /// [`Pipeline::start()`](../pipeline/struct.Pipeline.html#method.start), and
+    /// configure the [`Device`](../device/struct.Device.html) and
+    /// [`Sensor`](../sensor/struct.Sensor.html)s options or extensions before
+    /// streaming starts.
+    ///
     /// # Arguments
-    ///	* `pipe` - The [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) for which the selected filters are 
-    /// applied.
+    ///	* `pipe` - The [`Pipeline`](../pipeline/struct.Pipeline.html) for which the
+    /// selected filters are applied.
     ///
     /// # Returns
     /// * `Ok(PipelineProfile)` on success.
@@ -366,17 +392,19 @@ impl Config {
         }
     }
 
-    /// Check if the [`Config`](struct.Config.html) can resolve the configuration filters, to find 
-    /// a matching [`Device`](struct.Device.html) and 
-    /// [`StreamProfile`](struct.StreamProfile.html)s. The resolution conditions are as described 
-    /// in [`Config::resolve()`](struct.Config.html#method.resolve).
-    ///    
+    /// Check if the [`Config`](../config/struct.Config.html) can resolve the
+    /// configuration filters, to find a matching [`Device`](../device/struct.Device.html) and
+    /// [`StreamProfile`](../stream_profile/struct.Pipeline.html)s. The resolution conditions are
+    /// as described in [`Config::resolve()`](../config/struct.Config.html#method.resolve).
+    ///
     /// # Arguments
-    ///	* `pipe` - The [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) for which the selected filters are 
+    ///	* `pipe` - The [`Pipeline`](../pipeline/struct.Pipeline.html) for which the
+    /// selected filters are
     /// applied.
     ///
     /// # Returns
-    /// * `Ok(bool)` on success, determining whether the [`Config`](struct.Config.html) is valid.
+    /// * `Ok(bool)` on success, determining whether the
+    /// [`Config`](../config/struct.Config.html) is valid.
     /// * `Err(Error)` on failure.
     pub fn can_resolve(&self, pipe: &Pipeline) -> Result<bool, Error> {
         let mut error = Error::default();

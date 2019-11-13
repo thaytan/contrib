@@ -1,9 +1,10 @@
 use crate::error::Error;
 use rs2;
 
-/// Struct representation of [`StreamProfile`](struct.StreamProfile.html) that wraps around 
-/// `rs2_stream_profile` handle. The [`StreamProfile`](struct.StreamProfile.html) contains 
-/// information about a specific stream.
+/// Struct representation of [`StreamProfile`](../stream_profile/struct.Pipeline.html) that wraps
+/// around `rs2_stream_profile` handle. The
+/// [`StreamProfile`](../stream_profile/struct.Pipeline.html) contains information about a specific
+/// stream.
 pub struct StreamProfile {
     pub(crate) handle: *mut rs2::rs2_stream_profile,
 }
@@ -17,7 +18,7 @@ impl Drop for StreamProfile {
     }
 }
 
-/// Helper struct that contains data from [`StreamProfile`](struct.StreamProfile.html)
+/// Helper struct that contains data from [`StreamProfile`](../stream_profile/struct.Pipeline.html).
 pub struct StreamData {
     pub stream: rs2::rs2_stream,
     pub format: rs2::rs2_format,
@@ -39,14 +40,15 @@ impl Default for StreamData {
     }
 }
 
-/// Helper struct that contains resolution from [`StreamProfile`](struct.StreamProfile.html)
+/// Helper struct that contains resolution from
+/// [`StreamProfile`](../stream_profile/struct.Pipeline.html).
 #[derive(PartialEq, Clone)]
 pub struct StreamResolution {
     pub width: i32,
     pub height: i32,
 }
 
-/// Default constructor of [`StreamProfile`](struct.StreamProfile.html).
+/// Default constructor of [`StreamProfile`](../stream_profile/struct.Pipeline.html).
 impl Default for StreamResolution {
     fn default() -> Self {
         Self {
@@ -57,7 +59,7 @@ impl Default for StreamResolution {
 }
 
 impl StreamProfile {
-    /// Extract common parameters of a [`StreamProfile`](struct.StreamProfile.html).
+    /// Extract common parameters of a [`StreamProfile`](../stream_profile/struct.Pipeline.html).
     ///
     /// # Returns
     /// * `Ok(StreamData)` on success.
@@ -83,7 +85,8 @@ impl StreamProfile {
         }
     }
 
-    /// Extract resolution of the stream described by [`StreamProfile`](struct.StreamProfile.html).
+    /// Extract resolution of the stream described by
+    /// [`StreamProfile`](../stream_profile/struct.Pipeline.html).
     ///
     /// # Returns
     /// * `Ok(StreamResolution)` on success.
@@ -106,7 +109,7 @@ impl StreamProfile {
         }
     }
 
-    /// Obtain intrinsics of a [`StreamProfile`](struct.StreamProfile.html).
+    /// Obtain intrinsics of a [`StreamProfile`](../stream_profile/struct.Pipeline.html).
     ///
     /// # Returns
     /// * `Ok(rs2_intrinsics)` on success.
@@ -115,11 +118,11 @@ impl StreamProfile {
         unimplemented!()
     }
 
-    /// Obtain extrinsics between two [`StreamProfile`](struct.StreamProfile.html)s.
-    ///    
+    /// Obtain extrinsics between two [`StreamProfile`](../stream_profile/struct.Pipeline.html)s.
+    ///
     /// # Arguments
-    /// * `from` - Origin [`StreamProfile`](struct.StreamProfile.html).
-    /// * `to` - Target [`StreamProfile`](struct.StreamProfile.html).
+    /// * `from` - Origin [`StreamProfile`](../stream_profile/struct.Pipeline.html).
+    /// * `to` - Target [`StreamProfile`](../stream_profile/struct.Pipeline.html).
     ///
     /// # Returns
     /// * `Ok(rs2_extrinsics)` on success.

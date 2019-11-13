@@ -1,4 +1,6 @@
-#![doc(html_logo_url = "https://2iexix426zex1jl94h409m26-wpengine.netdna-ssl.com/wp-content/uploads/2018/09/jira-logo-transparent.png")]
+#![doc(
+    html_logo_url = "https://2iexix426zex1jl94h409m26-wpengine.netdna-ssl.com/wp-content/uploads/2018/09/jira-logo-transparent.png"
+)]
 
 extern crate librealsense2_sys as rs2;
 
@@ -10,7 +12,7 @@ pub mod frame;
 pub mod high_level_utils;
 pub mod internal;
 pub mod log;
-pub mod low_level_utils;
+mod low_level_utils;
 pub mod metadata;
 pub mod option;
 pub mod pipeline;

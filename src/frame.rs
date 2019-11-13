@@ -5,7 +5,8 @@ use crate::stream_profile::StreamProfile;
 use rs2;
 use std::collections::HashMap;
 
-/// Struct representation of [`Frame`](struct.Frame.html) that wraps around `rs2_frame` handle.
+/// Struct representation of [`Frame`](../frame/struct.Frame.html) that wraps around
+/// `rs2_frame` handle.
 pub struct Frame {
     pub(crate) handle: *mut rs2::rs2_frame,
 }
@@ -25,7 +26,8 @@ impl Frame {
         // unsafe { rs2::rs2_release_frame(self.handle) };
     }
 
-    /// Retrieve [`Frame`](struct.Frame.html)'s parent [`Sensor`](struct.Sensor.html).
+    /// Retrieve [`Frame`](../frame/struct.Frame.html)'s parent
+    /// [`Sensor`](../sensor/struct.Sensor.html).
     ///
     /// # Returns
     /// * `Ok(Sensor)` on success.
@@ -34,7 +36,7 @@ impl Frame {
         unimplemented!();
     }
 
-    /// Retrieve timestamp from [`Frame`](struct.Frame.html) in milliseconds.
+    /// Retrieve timestamp from [`Frame`](../frame/struct.Frame.html) in milliseconds.
     ///
     /// # Returns
     /// * `Ok(f64)` on success.
@@ -49,10 +51,11 @@ impl Frame {
         }
     }
 
-    /// Retrieve timestamp domain from [`Frame`](struct.Frame.html). Timestamps can only be 
-    /// comparable if they are in common domain (for example, depth timestamp might come from 
-    /// system time while color timestamp might come from the device) this method is used to check 
-    /// if two timestamp values are comparable (generated from the same clock).
+    /// Retrieve timestamp domain from [`Frame`](../frame/struct.Frame.html).
+    /// Timestamps can only be comparable if they are in common domain (for example, depth
+    /// timestamp might come from system time while color timestamp might come from the device)
+    /// this method is used to check if two timestamp values are comparable (generated from the
+    /// same clock).
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -61,11 +64,13 @@ impl Frame {
         unimplemented!()
     }
 
-    /// Read the given metadata attribute from the [`Frame`](struct.Frame.html). Please use the
-    /// [`Frame::supports_frame_metadata()`](struct.Frame.html#method.supports_frame_metadata) 
-    /// function to check if the given metadata is supported before reading it, as librealsense may 
-    /// fail with an exception when reading an un-supported metadata attribute. Please refer to 
-    /// [`Frame::get_metadata()`](struct.Frame.html#method.get_metadata) for a Rustified version.
+    /// Read the given metadata attribute from the
+    /// [`Frame`](../frame/struct.Frame.html). Please use the
+    /// [`Frame::supports_frame_metadata()`](../frame/struct.Frame.html#method.supports_frame_metadata)
+    /// function to check if the given metadata is supported before reading it, as librealsense may
+    /// fail with an exception when reading an un-supported metadata attribute. Please refer to
+    /// [`Frame::get_metadata()`](../frame/struct.Frame.html#method.get_metadata) for a
+    /// Rustified version.
     ///
     /// # Arguments
     /// * `attribute` - The attribute to read.
@@ -104,9 +109,10 @@ impl Frame {
         }
     }
 
-    /// Check if the [`Frame`](struct.Frame.html)'s metadata supports the given attribute. Please 
-    /// refer to [`Frame::get_metadata()`](struct.Frame.html#method.get_metadata) for a Rustified 
-    /// version.
+    /// Check if the [`Frame`](../frame/struct.Frame.html)'s metadata supports the
+    /// given attribute. Please refer to
+    /// [`Frame::get_metadata()`](../frame/struct.Frame.html#method.get_metadata)
+    /// for a Rustified version.
     ///
     /// # Arguments
     /// * `attribute` - The attribute to check support for.
@@ -147,10 +153,10 @@ impl Frame {
     }
 
     /// Get all the frame's supported metadata field represented as a `Metadata` struct. Please
-    /// refer to 
-    /// [`Frame::supports_frame_metadata()`](struct.Frame.html#method.supports_frame_metadata) or
-    /// [`Frame::get_frame_metadata()`](struct.Frame.html#method.get_frame_metadata) for the C-like 
-    /// variants.
+    /// refer to
+    /// [`Frame::supports_frame_metadata()`](../frame/struct.Frame.html#method.supports_frame_metadata)
+    /// or [`Frame::get_frame_metadata()`](../frame/struct.Frame.html#method.get_frame_metadata)
+    /// for the C-like variants.
     ///
     /// # Returns
     /// * `Ok(Metadata)` on success.
@@ -193,7 +199,7 @@ impl Frame {
         Ok(Metadata::from(meta_values))
     }
 
-    /// Retrieve the [`Frame`](struct.Frame.html) number.
+    /// Retrieve the [`Frame`](../frame/struct.Frame.html) number.
     ///
     /// # Returns
     /// * `Ok(u64)` on success.
@@ -208,7 +214,7 @@ impl Frame {
         }
     }
 
-    /// Retrieve the height of a [`Frame`](struct.Frame.html) in pixels.
+    /// Retrieve the height of a [`Frame`](../frame/struct.Frame.html) in pixels.
     ///
     /// # Returns
     /// * `Ok(i32)` on success.
@@ -223,7 +229,7 @@ impl Frame {
         }
     }
 
-    /// Retrieve the width of a [`Frame`](struct.Frame.html) in pixels.
+    /// Retrieve the width of a [`Frame`](../frame/struct.Frame.html) in pixels.
     ///
     /// # Returns
     /// * `Ok(i32)` on success.
@@ -238,8 +244,8 @@ impl Frame {
         }
     }
 
-    /// Retrieve bits per pixels in the [`Frame`](struct.Frame.html) image (note that bits per 
-    /// pixel is not necessarily divided by 8, as in 12bpp)
+    /// Retrieve bits per pixels in the [`Frame`](../frame/struct.Frame.html) image
+    /// (note that bits per pixel is not necessarily divided by 8, as in 12bpp)
     ///
     /// # Returns
     /// * `Ok(i32)` on success.
@@ -254,8 +260,8 @@ impl Frame {
         }
     }
 
-    /// Retrieve [`Frame`](struct.Frame.html) stride in bytes (number of bytes from start of line 
-    /// to start of next line).
+    /// Retrieve [`Frame`](../frame/struct.Frame.html) stride in bytes (number of bytes
+    /// from start of line to start of next line).
     ///
     /// # Returns
     /// * `Ok(i32)` on success.
@@ -270,7 +276,7 @@ impl Frame {
         }
     }
 
-    /// Retrieve the data size of a [`Frame`](struct.Frame.html) in bytes.
+    /// Retrieve the data size of a [`Frame`](../frame/struct.Frame.html) in bytes.
     ///
     /// # Returns
     /// * `Ok(i32)` on success.
@@ -282,7 +288,7 @@ impl Frame {
         Ok(width * height * bits)
     }
 
-    /// Retrieve the size of a [`Frame`](struct.Frame.html) in memory.
+    /// Retrieve the size of a [`Frame`](../frame/struct.Frame.html) in memory.
     ///
     /// # Returns
     /// * `Ok(i32)` on success.
@@ -298,7 +304,7 @@ impl Frame {
     }
 
     // TODO: Consider returning slice instead of vector
-    /// Retrieve the data from [`Frame`](struct.Frame.html).
+    /// Retrieve the data from [`Frame`](../frame/struct.Frame.html).
     ///
     /// # Returns
     /// * `Ok(Vec<u8>)` on success.
@@ -316,8 +322,8 @@ impl Frame {
         Ok(data)
     }
 
-    /// Retrieve the [`StreamProfile`](/librealsense2/stream_profile/struct.StreamProfile.html) that
-    /// was used to start the stream of this [`Frame`](struct.Frame.html).
+    /// Retrieve the [`StreamProfile`](../stream_profile/struct.StreamProfile.html) that
+    /// was used to start the stream of this [`Frame`](../frame/struct.Frame.html).
     ///
     /// # Returns
     /// * `Ok(StreamProfile)` on success.

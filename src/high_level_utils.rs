@@ -7,7 +7,7 @@ use crate::stream_profile::{StreamData, StreamResolution};
 use rs2;
 use rs2::rs2_camera_info::*;
 
-/// Print to STDOUT what RealSense [`Device`](/librealsense2/device/struct.Device.html)s are connected.
+/// Print to STDOUT what RealSense [`Device`](../device/struct.Device.html)s are connected.
 ///
 /// # Returns
 /// * `Ok()` on success.
@@ -39,15 +39,14 @@ pub fn list_connected_devices() -> Result<(), Error> {
     Ok(())
 }
 
-/// Start a connected [`Device`](/librealsense2/device/struct.Device.html) with the corresponding 
-/// [`Config`](/librealsense2/config/struct.Config.html) and `index`.
+/// Start a connected [`Device`](../device/struct.Device.html) with the corresponding
+/// [`Config`](../config/struct.Config.html) and `index`.
 ///
 /// # Arguments
-/// * [`Config`](/librealsense2/config/struct.Config.html) - A
-/// [`Config`](/librealsense2/config/struct.Config.html) with requested filters on
-/// the [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) configuration.
-/// * `index` - An index of the [`Device`](/librealsense2/device/struct.Device.html). Set to 0 to enable first connected 
-/// device.
+/// * `config` - A [`Config`](../config/struct.Config.html) with
+/// requested filters on the [`Pipeline`](../pipeline/struct.Pipeline.html) configuration.
+/// * `index` - An index of the [`Device`](../device/struct.Device.html). Set to 0 to enable first
+/// connected device.
 ///
 /// # Returns
 /// * `Ok(Pipeline)` on success.
@@ -72,12 +71,12 @@ pub struct StreamInfo {
     pub data: StreamData,
     pub resolution: StreamResolution,
 }
-/// Retrieve information about all enabled streams based on a running 
-/// [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html).
+/// Retrieve information about all enabled streams based on a running
+/// [`Pipeline`](../pipeline/struct.Pipeline.html).
 ///
 /// # Arguments
-/// * [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) - The [`Pipeline`](/librealsense2/pipeline/struct.Pipeline.html) to extract the 
-/// info from.
+/// * pipeline_profile - The [`PipelineProfile`](../pipeline_profile/struct.PipelineProfile.html)
+/// to extract the information from.
 ///
 /// # Returns
 /// * `Ok(Vec<StreamInfo>)` on success.

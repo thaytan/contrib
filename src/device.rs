@@ -6,8 +6,8 @@ use rs2;
 // Expose `rs2_camera_info` for external use.
 pub use rs2::rs2_camera_info;
 
-/// Struct representation of a [`Device`](struct.Device.html) that wraps around `rs2_device` handle,
-///  which exposes the functionality of RealSense devices.
+/// Struct representation of a [`Device`](../device/struct.Device.html) that wraps
+/// around `rs2_device` handle, which exposes the functionality of RealSense devices.
 pub struct Device {
     pub(crate) handle: *mut rs2::rs2_device,
 }
@@ -22,8 +22,9 @@ impl Drop for Device {
 }
 
 impl Device {
-    /// Create a static snapshot of all connected [`Sensor`](struct.Sensor.html)s within a specific 
-    /// [`Device`](struct.Device.html).
+    /// Create a static snapshot of all connected
+    /// [`Sensor`](../sensor/struct.Sensor.html)s within a specific
+    /// [`Device`](../device/struct.Device.html).
     ///
     /// # Returns
     /// * `Ok(Vec<Sensor>)` on success.
@@ -55,7 +56,8 @@ impl Device {
         self.query_sensors()
     }
 
-    /// Check if a specific camera `info` is supported by the [`Device`](struct.Device.html).
+    /// Check if a specific camera `info` is supported by the
+    /// [`Device`](../device/struct.Device.html).
     ///
     /// # Arguments
     /// * `info` - The parameter to check for support.
@@ -68,10 +70,10 @@ impl Device {
     }
 
     /// Retrieve camera specific information, like versions of various internal components.
-    ///    
+    ///
     /// # Arguments
     /// * `info` - The camera info type to retrieve. Please see
-    /// [rs2_camera_info](/librealsense2/device/enum.rs2_camera_info.html) for more information.
+    /// [rs2_camera_info](../device/enum.rs2_camera_info.html) for more information.
     ///
     /// # Returns
     /// * `Ok(String)` on success, containing the value under the info field.
@@ -89,7 +91,7 @@ impl Device {
         }
     }
 
-    /// Send hardware reset request to the [`Device`](struct.Device.html).
+    /// Send hardware reset request to the [`Device`](../device/struct.Device.html).
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -106,9 +108,9 @@ impl Device {
         }
     }
 
-    /// Update [`Device`](struct.Device.html) to the provided firmware, the device must be 
-    /// extendable to `RS2_EXTENSION_UPDATABLE`. This call is executed on the caller's thread and 
-    /// it supports progress notifications via the optional callback.
+    /// Update [`Device`](../device/struct.Device.html) to the provided firmware, the
+    /// device must be extendable to `RS2_EXTENSION_UPDATABLE`. This call is executed on the
+    /// caller's thread and it supports progress notifications via the optional callback.
     ///
     /// # Arguments
     /// * `info` - The parameter to check for support.
@@ -125,7 +127,7 @@ impl Device {
         unimplemented!();
     }
 
-    /// Send hardware reset request to the [`Device`](struct.Device.html).
+    /// Send hardware reset request to the [`Device`](../device/struct.Device.html).
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -147,7 +149,7 @@ impl Device {
         }
     }
 
-    /// Enable or disable advanced mode for a [`Device`](struct.Device.html).
+    /// Enable or disable advanced mode for a [`Device`](../device/struct.Device.html).
     ///
     /// # Arguments
     /// * `enable` - The desired state of advanced mode after callback.
@@ -202,7 +204,8 @@ impl Device {
         }
     }
 
-    /// Configure [`Device`](struct.Device.html) with JSON file specified by `json_path`.
+    /// Configure [`Device`](../device/struct.Device.html) with JSON file specified by
+    /// `json_path`.
     ///
     /// # Arguments
     /// * `json_path` - The absolute path to JSON file.

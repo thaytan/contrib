@@ -2,7 +2,8 @@ use crate::error::Error;
 use crate::stream_profile::StreamProfile;
 use rs2;
 
-/// Struct representation of [`Sensor`](struct.Sensor.html) that wraps around `rs2_sensor` handle.
+/// Struct representation of [`Sensor`](../sensor/struct.Sensor.html) that wraps around
+/// `rs2_sensor` handle.
 pub struct Sensor {
     pub(crate) handle: *mut rs2::rs2_sensor,
 }
@@ -17,8 +18,8 @@ impl Drop for Sensor {
 }
 
 impl Sensor {
-    /// Retrieve the [`StreamProfile`](/librealsense2/stream_profile/struct.StreamProfile.html)s of a 
-    /// [`Sensor`](struct.Sensor.html).
+    /// Retrieve the [`StreamProfile`](../stream_profile/struct.StreamProfile.html)s of a
+    /// [`Sensor`](../sensor/struct.Sensor.html).
     ///
     /// # Returns
     /// * `Ok(Vec<StreamProfile>)` on success.
@@ -45,8 +46,8 @@ impl Sensor {
         Ok(res)
     }
 
-    /// When called on a depth [`Sensor`](struct.Sensor.html), this method will return the number 
-    /// of meters represented by a single depth unit
+    /// When called on a depth [`Sensor`](../sensor/struct.Sensor.html), this method will return
+    /// the number of meters represented by a single depth unit
     ///
     /// # Returns
     /// * `Ok(f32)` on success.
