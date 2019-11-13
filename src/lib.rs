@@ -7,6 +7,7 @@ extern crate gstreamer_depth_meta as gst_depth_meta;
 extern crate gstreamer_video as gst_video;
 extern crate librealsense2 as rs2;
 
+mod enabled_streams;
 mod properties_d435;
 mod realsensesrc;
 mod rs_meta;

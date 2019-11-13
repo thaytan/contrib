@@ -14,6 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use crate::enabled_streams::EnabledStreams;
 use crate::properties_d435;
 use crate::properties_d435::DEFAULT_ENABLE_METADATA;
 use crate::rs_meta::rs_meta_serialization::*;
@@ -257,57 +258,6 @@ struct Streams {
     depth_resolution: StreamResolution,
     color_resolution: StreamResolution,
     framerate: i32,
-}
-
-struct EnabledStreams {
-    depth: bool,
-    infra1: bool,
-    infra2: bool,
-    color: bool,
-}
-
-impl EnabledStreams {
-    /// Determines whether at least one stream is enabled.
-    ///
-    /// # Returns
-    /// * `true` if at least one stream is enabled.
-    /// * `false` if no stream is enabled.
-    fn any(&self) -> bool {
-        if self.depth || self.infra1 || self.infra2 || self.color {
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Determines whether there are any conflict between `enabled_streams` and
-    /// `rosbag_enabled_streams`
-    ///
-    /// # Arguments
-    /// * `enabled_streams` - The streams that are enabled.
-    /// * `available_streams` - The streams that are available.
-    ///
-    /// # Returns
-    /// * `Vec<&str>` of conflicting streams, which is empty if there is no conflict.
-    fn get_conflicts<'a>(
-        enabled_streams: &'a EnabledStreams,
-        available_streams: &'a EnabledStreams,
-    ) -> Vec<&'a str> {
-        let mut conflicting_streams: Vec<&'a str> = Vec::new();
-        if enabled_streams.depth && !available_streams.depth {
-            conflicting_streams.push("depth");
-        }
-        if enabled_streams.infra1 && !available_streams.infra1 {
-            conflicting_streams.push("infra1");
-        }
-        if enabled_streams.infra2 && !available_streams.infra2 {
-            conflicting_streams.push("infra2");
-        }
-        if enabled_streams.color && !available_streams.color {
-            conflicting_streams.push("color");
-        }
-        conflicting_streams
-    }
 }
 
 impl Default for Settings {
