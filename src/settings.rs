@@ -1,15 +1,35 @@
+pub(crate) use crate::d400_limits::*;
 pub(crate) use crate::enabled_streams::EnabledStreams;
-pub(crate) use crate::properties_d435::*;
 pub(crate) use rs2::stream_profile::StreamResolution;
 
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 pub(crate) const DEFAULT_LOOP_ROSBAG: bool = true;
+
 // Default timeout used while waiting for frames from a realsense device in milliseconds.
 pub(crate) const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
+
 // Default behaviour for enablind metadata
 pub(crate) const DEFAULT_ENABLE_METADATA: bool = false;
+
 // Default behaviour for adding custom timestamps to the buffers.
 pub(crate) const DEFAULT_DO_CUSTOM_TIMESTAMP: bool = true;
+
+// Streams enabled by defaults
+pub(crate) const DEFAULT_ENABLE_DEPTH: bool = true;
+pub(crate) const DEFAULT_ENABLE_INFRA1: bool = false;
+pub(crate) const DEFAULT_ENABLE_INFRA2: bool = false;
+pub(crate) const DEFAULT_ENABLE_COLOR: bool = false;
+
+// Default framerate
+pub(crate) const DEFAULT_FRAMERATE: i32 = 30;
+
+// Default resolution of depth, infra1 and infra2 streams
+pub(crate) const DEFAULT_DEPTH_WIDTH: i32 = 1280;
+pub(crate) const DEFAULT_DEPTH_HEIGHT: i32 = 720;
+
+// Default resolution of color stream
+pub(crate) const DEFAULT_COLOR_WIDTH: i32 = 1280;
+pub(crate) const DEFAULT_COLOR_HEIGHT: i32 = 720;
 
 /// A struct containing properties of `realsensesrc`
 pub(crate) struct Settings {
@@ -23,6 +43,7 @@ pub(crate) struct Settings {
     pub(crate) do_custom_timestamp: bool,
 }
 
+/// A struct containing properties of `realsensesrc` about streams
 pub(crate) struct Streams {
     pub(crate) enabled_streams: EnabledStreams,
     pub(crate) depth_resolution: StreamResolution,

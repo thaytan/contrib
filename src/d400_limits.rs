@@ -1,29 +1,18 @@
-// Enabling of streams
-pub(crate) const DEFAULT_ENABLE_DEPTH: bool = true;
-pub(crate) const DEFAULT_ENABLE_INFRA1: bool = false;
-pub(crate) const DEFAULT_ENABLE_INFRA2: bool = false;
-pub(crate) const DEFAULT_ENABLE_COLOR: bool = false;
-
 // Framerate
 pub(crate) const MIN_FRAMERATE: i32 = 6;
 pub(crate) const MAX_FRAMERATE: i32 = 90;
-pub(crate) const DEFAULT_FRAMERATE: i32 = 30;
 
 // Resolution of depth, infra1 and infra2 streams
 pub(crate) const DEPTH_MIN_WIDTH: i32 = 424;
 pub(crate) const DEPTH_MAX_WIDTH: i32 = 1280;
-pub(crate) const DEFAULT_DEPTH_WIDTH: i32 = 1280;
 pub(crate) const DEPTH_MIN_HEIGHT: i32 = 240;
 pub(crate) const DEPTH_MAX_HEIGHT: i32 = 720;
-pub(crate) const DEFAULT_DEPTH_HEIGHT: i32 = 720;
 
 // Resolution of color stream
 pub(crate) const COLOR_MIN_WIDTH: i32 = 320;
 pub(crate) const COLOR_MAX_WIDTH: i32 = 1920;
-pub(crate) const DEFAULT_COLOR_WIDTH: i32 = 1280;
 pub(crate) const COLOR_MIN_HEIGHT: i32 = 180;
 pub(crate) const COLOR_MAX_HEIGHT: i32 = 1080;
-pub(crate) const DEFAULT_COLOR_HEIGHT: i32 = 720;
 
 // Supported formats
 // pub(crate) const SUPPORTED_FRAMERATE: [i32; 5] = [6, 15, 30, 60, 90];
