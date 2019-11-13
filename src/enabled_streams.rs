@@ -29,11 +29,11 @@ impl EnabledStreams {
     ///
     /// # Returns
     /// * `Vec<&str>` of conflicting streams, which is empty if there is no conflict.
-    pub(crate) fn get_conflicts<'a>(
+    pub(crate) fn get_conflicts<'a, 'b>(
         enabled_streams: &'a EnabledStreams,
-        available_streams: &'a EnabledStreams,
-    ) -> Vec<&'a str> {
-        let mut conflicting_streams: Vec<&'a str> = Vec::new();
+        available_streams: &'b EnabledStreams,
+    ) -> Vec<&'b str> {
+        let mut conflicting_streams: Vec<&'b str> = Vec::new();
         if enabled_streams.depth && !available_streams.depth {
             conflicting_streams.push("depth");
         }
