@@ -275,8 +275,7 @@ impl EnabledStreams {
     fn any(&self) -> bool {
         if self.depth || self.infra1 || self.infra2 || self.color {
             true
-        }
-        else {
+        } else {
             false
         }
     }
@@ -1014,8 +1013,7 @@ impl RealsenseSrc {
         }
 
         // At least one stream must be enabled
-        if !settings.streams.enabled_streams.any()
-        {
+        if !settings.streams.enabled_streams.any() {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["No stream is enabled. At least one stream must be enabled!"]
@@ -1292,7 +1290,6 @@ impl RealsenseSrc {
     /// # Returns
     /// * `Ok()` if all enabled streams are available. Settings for these streams might get updated.
     /// * `Err(RealsenseError)` if an enabled stream is not available in rosbag recording.
-    #[inline]
     fn configure_rosbag_settings(
         &self,
         stream_settings: &mut Streams,
@@ -1336,7 +1333,6 @@ impl RealsenseSrc {
     /// * `stream_info` - The information of a stream obtained from rosbag recording.
     /// * `stream_settings` - The settings selected for the streams.
     /// * `rosbag_enabled_streams` - A list of what streams are enabled in the rosbag.
-    #[inline]
     fn update_stream_settings_from_rosbag(
         &self,
         stream_info: &StreamInfo,
@@ -1420,7 +1416,6 @@ impl RealsenseSrc {
     /// * `stream_settings_resolution` - The selected resolution of the stream.
     /// * `stream_settings_framerate` - The selected framerate of the stream.
     /// * `stream_info` - The informaton about the stream from rosbag recording.
-    #[inline]
     fn update_stream(
         &self,
         stream_id: &str,
@@ -1459,7 +1454,6 @@ impl RealsenseSrc {
     /// * `stream_id` - The identifier of the stream.
     /// * `settings_resolution` - The resolution selected in the settings stream.
     /// * `rosbag_resolution` - The actual resolution of the rosbag stream.
-    #[inline]
     fn update_resolution_based_on_rosbag(
         &self,
         stream_id: &str,
@@ -1486,7 +1480,6 @@ impl RealsenseSrc {
     /// * `stream_id` - The identifier of the stream.
     /// * `settings_framerate` - The framerate selected in the settings stream.
     /// * `rosbag_framerate` - The actual framerate of the rosbag stream.
-    #[inline]
     fn update_framerate_based_on_rosbag(
         &self,
         stream_id: &str,
@@ -1514,7 +1507,6 @@ impl RealsenseSrc {
     /// # Returns
     /// * `Ok()` if all enabled streams are available.
     /// * `Err(RealsenseError)` if an enabled stream is not available.
-    #[inline]
     fn check_if_streams_are_available(
         &self,
         enabled_streams: &EnabledStreams,
