@@ -801,7 +801,7 @@ impl BaseSrcImpl for RealsenseSrc {
         let mut output_buffer = gst::buffer::Buffer::new();
 
         let framerate = streams.framerate;
-        let frame_duration = std::time::Duration::from_secs_f32(framerate as f32);
+        let frame_duration = std::time::Duration::from_secs_f32(1.0_f32 / framerate as f32);
         let gst_clock_frame_duration =
             gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64);
 
@@ -1276,7 +1276,7 @@ impl RealsenseSrc {
     /// * `stream_settings` - The settings selected for the streams.
     /// * `pipeline_profile` - The profile of the current realsense pipeline.
     ///
-    /// # Return Values
+    /// # Returns
     /// * Ok() if all enabled streams are available. Settings for these streams might get updated.
     /// * Err(RealsenseError) if an enabled stream is not available in rosbag recording.
     #[inline]
@@ -1498,7 +1498,7 @@ impl RealsenseSrc {
     /// * `enabled_streams` - The selected streams.
     /// * `available_streams` - The actual available streams.
     ///
-    /// # Return Values
+    /// # Returns
     /// * Ok() if all enabled streams are available.
     /// * Err(RealsenseError) if an enabled stream is not available.
     #[inline]
