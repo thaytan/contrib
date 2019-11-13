@@ -279,6 +279,35 @@ impl EnabledStreams {
             false
         }
     }
+
+    /// Determines whether there are any conflict between `enabled_streams` and
+    /// `rosbag_enabled_streams`
+    ///
+    /// # Arguments
+    /// * `enabled_streams` - The streams that are enabled.
+    /// * `available_streams` - The streams that are available.
+    ///
+    /// # Returns
+    /// * `Vec<&str>` of conflicting streams, which is empty if there is no conflict.
+    fn get_conflicts<'a>(
+        enabled_streams: &'a EnabledStreams,
+        available_streams: &'a EnabledStreams,
+    ) -> Vec<&'a str> {
+        let mut conflicting_streams: Vec<&'a str> = Vec::new();
+        if enabled_streams.depth && !available_streams.depth {
+            conflicting_streams.push("depth");
+        }
+        if enabled_streams.infra1 && !available_streams.infra1 {
+            conflicting_streams.push("infra1");
+        }
+        if enabled_streams.infra2 && !available_streams.infra2 {
+            conflicting_streams.push("infra2");
+        }
+        if enabled_streams.color && !available_streams.color {
+            conflicting_streams.push("color");
+        }
+        conflicting_streams
+    }
 }
 
 impl Default for Settings {
@@ -1512,20 +1541,8 @@ impl RealsenseSrc {
         enabled_streams: &EnabledStreams,
         available_streams: &EnabledStreams,
     ) -> Result<(), RealsenseError> {
-        let mut conflicting_streams: Vec<&str> = Vec::new();
-
-        if enabled_streams.depth && !available_streams.depth {
-            conflicting_streams.push("depth");
-        }
-        if enabled_streams.infra1 && !available_streams.infra1 {
-            conflicting_streams.push("infra1");
-        }
-        if enabled_streams.infra2 && !available_streams.infra2 {
-            conflicting_streams.push("infra2");
-        }
-        if enabled_streams.color && !available_streams.color {
-            conflicting_streams.push("color");
-        }
+        let conflicting_streams: Vec<&str> =
+            EnabledStreams::get_conflicts(enabled_streams, available_streams);
 
         if !conflicting_streams.is_empty() {
             return Err(RealsenseError(format!(
