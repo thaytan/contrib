@@ -1,11 +1,12 @@
 use k4a_sys::*;
 
-/// Struct representation `Record` that wraps around `k4a_record_t`, which is a handle to a recording opened for record.
+/// Struct representation [`Record`](../record/struct.Record.html) that wraps around `k4a_record_t`,
+/// which is a handle to a recording opened for record.
 pub struct Record {
     pub(crate) handle: k4a_record_t,
 }
 
-// Safe releasing of the `k4a_record_t` handle.
+/// Safe releasing of the `k4a_record_t` handle.
 impl Drop for Record {
     fn drop(&mut self) {
         unsafe {

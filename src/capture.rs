@@ -1,12 +1,15 @@
-use crate::image::Image;
 use k4a_sys::*;
 
-/// Struct representation of a `Capture` that wraps around `k4a_capture_t`, which contains a set of images that were captured by a `Device` at approximately the same time.
+use crate::image::Image;
+
+/// Struct representation of a [`Capture`](../capture/struct.Capture.html) that wraps around
+/// `k4a_capture_t`, which contains a set of images that were captured by a
+/// [`Device`](../device/struct.Device.html) at approximately the same time.
 pub struct Capture {
     pub(crate) handle: k4a_capture_t,
 }
 
-// Safe releasing of the `k4a_capture_t` handle.
+/// Safe releasing of the `k4a_capture_t` handle.
 impl Drop for Capture {
     fn drop(&mut self) {
         unsafe {
@@ -16,40 +19,44 @@ impl Drop for Capture {
 }
 
 impl Capture {
-    /// Extracts color `Image` associated with the given `Capture`.
+    /// Extracts color [`Image`](../image/struct.Image.html) associated with the given
+    /// [`Capture`](../capture/struct.Capture.html).
     ///
-    /// **Return value:**
-    /// * Color **Image**.
+    /// # Returns
+    /// * Color `Image`.
     pub fn get_color_image(&self) -> Image {
         Image {
             handle: unsafe { k4a_capture_get_color_image(self.handle) },
         }
     }
 
-    /// Extracts depth `Image` associated with the given `Capture`.
+    /// Extracts depth [`Image`](../image/struct.Image.html) associated with the given
+    /// [`Capture`](../capture/struct.Capture.html).
     ///
-    /// **Return value:**
-    /// * Depth **Image**.
+    /// # Returns
+    /// * Depth `Image`.
     pub fn get_depth_image(&self) -> Image {
         Image {
             handle: unsafe { k4a_capture_get_depth_image(self.handle) },
         }
     }
 
-    /// Extracts IR `Image` associated with the given `Capture`.
+    /// Extracts IR [`Image`](../image/struct.Image.html) associated with the given
+    /// [`Capture`](../capture/struct.Capture.html).
     ///
-    /// **Return value:**
-    /// * IR **Image**.
+    /// # Returns
+    /// * IR `Image`.
     pub fn get_ir_image(&self) -> Image {
         Image {
             handle: unsafe { k4a_capture_get_ir_image(self.handle) },
         }
     }
 
-    /// Extracts color `Image` associated with the given `Capture`.
+    /// Extracts color [`Image`](../image/struct.Image.html) associated with the given
+    /// [`Capture`](../capture/struct.Capture.html).
     ///
-    /// **Return value:**
-    /// * Temperature in Celsius (**f32**).
+    /// # Returns
+    /// * Temperature in Celsius (`f32`).
     pub fn get_temperature(&self) -> f32 {
         unsafe { k4a_capture_get_temperature_c(self.handle) }
     }
