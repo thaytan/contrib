@@ -13,7 +13,6 @@ pub use rs2::rs2_stream;
 /// [`Device`](/librealsense2/device/struct.Device.html) selection and configuration.
 pub struct Config {
     pub(crate) handle: *mut rs2::rs2_config,
-    pipeline: Pipeline
 }
 
 /// Safe releasing of the `rs2_config` handle.
