@@ -266,6 +266,22 @@ struct EnabledStreams {
     color: bool,
 }
 
+impl EnabledStreams {
+    /// Determines whether at least one stream is enabled.
+    ///
+    /// # Returns
+    /// * `true` if at least one stream is enabled.
+    /// * `false` if no stream is enabled.
+    fn any(&self) -> bool {
+        if self.depth || self.infra1 || self.infra2 || self.color {
+            true
+        }
+        else {
+            false
+        }
+    }
+}
+
 impl Default for Settings {
     fn default() -> Self {
         Settings {
@@ -998,10 +1014,7 @@ impl RealsenseSrc {
         }
 
         // At least one stream must be enabled
-        if !settings.streams.enabled_streams.depth
-            && !settings.streams.enabled_streams.infra1
-            && !settings.streams.enabled_streams.infra2
-            && !settings.streams.enabled_streams.color
+        if !settings.streams.enabled_streams.any()
         {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
@@ -1277,8 +1290,8 @@ impl RealsenseSrc {
     /// * `pipeline_profile` - The profile of the current realsense pipeline.
     ///
     /// # Returns
-    /// * Ok() if all enabled streams are available. Settings for these streams might get updated.
-    /// * Err(RealsenseError) if an enabled stream is not available in rosbag recording.
+    /// * `Ok()` if all enabled streams are available. Settings for these streams might get updated.
+    /// * `Err(RealsenseError)` if an enabled stream is not available in rosbag recording.
     #[inline]
     fn configure_rosbag_settings(
         &self,
@@ -1499,8 +1512,8 @@ impl RealsenseSrc {
     /// * `available_streams` - The actual available streams.
     ///
     /// # Returns
-    /// * Ok() if all enabled streams are available.
-    /// * Err(RealsenseError) if an enabled stream is not available.
+    /// * `Ok()` if all enabled streams are available.
+    /// * `Err(RealsenseError)` if an enabled stream is not available.
     #[inline]
     fn check_if_streams_are_available(
         &self,
