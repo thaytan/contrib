@@ -4,7 +4,7 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rustc-link-lib=libk4a");
+    println!("cargo:rustc-link-lib=k4a");
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
