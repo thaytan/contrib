@@ -14,63 +14,21 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::rs_meta::rs_meta_serialization::*;
-use crate::settings::*;
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
-use rs2;
-use rs2::high_level_utils::StreamInfo;
-use std::error::Error;
-use std::fmt;
-use std::fmt::{Display, Formatter};
+
 use std::sync::Mutex;
 
-#[derive(Clone, Debug)]
-struct StreamEnableError(&'static str);
+use rs2;
+use rs2::high_level_utils::StreamInfo;
 
-impl Error for StreamEnableError {}
-
-impl Display for StreamEnableError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Could not enable stream: {}", self.0)
-    }
-}
-
-#[derive(Clone, Debug)]
-struct RealsenseError(String);
-
-impl Error for RealsenseError {}
-
-impl Display for RealsenseError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Could not enable stream: {}", self.0)
-    }
-}
-
-impl From<rs2::error::Error> for RealsenseError {
-    fn from(error: rs2::error::Error) -> Self {
-        Self(error.get_message())
-    }
-}
-
-impl From<RealsenseError> for gst::FlowError {
-    fn from(e: RealsenseError) -> Self {
-        gst_error!(
-            gst::DebugCategory::new(
-                "realsensesrc",
-                gst::DebugColorFlags::empty(),
-                Some("Realsense Source"),
-            ),
-            "{}",
-            e
-        );
-        gst::FlowError::Error
-    }
-}
+use crate::errors::*;
+use crate::rs_meta::rs_meta_serialization::*;
+use crate::settings::*;
 
 static PROPERTIES: [subclass::Property; 16] = [
     subclass::Property("serial", |name| {

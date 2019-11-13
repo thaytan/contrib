@@ -9,6 +9,7 @@ extern crate librealsense2 as rs2;
 
 mod d400_limits;
 mod enabled_streams;
+mod errors;
 mod realsensesrc;
 mod rs_meta;
 mod settings;
