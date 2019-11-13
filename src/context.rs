@@ -1,30 +1,36 @@
 use crate::device::Device;
 use crate::error::Error;
+use crate::record_playback::Playback;
+use crate::sensor::Sensor;
 use rs2;
 
-#[derive(Debug)]
+/// Struct representation of [`Context`](../context/struct.Context.html) that wraps
+/// around `rs2_context` handle. The [`Context`](../context/struct.Context.html) is
+/// required for the rest of the API.
 pub struct Context {
-    pub raw: *mut rs2::rs2_context,
+    pub(crate) handle: *mut rs2::rs2_context,
 }
 
-unsafe impl Send for Context {}
-
-unsafe impl Sync for Context {}
-
+/// Safe releasing of the `rs2_context` handle.
 impl Drop for Context {
     fn drop(&mut self) {
         unsafe {
-            rs2::rs2_delete_context(self.raw);
+            rs2::rs2_delete_context(self.handle);
         }
     }
 }
 
 impl Context {
+    /// Creates `RealSense` [`Context`](../context/struct.Context.html) that is
+    /// required for the rest of the API, while utlising the current version.
+    ///
+    /// # Returns
+    /// * `Ok(Context)` on success.
+    /// * `Err(Error)` on failure.
     pub fn new() -> Result<Context, Error> {
         let mut error = Error::default();
-        let api_version: i32 = rs2::RS2_API_VERSION as i32;
         let context = Context {
-            raw: unsafe { rs2::rs2_create_context(api_version, error.inner()) },
+            handle: unsafe { rs2::rs2_create_context(rs2::RS2_API_VERSION as i32, error.inner()) },
         };
         if error.check() {
             Err(error)
@@ -33,9 +39,15 @@ impl Context {
         }
     }
 
-    pub fn get_devices(&self) -> Result<Vec<Device>, Error> {
+    /// Creates `RealSense` [`Context`](../context/struct.Context.html) that is
+    /// required for the rest of the API, while utlising the current version.
+    ///
+    /// # Returns
+    /// * `Ok(Context)` on success.
+    /// * `Err(Error)` on failure.
+    pub fn query_devices(&self) -> Result<Vec<Device>, Error> {
         let mut error = Error::default();
-        let device_list = unsafe { rs2::rs2_query_devices(self.raw, error.inner()) };
+        let device_list = unsafe { rs2::rs2_query_devices(self.handle, error.inner()) };
         if error.check() {
             return Err(error);
         };
@@ -44,12 +56,44 @@ impl Context {
         let mut res: Vec<Device> = Vec::new();
         for i in 0..count {
             res.push(Device {
-                raw: unsafe { rs2::rs2_create_device(device_list, i, error.inner()) },
+                handle: unsafe { rs2::rs2_create_device(device_list, i, error.inner()) },
             });
             if error.check() {
                 return Err(error);
             };
         }
         Ok(res)
+    }
+
+    #[deprecated(
+        since = "0.6.0",
+        note = "Use `query_devices()` to be consistent with C/C++ API"
+    )]
+    pub fn get_devices(&self) -> Result<Vec<Device>, Error> {
+        self.query_devices()
+    }
+
+    pub fn query_all_sensors(&self) -> Result<Vec<Sensor>, Error> {
+        unimplemented!()
+    }
+
+    pub fn get_sensor_parent(&self, _sensor: &Sensor) -> Result<Device, Error> {
+        unimplemented!()
+    }
+
+    pub fn set_devices_changed_callback(&self) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub fn load_device(&self, _file: &str) -> Result<Playback, Error> {
+        unimplemented!()
+    }
+
+    pub fn unload_device(&self, _file: &str) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub fn unload_tracking_module(&self) -> Result<(), Error> {
+        unimplemented!()
     }
 }

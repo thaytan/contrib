@@ -1,0 +1,31 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+
+## [1.0.0] - 2019-11-11
+### Added
+- Add new features
+- Add documentation, README and CHANGELOG
+- Add function prototypes
+- Add file prototypes
+- Add few high-level functionalities
+### Modified
+- Standardise naming with C/C++ API, deprecate old names
+- Make handles to C objects public only to the crate
+#### Breaking changes
+- The following methods now take `&str` as parameter instead of `String`:
+  - `Config::enable_device()`
+  - `Config::enable_device_from_file()`
+  - `Config::enable_device_from_file_repeat_option()`
+  - `Config::enable_record_to_file()`
+  - `Device::load_json()`
+
+
+## [0.5.0]
+### Added
+- Prior to 0.6.0 this repository did not have a changelog.
