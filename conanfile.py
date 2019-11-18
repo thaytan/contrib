@@ -1,20 +1,12 @@
 from glob import glob
-from os import path, remove
+import os
 
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.13.1"
-    except:
-        return None
-
 class FontconfigConan(ConanFile):
     name = "fontconfig"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.13.1")
     license = "Old MIT"
     description = "A library for configuring and customizing font access"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
@@ -41,3 +33,8 @@ class FontconfigConan(ConanFile):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()
+
+    def package_info(self):
+        self.env_info.FONTCONFIG_PATH.append(
+            os.path.join(self.package_folder, "etc", "fonts")
+        )
