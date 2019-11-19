@@ -214,7 +214,6 @@ impl ObjectImpl for RgbdMux {
             }
             subclass::Property("drop-to-synchronise", ..) => {
                 let drop_to_synchronise = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -226,7 +225,6 @@ impl ObjectImpl for RgbdMux {
             }
             subclass::Property("send-gap-events", ..) => {
                 let send_gap_events = value.get().expect(&format!("Failed to set property `send-gap-events` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -455,6 +453,32 @@ impl AggregatorImpl for RgbdMux {
             .lock()
             .expect("Could not lock clock_internals");
         clock_internals.previous_timestamp + clock_internals.frameset_duration
+    }
+
+    /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
+    /// handled locally, all other events are send further downstream.
+    /// # Arguments
+    /// * `element` - The element that represents the `rgbddemux` in GStreamer.
+    /// * `event` - The event that should be handled.
+    fn sink_event(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        aggregator_pad: &gst_base::AggregatorPad,
+        event: gst::Event,
+    ) -> bool {
+        use gst::EventView;
+        gst_debug!(self.cat, obj: aggregator, "Got a new event: {:?}", event);
+
+        match event.view() {
+            _ => {
+                let mut bool_flow_combiner = true;
+                // Forward the event to src pad
+                // Set flow combiner to false if sending an event fails
+                aggregator_pad.push_event(event.clone());
+
+                bool_flow_combiner
+            }
+        }
     }
 }
 
