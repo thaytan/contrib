@@ -471,11 +471,19 @@ impl AggregatorImpl for RgbdMux {
 
         match event.view() {
             _ => {
-                let mut bool_flow_combiner = true;
-                // Forward the event to src pad
-                // Set flow combiner to false if sending an event fails
-                aggregator_pad.push_event(event.clone());
+                // By default, pass any other event to all src pads
+                let src_pads = aggregator.get_src_pads();
+                if src_pads.len() == 0 {
+                    // Return false if there is no src pad yet since this element does not handle it
+                    return false;
+                }
 
+                let mut bool_flow_combiner = true;
+                for src_pad in src_pads {
+                    // Forward the event to all src pads
+                    // Set flow combiner to false if sending an event to any src pad fails
+                    bool_flow_combiner = src_pad.push_event(event.clone());
+                }
                 bool_flow_combiner
             }
         }
