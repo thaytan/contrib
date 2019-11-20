@@ -458,12 +458,13 @@ impl AggregatorImpl for RgbdMux {
     /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
     /// handled locally, all other events are send further downstream.
     /// # Arguments
-    /// * `element` - The element that represents the `rgbddemux` in GStreamer.
+    /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
+    /// * `_aggregator_pad` - The pad on received the event.
     /// * `event` - The event that should be handled.
     fn sink_event(
         &self,
         aggregator: &gst_base::Aggregator,
-        aggregator_pad: &gst_base::AggregatorPad,
+        _aggregator_pad: &gst_base::AggregatorPad,
         event: gst::Event,
     ) -> bool {
         use gst::EventView;
@@ -477,14 +478,7 @@ impl AggregatorImpl for RgbdMux {
                     // Return false if there is no src pad yet since this element does not handle it
                     return false;
                 }
-
-                let mut bool_flow_combiner = true;
-                for src_pad in src_pads {
-                    // Forward the event to all src pads
-                    // Set flow combiner to false if sending an event to any src pad fails
-                    bool_flow_combiner = src_pad.push_event(event.clone());
-                }
-                bool_flow_combiner
+                src_pads.iter().any(|pad| pad.push_event(event.clone()))
             }
         }
     }
