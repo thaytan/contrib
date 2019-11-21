@@ -14,308 +14,39 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::properties_d435;
-use crate::properties_d435::DEFAULT_ENABLE_METADATA;
-use crate::rs_meta::rs_meta_serialization::*;
+use std::sync::Mutex;
+
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
+
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
 use rs2;
-use std::error::Error;
-use std::fmt;
-use std::fmt::{Display, Formatter};
-use std::sync::Mutex;
+use rs2::high_level_utils::StreamInfo;
 
-#[derive(Clone, Debug)]
-struct StreamEnableError(&'static str);
+use crate::errors::*;
+use crate::properties::*;
+use crate::rs_meta::rs_meta_serialization::*;
+use crate::settings::*;
 
-impl Error for StreamEnableError {}
-
-impl Display for StreamEnableError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Could not enable stream: {}", self.0)
-    }
-}
-
-#[derive(Clone, Debug)]
-struct RealsenseError(String);
-
-impl Error for RealsenseError {}
-
-impl Display for RealsenseError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Could not enable stream: {}", self.0)
-    }
-}
-
-impl From<rs2::error::Error> for RealsenseError {
-    fn from(error: rs2::error::Error) -> Self {
-        Self(error.get_message())
-    }
-}
-
-impl From<RealsenseError> for gst::FlowError {
-    fn from(e: RealsenseError) -> Self {
-        gst_error!(
-            gst::DebugCategory::new(
-                "realsensesrc",
-                gst::DebugColorFlags::empty(),
-                Some("Realsense Source"),
-            ),
-            "{}",
-            e
-        );
-        gst::FlowError::Error
-    }
-}
-
-// Default timeout used while waiting for frames from a realsense device in milliseconds.
-const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
-// Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
-const DEFAULT_LOOP_ROSBAG: bool = true;
-// Default behaviour for adding custom timestamps to the buffers.
-const DEFAULT_DO_CUSTOM_TIMESTAMP: bool = true;
-
-static PROPERTIES: [subclass::Property; 16] = [
-    subclass::Property("serial", |name| {
-        glib::ParamSpec::string(
-            name,
-            "Serial Number",
-            "Serial number of a realsense device. If unchanged or empty, `rosbag-location` is used to locate a file to play from.",
-            None,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("rosbag-location", |name| {
-        glib::ParamSpec::string(
-            name,
-            "Rosbag File Location",
-            "Location of a rosbag file to play from. If unchanged or empty, physical device specified by `serial` is used.",
-            None,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("json-location", |name| {
-        glib::ParamSpec::string(
-            name,
-            "JSON File Location",
-            "Location of a JSON file to load the RealSense device configuration from. This property applies only if `serial` is specified. If unchanged or empty, previous JSON configuration is used. If no previous configuration is present due to hardware reset, default configuration is used.",
-            None,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("enable-depth", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Enable Depth",
-            "Enables depth stream.",
-            properties_d435::DEFAULT_ENABLE_DEPTH,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("enable-infra1", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Enable Infra1",
-            "Enables infra1 stream.",
-            properties_d435::DEFAULT_ENABLE_INFRA1,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("enable-infra2", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Enable Infra2",
-            "Enables infra2 stream.",
-            properties_d435::DEFAULT_ENABLE_INFRA2,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("enable-color", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Enable Color",
-            "Enables color stream.",
-            properties_d435::DEFAULT_ENABLE_COLOR,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("depth-width", |name| {
-        glib::ParamSpec::int(
-            name,
-            "Depth Width",
-            "Width of the depth and infra1/infra2 frames.",
-            properties_d435::DEPTH_MIN_WIDTH,
-            properties_d435::DEPTH_MAX_WIDTH,
-            properties_d435::DEFAULT_DEPTH_WIDTH,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("depth-height", |name| {
-        glib::ParamSpec::int(
-            name,
-            "Depth Height",
-            "Height of the depth and infra1/infra2 frames.",
-            properties_d435::DEPTH_MIN_HEIGHT,
-            properties_d435::DEPTH_MAX_HEIGHT,
-            properties_d435::DEFAULT_DEPTH_HEIGHT,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("color-width", |name| {
-        glib::ParamSpec::int(
-            name,
-            "Color Width",
-            "Width of the color frame.",
-            properties_d435::COLOR_MIN_WIDTH,
-            properties_d435::COLOR_MAX_WIDTH,
-            properties_d435::DEFAULT_COLOR_WIDTH,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("color-height", |name| {
-        glib::ParamSpec::int(
-            name,
-            "Color Height",
-            "Height of the color frame.",
-            properties_d435::COLOR_MIN_HEIGHT,
-            properties_d435::COLOR_MAX_HEIGHT,
-            properties_d435::DEFAULT_COLOR_HEIGHT,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("framerate", |name| {
-        glib::ParamSpec::int(
-            name,
-            "Framerate",
-            "Common framerate of the selected streams.",
-            properties_d435::MIN_FRAMERATE,
-            properties_d435::MAX_FRAMERATE,
-            properties_d435::DEFAULT_FRAMERATE,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("loop-rosbag", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Loop Rosbag",
-            "Enables looping of playing from rosbag recording specified by `rosbag-location` property. This property applies only if `rosbag-location` and no `serial` are specified.",
-            DEFAULT_LOOP_ROSBAG,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("wait-for-frames-timeout", |name| {
-        glib::ParamSpec::uint(
-            name,
-            "Wait For Frames Timeout",
-            "Timeout used while waiting for frames from a RealSense device in milliseconds.",
-            std::u32::MIN,
-            std::u32::MAX,
-            DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("include-per-frame-metadata", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Include Per Frame Metadata",
-            "Adds librealsense2's per-frame metadata as an additional buffer on the video stream.",
-            properties_d435::DEFAULT_ENABLE_METADATA,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("do-custom-timestamp", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Perform custom timestamp handling",
-            "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers.",
-            DEFAULT_DO_CUSTOM_TIMESTAMP,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-];
-
-// A struct containing properties
-struct Settings {
-    serial: Option<String>,
-    rosbag_location: Option<String>,
-    json_location: Option<String>,
-    streams: Streams,
-    loop_rosbag: bool,
-    wait_for_frames_timeout: u32,
-    include_per_frame_metadata: bool,
-    do_custom_timestamp: bool,
-}
-
-struct Streams {
-    enable_depth: bool,
-    enable_infra1: bool,
-    enable_infra2: bool,
-    enable_color: bool,
-    depth_resolution: StreamResolution,
-    color_resolution: StreamResolution,
-    framerate: i32,
-}
-
-struct StreamResolution {
-    width: i32,
-    height: i32,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Settings {
-            rosbag_location: None,
-            serial: None,
-            json_location: None,
-            streams: Streams {
-                enable_depth: properties_d435::DEFAULT_ENABLE_DEPTH,
-                enable_infra1: properties_d435::DEFAULT_ENABLE_INFRA1,
-                enable_infra2: properties_d435::DEFAULT_ENABLE_INFRA2,
-                enable_color: properties_d435::DEFAULT_ENABLE_COLOR,
-                depth_resolution: StreamResolution {
-                    width: properties_d435::DEFAULT_DEPTH_WIDTH,
-                    height: properties_d435::DEFAULT_DEPTH_HEIGHT,
-                },
-                color_resolution: StreamResolution {
-                    width: properties_d435::DEFAULT_COLOR_WIDTH,
-                    height: properties_d435::DEFAULT_COLOR_HEIGHT,
-                },
-                framerate: properties_d435::DEFAULT_FRAMERATE,
-            },
-            loop_rosbag: DEFAULT_LOOP_ROSBAG,
-            wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
-            include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
-            do_custom_timestamp: DEFAULT_DO_CUSTOM_TIMESTAMP,
-        }
-    }
-}
-
-// An enum containing the current state of the RealSense pipeline
-enum State {
-    Stopped,
-    Started { pipeline: rs2::pipeline::Pipeline },
-}
-
-impl Default for State {
-    fn default() -> State {
-        State::Stopped
-    }
-}
-
-// A struct representation of the `realsensesrc` element
+/// A struct representation of the `realsensesrc` element
 struct RealsenseSrc {
     cat: gst::DebugCategory,
     internals: Mutex<RealsenseSrcInternals>,
 }
 
-// Internals of the element that are under Mutex
+/// Internals of the element that are under Mutex
 struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
+}
+
+/// An enum containing the current state of the RealSense pipeline
+enum State {
+    Stopped,
+    Started { pipeline: rs2::pipeline::Pipeline },
 }
 
 impl ObjectSubclass for RealsenseSrc {
@@ -345,8 +76,8 @@ impl ObjectSubclass for RealsenseSrc {
                 (
                     "framerate",
                     &gst::FractionRange::new(
-                        gst::Fraction::new(properties_d435::MIN_FRAMERATE, 1),
-                        gst::Fraction::new(properties_d435::MAX_FRAMERATE, 1),
+                        gst::Fraction::new(MIN_FRAMERATE, 1),
+                        gst::Fraction::new(MAX_FRAMERATE, 1),
                     ),
                 ),
             ],
@@ -371,7 +102,7 @@ impl ObjectSubclass for RealsenseSrc {
             ),
             internals: Mutex::new(RealsenseSrcInternals {
                 settings: Settings::default(),
-                state: State::default(),
+                state: State::Stopped,
             }),
         }
     }
@@ -431,10 +162,10 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `enable-depth` from {} to {}",
-                    settings.streams.enable_depth,
+                    settings.streams.enabled_streams.depth,
                     enable_depth
                 );
-                settings.streams.enable_depth = enable_depth;
+                settings.streams.enabled_streams.depth = enable_depth;
             }
             subclass::Property("enable-infra1", ..) => {
                 let enable_infra1 = value.get().expect(&format!("Failed to set property `enable-infra` on realsensesrc. Expected a boolean, but got: {:?}", value));
@@ -442,10 +173,10 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `enable-infra1` from {} to {}",
-                    settings.streams.enable_infra1,
+                    settings.streams.enabled_streams.infra1,
                     enable_infra1
                 );
-                settings.streams.enable_infra1 = enable_infra1;
+                settings.streams.enabled_streams.infra1 = enable_infra1;
             }
             subclass::Property("enable-infra2", ..) => {
                 let enable_infra2 = value.get().expect(&format!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));
@@ -454,10 +185,10 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `enable-infra2` from {} to {}",
-                    settings.streams.enable_infra2,
+                    settings.streams.enabled_streams.infra2,
                     enable_infra2
                 );
-                settings.streams.enable_infra2 = enable_infra2;
+                settings.streams.enabled_streams.infra2 = enable_infra2;
             }
             subclass::Property("enable-color", ..) => {
                 let enable_color = value.get().expect(&format!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));
@@ -466,10 +197,10 @@ impl ObjectImpl for RealsenseSrc {
                     self.cat,
                     obj: element,
                     "Changing property `enable-color` from {} to {}",
-                    settings.streams.enable_color,
+                    settings.streams.enabled_streams.color,
                     enable_color
                 );
-                settings.streams.enable_color = enable_color;
+                settings.streams.enabled_streams.color = enable_color;
             }
             subclass::Property("depth-width", ..) => {
                 let depth_width = value.get().expect(&format!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));
@@ -595,14 +326,18 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("serial", ..) => Ok(settings.serial.to_value()),
             subclass::Property("rosbag-location", ..) => Ok(settings.rosbag_location.to_value()),
             subclass::Property("json-location", ..) => Ok(settings.json_location.to_value()),
-            subclass::Property("enable-depth", ..) => Ok(settings.streams.enable_depth.to_value()),
+            subclass::Property("enable-depth", ..) => {
+                Ok(settings.streams.enabled_streams.depth.to_value())
+            }
             subclass::Property("enable-infra1", ..) => {
-                Ok(settings.streams.enable_infra1.to_value())
+                Ok(settings.streams.enabled_streams.infra1.to_value())
             }
             subclass::Property("enable-infra2", ..) => {
-                Ok(settings.streams.enable_infra2.to_value())
+                Ok(settings.streams.enabled_streams.infra2.to_value())
             }
-            subclass::Property("enable-color", ..) => Ok(settings.streams.enable_color.to_value()),
+            subclass::Property("enable-color", ..) => {
+                Ok(settings.streams.enabled_streams.color.to_value())
+            }
             subclass::Property("depth-width", ..) => {
                 Ok(settings.streams.depth_resolution.width.to_value())
             }
@@ -653,16 +388,21 @@ impl BaseSrcImpl for RealsenseSrc {
         let settings = &internals.settings;
 
         // Make sure that the set properties are viable
-        Self::check_internals(&internals)?;
+        Self::check_internals(internals)?;
 
         // Specify realsense log severity level
-        rs2::log::log_to_console(rs2::log::rs2_log_severity::RS2_LOG_SEVERITY_ERROR);
+        rs2::log::log_to_console(rs2::rs2_log_severity::RS2_LOG_SEVERITY_ERROR).map_err(|e| {
+            gst_error_msg!(
+                gst::ResourceError::OpenRead,
+                [&format!("Cannot log librealsense to console: {}", e)]
+            )
+        })?;
 
         // Create new RealSense device config
         let config = rs2::config::Config::new().map_err(|e| {
             gst_error_msg!(
                 gst::ResourceError::OpenRead,
-                [format!("Could not open RealSense device: {}", e).as_str()]
+                [&format!("Could not open RealSense device: {}", e)]
             )
         })?;
 
@@ -674,30 +414,27 @@ impl BaseSrcImpl for RealsenseSrc {
                 Self::enable_streams(&config, &settings).map_err(|e| {
                     gst_error_msg!(
                         gst::ResourceError::OpenRead,
-                        [
-                            format!("Failed to enable a stream on `realsensesrc`: {:?}", e)
-                                .as_str()
-                        ]
+                        [&format!(
+                            "Failed to enable a stream on `realsensesrc`: {:?}",
+                            e
+                        )]
                     )
                 })?;
 
                 // Enable device with the given serial number and device configuration
-                config.enable_device(serial.to_string()).map_err(|_e| {
+                config.enable_device(&serial).map_err(|_e| {
                     gst_error_msg!(
                         gst::ResourceError::Settings,
                         ["No device with serial `{}` is connected!", serial]
                     )
                 })?;
             }
+
             // A serial was not specified, but a ROSBAG was, attempt to load that instead
-            None if settings.rosbag_location.is_some() => {
-                let rosbag_location: &str = settings.rosbag_location.as_ref().unwrap(); // we know this always works (see match condition)
-                let rosbag_location = rosbag_location.clone();
+            None => {
+                let rosbag_location = settings.rosbag_location.as_ref().unwrap(); // we know this always works (see match condition)
                 config
-                    .enable_device_from_file_repeat_option(
-                        rosbag_location.to_string(),
-                        settings.loop_rosbag,
-                    )
+                    .enable_device_from_file_repeat_option(rosbag_location, settings.loop_rosbag)
                     .map_err(|e| {
                         gst_error_msg!(
                             gst::ResourceError::Settings,
@@ -705,17 +442,10 @@ impl BaseSrcImpl for RealsenseSrc {
                         )
                     })?;
             }
-            // Neither a serial nor a ROSBAG was specified, this is a valid configuration!
-            _ => {
-                return Err(gst_error_msg!(
-                    gst::ResourceError::Settings,
-                    ["You must specify either a serial or a rosbag_location"]
-                ));
-            }
         }
 
         let pipeline = self
-            .prepare_and_start_librealsense_pipeline(&config, settings)
+            .prepare_and_start_librealsense_pipeline(&config, &mut internals.settings)
             .map_err(|e| {
                 gst_error_msg!(
                     gst::ResourceError::Settings,
@@ -734,10 +464,21 @@ impl BaseSrcImpl for RealsenseSrc {
             .lock()
             .expect("Could not lock internals")
             .state;
-        if let State::Stopped = *state {
-            unreachable!("Element is not yet started");
+
+        match state {
+            State::Started { ref pipeline } => {
+                pipeline.stop().map_err(|e| {
+                    gst_error_msg!(
+                        gst::ResourceError::Settings,
+                        ["RealSense pipeline could not be stopped: {:?}", e]
+                    )
+                })?;
+                *state = State::Stopped;
+            }
+            State::Stopped => {
+                unreachable!("Element is not yet started");
+            }
         }
-        *state = State::Stopped;
 
         self.parent_stop(element)
     }
@@ -788,12 +529,12 @@ impl BaseSrcImpl for RealsenseSrc {
         let mut output_buffer = gst::buffer::Buffer::new();
 
         let framerate = streams.framerate;
-        let frame_duration = std::time::Duration::from_secs_f32(framerate as f32 / 1 as f32);
+        let frame_duration = std::time::Duration::from_secs_f32(1.0_f32 / framerate as f32);
         let gst_clock_frame_duration =
             gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64);
 
         // Attach `depth` frame if enabled
-        if streams.enable_depth {
+        if streams.enabled_streams.depth {
             self.extract_frame(
                 &frames,
                 &mut output_buffer,
@@ -808,14 +549,14 @@ impl BaseSrcImpl for RealsenseSrc {
         }
 
         // Attach `infra1` frame if enabled
-        if streams.enable_infra1 {
+        if streams.enabled_streams.infra1 {
             self.extract_frame(
                 &frames,
                 &mut output_buffer,
                 "infra1",
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 1,
-                &[streams.enable_depth],
+                &[streams.enabled_streams.depth],
                 settings,
                 timestamp,
                 gst_clock_frame_duration,
@@ -823,14 +564,17 @@ impl BaseSrcImpl for RealsenseSrc {
         }
 
         // Attach `infra2` frame if enabled
-        if streams.enable_infra2 {
+        if streams.enabled_streams.infra2 {
             self.extract_frame(
                 &frames,
                 &mut output_buffer,
                 "infra2",
                 rs2::rs2_stream::RS2_STREAM_INFRARED,
                 2,
-                &[streams.enable_depth, streams.enable_infra1],
+                &[
+                    streams.enabled_streams.depth,
+                    streams.enabled_streams.infra1,
+                ],
                 settings,
                 timestamp,
                 gst_clock_frame_duration,
@@ -838,7 +582,7 @@ impl BaseSrcImpl for RealsenseSrc {
         }
 
         // Attach `color` frame if enabled
-        if streams.enable_color {
+        if streams.enabled_streams.color {
             self.extract_frame(
                 &frames,
                 &mut output_buffer,
@@ -846,9 +590,9 @@ impl BaseSrcImpl for RealsenseSrc {
                 rs2::rs2_stream::RS2_STREAM_COLOR,
                 -1,
                 &[
-                    streams.enable_depth,
-                    streams.enable_infra1,
-                    streams.enable_infra2,
+                    streams.enabled_streams.depth,
+                    streams.enabled_streams.infra1,
+                    streams.enabled_streams.infra2,
                 ],
                 settings,
                 timestamp,
@@ -877,7 +621,7 @@ impl BaseSrcImpl for RealsenseSrc {
             // The first stream in this string is contained in the main buffer
             let mut selected_streams = String::new();
 
-            if settings.streams.enable_depth {
+            if settings.streams.enabled_streams.depth {
                 // Add `depth` stream with its format, width and height into the caps if enabled
                 selected_streams.push_str(&"depth,");
                 s.set(
@@ -887,21 +631,21 @@ impl BaseSrcImpl for RealsenseSrc {
                 s.set("depth_width", &settings.streams.depth_resolution.width);
                 s.set("depth_height", &settings.streams.depth_resolution.height);
             }
-            if settings.streams.enable_infra1 {
+            if settings.streams.enabled_streams.infra1 {
                 // Add `infra1` stream with its format, width and height into the caps if enabled
                 selected_streams.push_str(&"infra1,");
                 s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_string());
                 s.set("infra1_width", &settings.streams.depth_resolution.width);
                 s.set("infra1_height", &settings.streams.depth_resolution.height);
             }
-            if settings.streams.enable_infra2 {
+            if settings.streams.enabled_streams.infra2 {
                 // Add `infra2` stream with its format, width and height into the caps if enabled
                 selected_streams.push_str(&"infra2,");
                 s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_string());
                 s.set("infra2_width", &settings.streams.depth_resolution.width);
                 s.set("infra2_height", &settings.streams.depth_resolution.height);
             }
-            if settings.streams.enable_color {
+            if settings.streams.enabled_streams.color {
                 // Add `color` stream with its format, width and height into the caps if enabled
                 selected_streams.push_str(&"color,");
                 s.set("color_format", &gst_video::VideoFormat::Rgb.to_string());
@@ -931,14 +675,14 @@ impl RealsenseSrc {
     /// * `settings` - The settings for the realsensesrc.
     fn prepare_and_start_librealsense_pipeline(
         &self,
-        config: &librealsense2::config::Config,
-        settings: &Settings,
+        config: &rs2::config::Config,
+        settings: &mut Settings,
     ) -> Result<rs2::pipeline::Pipeline, RealsenseError> {
         // Get context and a list of connected devices
         let context = rs2::context::Context::new()?;
 
         // Load JSON if `json-location` is defined
-        let devices = context.get_devices()?;
+        let devices = context.query_devices()?;
 
         if settings.json_location.is_some() && settings.serial.is_some() {
             Self::load_json(
@@ -950,7 +694,14 @@ impl RealsenseSrc {
 
         // Start the RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context)?;
-        pipeline.start_with_config(&config)?;
+        let pipeline_profile = pipeline.start_with_config(&config)?;
+
+        // If playing from a rosbag recording, check whether the correct properties were selected
+        // and update them
+        if settings.rosbag_location.is_some() {
+            self.configure_rosbag_settings(&mut settings.streams, &pipeline_profile)?;
+        }
+
         Ok(pipeline)
     }
 
@@ -975,11 +726,7 @@ impl RealsenseSrc {
         }
 
         // At least one stream must be enabled
-        if !settings.streams.enable_depth
-            && !settings.streams.enable_infra1
-            && !settings.streams.enable_infra2
-            && !settings.streams.enable_color
-        {
+        if !settings.streams.enabled_streams.any() {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["No stream is enabled. At least one stream must be enabled!"]
@@ -998,7 +745,7 @@ impl RealsenseSrc {
         config: &rs2::config::Config,
         settings: &Settings,
     ) -> Result<(), StreamEnableError> {
-        if settings.streams.enable_depth {
+        if settings.streams.enabled_streams.depth {
             config
                 .enable_stream(
                     rs2::rs2_stream::RS2_STREAM_DEPTH,
@@ -1010,7 +757,7 @@ impl RealsenseSrc {
                 )
                 .map_err(|_e| StreamEnableError("Depth stream"))?;
         }
-        if settings.streams.enable_infra1 {
+        if settings.streams.enabled_streams.infra1 {
             config
                 .enable_stream(
                     rs2::rs2_stream::RS2_STREAM_INFRARED,
@@ -1022,7 +769,7 @@ impl RealsenseSrc {
                 )
                 .map_err(|_e| StreamEnableError("Infra1 stream"))?;
         }
-        if settings.streams.enable_infra2 {
+        if settings.streams.enabled_streams.infra2 {
             config
                 .enable_stream(
                     rs2::rs2_stream::RS2_STREAM_INFRARED,
@@ -1034,7 +781,7 @@ impl RealsenseSrc {
                 )
                 .map_err(|_e| StreamEnableError("Infra2 stream"))?;
         }
-        if settings.streams.enable_color {
+        if settings.streams.enabled_streams.color {
             config
                 .enable_stream(
                     rs2::rs2_stream::RS2_STREAM_COLOR,
@@ -1086,7 +833,7 @@ impl RealsenseSrc {
             ))
         })?;
 
-        device.load_json(json_content)?;
+        device.load_json(&json_content)?;
         Ok(())
     }
 
@@ -1135,14 +882,10 @@ impl RealsenseSrc {
             .expect("Cannot get mutable reference to `tags`")
             .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
 
-        let frame_meta_mut =
-            frame_meta_buffer
-                .get_mut()
-                .expect("Could not add tags to `frame_meta_buffer`");
-        TagsMeta::add(
-            frame_meta_mut,
-            &mut tags,
-        );
+        let frame_meta_mut = frame_meta_buffer
+            .get_mut()
+            .expect("Could not add tags to `frame_meta_buffer`");
+        TagsMeta::add(frame_meta_mut, &mut tags);
         if let Some(ts) = timestamp {
             frame_meta_mut.set_dts(ts);
             frame_meta_mut.set_pts(ts);
@@ -1244,8 +987,254 @@ impl RealsenseSrc {
             );
         }
 
-        // Release the frame
-        frame.release();
+        Ok(())
+    }
+
+    /// Check if the selected settings match enabled streams and their properties in rosbag file.
+    /// If an enabled stream is not contained within a rosbag recording, this function returns
+    /// error. If different stream resolutions or a different framerate were selected, this
+    /// function updates them appropriately based on the information contained within the rosbag
+    /// recording.
+    ///
+    /// # Arguments
+    /// * `stream_settings` - The settings selected for the streams.
+    /// * `pipeline_profile` - The profile of the current realsense pipeline.
+    ///
+    /// # Returns
+    /// * `Ok()` if all enabled streams are available. Settings for these streams might get updated.
+    /// * `Err(RealsenseError)` if an enabled stream is not available in rosbag recording.
+    fn configure_rosbag_settings(
+        &self,
+        stream_settings: &mut Streams,
+        pipeline_profile: &rs2::pipeline_profile::PipelineProfile,
+    ) -> Result<(), RealsenseError> {
+        // Get information about the streams in the rosbag recording.
+        let streams_info = rs2::high_level_utils::get_info_all_streams(pipeline_profile)?;
+
+        // Create a struct of enabled streams that is later used to check whether some of the
+        // enabled streams if not contained in the rosbag recording.
+        let mut rosbag_enabled_streams = EnabledStreams {
+            depth: false,
+            infra1: false,
+            infra2: false,
+            color: false,
+        };
+
+        // Iterate over all streams contained in the rosbag recording
+        for stream_info in streams_info.iter() {
+            self.update_stream_settings_from_rosbag(
+                stream_info,
+                stream_settings,
+                &mut rosbag_enabled_streams,
+            );
+        }
+
+        // Return error if at least of the enabled streams is not contained within the
+        // rosbag recording.
+        self.check_if_streams_are_available(
+            &stream_settings.enabled_streams,
+            &rosbag_enabled_streams,
+        )?;
+
+        Ok(())
+    }
+
+    /// Update stream resolutions or framerate if there is a conflict between settings and the
+    /// rosbag recording.
+    ///
+    /// # Arguments
+    /// * `stream_info` - The information of a stream obtained from rosbag recording.
+    /// * `stream_settings` - The settings selected for the streams.
+    /// * `rosbag_enabled_streams` - A list of what streams are enabled in the rosbag.
+    fn update_stream_settings_from_rosbag(
+        &self,
+        stream_info: &StreamInfo,
+        stream_settings: &mut Streams,
+        rosbag_enabled_streams: &mut EnabledStreams,
+    ) {
+        // Determine what stream to consider
+        match stream_info.data.stream {
+            // Consider `depth` stream
+            rs2::rs2_stream::RS2_STREAM_DEPTH => {
+                rosbag_enabled_streams.depth = true;
+
+                // Uptade `depth` stream, if applicable
+                self.update_stream(
+                    "depth",
+                    stream_info,
+                    &stream_settings.enabled_streams.depth,
+                    &mut stream_settings.depth_resolution,
+                    &mut stream_settings.framerate,
+                );
+            }
+
+            // Consider one of `infraX` streams
+            rs2::rs2_stream::RS2_STREAM_INFRARED => {
+                match stream_info.data.index {
+                    // Consider `infra1`
+                    1 => {
+                        rosbag_enabled_streams.infra1 = true;
+
+                        // Uptade `infra1` stream, if applicable
+                        self.update_stream(
+                            "infra1",
+                            stream_info,
+                            &stream_settings.enabled_streams.infra1,
+                            &mut stream_settings.depth_resolution,
+                            &mut stream_settings.framerate,
+                        );
+                    }
+                    // Consider `infra2`
+                    2 => {
+                        rosbag_enabled_streams.infra2 = true;
+
+                        // Uptade `infra2` stream, if applicable
+                        self.update_stream(
+                            "infra2",
+                            stream_info,
+                            &stream_settings.enabled_streams.infra2,
+                            &mut stream_settings.depth_resolution,
+                            &mut stream_settings.framerate,
+                        );
+                    }
+                    // There are only 2 sensors in a binocular stereo setup
+                    _ => unimplemented!(),
+                }
+            }
+
+            // Consider `color`
+            rs2::rs2_stream::RS2_STREAM_COLOR => {
+                rosbag_enabled_streams.color = true;
+
+                // Uptade `color` stream, if applicable
+                self.update_stream(
+                    "color",
+                    stream_info,
+                    &stream_settings.enabled_streams.color,
+                    &mut stream_settings.color_resolution,
+                    &mut stream_settings.framerate,
+                );
+            }
+            // No other streams are expected
+            _ => unimplemented!(),
+        }
+    }
+
+    /// Update stream resolutions or framerate if there is a conflict between settings and the
+    /// rosbag recording.
+    ///
+    /// # Arguments
+    /// * `stream_id` - The identifier of the stream.
+    /// * `stream_settings_enabled` - Determines whether the stream enabled.
+    /// * `stream_settings_resolution` - The selected resolution of the stream.
+    /// * `stream_settings_framerate` - The selected framerate of the stream.
+    /// * `stream_info` - The informaton about the stream from rosbag recording.
+    fn update_stream(
+        &self,
+        stream_id: &str,
+        stream_info: &StreamInfo,
+        stream_settings_enabled: &bool,
+        stream_settings_resolution: &mut StreamResolution,
+        stream_settings_framerate: &mut i32,
+    ) {
+        // There is no need to update if the stream is not even enabled.
+        if *stream_settings_enabled {
+            // Update the stream resolution, if applicable
+            self.update_resolution_based_on_rosbag(
+                stream_id,
+                stream_settings_resolution,
+                &stream_info.resolution,
+            );
+
+            // Update the stream framerate, if applicable
+            self.update_framerate_based_on_rosbag(
+                stream_id,
+                stream_settings_framerate,
+                &stream_info.data.framerate,
+            );
+        } else {
+            // Notify STDOUT that there is a stream that was not enabled
+            gst_info!(
+                self.cat,
+                "There is a `{}` stream contained within the rosbag recording that was not enabled.", stream_id
+            );
+        }
+    }
+
+    /// Update settings for the resolution of a stream if a conflict with rosbag is detected.
+    ///
+    /// # Arguments
+    /// * `stream_id` - The identifier of the stream.
+    /// * `settings_resolution` - The resolution selected in the settings stream.
+    /// * `rosbag_resolution` - The actual resolution of the rosbag stream.
+    fn update_resolution_based_on_rosbag(
+        &self,
+        stream_id: &str,
+        settings_resolution: &mut StreamResolution,
+        rosbag_resolution: &StreamResolution,
+    ) {
+        if settings_resolution != rosbag_resolution {
+            gst_warning!(
+                self.cat,
+                "The selected resolution of {}x{} px for the `{}` stream differs from the resolution in the rosbag recording. Setting the stream's resolution to {}x{} px.",
+                settings_resolution.width,
+                settings_resolution.height,
+                stream_id,
+                rosbag_resolution.width,
+                rosbag_resolution.height
+            );
+            *settings_resolution = rosbag_resolution.clone();
+        }
+    }
+
+    /// Update settings for the framerate of a stream if a conflict with rosbag is detected.
+    ///
+    /// # Arguments
+    /// * `stream_id` - The identifier of the stream.
+    /// * `settings_framerate` - The framerate selected in the settings stream.
+    /// * `rosbag_framerate` - The actual framerate of the rosbag stream.
+    fn update_framerate_based_on_rosbag(
+        &self,
+        stream_id: &str,
+        settings_framerate: &mut i32,
+        rosbag_framerate: &i32,
+    ) {
+        if settings_framerate != rosbag_framerate {
+            gst_warning!(
+                self.cat,
+                "The selected framerate of {} fps for the `{}` stream differs from the framerate in the rosbag recording. Setting the stream's framerate to {} fps.",
+                settings_framerate,
+                stream_id,
+                rosbag_framerate,
+            );
+            *settings_framerate = rosbag_framerate.clone();
+        }
+    }
+
+    /// Check if all the enabled streams are available.
+    ///
+    /// # Arguments
+    /// * `enabled_streams` - The selected streams.
+    /// * `available_streams` - The actual available streams.
+    ///
+    /// # Returns
+    /// * `Ok()` if all enabled streams are available.
+    /// * `Err(RealsenseError)` if an enabled stream is not available.
+    fn check_if_streams_are_available(
+        &self,
+        enabled_streams: &EnabledStreams,
+        available_streams: &EnabledStreams,
+    ) -> Result<(), RealsenseError> {
+        let conflicting_streams: Vec<&str> =
+            EnabledStreams::get_conflicts(enabled_streams, available_streams);
+
+        if !conflicting_streams.is_empty() {
+            return Err(RealsenseError(format!(
+                "The following stream(s) `{:?}` are not available in the rosbag recording.",
+                conflicting_streams,
+            )));
+        }
+
         Ok(())
     }
 }
@@ -1261,7 +1250,7 @@ fn find_frame_with_id(
     stream_type: rs2::rs2_stream,
     stream_id: i32,
 ) -> Option<&rs2::frame::Frame> {
-    frames.iter().find(|f| match f.get_profile() {
+    frames.iter().find(|f| match f.get_stream_profile() {
         Ok(profile) => match profile.get_data() {
             Ok(data) => {
                 data.stream == stream_type

@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2019-11-13
+
+### Added
+- Fixed issues related to playback from rosbag recording.
+  - Streams no longer loop if not all streams contained within rosbag are enabled.
+  - The resolution and framerate gets updated from rosbag recording if there is a conflict with settings.
+  - Helpful error is thrown while enabling a stream that is not available.
+### Modified
+- Use version 0.6.0 of `librealsense-rs`
+  - Change `String` to `&str` for some of the `Config` and `Device` method calls.
+  - Rename certain deprecated method so that these are identical to C/C++ API.
+- Moved 4 booleans, i.e. `enable_x`, under `EnabledStreams` as the new code benefits from it.
+- Use `StreamResolution` struct definition from `librealsense-rs` instead of a local copy of it.
+- Split structs into multiple files, i.e. create `enabled_streams.rs`, `settings.rs`, `errors.rs` and `properties.rs`.
+### Patched
+- Also set timestamp and buffer duration on per-frame metadata buffers.
+
+
 ## [0.1.5] - 2019-10-30
 ### Patched
 - Set duration on buffers to remove the `missing offset_end` warnings
