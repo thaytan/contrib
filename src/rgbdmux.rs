@@ -478,7 +478,7 @@ impl AggregatorImpl for RgbdMux {
                     // Return false if there is no src pad yet since this element does not handle it
                     return false;
                 }
-                src_pads.iter().any(|pad| pad.push_event(event.clone()))
+                src_pads.iter().all(|pad| pad.push_event(event.clone()))
             }
         }
     }
