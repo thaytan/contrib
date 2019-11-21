@@ -214,7 +214,6 @@ impl ObjectImpl for RgbdMux {
             }
             subclass::Property("drop-to-synchronise", ..) => {
                 let drop_to_synchronise = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -226,7 +225,6 @@ impl ObjectImpl for RgbdMux {
             }
             subclass::Property("send-gap-events", ..) => {
                 let send_gap_events = value.get().expect(&format!("Failed to set property `send-gap-events` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -455,6 +453,34 @@ impl AggregatorImpl for RgbdMux {
             .lock()
             .expect("Could not lock clock_internals");
         clock_internals.previous_timestamp + clock_internals.frameset_duration
+    }
+
+    /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
+    /// handled locally, all other events are send further downstream.
+    /// # Arguments
+    /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
+    /// * `_aggregator_pad` - The pad on received the event.
+    /// * `event` - The event that should be handled.
+    fn sink_event(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        _aggregator_pad: &gst_base::AggregatorPad,
+        event: gst::Event,
+    ) -> bool {
+        use gst::EventView;
+        gst_debug!(self.cat, obj: aggregator, "Got a new event: {:?}", event);
+
+        match event.view() {
+            _ => {
+                // By default, pass any other event to all src pads
+                let src_pads = aggregator.get_src_pads();
+                if src_pads.len() == 0 {
+                    // Return false if there is no src pad yet since this element does not handle it
+                    return false;
+                }
+                src_pads.iter().all(|pad| pad.push_event(event.clone()))
+            }
+        }
     }
 }
 

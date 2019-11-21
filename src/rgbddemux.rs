@@ -136,13 +136,7 @@ impl RgbdDemux {
                     return false;
                 }
 
-                let mut bool_flow_combiner = true;
-                for src_pad in src_pads.values() {
-                    // Forward the event to all src pads
-                    // Set flow combiner to false if sending an event to any src pad fails
-                    bool_flow_combiner = src_pad.push_event(event.clone());
-                }
-                bool_flow_combiner
+                src_pads.values().all(|p| p.push_event(event.clone()))
             }
         }
     }
