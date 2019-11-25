@@ -1,16 +1,9 @@
 from conans import ConanFile, Meson, tools
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.62.0"
-    except:
-        return None
 
 class GLibConan(ConanFile):
     name = "glib"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.62.0")
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
@@ -28,15 +21,20 @@ class GLibConan(ConanFile):
     def source(self):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
         # Disable broken gio tests until fixed by upstream (https://gitlab.gnome.org/GNOME/glib/issues/1897)
-        self.run("sed %s-%s/gio/meson.build -i -e 's/build_tests = .*/build_tests = false/'" % (self.name, self.version))
+        # Use tools.replace_in_file()
+        self.run(
+            "sed %s-%s/gio/meson.build -i -e 's/build_tests = .*/build_tests = false/'"
+            % (self.name, self.version)
+        )
 
     def build(self):
-        args = ["--auto-features=disabled", "-Dman=False", "-Dgtk_doc=False", "-Dlibmount=False", "-Dinternal_pcre=False"]
+        args = [
+            "--auto-features=disabled",
+            "-Dman=False",
+            "-Dgtk_doc=False",
+            "-Dlibmount=False",
+            "-Dinternal_pcre=False",
+        ]
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
