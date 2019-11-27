@@ -33,19 +33,32 @@ const DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING: bool = true;
 /// received buffers differ. If set to true, the buffers that are
 /// behind, i.e. those that have the smallest pts, get dropped.
 const DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS: bool = true;
+/// Default deadline multiplier for the deadline based aggregation
+const DEFAULT_DEADLINE_MULTIPLIER: f32 = 1.25;
 /// A flag that determines whether to send gap events if buffers are
 /// explicitly dropped
 const DEFAULT_SEND_GAP_EVENTS: bool = false;
 /// Default framerate of the streams
 const DEFAULT_FRAMERATE: i32 = 30;
 
-static PROPERTIES: [subclass::Property; 3] = [
+static PROPERTIES: [subclass::Property; 4] = [
     subclass::Property("drop-if-missing", |name| {
         glib::ParamSpec::boolean(
             name,
             "Drop all buffers in one is missing",
-            "determines what to do if one of the sink pads does not receive a buffer within the aggregation deadline. If set to true, all other buffers will be dropped.",
+            "If enabled, deadline based aggregation is employed with the `deadline-multiplier` property determining the duration of the deadline. If enabled and one of the sink pads does not receive a buffer within the aggregation deadline, all other buffers are dropped.",
             DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("deadline-multiplier", |name| {
+        glib::ParamSpec::float(
+            name,
+            "Deadline multiplier",
+            "Determines the duration of the deadline for the deadline based aggregation. The deadline duration is inversely proportional to the framerate and `deadline-multiplier` is applied as `deadline-multiplier`/`framerate`. Applicable only if `drop-if-missing` is enabled.",
+            std::f32::MIN_POSITIVE,
+            std::f32::MAX,
+            DEFAULT_DEADLINE_MULTIPLIER,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -83,18 +96,12 @@ impl Display for MuxingError {
 struct RgbdMux {
     /// The debug category, which may be used to filter output from GStreamer
     cat: gst::DebugCategory,
-    /// Mutex protecting the internals of the element
-    internals: Mutex<RgbdMuxInternals>,
+    /// List of sink pad names utilised for easy access under a Mutex
+    sink_pads: Mutex<Vec<String>>,
+    /// Settings based on properties of the element that are under a Mutex
+    settings: Mutex<Settings>,
     /// Mutex protecting the clock internals of the element
     clock_internals: Mutex<RgbdMuxClockInternals>,
-}
-
-/// Internals of the element related to clock that are under Mutex.
-struct RgbdMuxInternals {
-    /// List of sink pad names utilised for easy access
-    sink_pads: Vec<String>,
-    /// Settings based on properties of the element
-    settings: Settings,
 }
 
 /// Internals of the element related to clock that are under Mutex.
@@ -107,9 +114,10 @@ struct RgbdMuxClockInternals {
     framerate: gst::Fraction,
 }
 
-/// A struct containing properties
+/// A struct containing properties that are under mutex
 struct Settings {
     drop_if_missing: bool,
+    deadline_multiplier: f32,
     drop_to_synchronise: bool,
     send_gap_events: bool,
 }
@@ -129,13 +137,12 @@ impl ObjectSubclass for RgbdMux {
                 gst::DebugColorFlags::empty(),
                 Some("RGB-D Muxer"),
             ),
-            internals: Mutex::new(RgbdMuxInternals {
-                sink_pads: Vec::new(),
-                settings: Settings {
-                    drop_if_missing: DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
-                    drop_to_synchronise: DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS,
-                    send_gap_events: DEFAULT_SEND_GAP_EVENTS,
-                },
+            sink_pads: Mutex::new(Vec::new()),
+            settings: Mutex::new(Settings {
+                drop_if_missing: DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
+                deadline_multiplier: DEFAULT_DEADLINE_MULTIPLIER,
+                drop_to_synchronise: DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS,
+                send_gap_events: DEFAULT_SEND_GAP_EVENTS,
             }),
             clock_internals: Mutex::new(RgbdMuxClockInternals {
                 framerate: gst::Fraction::new(DEFAULT_FRAMERATE, 1),
@@ -193,11 +200,7 @@ impl ObjectImpl for RgbdMux {
         let element = obj
             .downcast_ref::<gst_base::Aggregator>()
             .expect("Could not cast `rgbdmux` to Aggregator");
-        let settings = &mut self
-            .internals
-            .lock()
-            .expect("Could not obtain lock internals mutex")
-            .settings;
+        let settings = &mut self.settings.lock().expect("Could not lock settings");
 
         let property = &PROPERTIES[id];
         match *property {
@@ -211,6 +214,17 @@ impl ObjectImpl for RgbdMux {
                     drop_if_missing
                 );
                 settings.drop_if_missing = drop_if_missing;
+            }
+            subclass::Property("deadline-multiplier", ..) => {
+                let deadline_multiplier = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a float, but got: {:?}", value));
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `deadline-multiplier` from {} to {}",
+                    settings.deadline_multiplier,
+                    deadline_multiplier
+                );
+                settings.deadline_multiplier = deadline_multiplier;
             }
             subclass::Property("drop-to-synchronise", ..) => {
                 let drop_to_synchronise = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
@@ -239,15 +253,14 @@ impl ObjectImpl for RgbdMux {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .settings;
+        let settings = &self.settings.lock().expect("Could not lock settings");
 
         let prop = &PROPERTIES[id];
         match *prop {
             subclass::Property("drop-if-missing", ..) => Ok(settings.drop_if_missing.to_value()),
+            subclass::Property("deadline-multiplier", ..) => {
+                Ok(settings.deadline_multiplier.to_value())
+            }
             subclass::Property("drop-to-synchronise", ..) => {
                 Ok(settings.drop_to_synchronise.to_value())
             }
@@ -276,10 +289,9 @@ impl ElementImpl for RgbdMux {
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
         gst_debug!(self.cat, obj: element, "release_pad: {}", pad_name);
-        self.internals
+        self.sink_pads
             .lock()
-            .expect("Could not lock internals")
-            .sink_pads
+            .expect("Could not lock sink pads")
             .retain(|x| *x != pad_name);
 
         // TODO: We should check whether we're in the process of shutting down before calling this
@@ -293,26 +305,26 @@ impl AggregatorImpl for RgbdMux {
         aggregator: &gst_base::Aggregator,
         _timeout: bool,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
-        // Lock the internals
-        let internals = &self.internals.lock().expect("Could not lock internals");
+        // Lock the settings
+        let settings = &self.settings.lock().expect("Could not lock settings");
         // Get the list of available names
-        let sink_pad_names = &internals.sink_pads;
+        let sink_pad_names = &self.sink_pads.lock().expect("Could not lock sink pads");
 
-        if internals.settings.drop_if_missing {
+        if settings.drop_if_missing {
             // Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers.
             self.drop_buffers_if_one_missing(aggregator, sink_pad_names)
                 .map_err(|_| gst::FlowError::CustomError)?;
-            if internals.settings.send_gap_events {
+            if settings.send_gap_events {
                 // Send gap event downstream
                 self.send_gap_event(aggregator);
             }
         }
 
-        if internals.settings.drop_to_synchronise {
+        if settings.drop_to_synchronise {
             // Make sure the streams are synchronised
             self.check_synchronisation(aggregator, sink_pad_names)
                 .map_err(|_| gst::FlowError::CustomError)?;
-            if internals.settings.send_gap_events {
+            if settings.send_gap_events {
                 // Send gap event downstream
                 self.send_gap_event(aggregator);
             }
@@ -343,11 +355,7 @@ impl AggregatorImpl for RgbdMux {
     ) -> Option<gst_base::AggregatorPad> {
         match req_name {
             Some(name) if name.starts_with("sink_") => {
-                let sink_pads = &mut self
-                    .internals
-                    .lock()
-                    .expect("Could not lock internals")
-                    .sink_pads;
+                let sink_pads = &mut self.sink_pads.lock().expect("Could not lock sink pads");
                 gst_debug!(
                     self.cat,
                     obj: aggregator,
@@ -417,10 +425,9 @@ impl AggregatorImpl for RgbdMux {
         gst_debug!(self.cat, "update_src_caps");
         // Check how many sink pads has been created
         let no_sink_pads = {
-            self.internals
+            self.sink_pads
                 .lock()
-                .expect("Could not lock internals")
-                .sink_pads
+                .expect("Could not lock sink pads")
                 .len()
         };
         // if no sink pads are present, we're not ready to negotiate CAPS, otherwise do the negotiation
@@ -448,11 +455,22 @@ impl AggregatorImpl for RgbdMux {
     /// # Arguments
     /// * `_aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
     fn get_next_time(&self, _aggregator: &gst_base::Aggregator) -> gst::ClockTime {
-        let clock_internals = &self
-            .clock_internals
+        if self
+            .settings
             .lock()
-            .expect("Could not lock clock_internals");
-        clock_internals.previous_timestamp + clock_internals.frameset_duration
+            .expect("Could not lock settings")
+            .drop_if_missing
+        {
+            // If `drop-if-missing` is enabled, a deadline for the aggregation is returned.
+            let clock_internals = &self
+                .clock_internals
+                .lock()
+                .expect("Could not lock clock internals");
+            clock_internals.previous_timestamp + clock_internals.frameset_duration
+        } else {
+            // Else, the aggregation has no deadline.
+            gst::CLOCK_TIME_NONE
+        }
     }
 
     /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
@@ -596,7 +614,7 @@ impl RgbdMux {
         // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
         self.clock_internals
             .lock()
-            .expect("Could not lock internals")
+            .expect("Could not lock clock internals")
             .previous_timestamp = gst::CLOCK_TIME_NONE;
 
         // Iterate over all sink pads
@@ -648,7 +666,7 @@ impl RgbdMux {
         // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
         self.clock_internals
             .lock()
-            .expect("Could not lock internals")
+            .expect("Could not lock clock internals")
             .previous_timestamp = gst::CLOCK_TIME_NONE;
 
         gst_warning!(
@@ -706,7 +724,7 @@ impl RgbdMux {
         // If there is no buffer, leave the main buffer empty
         let mut main_buffer = Self::get_tagged_buffer(aggregator, &sink_pad_names[0])
             .unwrap_or_else(|_e| {
-                gst_info!(
+                gst_warning!(
                     self.cat,
                     obj: aggregator,
                     "No buffer is queued on main `{}` pad. Leaving the buffer empty.",
@@ -723,7 +741,7 @@ impl RgbdMux {
         // Update the current timestamp
         self.clock_internals
             .lock()
-            .expect("Could not lock internals")
+            .expect("Could not lock clock internals")
             .previous_timestamp = main_buffer_mut_ref.get_pts();
 
         // Iterate over all other sink pads, excluding the first one
@@ -733,10 +751,10 @@ impl RgbdMux {
 
             // Check whether a buffer was received, otherwise skip
             if buffer.is_err() {
-                gst_info!(
+                gst_warning!(
                     self.cat,
                     obj: aggregator,
-                    "No buffer is queued on `{}` pad. Skipping.",
+                    "No buffer is queued on `{}` pad. No corresponding buffer will be attached to the main buffer.",
                     sink_pad_name
                 );
                 continue;
@@ -762,7 +780,7 @@ impl RgbdMux {
                 .get_time(),
             self.clock_internals
                 .lock()
-                .expect("Could not lock internals")
+                .expect("Could not lock clock internals")
                 .frameset_duration,
         )
         .build();
@@ -802,18 +820,28 @@ impl RgbdMux {
                     src_caps.set(&src_field_name, &value.get::<i32>().unwrap());
                 }
                 "framerate" => {
+                    // Get locks on the internals
                     let clock_internals = &mut self
                         .clock_internals
                         .lock()
                         .expect("Could not lock clock internals");
+                    let settings = &self.settings.lock().expect("Could not lock settings");
+
+                    // Update `framerate`
                     clock_internals.framerate = value.get::<gst::Fraction>().unwrap();
-                    // Update also the frameset_duration based on framerate
-                    let (num, den): (i32, i32) = clock_internals.framerate.into();
-                    let framerate_fraction = num as f32 / den as f32;
-                    // Add 25% to the duration
-                    clock_internals.frameset_duration = gst::ClockTime::from_nseconds(
-                        (1.25 * 10_f32.powi(9) / framerate_fraction) as u64,
-                    );
+
+                    // If deadline based aggregation is selected, update the `frameset_duration`
+                    clock_internals.frameset_duration = if settings.drop_if_missing {
+                        // Update also the `frameset_duration` based on `framerate` and
+                        // `deadline-multiplier` property
+                        let (num, den): (i32, i32) = clock_internals.framerate.into();
+                        let frame_duration = std::time::Duration::from_secs_f32(
+                            settings.deadline_multiplier * (num as f32 / den as f32),
+                        );
+                        gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64)
+                    } else {
+                        gst::CLOCK_TIME_NONE
+                    }
                 }
                 _ => {
                     gst_info!(
@@ -834,11 +862,7 @@ impl RgbdMux {
     #[inline]
     fn get_current_downstream_caps(&self, element: &gst::Element) -> gst::Caps {
         // First lock sink_pads, so that we may iterate it
-        let sink_pads = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .sink_pads;
+        let sink_pads = &self.sink_pads.lock().expect("Could not lock sink pads");
 
         // Join all the pad names to create the 'streams' section of the CAPS
         let streams = sink_pads

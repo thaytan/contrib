@@ -289,7 +289,7 @@ impl RgbdDemux {
         // - gst-launch rbgddemux name=d d.src_depth ! ... d.src_depth ! ...
         // - An application calls request_pad with the same name twice
         match internals.src_pads.get(&new_src_pad_name.to_string()) {
-            Some(pad) => {
+            Some(_pad) => {
                 gst_error!(
                     self.cat,
                     obj: element,

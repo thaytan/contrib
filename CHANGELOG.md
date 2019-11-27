@@ -4,8 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<<<<<<< CHANGELOG.md
 ## [Unreleased]
+
+
+## 0.1.6
+
+### Added
+- `rgbdmux` - If `drop-if-missing` is set to false, there is no deadline for the aggregation. This makes deadline based aggregation optional. If `drop-if-missing` is set to true, the behaviour is identical to `0.1.5`.
+- `rgbdmux` - Added `deadline-multiplier` property that controls the duration of deadline if `drop-if-missing` is enabled.
+
+### Changed
+- `rgbdmux` - Split `internals` into `sink_pads` and `settings` to avoid the possibility of deadlock caused by Mutex, which was introduced by the new additions.
+
 
 ## 0.1.5
 
@@ -34,4 +44,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Before
 Prior to 0.1.2 this repository did not have a changelog.
-
