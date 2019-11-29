@@ -236,8 +236,33 @@ impl Pipeline {
     /// # Returns
     /// * `Ok(Vec<Frame>)` on success.
     /// * `Err(Error)` on failure.
-    pub fn poll_for_frames(&self) -> Result<Vec<Frame>, Error> {
-        unimplemented!();
+    pub fn poll_for_frames(&self) -> Result<Option<Vec<Frame>>, Error> {
+        let mut error = Error::default();
+        let mut frames: *mut rs2::rs2_frame = std::ptr::null_mut();
+        unsafe {
+            let ret = rs2::rs2_pipeline_poll_for_frames(self.handle, &mut frames, error.inner());
+            if error.check(){
+                return Err(error);
+            };
+            if ret == 0 {
+                return Ok(None);
+            }
+            let count = rs2::rs2_embedded_frames_count(frames, error.inner());
+            if error.check() {
+                return Err(error);
+            };
+            let mut res: Vec<Frame> = Vec::new();
+            for i in 0..count {
+                res.push(Frame {
+                    handle: rs2::rs2_extract_frame(frames, i, error.inner()),
+                });
+                if error.check() {
+                    return Err(error);
+                };
+            }
+            rs2::rs2_release_frame(frames);
+            Ok(Some(res))
+        }
     }
 
     /// Return the active [`Device`](../device/struct.Device.html) and streams profiles, used by the

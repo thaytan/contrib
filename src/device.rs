@@ -80,10 +80,7 @@ impl Device {
     /// * `Err(Error)` on failure.
     pub fn get_info(&self, info: rs2_camera_info) -> Result<String, Error> {
         let mut error = Error::default();
-        let ret;
-        unsafe {
-            ret = rs2::rs2_get_device_info(self.handle, info, error.inner());
-        }
+        let ret = unsafe { rs2::rs2_get_device_info(self.handle, info, error.inner()) };
         if error.check() {
             Err(error)
         } else {
