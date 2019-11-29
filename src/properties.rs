@@ -172,7 +172,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 18] = [
         glib::ParamSpec::boolean(
             name,
             "Real Time Rosbag Playback",
-            "Determines whether to stream from the file the same way it was recorded. If set to false, Streaming rate will be determined based on the negotiated framerate.",
+            "Determines whether to stream from the file the same way it was recorded. If set to false, streaming rate will be determined based on the negotiated framerate or it will be as fast as possible if downstream elements are async.",
             DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
             glib::ParamFlags::READWRITE,
         )

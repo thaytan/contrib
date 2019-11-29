@@ -42,7 +42,6 @@ struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
     base_time: std::time::Duration,
-    previous_instant: std::time::Instant,
 }
 
 /// An enum containing the current state of the RealSense pipeline
@@ -106,7 +105,6 @@ impl ObjectSubclass for RealsenseSrc {
                 settings: Settings::default(),
                 state: State::Stopped,
                 base_time: std::time::Duration::new(0, 0),
-                previous_instant: std::time::Instant::now(),
             }),
         }
     }
@@ -542,41 +540,10 @@ impl BaseSrcImpl for RealsenseSrc {
                 unreachable!("Element is not yet started");
             }
         };
-        let frames = if let Some(_serial) = &settings.serial {
-            // Get frames with the given timeout
-            pipeline
-                .wait_for_frames(settings.wait_for_frames_timeout)
-                .map_err(|_| gst::FlowError::Eos)?
-        } else if settings.real_time_rosbag_playback {
-            // Get frames with the given timeout
-            pipeline
-                .wait_for_frames(settings.wait_for_frames_timeout)
-                .map_err(|_| gst::FlowError::Eos)?
-        } else {
-            // Else poll with a specific sleep time
-            let previous_instant = &mut internals.previous_instant;
-            while previous_instant.elapsed()
-                < std::time::Duration::from_secs_f32(1.0_f32 / streams.framerate as f32)
-            {
-                std::thread::sleep(std::time::Duration::new(0, 50000));
-            }
-            *previous_instant = std::time::Instant::now();
 
-            let mut frames;
-            loop {
-                // Poll for frames
-                frames = pipeline
-                    .poll_for_frames()
-                    .map_err(|_| gst::FlowError::CustomError1)?;
-
-                if let None = frames {
-                    std::thread::sleep(std::time::Duration::new(0, 50000));
-                } else {
-                    break;
-                }
-            }
-            frames.unwrap_or_else(|| unimplemented!())
-        };
+        let frames = pipeline
+            .wait_for_frames(settings.wait_for_frames_timeout)
+            .map_err(|_| gst::FlowError::Eos)?;
 
         // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
         let timestamp = if settings.do_rs2_timestamp {
