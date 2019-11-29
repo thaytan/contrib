@@ -41,6 +41,8 @@ struct RealsenseSrc {
 struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
+    base_time: std::time::Duration,
+    previous_instant: std::time::Instant,
 }
 
 /// An enum containing the current state of the RealSense pipeline
@@ -103,6 +105,8 @@ impl ObjectSubclass for RealsenseSrc {
             internals: Mutex::new(RealsenseSrcInternals {
                 settings: Settings::default(),
                 state: State::Stopped,
+                base_time: std::time::Duration::new(0, 0),
+                previous_instant: std::time::Instant::now(),
             }),
         }
     }
@@ -310,6 +314,17 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.do_custom_timestamp = do_custom_timestamp;
             }
+            subclass::Property("do-rs2-timestamp", ..) => {
+                let do_rs2_timestamp = value.get().expect(&format!("Failed to set property `do-rs2-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                gst_info!(
+                    self.cat,
+                    obj: element,
+                    "Changing property `do-rs2-timestamp` from {} to {}",
+                    settings.do_rs2_timestamp,
+                    do_rs2_timestamp
+                );
+                settings.do_rs2_timestamp = do_rs2_timestamp;
+            }
             subclass::Property("real-time-rosbag-playback", ..) => {
                 let real_time_rosbag_playback = value.get().expect(&format!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));;
                 gst_info!(
@@ -372,6 +387,7 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("do-custom-timestamp", ..) => {
                 Ok(settings.do_custom_timestamp.to_value())
             }
+            subclass::Property("do-rs2-timestamp", ..) => Ok(settings.do_rs2_timestamp.to_value()),
             subclass::Property("real-time-rosbag-playback", ..) => {
                 Ok(settings.real_time_rosbag_playback.to_value())
             }
@@ -519,7 +535,6 @@ impl BaseSrcImpl for RealsenseSrc {
         let internals = &mut *self.internals.lock().expect("Failed to lock internals");
         let settings = &internals.settings;
         let streams = &settings.streams;
-
         // Get the RealSense pipeline
         let pipeline = match internals.state {
             State::Started { ref pipeline } => pipeline,
@@ -527,7 +542,6 @@ impl BaseSrcImpl for RealsenseSrc {
                 unreachable!("Element is not yet started");
             }
         };
-
         let frames = if let Some(_serial) = &settings.serial {
             // Get frames with the given timeout
             pipeline
@@ -540,40 +554,67 @@ impl BaseSrcImpl for RealsenseSrc {
                 .map_err(|_| gst::FlowError::Eos)?
         } else {
             // Else poll with a specific sleep time
-            let mut frames = None;
-            while frames.is_none() {
-                std::thread::sleep(std::time::Duration::from_secs_f32(
-                    1.0_f32 / streams.framerate as f32,
-                ));
+            let previous_instant = &mut internals.previous_instant;
+            while previous_instant.elapsed()
+                < std::time::Duration::from_secs_f32(1.0_f32 / streams.framerate as f32)
+            {
+                std::thread::sleep(std::time::Duration::new(0, 50000));
+            }
+            *previous_instant = std::time::Instant::now();
+
+            let mut frames;
+            loop {
+                // Poll for frames
                 frames = pipeline
                     .poll_for_frames()
-                    .map_err(|_| gst::FlowError::Eos)?;
+                    .map_err(|_| gst::FlowError::CustomError1)?;
+
+                if let None = frames {
+                    std::thread::sleep(std::time::Duration::new(0, 50000));
+                } else {
+                    break;
+                }
             }
-            frames.unwrap()
+            frames.unwrap_or_else(|| unimplemented!())
         };
 
-        // TODO: Correct timestamps
-        // // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
-        // let timestamp = if settings.do_custom_timestamp {
-        //     Some(
-        //         // This computation is similar to `gst_element_get_current_running_time` that will be available in 1.18
-        //         // https://gstreamer.freedesktop.org/documentation/gstreamer/gstelement.html?gi-language=c#gst_element_get_current_running_time
-        //         element
-        //             .get_clock()
-        //             .expect("Could not get the clock of `realsensesrc`")
-        //             .get_time()
-        //             - element.get_base_time(),
-        //     )
-        // } else {
-        //     None
-        // };
-        let timestamp = None;
+        // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
+        let timestamp = if settings.do_rs2_timestamp {
+            // Base timestamps on librealsense timestamps, div by 1000 to convert to seconds
+            let rs2_timestamp = std::time::Duration::from_secs_f64(
+                frames[0]
+                    .get_timestamp()
+                    .map_err(|_| gst::FlowError::Error)?
+                    / 1000.0,
+            );
+            // Initialise base_time based on first timestamp
+            let base_time = &mut internals.base_time;
+            if base_time.as_nanos() == 0 {
+                *base_time = rs2_timestamp;
+            }
+            // Compute difference between the current and the first timestamp
+            let time_diff = rs2_timestamp
+                .checked_sub(*base_time)
+                .unwrap_or_else(|| unreachable!());
+            Some(gst::ClockTime::from_nseconds(time_diff.as_nanos() as u64))
+        } else if settings.do_custom_timestamp {
+            // This computation is similar to `gst_element_get_current_running_time` that will be
+            // available in 1.18 https://gstreamer.freedesktop.org/documentation/gstreamer/
+            // gstelement.html?gi-language=c#gst_element_get_current_running_time
+            let element_clock = element.get_clock();
+            if let Some(element_clock) = element_clock {
+                Some(element_clock.get_time() - element.get_base_time())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
-        let framerate = streams.framerate;
-        let frame_duration = std::time::Duration::from_secs_f32(1.0_f32 / framerate as f32);
+        let frame_duration = std::time::Duration::from_secs_f32(1.0_f32 / streams.framerate as f32);
         let gst_clock_frame_duration =
             gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64);
 

@@ -2,7 +2,7 @@ use glib::subclass;
 
 use crate::settings::*;
 
-pub(crate) static PROPERTIES: [subclass::Property; 17] = [
+pub(crate) static PROPERTIES: [subclass::Property; 18] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -154,8 +154,17 @@ pub(crate) static PROPERTIES: [subclass::Property; 17] = [
         glib::ParamSpec::boolean(
             name,
             "Perform custom timestamp handling",
-            "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers.",
+            "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers. Does no apply if `do-rs2-timestamp` is enabled.",
             DEFAULT_DO_CUSTOM_TIMESTAMP,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("do-rs2-timestamp", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Utilise rs2 timestamp",
+            "Adds timestamps to all buffers based on the timestamps extracted from librealsense. This property has higher priority than `do-rs2-timestamp`.",
+            DEFAULT_DO_RS2_TIMESTAMP,
             glib::ParamFlags::READWRITE,
         )
     }),
