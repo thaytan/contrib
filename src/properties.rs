@@ -2,7 +2,7 @@ use glib::subclass;
 
 use crate::settings::*;
 
-pub(crate) static PROPERTIES: [subclass::Property; 16] = [
+pub(crate) static PROPERTIES: [subclass::Property; 17] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -156,6 +156,15 @@ pub(crate) static PROPERTIES: [subclass::Property; 16] = [
             "Perform custom timestamp handling",
             "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers.",
             DEFAULT_DO_CUSTOM_TIMESTAMP,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("real-time-rosbag-playback", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Real Time Rosbag Playback",
+            "Determines whether to stream from the file the same way it was recorded. If set to false, Streaming rate will be determined based on the negotiated framerate.",
+            DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
             glib::ParamFlags::READWRITE,
         )
     }),

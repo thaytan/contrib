@@ -14,6 +14,9 @@ pub(crate) const DEFAULT_ENABLE_METADATA: bool = false;
 // Default behaviour for adding custom timestamps to the buffers.
 pub(crate) const DEFAULT_DO_CUSTOM_TIMESTAMP: bool = true;
 
+// Default behaviour for playing back from rosbag recording.
+pub(crate) const DEFAULT_REAL_TIME_ROSBAG_PLAYBACK: bool = false;
+
 // Streams enabled by defaults
 pub(crate) const DEFAULT_ENABLE_DEPTH: bool = true;
 pub(crate) const DEFAULT_ENABLE_INFRA1: bool = false;
@@ -41,6 +44,7 @@ pub(crate) struct Settings {
     pub(crate) wait_for_frames_timeout: u32,
     pub(crate) include_per_frame_metadata: bool,
     pub(crate) do_custom_timestamp: bool,
+    pub(crate) real_time_rosbag_playback: bool,
 }
 
 /// A struct containing properties of `realsensesrc` about streams
@@ -78,6 +82,7 @@ impl Default for Settings {
             wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
             include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
             do_custom_timestamp: DEFAULT_DO_CUSTOM_TIMESTAMP,
+            real_time_rosbag_playback: DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
         }
     }
 }
