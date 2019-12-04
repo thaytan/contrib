@@ -10,13 +10,13 @@ pub struct ImuSample {
 // no need to free or release.
 
 /// A helper struct for acquiring 3D data from [`ImuSample`](../imu_sample/struct.ImuSample.html).
-pub struct VectorXYZ<'a, T> {
+pub struct VectorXYZ<T> {
     /// X component of the vector.
-    pub x: &'a T,
+    pub x: T,
     /// Y component of the vector.
-    pub y: &'a T,
+    pub y: T,
     /// Z component of the vector.
-    pub z: &'a T,
+    pub z: T,
 }
 
 impl ImuSample {
@@ -27,9 +27,9 @@ impl ImuSample {
     pub fn get_acc(&self) -> VectorXYZ<f32> {
         unsafe {
             VectorXYZ {
-                x: &self.handle.acc_sample.xyz.x,
-                y: &self.handle.acc_sample.xyz.y,
-                z: &self.handle.acc_sample.xyz.z,
+                x: self.handle.acc_sample.xyz.x,
+                y: self.handle.acc_sample.xyz.y,
+                z: self.handle.acc_sample.xyz.z,
             }
         }
     }
@@ -38,27 +38,27 @@ impl ImuSample {
     /// [`ImuSample`](../imu_sample/struct.ImuSample.html).
     ///
     /// # Returns
-    /// * `&f32` containing X component of the accelerometer sample in meters per second squared.
-    pub fn get_acc_x(&self) -> &f32 {
-        unsafe { &self.handle.acc_sample.xyz.x }
+    /// * `f32` containing X component of the accelerometer sample in meters per second squared.
+    pub fn get_acc_x(&self) -> f32 {
+        unsafe { self.handle.acc_sample.xyz.x }
     }
 
     /// Extract Y component of the accelerometer sample from
     /// [`ImuSample`](../imu_sample/struct.ImuSample.html).
     ///
     /// # Returns
-    /// * `&f32` containing Y component of the accelerometer sample in meters per second squared.
-    pub fn get_acc_y(&self) -> &f32 {
-        unsafe { &self.handle.acc_sample.xyz.y }
+    /// * `f32` containing Y component of the accelerometer sample in meters per second squared.
+    pub fn get_acc_y(&self) -> f32 {
+        unsafe { self.handle.acc_sample.xyz.y }
     }
 
     /// Extract Z component of the accelerometer sample from
     /// [`ImuSample`](../imu_sample/struct.ImuSample.html).
     ///
     /// # Returns
-    /// * `&f32` containing Z component of the accelerometer sample in meters per second squared.
-    pub fn get_acc_z(&self) -> &f32 {
-        unsafe { &self.handle.acc_sample.xyz.z }
+    /// * `f32` containing Z component of the accelerometer sample in meters per second squared.
+    pub fn get_acc_z(&self) -> f32 {
+        unsafe { self.handle.acc_sample.xyz.z }
     }
 
     /// Extract gyroscope sample from [`ImuSample`](../imu_sample/struct.ImuSample.html).
@@ -68,9 +68,9 @@ impl ImuSample {
     pub fn get_gyro(&self) -> VectorXYZ<f32> {
         unsafe {
             VectorXYZ {
-                x: &self.handle.gyro_sample.xyz.x,
-                y: &self.handle.gyro_sample.xyz.y,
-                z: &self.handle.gyro_sample.xyz.z,
+                x: self.handle.gyro_sample.xyz.x,
+                y: self.handle.gyro_sample.xyz.y,
+                z: self.handle.gyro_sample.xyz.z,
             }
         }
     }
@@ -79,50 +79,50 @@ impl ImuSample {
     /// [`ImuSample`](../imu_sample/struct.ImuSample.html).
     ///
     /// # Returns
-    /// * `&f32` containing X component of the gyroscope sample in radians per second.
-    pub fn get_gyro_x(&self) -> &f32 {
-        unsafe { &self.handle.gyro_sample.xyz.x }
+    /// * `f32` containing X component of the gyroscope sample in radians per second.
+    pub fn get_gyro_x(&self) -> f32 {
+        unsafe { self.handle.gyro_sample.xyz.x }
     }
 
     /// Extract Y component of the gyroscope sample from
     /// [`ImuSample`](../imu_sample/struct.ImuSample.html).
     ///
     /// # Returns
-    /// * `&f32` containing Y component of the gyroscope sample in radians per second.
-    pub fn get_gyro_y(&self) -> &f32 {
-        unsafe { &self.handle.gyro_sample.xyz.y }
+    /// * `f32` containing Y component of the gyroscope sample in radians per second.
+    pub fn get_gyro_y(&self) -> f32 {
+        unsafe { self.handle.gyro_sample.xyz.y }
     }
 
     /// Extract Z component of the gyroscope sample from
     /// [`ImuSample`](../imu_sample/struct.ImuSample.html).
     ///
     /// # Returns
-    /// * `&f32` containing Z component of the gyroscope sample in radians per second.
-    pub fn get_gyro_z(&self) -> &f32 {
-        unsafe { &self.handle.gyro_sample.xyz.z }
+    /// * `f32` containing Z component of the gyroscope sample in radians per second.
+    pub fn get_gyro_z(&self) -> f32 {
+        unsafe { self.handle.gyro_sample.xyz.z }
     }
 
     /// Extract timestamp of the accelerometer sample.
     ///
     /// # Returns
-    /// * `&u64` containing timestamp in microseconds.
-    pub fn get_acc_timestamp(&self) -> &u64 {
-        &self.handle.acc_timestamp_usec
+    /// * `u64` containing timestamp in microseconds.
+    pub fn get_acc_timestamp(&self) -> u64 {
+        self.handle.acc_timestamp_usec
     }
 
     /// Extract timestamp of the gyroscope sample.
     ///
     /// # Returns
-    /// * `&u64` containing timestamp in microseconds.
-    pub fn get_gyro_timestamp(&self) -> &u64 {
-        &self.handle.gyro_timestamp_usec
+    /// * `u64` containing timestamp in microseconds.
+    pub fn get_gyro_timestamp(&self) -> u64 {
+        self.handle.gyro_timestamp_usec
     }
 
     /// Extract temperature associated with the [`ImuSample`](../imu_sample/struct.ImuSample.html).
     ///
     /// # Returns
-    /// * `&f32` containing temperature in Celsius.
-    pub fn get_temperature(&self) -> &f32 {
-        &self.handle.temperature
+    /// * `f32` containing temperature in Celsius.
+    pub fn get_temperature(&self) -> f32 {
+        self.handle.temperature
     }
 }
