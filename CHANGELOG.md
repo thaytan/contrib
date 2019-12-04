@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
-## [0.1.0] - 2019-11-13
+
+## [0.1.2] - 2019-12-04
+### Added
+- Compiler linking of `k4arecord` library.
+
+
+## [0.1.1] - 2019-11-13
 ### Added
 - Add public access to k4a C enumerations under Rustified names. E.g. `k4a_image_format_t` as `ImageFormat`.
 - Add `README.md` and this `CHANGELOG.md`.
-### Patched
-- Rust compiler linking of `k4a` library.
+### Modified
+- Fixed compiler linking of `k4a` library.
 
 
 ## [0.1.0]

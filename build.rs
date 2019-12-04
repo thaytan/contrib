@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 fn main() {
     println!("cargo:rustc-link-lib=k4a");
+    println!("cargo:rustc-link-lib=k4arecord");
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
