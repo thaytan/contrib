@@ -10,6 +10,15 @@ pub struct Resolution {
     pub height: i32,
 }
 
+impl Default for Resolution {
+    fn default() -> Self {
+        Self {
+            width: 0,
+            height: 0,
+        }
+    }
+}
+
 /// Converts `ColorResolution` into `Resolution` for color [`Image`](../image/struct.Image.html).
 ///
 /// # Arguments
@@ -18,7 +27,7 @@ pub struct Resolution {
 /// # Returns
 /// * `Ok(Resolution)` on success.
 /// * `Err(K4aError::Failure)` if given `color_resolution` is `K4A_COLOR_RESOLUTION_OFF`.
-pub fn color_resolution_to_resolution(color_resolution: &ColorResolution) -> Result<Resolution> {
+pub fn color_resolution_to_resolution(color_resolution: ColorResolution) -> Result<Resolution> {
     use ColorResolution::*;
     match color_resolution {
         K4A_COLOR_RESOLUTION_OFF => Err(K4aError::Failure("Color stream is disabled")),
@@ -58,7 +67,7 @@ pub fn color_resolution_to_resolution(color_resolution: &ColorResolution) -> Res
 /// * `Ok(Resolution)` on success.
 /// * `Err(K4aError::Failure)` if given `depth_mode` is `K4A_DEPTH_MODE_OFF` or
 /// `K4A_DEPTH_MODE_PASSIVE_IR`.
-pub fn depth_mode_to_depth_resolution(depth_mode: &DepthMode) -> Result<Resolution> {
+pub fn depth_mode_to_depth_resolution(depth_mode: DepthMode) -> Result<Resolution> {
     use DepthMode::*;
     match depth_mode {
         K4A_DEPTH_MODE_OFF | K4A_DEPTH_MODE_PASSIVE_IR => {
@@ -91,7 +100,7 @@ pub fn depth_mode_to_depth_resolution(depth_mode: &DepthMode) -> Result<Resoluti
 /// # Returns
 /// * `Ok(Resolution)` on success.
 /// * `Err(K4aError::Failure)` if given `depth_mode` is `K4A_DEPTH_MODE_OFF`.
-pub fn depth_mode_to_ir_resolution(depth_mode: &DepthMode) -> Result<Resolution> {
+pub fn depth_mode_to_ir_resolution(depth_mode: DepthMode) -> Result<Resolution> {
     use DepthMode::*;
     match depth_mode {
         K4A_DEPTH_MODE_OFF => Err(K4aError::Failure("IR stream is disabled")),
@@ -130,6 +139,23 @@ pub fn fps_to_i32(fps: Fps) -> i32 {
     }
 }
 
+/// Converts `i32` into `Fps`.
+///
+/// # Arguments
+/// * `fs` - Frames per second of the cameras.
+///
+/// # Returns
+/// * `Fps` containing the frames per second.
+pub fn i32_to_fps(fps: i32) -> Result<Fps> {
+    use Fps::*;
+    match fps {
+        5 => Ok(K4A_FRAMES_PER_SECOND_5),
+        15 => Ok(K4A_FRAMES_PER_SECOND_15),
+        30 => Ok(K4A_FRAMES_PER_SECOND_30),
+        _ => Err(K4aError::Failure("Framerate not supported")),
+    }
+}
+
 /// Determines effective number of bits per pixel based on `image_format`.
 ///
 /// # Arguments
@@ -139,7 +165,7 @@ pub fn fps_to_i32(fps: Fps) -> i32 {
 /// * `Ok(i32)` containing the effective number of bits per pixel on success.
 /// * `Err(K4aError::Failure)` if given `image_format` is `K4A_IMAGE_FORMAT_COLOR_MJPG` or
 /// `K4A_IMAGE_FORMAT_CUSTOM`.
-pub fn image_format_to_bits_per_pixel(image_format: &ImageFormat) -> Result<i32> {
+pub fn image_format_to_bits_per_pixel(image_format: ImageFormat) -> Result<i32> {
     use ImageFormat::*;
     match image_format {
         K4A_IMAGE_FORMAT_COLOR_MJPG => Err(K4aError::Failure(
@@ -155,5 +181,72 @@ pub fn image_format_to_bits_per_pixel(image_format: &ImageFormat) -> Result<i32>
         | K4A_IMAGE_FORMAT_IR16
         | K4A_IMAGE_FORMAT_CUSTOM16 => Ok(16),
         K4A_IMAGE_FORMAT_COLOR_BGRA32 => Ok(32),
+    }
+}
+
+/// Converts `i32` into `ImageFormat` enum variant.
+///
+/// # Arguments
+/// * `value` - value of the variant.
+///
+/// # Returns
+/// * `Ok(ImageFormat)` containing the appropriate variant.
+/// * `Err(K4aError::Failure)` if no such variant exists.
+pub fn image_format_from_i32(value: i32) -> Result<ImageFormat> {
+    use ImageFormat::*;
+    match value {
+        0 => Ok(K4A_IMAGE_FORMAT_COLOR_MJPG),
+        1 => Ok(K4A_IMAGE_FORMAT_COLOR_NV12),
+        2 => Ok(K4A_IMAGE_FORMAT_COLOR_YUY2),
+        3 => Ok(K4A_IMAGE_FORMAT_COLOR_BGRA32),
+        4 => Ok(K4A_IMAGE_FORMAT_DEPTH16),
+        5 => Ok(K4A_IMAGE_FORMAT_IR16),
+        6 => Ok(K4A_IMAGE_FORMAT_CUSTOM8),
+        7 => Ok(K4A_IMAGE_FORMAT_CUSTOM16),
+        8 => Ok(K4A_IMAGE_FORMAT_CUSTOM),
+        _ => Err(K4aError::Failure("Image format not supported")),
+    }
+}
+
+/// Converts `i32` into `ColorResolution` enum variant.
+///
+/// # Arguments
+/// * `value` - value of the variant.
+///
+/// # Returns
+/// * `Ok(ColorResolution)` containing the appropriate variant.
+/// * `Err(K4aError::Failure)` if no such variant exists.
+pub fn color_resolution_from_i32(value: i32) -> Result<ColorResolution> {
+    use ColorResolution::*;
+    match value {
+        0 => Ok(K4A_COLOR_RESOLUTION_OFF),
+        1 => Ok(K4A_COLOR_RESOLUTION_720P),
+        2 => Ok(K4A_COLOR_RESOLUTION_1080P),
+        3 => Ok(K4A_COLOR_RESOLUTION_1440P),
+        4 => Ok(K4A_COLOR_RESOLUTION_1536P),
+        5 => Ok(K4A_COLOR_RESOLUTION_2160P),
+        6 => Ok(K4A_COLOR_RESOLUTION_3072P),
+        _ => Err(K4aError::Failure("Color resolution not supported")),
+    }
+}
+
+/// Converts `i32` into `DepthMode` enum variant.
+///
+/// # Arguments
+/// * `value` - value of the variant.
+///
+/// # Returns
+/// * `Ok(DepthMode)` containing the appropriate variant.
+/// * `Err(K4aError::Failure)` if no such variant exists.
+pub fn depth_mode_from_i32(value: i32) -> Result<DepthMode> {
+    use DepthMode::*;
+    match value {
+        0 => Ok(K4A_DEPTH_MODE_OFF),
+        1 => Ok(K4A_DEPTH_MODE_NFOV_2X2BINNED),
+        2 => Ok(K4A_DEPTH_MODE_NFOV_UNBINNED),
+        3 => Ok(K4A_DEPTH_MODE_WFOV_2X2BINNED),
+        4 => Ok(K4A_DEPTH_MODE_WFOV_UNBINNED),
+        5 => Ok(K4A_DEPTH_MODE_PASSIVE_IR),
+        _ => Err(K4aError::Failure("Depth mode not supported")),
     }
 }

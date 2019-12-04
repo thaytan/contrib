@@ -57,12 +57,12 @@ impl Transformation<'_> {
     /// * `Err(K4aError::Failure)` on failure.
     pub fn depth_image_to_color_camera(&self, depth_image: Image) -> Result<Image> {
         let color_resolution =
-            color_resolution_to_resolution(&(*self.calibration_ref).handle.color_resolution)?;
+            color_resolution_to_resolution((*self.calibration_ref).handle.color_resolution)?;
         let output_image = Image::new(
-            &ImageFormat::K4A_IMAGE_FORMAT_DEPTH16,
-            &color_resolution.width,
-            &color_resolution.height,
-            &(2 * color_resolution.width),
+            ImageFormat::K4A_IMAGE_FORMAT_DEPTH16,
+            color_resolution.width,
+            color_resolution.height,
+            2 * color_resolution.width,
         )?;
         match unsafe {
             k4a_transformation_depth_image_to_color_camera(
@@ -96,12 +96,12 @@ impl Transformation<'_> {
         color_image: Image,
     ) -> Result<Image> {
         let depth_resolution =
-            depth_mode_to_depth_resolution(&(*self.calibration_ref).handle.depth_mode)?;
+            depth_mode_to_depth_resolution((*self.calibration_ref).handle.depth_mode)?;
         let output_image = Image::new(
-            &ImageFormat::K4A_IMAGE_FORMAT_COLOR_BGRA32,
-            &depth_resolution.width,
-            &depth_resolution.height,
-            &(4 * depth_resolution.width),
+            ImageFormat::K4A_IMAGE_FORMAT_COLOR_BGRA32,
+            depth_resolution.width,
+            depth_resolution.height,
+            4 * depth_resolution.width,
         )?;
         match unsafe {
             k4a_transformation_color_image_to_depth_camera(
@@ -140,12 +140,12 @@ impl Transformation<'_> {
         perspective: CalibrationType,
     ) -> Result<Image> {
         let depth_resolution =
-            depth_mode_to_depth_resolution(&(*self.calibration_ref).handle.depth_mode)?;
+            depth_mode_to_depth_resolution((*self.calibration_ref).handle.depth_mode)?;
         let output_image = Image::new(
-            &ImageFormat::K4A_IMAGE_FORMAT_CUSTOM,
-            &depth_resolution.width,
-            &depth_resolution.height,
-            &(6 * depth_resolution.width),
+            ImageFormat::K4A_IMAGE_FORMAT_CUSTOM,
+            depth_resolution.width,
+            depth_resolution.height,
+            6 * depth_resolution.width,
         )?;
         match unsafe {
             k4a_transformation_depth_image_to_point_cloud(

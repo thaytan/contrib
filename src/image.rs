@@ -39,14 +39,14 @@ impl Image {
     /// # Returns
     /// * `Ok(&[u8])` containing the buffer on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn get_buffer(&self) -> Result<&[u8]> {
+    pub fn get_buffer(&self) -> Result<Vec<u8>> {
         let buffer = unsafe { k4a_image_get_buffer(self.handle) };
         if buffer == std::ptr::null_mut() {
             return Err(K4aError::Failure(
                 "`Image` is invalid and does not contain a buffer",
             ));
         }
-        Ok(unsafe { std::slice::from_raw_parts(buffer, self.get_buffer_size()?) })
+        Ok(unsafe { std::slice::from_raw_parts_mut(buffer, self.get_buffer_size()?).to_vec() })
     }
 
     /// Obtain the format of an [`Image`](../image/struct.Image.html).
@@ -126,12 +126,12 @@ impl Image {
     /// # Returns
     /// * `Ok(Image)` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn new(format: &ImageFormat, width: &i32, height: &i32, stride: &i32) -> Result<Image> {
-        let image_handle = std::ptr::null_mut();
-        match unsafe { k4a_image_create(*format, *width, *height, *stride, image_handle) } {
-            k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(Image {
-                handle: unsafe { *image_handle },
-            }),
+    pub fn new(format: ImageFormat, width: i32, height: i32, stride: i32) -> Result<Image> {
+        let mut image = Image {
+            handle: std::ptr::null_mut(),
+        };
+        match unsafe { k4a_image_create(format, width, height, stride, &mut image.handle) } {
+            k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(image),
             k4a_result_t::K4A_RESULT_FAILED => {
                 Err(K4aError::Failure("Failed to create new `Image`"))
             }

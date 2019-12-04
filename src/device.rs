@@ -12,6 +12,10 @@ pub struct Device {
     pub(crate) handle: k4a_device_t,
 }
 
+/// Required for moving between threads
+unsafe impl Send for Device {}
+unsafe impl Sync for Device {}
+
 /// Safe releasing of the `k4a_device_t` handle.
 impl Drop for Device {
     fn drop(&mut self) {
@@ -46,7 +50,7 @@ impl Device {
     /// # Returns
     /// * `Ok(Device)` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn open(index: &u32) -> Result<Device> {
+    pub fn open(index: u32) -> Result<Device> {
         let device_count = Self::get_number_of_connected_devices()?;
         if (index + 1) < device_count {
             return Err(K4aError::Failure(
@@ -54,11 +58,11 @@ impl Device {
             ));
         }
 
-        let device_handle = std::ptr::null_mut();
-        match unsafe { k4a_device_open(*index, device_handle) } {
-            k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(Device {
-                handle: device_handle as k4a_device_t,
-            }),
+        let mut device = Device {
+            handle: std::ptr::null_mut(),
+        };
+        match unsafe { k4a_device_open(index, &mut device.handle) } {
+            k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(device),
             k4a_result_t::K4A_RESULT_FAILED => {
                 Err(K4aError::Failure("`Device` could not be opened"))
             }
@@ -83,15 +87,19 @@ impl Device {
             }
         }
 
-        let mut serial_number = String::with_capacity(serial_number_length);
+        let mut serial_number = vec![0_u8; serial_number_length];
         match unsafe {
             k4a_device_get_serialnum(
                 self.handle,
-                serial_number.as_mut_ptr() as *mut i8,
+                serial_number.as_mut_ptr() as *mut std::os::raw::c_char,
                 &mut serial_number_length,
             )
         } {
-            k4a_buffer_result_t::K4A_BUFFER_RESULT_SUCCEEDED => Ok(serial_number),
+            k4a_buffer_result_t::K4A_BUFFER_RESULT_SUCCEEDED => {
+                // Pop null character (Cstring terminator)
+                serial_number.pop();
+                Ok(unsafe { String::from_utf8_unchecked(serial_number) })
+            }
             _ => Err(K4aError::Failure(
                 "Failed to acquire serial number for `Device`",
             )),
@@ -130,13 +138,7 @@ impl Device {
     /// * `Err(K4aError::Failure)` on failure.
     pub fn open_with_serial(serial: &String) -> Result<Device> {
         for index in 0..Self::get_number_of_connected_devices()? {
-            let mut device = Device {
-                handle: std::ptr::null_mut(),
-            };
-            match unsafe { k4a_device_open(index, &mut device.handle) } {
-                k4a_result_t::K4A_RESULT_SUCCEEDED => {}
-                k4a_result_t::K4A_RESULT_FAILED => continue,
-            }
+            let device = Device::open(index)?;
             if &device.get_serial_number()? == serial {
                 return Ok(device);
             }
@@ -179,12 +181,12 @@ impl Device {
     /// * `Ok(Capture)` on success.
     /// * `Err(K4aError::Failure)` on failure.
     /// * `Err(K4aError::Timeout)` on timeout.
-    pub fn get_capture(&self, timeout: &i32) -> Result<Capture> {
-        let capture_handle = std::ptr::null_mut();
-        match unsafe { k4a_device_get_capture(self.handle, capture_handle, *timeout) } {
-            k4a_wait_result_t::K4A_WAIT_RESULT_SUCCEEDED => Ok(Capture {
-                handle: capture_handle as k4a_capture_t,
-            }),
+    pub fn get_capture(&self, timeout: i32) -> Result<Capture> {
+        let mut capture = Capture {
+            handle: std::ptr::null_mut(),
+        };
+        match unsafe { k4a_device_get_capture(self.handle, &mut capture.handle, timeout) } {
+            k4a_wait_result_t::K4A_WAIT_RESULT_SUCCEEDED => Ok(capture),
             k4a_wait_result_t::K4A_WAIT_RESULT_TIMEOUT => Err(K4aError::Timeout),
             k4a_wait_result_t::K4A_WAIT_RESULT_FAILED => {
                 Err(K4aError::Failure("`Capture` could not be obtained"))
@@ -225,9 +227,9 @@ impl Device {
     /// * `Ok(ImuSample)` on success.
     /// * `Err(K4aError::Failure)` on failure.
     /// * `Err(K4aError::Timeout)` on timeout.
-    pub fn get_imu_sample(&self, timeout: &i32) -> Result<ImuSample> {
+    pub fn get_imu_sample(&self, timeout: i32) -> Result<ImuSample> {
         let mut imu_sample_handle = k4a_imu_sample_t::default();
-        match unsafe { k4a_device_get_imu_sample(self.handle, &mut imu_sample_handle, *timeout) } {
+        match unsafe { k4a_device_get_imu_sample(self.handle, &mut imu_sample_handle, timeout) } {
             k4a_wait_result_t::K4A_WAIT_RESULT_SUCCEEDED => Ok(ImuSample {
                 handle: imu_sample_handle,
             }),
@@ -249,11 +251,10 @@ impl Device {
     /// `K4A_COLOR_CONTROL_MODE_MANUAL`.
     /// * `Ok(None)` on success if mode is set to `K4A_COLOR_CONTROL_MODE_AUTO`.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn get_color_control(&self, command: &ColorControlCommand) -> Result<Option<i32>> {
+    pub fn get_color_control(&self, command: ColorControlCommand) -> Result<Option<i32>> {
         let mut mode = k4a_color_control_mode_t::K4A_COLOR_CONTROL_MODE_AUTO;
         let mut value: i32 = 0;
-        match unsafe { k4a_device_get_color_control(self.handle, *command, &mut mode, &mut value) }
-        {
+        match unsafe { k4a_device_get_color_control(self.handle, command, &mut mode, &mut value) } {
             k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(match mode {
                 k4a_color_control_mode_t::K4A_COLOR_CONTROL_MODE_AUTO => None,
                 k4a_color_control_mode_t::K4A_COLOR_CONTROL_MODE_MANUAL => Some(value),
@@ -278,15 +279,11 @@ impl Device {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn set_color_control_manual(
-        &self,
-        command: &ColorControlCommand,
-        value: &i32,
-    ) -> Result<()> {
+    pub fn set_color_control_manual(&self, command: ColorControlCommand, value: i32) -> Result<()> {
         match unsafe {
             k4a_device_get_color_control(
                 self.handle,
-                *command,
+                command,
                 &mut k4a_color_control_mode_t::K4A_COLOR_CONTROL_MODE_MANUAL,
                 &mut value.clone(),
             )
@@ -306,11 +303,11 @@ impl Device {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn set_color_control_auto(&self, command: &ColorControlCommand) -> Result<()> {
+    pub fn set_color_control_auto(&self, command: ColorControlCommand) -> Result<()> {
         match unsafe {
             k4a_device_get_color_control(
                 self.handle,
-                *command,
+                command,
                 &mut k4a_color_control_mode_t::K4A_COLOR_CONTROL_MODE_AUTO,
                 &mut 0,
             )
@@ -334,15 +331,15 @@ impl Device {
     /// * `Err(K4aError::Failure)` on failure.
     pub fn get_calibration(
         &self,
-        depth_mode: &DepthMode,
-        color_resolution: &ColorResolution,
+        depth_mode: DepthMode,
+        color_resolution: ColorResolution,
     ) -> Result<Calibration> {
         let mut calibration_handle = k4a_calibration_t::default();
         match unsafe {
             k4a_device_get_calibration(
                 self.handle,
-                *depth_mode,
-                *color_resolution,
+                depth_mode,
+                color_resolution,
                 &mut calibration_handle,
             )
         } {
@@ -377,7 +374,7 @@ impl Device {
             }
         }
 
-        let mut calibration_data: Vec<u8> = Vec::with_capacity(calibration_data_length);
+        let mut calibration_data= vec![0_u8; calibration_data_length];
         match unsafe {
             k4a_device_get_raw_calibration(
                 self.handle,

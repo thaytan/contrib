@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [0.1.2] - 2019-12-04
+### Added
+- Small helper functions for work with generated enums under `utilities.rs`
+### Performed
+- Performed first tests with physical device and recording
+- Fixed issues with passing of handles
+- Fixed issues with allocating memory for CString returned by several functions
+
 ## [0.1.1] - 2019-11-13
 ### Added
 - Add `K4aError`.

@@ -11,6 +11,10 @@ pub struct Playback {
     pub(crate) handle: k4a_playback_t,
 }
 
+/// Required for moving between threads
+unsafe impl Send for Playback {}
+unsafe impl Sync for Playback {}
+
 /// Safe releasing of the `k4a_playback_t` handle.
 impl Drop for Playback {
     fn drop(&mut self) {
@@ -30,11 +34,16 @@ impl Playback {
     /// * `Ok(Playback)` on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn open(file_path: &String) -> Result<Playback> {
-        let playback_handle = std::ptr::null_mut();
-        match unsafe { k4a_playback_open(file_path.as_ptr() as *const i8, playback_handle) } {
-            k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(Playback {
-                handle: playback_handle as k4a_playback_t,
-            }),
+        let mut playback = Playback {
+            handle: std::ptr::null_mut(),
+        };
+        match unsafe {
+            k4a_playback_open(
+                file_path.as_ptr() as *const std::os::raw::c_char,
+                &mut playback.handle,
+            )
+        } {
+            k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(playback),
             k4a_result_t::K4A_RESULT_FAILED => {
                 Err(K4aError::Failure("File could not be opened for playback"))
             }
@@ -82,7 +91,7 @@ impl Playback {
             }
         }
 
-        let mut calibration_data: Vec<u8> = Vec::with_capacity(calibration_data_length);
+        let mut calibration_data = vec![0_u8; calibration_data_length];
         match unsafe {
             k4a_playback_get_raw_calibration(
                 self.handle,
@@ -126,7 +135,7 @@ impl Playback {
         match unsafe {
             k4a_playback_get_tag(
                 self.handle,
-                name.as_ptr() as *const i8,
+                name.as_ptr() as *const std::os::raw::c_char,
                 std::ptr::null_mut(),
                 &mut tag_length,
             )
@@ -139,16 +148,18 @@ impl Playback {
             }
         }
 
-        let mut tag_value = String::with_capacity(tag_length);
+        let mut tag_value = vec![0_u8; tag_length];
         match unsafe {
             k4a_playback_get_tag(
                 self.handle,
-                name.as_ptr() as *const i8,
-                tag_value.as_mut_ptr() as *mut i8,
+                name.as_ptr() as *const std::os::raw::c_char,
+                tag_value.as_mut_ptr() as *mut std::os::raw::c_char,
                 &mut tag_length,
             )
         } {
-            k4a_buffer_result_t::K4A_BUFFER_RESULT_SUCCEEDED => Ok(tag_value),
+            k4a_buffer_result_t::K4A_BUFFER_RESULT_SUCCEEDED => {
+                Ok(unsafe { String::from_utf8_unchecked(tag_value) })
+            }
             _ => Err(K4aError::Failure(
                 "Failed to acquire serial number from `Playback`",
             )),
@@ -164,8 +175,8 @@ impl Playback {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn set_color_conversion(&self, format: &ImageFormat) -> Result<()> {
-        match unsafe { k4a_playback_set_color_conversion(self.handle, *format) } {
+    pub fn set_color_conversion(&self, format: ImageFormat) -> Result<()> {
+        match unsafe { k4a_playback_set_color_conversion(self.handle, format) } {
             k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(()),
             k4a_result_t::K4A_RESULT_FAILED => Err(K4aError::Failure(
                 "`Playback` setting color conversion failed",
@@ -180,11 +191,11 @@ impl Playback {
     /// * `Err(K4aError::Failure)` on failure.
     /// * `Err(K4aError::Eos)` at the end of recording.
     pub fn get_next_capture(&self) -> Result<Capture> {
-        let capture_handle = std::ptr::null_mut();
-        match unsafe { k4a_playback_get_next_capture(self.handle, capture_handle) } {
-            k4a_stream_result_t::K4A_STREAM_RESULT_SUCCEEDED => Ok(Capture {
-                handle: capture_handle as k4a_capture_t,
-            }),
+        let mut capture = Capture {
+            handle: std::ptr::null_mut(),
+        };
+        match unsafe { k4a_playback_get_next_capture(self.handle, &mut capture.handle) } {
+            k4a_stream_result_t::K4A_STREAM_RESULT_SUCCEEDED => Ok(capture),
             k4a_stream_result_t::K4A_STREAM_RESULT_FAILED => Err(K4aError::Failure(
                 "Failed to acquire next `Capture` from `Playback`",
             )),
@@ -199,11 +210,11 @@ impl Playback {
     /// * `Err(K4aError::Failure)` on failure.
     /// * `Err(K4aError::Eos)` at the beginning of recording.
     pub fn get_previous_capture(&self) -> Result<Capture> {
-        let capture_handle = std::ptr::null_mut();
-        match unsafe { k4a_playback_get_previous_capture(self.handle, capture_handle) } {
-            k4a_stream_result_t::K4A_STREAM_RESULT_SUCCEEDED => Ok(Capture {
-                handle: capture_handle as k4a_capture_t,
-            }),
+        let mut capture = Capture {
+            handle: std::ptr::null_mut(),
+        };
+        match unsafe { k4a_playback_get_previous_capture(self.handle, &mut capture.handle) } {
+            k4a_stream_result_t::K4A_STREAM_RESULT_SUCCEEDED => Ok(capture),
             k4a_stream_result_t::K4A_STREAM_RESULT_FAILED => Err(K4aError::Failure(
                 "Failed to acquire previous `Capture` from `Playback`",
             )),
@@ -260,8 +271,8 @@ impl Playback {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn seek_timestamp(&self, offset: &i64, origin: &PlaybackSeekOrigin) -> Result<()> {
-        match unsafe { k4a_playback_seek_timestamp(self.handle, *offset, *origin) } {
+    pub fn seek_timestamp(&self, offset: i64, origin: PlaybackSeekOrigin) -> Result<()> {
+        match unsafe { k4a_playback_seek_timestamp(self.handle, offset, origin) } {
             k4a_result_t::K4A_RESULT_SUCCEEDED => Ok(()),
             k4a_result_t::K4A_RESULT_FAILED => Err(K4aError::Failure("`Playback` seeking failed")),
         }
