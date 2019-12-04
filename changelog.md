@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- `do-rs2-timestamp` property that stamps all buffers with timestamps from `librealsense`, starting from 0 and monotomically increasing. If enabled, this property has higher priority than `do-custom-timestamp`. If used in combination with playing back from rosbag, make sure that property `loop-rosbag=false`. If set to false, behaviour is identical to previous versions.
+- `real-time-rosbag-playback` property that makes playback from rosbag behave as a real-time live source. If set to false, playback from rosbag is independent from real-time and allows arbitrary rate of playback, if downstream element(s) have `sync=false`. If set to true, behaviour is identical to previous versions.
+
+
 ## [0.1.6] - 2019-11-13
 
 ### Added
