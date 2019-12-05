@@ -1,6 +1,6 @@
-from glob import glob
-from os import chmod, environ, listdir, makedirs, path, pathsep, remove
-from shutil import copy, rmtree
+import glob
+import os
+import shutil
 
 from conans import ConanFile
 from conans.model import Generator
@@ -26,174 +26,63 @@ def replace_prefix_in_pc_file(pc_file, prefix):
         if not old_prefix:
             raise Exception("Could not find package prefix in '%s'" % pc_file)
         f.seek(0)
-        content = f.read().replace(old_prefix, prefix)
-    with open(pc_file, "w") as f:
-        f.write(content)
-
-
-def env_prepend(var, val, sep=pathsep):
-    environ[var] = val + (sep + environ[var] if var in environ else "")
-
-
-def remove_folder(folder):
-    if path.isdir(folder):
-        rmtree(folder)
+        return f.read().replace(old_prefix, prefix)
 
 
 class env(Generator):
     def __init__(self, conanfile):
         super().__init__(conanfile)
-        self.env = conanfile.env
 
     @property
     def filename(self):
-        return "env.sh"
+        pass
 
     @property
     def content(self):
-        conanfile = self.conanfile
-        pc_output_path = self.output_path
-        if not path.isdir(pc_output_path):
-            makedirs(pc_output_path)
+        files = {"env.sh": ""}
 
-        # Replace package method
-        if hasattr(conanfile, "package"):
-            conanfile.pre_package = conanfile.package
+        # Generate pc files
+        for _, cpp_info in self.deps_build_info.dependencies:
+            pc_paths = [
+                os.path.join(cpp_info.rootpath, "lib", "pkgconfig"),
+                os.path.join(cpp_info.rootpath, "share", "pkgconfig"),
+               ]
+            for pc_path in pc_paths:
+                if not os.path.isdir(pc_path):
+                    continue
+                for pc in os.listdir(pc_path):
+                    files[pc] = replace_prefix_in_pc_file(
+                        os.path.join(pc_path, pc), cpp_info.rootpath
+                    )
 
-        def package():
-            # Run original package method
-            if hasattr(conanfile, "pre_package"):
-                conanfile.pre_package()
-            # Copy sources to package
-            if (
-                "build_type" in conanfile.settings.fields
-                and conanfile.settings.build_type == "Debug"
-            ):
-                for ext in ("c", "cpp", "cpp", "h", "hpp", "hxx"):
-                    conanfile.copy("*." + ext, "src")
-
-            # Delete libtool files
-            for f in glob(
-                path.join(conanfile.package_folder, "**", "*.la"), recursive=True
-            ):
-                remove(f)
-
-            # Delete unneeded folders in share
-            for folder in ("man", "doc", "bash-completion", "gtk-doc"):
-                remove_folder(path.join(conanfile.package_folder, "share", folder))
-
-            # Fix shebangs
-            if path.isdir(path.join(conanfile.package_folder, "bin")):
-                for exe_name in listdir(path.join(conanfile.package_folder, "bin")):
-                    exe_path = path.join(conanfile.package_folder, "bin", exe_name)
-                    if path.isdir(exe_path):
+        # Generate pc files from PKG_CONFIG_SYSTEM_PATH
+        if hasattr(self.conanfile, "system_pcs") and "PKG_CONFIG_SYSTEM_PATH" in os.environ:
+            if isinstance(self.conanfile.system_pcs, str):
+                self.conanfile.system_pcs = set([self.conanfile.system_pcs])
+            system_pcs = set(self.conanfile.system_pcs)
+            for pc_path in os.environ["PKG_CONFIG_SYSTEM_PATH"].split(os.pathsep):
+                for pc in os.listdir(pc_path):
+                    pc_name = os.path.splitext(pc)[0]
+                    if not pc_name in self.conanfile.system_pcs:
                         continue
-                    try:
-                        with open(exe_path, "r") as exe:
-                            lines = exe.readlines()
-                        shebang = lines.pop(0)
-                        if "python" in shebang:
-                            interpreter = "python"
-                        elif "perl" in shebang:
-                            interpreter = "perl"
-                        elif "sh" in shebang:
-                            interpreter = "sh"
-                        else:
-                            interpreter = None
-                        lines.insert(0, "#!/usr/bin/env %s\n" % interpreter)
-                        with open(exe_path, mode="w") as exe:
-                            exe.writelines(lines)
-                    except UnicodeDecodeError:
-                        pass
-
-        conanfile.package = package
-
-        # Copy pc files from PKG_CONFIG_SYSTEM_PATH
-        if hasattr(conanfile, "system_pcs") and "PKG_CONFIG_SYSTEM_PATH" in environ:
-            if isinstance(conanfile.system_pcs, str):
-                system_pcs = set([conanfile.system_pcs])
-            else:
-                system_pcs = set(conanfile.system_pcs)
-            for pc_path in environ["PKG_CONFIG_SYSTEM_PATH"].split(pathsep):
-                for pc in listdir(pc_path):
-                    if path.splitext(pc)[0] in conanfile.system_pcs:
-                        system_pcs.remove(path.splitext(pc)[0])
-                        copy(path.join(pc_path, pc), pc_output_path)
+                    system_pcs.remove(pc_name)
+                    with open(os.path.join(pc_path, pc), "r") as pc_file:
+                        files[pc] = pc_file.read()
             if len(system_pcs):
                 raise Exception(
                     "'%s' not available in system pkg-config directories"
                     % ", ".join(system_pcs)
                 )
 
-        # Find bin, lib and pkgconfig paths
-        bin_paths = []
-        lib_paths = []
-        prefix_paths = []
-        pkg_names = []
-        for pkg_name, cpp_info in self.deps_build_info.dependencies:
-            pkg_names.append(pkg_name)
-            prefix_paths.append(cpp_info.rootpath)
-            lib_path = path.join(cpp_info.rootpath, "lib")
-            if path.isdir(lib_path):
-                lib_paths.append(lib_path)
-            bin_path = path.join(cpp_info.rootpath, "bin")
-            if path.isdir(bin_path):
-                bin_paths.append(bin_path)
-            pc_lib_path = path.join(cpp_info.rootpath, "lib", "pkgconfig")
-            pc_share_path = path.join(cpp_info.rootpath, "share", "pkgconfig")
-            if path.isdir(pc_lib_path):
-                for pc in listdir(pc_lib_path):
-                    copy(path.join(pc_lib_path, pc), pc_output_path)
-                    replace_prefix_in_pc_file(
-                        path.join(pc_output_path, pc), cpp_info.rootpath
-                    )
-            if path.isdir(pc_share_path):
-                for pc in listdir(pc_share_path):
-                    copy(path.join(pc_share_path, pc), pc_output_path)
-                    replace_prefix_in_pc_file(
-                        path.join(pc_output_path, pc), cpp_info.rootpath
-                    )
-
-        # Update Conan environment
-        env_prepend("PATH", pathsep.join(bin_paths))
-        env_prepend("LD_LIBRARY_PATH", pathsep.join(lib_paths))
-        env_prepend("PKG_CONFIG_PATH", pc_output_path)
-        env_prepend("CMAKE_PREFIX_PATH", pathsep.join(prefix_paths))
-        if hasattr(conanfile, "source_folder"):
-            env_prepend(
-                "CFLAGS",
-                "-fdebug-prefix-map=%s=%s" % (conanfile.source_folder, conanfile.name),
-                " ",
+        # Set environment from env_info
+        for var, val in self.conanfile.env.items():
+            if isinstance(val, str):
+                val = [val]
+            files["env.sh"] += 'export {0}={1}:"${0}"\n'.format(
+                var, os.pathsep.join('"%s"' % p for p in val)
             )
-            env_prepend(
-                "CXXFLAGS",
-                "-fdebug-prefix-map=%s=%s" % (conanfile.source_folder, conanfile.name),
-                " ",
-            )
-        # Generate env.sh
-        content = 'export PATH=%s:"$PATH"\n' % pathsep.join(
-            '"%s"' % p for p in bin_paths
-        )
-        content += 'export LD_LIBRARY_PATH=%s:"$LD_LIBRARY_PATH"\n' % pathsep.join(
-            '"%s"' % p for p in lib_paths
-        )
-        content += 'export PKG_CONFIG_PATH="%s":"$PKG_CONFIG_PATH"\n' % pc_output_path
-        content += 'export CMAKE_PREFIX_PATH=%s:"$CMAKE_PREFIX_PATH"\n' % pathsep.join(
-            '"%s"' % p for p in prefix_paths
-        )
-        content += 'export SOURCE_MAP=%s:"$SOURCE_MAP"\n' % pathsep.join(
-            '"%s|%s"' % (pkg_names[i], path.join(prefix_paths[i], "src"))
-            for i in range(len(prefix_paths))
-        )
-        for var, val in self.env.items():
-            if type(val) is list:
-                content += 'export {0}={1}:"${0}"\n'.format(
-                    var, pathsep.join('"%s"' % p for p in val)
-                )
-            else:
-                content += "export {0}={1}\n".format(var, '"%s"' % val)
 
-        return content
+        return files
 
 
 class tools(Generator):
@@ -207,42 +96,16 @@ class tools(Generator):
 
     @property
     def content(self):
-        conanfile = self.conanfile
-        if not path.isdir(self.output_path):
-            makedirs(self.output_path)
-
-        # Find bin, lib and pkgconfig paths
-        bin_paths = []
-        lib_paths = []
-        prefix_paths = []
-        for _, cpp_info in self.deps_build_info.dependencies:
-            prefix_paths.append(cpp_info.rootpath)
-            lib_path = path.join(cpp_info.rootpath, "lib")
-            if path.isdir(lib_path):
-                lib_paths.append(lib_path)
-            bin_path = path.join(cpp_info.rootpath, "bin")
-            if path.isdir(bin_path):
-                bin_paths.append(bin_path)
+        if not os.path.isdir(self.output_path):
+            os.makedirs(self.output_path)
 
         # Generate wrapper bins
-        env_vars = 'export PATH=%s:"$PATH"\n' % pathsep.join(
-            '"%s"' % p for p in bin_paths
-        )
-        env_vars += 'export LD_LIBRARY_PATH=%s:"$LD_LIBRARY_PATH"\n' % pathsep.join(
-            '"%s"' % p for p in lib_paths
-        )
-        env_vars += 'export SOURCE_PATH=%s:"$SOURCE_PATH"\n' % pathsep.join(
-            '"%s"' % path.join(p, "src")
-            for p in prefix_paths
-            if path.isdir(path.join(p, "src"))
-        )
         for var, val in self.env.items():
-            if type(val) is list:
-                env_vars += 'export {0}={1}:"${0}"\n'.format(
-                    var, pathsep.join('"%s"' % p for p in val)
-                )
-            else:
-                env_vars += "export {0}={1}\n".format(var, '"%s"' % val)
+            if isinstance(val, str):
+                val = [val]
+            env_vars += 'export {0}={1}:"${0}"\n'.format(
+                var, os.pathsep.join('"%s"' % p for p in val)
+            )
 
         # Find rootpath
         # 'dependencies' is not indexable
@@ -251,17 +114,17 @@ class tools(Generator):
             break
 
         # Generate executable wrappers
-        bin_path = path.join(rootpath, "bin")
-        if not path.isdir(bin_path):
+        bin_path = os.path.join(rootpath, "bin")
+        if not os.path.isdir(bin_path):
             return ""
-        for exe_name in listdir(bin_path):
-            exe_path = path.join(bin_path, exe_name)
-            exe_out_path = path.join(self.output_path, exe_name)
+        for exe_name in os.listdir(bin_path):
+            exe_path = os.path.join(bin_path, exe_name)
+            exe_out_path = os.path.join(self.output_path, exe_name)
             with open(exe_out_path, "w") as exe:
                 exe.write("#!/usr/bin/env sh\n")
                 exe.write(env_vars)
                 exe.write('exec %s "$@"' % exe_path)
-            chmod(exe_out_path, 0o775)
+            os.chmod(exe_out_path, 0o775)
 
         return {}
 
@@ -269,6 +132,6 @@ class tools(Generator):
 class EnvPackage(ConanFile):
     name = "env-generator"
     version = "1.0.0"
-    url = "https://gitlab.com/aivero/public/tools/conan-env-generator"
+    url = "https://gitlab.com/aivero/public/conan-env-generator"
     license = "MIT"
-    description = "Generator for combined build and runtime environment file"
+    description = "Generate environment file for build and runtime"
