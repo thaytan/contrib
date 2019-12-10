@@ -22,13 +22,12 @@ class PythonConan(ConanFile):
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
         self.requires("bzip2/[>=1.0.8]@%s/stable" % self.user)
+        self.requires("sqlite/[>=3.30.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get(
             "https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(
-                self.version
-            )
-        )
+                self.version))
 
     def build(self):
         args = [
@@ -40,6 +39,7 @@ class PythonConan(ConanFile):
             "--enable-ipv6",
             "--with-system-expat",
             "--with-system-ffi",
+            "--enable-loadable-sqlite-extensions",
             "--without-ensurepip",
         ]
         with tools.chdir("Python-" + self.version):
@@ -47,11 +47,12 @@ class PythonConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-        os.symlink("python3.7", os.path.join(self.package_folder, "bin", "python"))
+        os.symlink("python3.7",
+                   os.path.join(self.package_folder, "bin", "python"))
 
     def package_info(self):
-        self.env_info.PYTHON = os.path.join(self.package_folder, "bin", "python")
+        self.env_info.PYTHON = os.path.join(self.package_folder, "bin",
+                                            "python")
         self.env_info.PYTHONHOME = self.package_folder
         self.env_info.PYTHONPATH.append(
-            os.path.join(self.package_folder, "lib", "python3.7")
-        )
+            os.path.join(self.package_folder, "lib", "python3.7"))
