@@ -405,10 +405,7 @@ impl ObjectImpl for RealsenseSrc {
             .expect("Could not lock internals")
             .settings;
 
-        element.set_live(match &settings.serial {
-            Some(_serial) => true,
-            None => false,
-        });
+        element.set_live(settings.real_time_rosbag_playback );
         element.set_format(gst::Format::Time);
     }
 }
