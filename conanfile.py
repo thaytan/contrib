@@ -8,8 +8,6 @@ class GlmConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT License"
     description = "OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications."
-    options = {}
-    default_options = ()
     generators = "env"
     exports_sources = ["glm.pc"]
 
@@ -22,7 +20,3 @@ class GlmConan(ConanFile):
     def package(self):
         self.copy(pattern="*",src="glm/glm", dst=os.path.join(self.package_folder, "include", "glm"), keep_path=True)
         self.copy(pattern="glm.pc", dst=os.path.join(self.package_folder, "lib", "pkgconfig"), keep_path=False)
-
-    def package_info(self):
-        self.cpp_info.name = "glm"
-        self.cpp_info.includedirs = ['include']
