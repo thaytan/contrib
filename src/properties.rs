@@ -2,7 +2,7 @@ use glib::subclass;
 
 use crate::settings::*;
 
-pub(crate) static PROPERTIES: [subclass::Property; 16] = [
+pub(crate) static PROPERTIES: [subclass::Property; 18] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -154,8 +154,26 @@ pub(crate) static PROPERTIES: [subclass::Property; 16] = [
         glib::ParamSpec::boolean(
             name,
             "Perform custom timestamp handling",
-            "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers.",
+            "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers. Does no apply if `do-rs2-timestamp` is enabled.",
             DEFAULT_DO_CUSTOM_TIMESTAMP,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("do-rs2-timestamp", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Utilise rs2 timestamp",
+            "Adds timestamps to all buffers based on the timestamps extracted from librealsense, starting from 0 and monotomically increasing. If used in combination with playing back from rosbag, make sure that property `loop-rosbag=false`. This property has higher priority than `do-rs2-timestamp`.",
+            DEFAULT_DO_RS2_TIMESTAMP,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("real-time-rosbag-playback", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Real Time Rosbag Playback",
+            "Determines whether to stream from the file the same way it was recorded. If set to false, streaming rate will be determined based on the negotiated framerate or it will be as fast as possible if downstream elements are async.",
+            DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
             glib::ParamFlags::READWRITE,
         )
     }),
