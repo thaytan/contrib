@@ -182,7 +182,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("enable-infra2", ..) => {
                 let enable_infra2 = value.get().expect(&format!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -194,7 +193,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("enable-color", ..) => {
                 let enable_color = value.get().expect(&format!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -206,7 +204,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("depth-width", ..) => {
                 let depth_width = value.get().expect(&format!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -218,7 +215,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("depth-height", ..) => {
                 let depth_height = value.get().expect(&format!("Failed to set property `depth-height` on realsensesrc. Expected an int, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -230,7 +226,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("color-width", ..) => {
                 let color_width = value.get().expect(&format!("Failed to set property `color-width` on realsensesrc. Expected an int, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -242,7 +237,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("color-height", ..) => {
                 let color_height = value.get().expect(&format!("Failed to set property `color-height` on realsensesrc. Expected an int, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -254,7 +248,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("framerate", ..) => {
                 let framerate = value.get().expect(&format!("Failed to set property `framerate` on realsensesrc. Expected an int, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -267,7 +260,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("loop-rosbag", ..) => {
                 let loop_rosbag = value.get().expect(&format!("Failed to set property `loop-rosbag` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -279,7 +271,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("wait-for-frames-timeout", ..) => {
                 let wait_for_frames_timeout = value.get().expect(&format!("Failed to set property `wait-for-frames-timeout` on realsensesrc. Expected an int, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -291,7 +282,6 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("include-per-frame-metadata", ..) => {
                 let do_metadata = value.get().expect(&format!("Failed to set property `include-per-frame-metadata` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                ;
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -302,7 +292,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.include_per_frame_metadata = do_metadata;
             }
             subclass::Property("do-custom-timestamp", ..) => {
-                let do_custom_timestamp = value.get().expect(&format!("Failed to set property `do-custom-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                let do_custom_timestamp = value.get().expect(&format!("Failed to set property `do-custom-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -313,7 +303,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.do_custom_timestamp = do_custom_timestamp;
             }
             subclass::Property("do-rs2-timestamp", ..) => {
-                let do_rs2_timestamp = value.get().expect(&format!("Failed to set property `do-rs2-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                let do_rs2_timestamp = value.get().expect(&format!("Failed to set property `do-rs2-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -324,7 +314,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.do_rs2_timestamp = do_rs2_timestamp;
             }
             subclass::Property("real-time-rosbag-playback", ..) => {
-                let real_time_rosbag_playback = value.get().expect(&format!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));;
+                let real_time_rosbag_playback = value.get().expect(&format!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -405,7 +395,10 @@ impl ObjectImpl for RealsenseSrc {
             .expect("Could not lock internals")
             .settings;
 
-        element.set_live(settings.real_time_rosbag_playback );
+        element.set_live(match &settings.serial {
+            Some(_s) => true,
+            None => settings.real_time_rosbag_playback,
+        });
         element.set_format(gst::Format::Time);
     }
 }
