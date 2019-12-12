@@ -239,8 +239,9 @@ impl Pipeline {
     pub fn poll_for_frames(&self) -> Result<Option<Vec<Frame>>, Error> {
         let mut error = Error::default();
         let mut frames: *mut rs2::rs2_frame = std::ptr::null_mut();
-        let ret = unsafe { rs2::rs2_pipeline_poll_for_frames(self.handle, &mut frames, error.inner()) };
-        if error.check(){
+        let ret =
+            unsafe { rs2::rs2_pipeline_poll_for_frames(self.handle, &mut frames, error.inner()) };
+        if error.check() {
             return Err(error);
         };
         if ret == 0 {

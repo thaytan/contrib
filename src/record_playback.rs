@@ -65,13 +65,7 @@ impl Playback {
     /// * `Err(Error)` on failure.
     pub fn set_real_time(&self, enable: bool) -> Result<(), Error> {
         let mut error = Error::default();
-        unsafe {
-            if enable {
-                rs2::rs2_playback_device_set_real_time(self.handle, 1, error.inner())
-            } else {
-                rs2::rs2_playback_device_set_real_time(self.handle, 0, error.inner())
-            }
-        }
+        unsafe { rs2::rs2_playback_device_set_real_time(self.handle, enable as i32, error.inner()) }
         if error.check() {
             Err(error)
         } else {
