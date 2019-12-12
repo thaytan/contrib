@@ -1,0 +1,9 @@
+[build_requires]
+clang/9.0.0@aivero/stable
+env-generator/1.0.0@aivero/stable
+
+[requires]
+librealsense/2.28.1@aivero/stable
+
+[generators]
+env

@@ -303,7 +303,6 @@ impl Frame {
         }
     }
 
-    // TODO: Consider returning slice instead of vector
     /// Retrieve the data from [`Frame`](../frame/struct.Frame.html).
     ///
     /// # Returns
