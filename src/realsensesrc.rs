@@ -30,6 +30,7 @@ use crate::errors::*;
 use crate::properties::*;
 use crate::rs_meta::rs_meta_serialization::*;
 use crate::settings::*;
+use crate::realsense_timestamp_mode::RealsenseTimestampMode;
 use std::time::Duration;
 
 /// A struct representation of the `realsensesrc` element
