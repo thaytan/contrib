@@ -30,6 +30,7 @@ use crate::errors::*;
 use crate::properties::*;
 use crate::rs_meta::rs_meta_serialization::*;
 use crate::settings::*;
+use std::time::Duration;
 
 /// A struct representation of the `realsensesrc` element
 struct RealsenseSrc {
@@ -291,27 +292,16 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.include_per_frame_metadata = do_metadata;
             }
-            subclass::Property("do-custom-timestamp", ..) => {
-                let do_custom_timestamp = value.get().expect(&format!("Failed to set property `do-custom-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));
+            subclass::Property("timestamp-mode", ..) => {
+                let timestamp_mode = value.get::<RealsenseTimestampMode>().expect(&format!("Failed to set property `do-custom-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     self.cat,
                     obj: element,
-                    "Changing property `do-custom-timestamp` from {} to {}",
-                    settings.do_custom_timestamp,
-                    do_custom_timestamp
+                    "Changing property `do-custom-timestamp` from {:?} to {:?}",
+                    settings.timestamp_mode,
+                    timestamp_mode
                 );
-                settings.do_custom_timestamp = do_custom_timestamp;
-            }
-            subclass::Property("do-rs2-timestamp", ..) => {
-                let do_rs2_timestamp = value.get().expect(&format!("Failed to set property `do-rs2-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    self.cat,
-                    obj: element,
-                    "Changing property `do-rs2-timestamp` from {} to {}",
-                    settings.do_rs2_timestamp,
-                    do_rs2_timestamp
-                );
-                settings.do_rs2_timestamp = do_rs2_timestamp;
+                settings.timestamp_mode = timestamp_mode;
             }
             subclass::Property("real-time-rosbag-playback", ..) => {
                 let real_time_rosbag_playback = value.get().expect(&format!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));
@@ -372,10 +362,9 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("include-per-frame-metadata", ..) => {
                 Ok(settings.include_per_frame_metadata.to_value())
             }
-            subclass::Property("do-custom-timestamp", ..) => {
-                Ok(settings.do_custom_timestamp.to_value())
+            subclass::Property("timestamp-mode", ..) => {
+                Ok(settings.timestamp_mode.to_value())
             }
-            subclass::Property("do-rs2-timestamp", ..) => Ok(settings.do_rs2_timestamp.to_value()),
             subclass::Property("real-time-rosbag-playback", ..) => {
                 Ok(settings.real_time_rosbag_playback.to_value())
             }
@@ -521,8 +510,6 @@ impl BaseSrcImpl for RealsenseSrc {
         _length: u32,
     ) -> Result<gst::Buffer, gst::FlowError> {
         let internals = &mut *self.internals.lock().expect("Failed to lock internals");
-        let settings = &internals.settings;
-        let streams = &settings.streams;
         // Get the RealSense pipeline
         let pipeline = match internals.state {
             State::Started { ref pipeline } => pipeline,
@@ -532,41 +519,13 @@ impl BaseSrcImpl for RealsenseSrc {
         };
 
         let frames = pipeline
-            .wait_for_frames(settings.wait_for_frames_timeout)
+            .wait_for_frames(internals.settings.wait_for_frames_timeout)
             .map_err(|_| gst::FlowError::Eos)?;
 
         // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
-        let timestamp = if settings.do_rs2_timestamp {
-            // Base timestamps on librealsense timestamps, div by 1000 to convert to seconds
-            let rs2_timestamp = std::time::Duration::from_secs_f64(
-                frames[0]
-                    .get_timestamp()
-                    .map_err(|_| gst::FlowError::Error)?
-                    / 1000.0,
-            );
-            // Initialise base_time based on first timestamp
-            let base_time = &mut internals.base_time;
-            if base_time.as_nanos() == 0 {
-                *base_time = rs2_timestamp;
-            }
-            // Compute difference between the current and the first timestamp
-            let time_diff = rs2_timestamp
-                .checked_sub(*base_time)
-                .unwrap_or_else(|| unreachable!());
-            Some(gst::ClockTime::from_nseconds(time_diff.as_nanos() as u64))
-        } else if settings.do_custom_timestamp {
-            // This computation is similar to `gst_element_get_current_running_time` that will be
-            // available in 1.18 https://gstreamer.freedesktop.org/documentation/gstreamer/
-            // gstelement.html?gi-language=c#gst_element_get_current_running_time
-            let element_clock = element.get_clock();
-            if let Some(element_clock) = element_clock {
-                Some(element_clock.get_time() - element.get_base_time())
-            } else {
-                None
-            }
-        } else {
-            None
-        };
+        let timestamp = self.get_buffer_timestamp(element,  internals, &frames[0]);
+        let settings = &internals.settings;
+        let streams = &settings.streams;
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
@@ -1284,6 +1243,49 @@ impl RealsenseSrc {
         }
 
         Ok(())
+    }
+
+    fn get_rs2_timestamp(&self, internals: &mut RealsenseSrcInternals, frame: &rs2::frame::Frame) -> Result<Duration, gst::FlowError> {
+        // Base timestamps on librealsense timestamps, div by 1000 to convert to seconds
+        let rs2_timestamp = std::time::Duration::from_secs_f64(
+            frame
+                .get_timestamp()
+                .map_err(|_| gst::FlowError::Error)?
+                / 1000.0,
+        );
+        // Initialise base_time based on first timestamp
+        let base_time = &mut internals.base_time;
+        if base_time.as_nanos() == 0 {
+            *base_time = rs2_timestamp;
+        }
+        // Compute difference between the current and the first timestamp
+        rs2_timestamp.checked_sub(*base_time).ok_or(gst::FlowError::Error)
+    }
+
+    fn get_element_timestamp(&self, element: &gst_base::BaseSrc) -> Option<gst::ClockTime> {
+        // This computation is similar to `gst_element_get_current_running_time` that will be
+        // available in 1.18 https://gstreamer.freedesktop.org/documentation/gstreamer/
+        // gstelement.html?gi-language=c#gst_element_get_current_running_time
+        match element.get_clock() {
+            Some(c) => Some(c.get_time() - element.get_base_time()),
+            None => None,
+        }
+    }
+
+    fn get_buffer_timestamp(&self, element: &gst_base::BaseSrc, internals: &mut RealsenseSrcInternals, frame: &rs2::frame::Frame) -> Option<gst::ClockTime> {
+        match internals.settings.timestamp_mode {
+            RealsenseTimestampMode::RS2 => match self.get_rs2_timestamp(internals, frame) {
+                Ok(ts) => {
+                    Some(gst::ClockTime::from_nseconds(ts.as_nanos() as u64))
+                },
+                Err(_) => {
+                    gst_warning!(self.cat, "Could not get timestamp from librealsense2. Attempting to use GStreamer timestamp instead.");
+                    self.get_element_timestamp(element)
+                }
+            },
+            RealsenseTimestampMode::AllBuffers => self.get_element_timestamp(element),
+            _ => None,
+        }
     }
 }
 
