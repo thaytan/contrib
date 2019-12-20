@@ -15,7 +15,7 @@ pub(crate) const DEFAULT_ENABLE_METADATA: bool = false;
 pub(crate) const DEFAULT_DO_CUSTOM_TIMESTAMP: bool = true;
 
 // Default behaviour for adding custom timestamps to the buffers.
-pub(crate) const DEFAULT_DO_RS2_TIMESTAMP: bool = true;
+pub(crate) const DEFAULT_DO_RS2_TIMESTAMP: bool = false;
 
 // Default behaviour for playing back from rosbag recording.
 pub(crate) const DEFAULT_REAL_TIME_ROSBAG_PLAYBACK: bool = false;
