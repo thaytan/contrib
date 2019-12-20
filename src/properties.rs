@@ -163,7 +163,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 18] = [
         glib::ParamSpec::boolean(
             name,
             "Utilise rs2 timestamp",
-            "Adds timestamps to all buffers based on the timestamps extracted from librealsense, starting from 0 and monotomically increasing. If used in combination with playing back from rosbag, make sure that property `loop-rosbag=false`. This property has higher priority than `do-rs2-timestamp`.",
+            "Adds timestamps to all buffers based on the timestamps extracted from librealsense, starting from 0 and monotonically increasing. If used in combination with playing back from rosbag, make sure that property `loop-rosbag=false`. This property has higher priority than `do-rs2-timestamp`. WARNING: This overrides the default GStreamer timestamping mechanism and should ONLY BE USED IF YOU REALLY KNOW WHAT YOU'RE DOING!",
             DEFAULT_DO_RS2_TIMESTAMP,
             glib::ParamFlags::READWRITE,
         )
