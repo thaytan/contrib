@@ -20,6 +20,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         "videofilter": [True, False],
         "vpx": [True, False],
         "multifile": [True, False],
+        "matroska": [True, False],
+
     }
     default_options = (
         "autodetect=True",
@@ -31,6 +33,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         "videofilter=True",
         "vpx=True",
         "multifile=True",
+        "matroska=True",
     )
     generators = "env"
 
@@ -69,6 +72,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append(
             "-Dmultifile=" + ("enabled" if self.options.multifile else "disabled")
         )
+        args.append("-Dmatroska=" + ("enabled" if self.options.matroska else "disabled"))
+
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args)
         meson.install()
