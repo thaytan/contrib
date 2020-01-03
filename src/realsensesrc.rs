@@ -135,6 +135,9 @@ impl ObjectImpl for RealsenseSrc {
                     serial
                 );
                 settings.serial = serial;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(true);
             }
             subclass::Property("rosbag-location", ..) => {
                 let rosbag_location = value.get::<String>();
@@ -146,6 +149,9 @@ impl ObjectImpl for RealsenseSrc {
                     rosbag_location
                 );
                 settings.rosbag_location = rosbag_location;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(false);
             }
             subclass::Property("json-location", ..) => {
                 let json_location = value.get::<String>();
@@ -389,16 +395,7 @@ impl ObjectImpl for RealsenseSrc {
         let element = obj
             .downcast_ref::<gst_base::BaseSrc>()
             .expect("Could not cast realsensesrc to BaseSrc");
-        let settings = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .settings;
 
-        element.set_live(match &settings.serial {
-            Some(_s) => true,
-            None => settings.real_time_rosbag_playback,
-        });
         element.set_format(gst::Format::Time);
     }
 }
@@ -535,7 +532,6 @@ impl BaseSrcImpl for RealsenseSrc {
             .wait_for_frames(settings.wait_for_frames_timeout)
             .map_err(|_| gst::FlowError::Eos)?;
 
-        // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
         let timestamp = if settings.do_rs2_timestamp {
             // Base timestamps on librealsense timestamps, div by 1000 to convert to seconds
             let rs2_timestamp = std::time::Duration::from_secs_f64(
@@ -555,6 +551,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 .unwrap_or_else(|| unreachable!());
             Some(gst::ClockTime::from_nseconds(time_diff.as_nanos() as u64))
         } else if settings.do_custom_timestamp {
+            // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
             // This computation is similar to `gst_element_get_current_running_time` that will be
             // available in 1.18 https://gstreamer.freedesktop.org/documentation/gstreamer/
             // gstelement.html?gi-language=c#gst_element_get_current_running_time
