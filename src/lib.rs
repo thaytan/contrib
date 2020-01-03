@@ -4,6 +4,8 @@ extern crate glib;
 extern crate gstreamer as gst;
 extern crate gstreamer_base as gst_base;
 extern crate gstreamer_depth_meta as gst_depth_meta;
+#[macro_use]
+extern crate lazy_static;
 
 mod rgbddemux;
 mod rgbdmux;

@@ -25,6 +25,14 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 
+lazy_static! {
+    static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
+        "rgbdmux",
+        gst::DebugColorFlags::empty(),
+        Some("RGB-D Muxer"),
+    );
+}
+
 /// A flag that determines what to do if one of the sink pads does not
 /// receive a buffer within the aggregation deadline. If set to true,
 /// all other buffers will be dropped.
@@ -94,8 +102,6 @@ impl Display for MuxingError {
 
 /// A struct representation of the `rgbdmux` element
 struct RgbdMux {
-    /// The debug category, which may be used to filter output from GStreamer
-    cat: gst::DebugCategory,
     /// List of sink pad names utilised for easy access under a Mutex
     sink_pads: Mutex<Vec<String>>,
     /// Settings based on properties of the element that are under a Mutex
@@ -132,11 +138,6 @@ impl ObjectSubclass for RgbdMux {
 
     fn new() -> Self {
         Self {
-            cat: gst::DebugCategory::new(
-                "rgbdmux",
-                gst::DebugColorFlags::empty(),
-                Some("RGB-D Muxer"),
-            ),
             sink_pads: Mutex::new(Vec::new()),
             settings: Mutex::new(Settings {
                 drop_if_missing: DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
@@ -207,7 +208,7 @@ impl ObjectImpl for RgbdMux {
             subclass::Property("drop-if-missing", ..) => {
                 let drop_if_missing = value.get().expect(&format!("Failed to set property `drop-if-missing` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `drop-if-missing` from {} to {}",
                     settings.drop_if_missing,
@@ -218,7 +219,7 @@ impl ObjectImpl for RgbdMux {
             subclass::Property("deadline-multiplier", ..) => {
                 let deadline_multiplier = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a float, but got: {:?}", value));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `deadline-multiplier` from {} to {}",
                     settings.deadline_multiplier,
@@ -229,7 +230,7 @@ impl ObjectImpl for RgbdMux {
             subclass::Property("drop-to-synchronise", ..) => {
                 let drop_to_synchronise = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `drop-to-synchronise` from {} to {}",
                     settings.drop_to_synchronise,
@@ -240,7 +241,7 @@ impl ObjectImpl for RgbdMux {
             subclass::Property("send-gap-events", ..) => {
                 let send_gap_events = value.get().expect(&format!("Failed to set property `send-gap-events` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `send-gap-events` from {} to {}",
                     settings.send_gap_events,
@@ -288,7 +289,7 @@ impl ElementImpl for RgbdMux {
 
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
-        gst_debug!(self.cat, obj: element, "release_pad: {}", pad_name);
+        gst_debug!(CAT, obj: element, "release_pad: {}", pad_name);
         self.sink_pads
             .lock()
             .expect("Could not lock sink pads")
@@ -333,7 +334,7 @@ impl AggregatorImpl for RgbdMux {
         // Mux all buffers to a single output buffer.
         let output_buffer = self.mux_buffers(aggregator, sink_pad_names);
 
-        gst_debug!(self.cat, obj: aggregator, "A frameset was muxed.");
+        gst_debug!(CAT, obj: aggregator, "A frameset was muxed.");
 
         // Finish the buffer if all went fine
         self.finish_buffer(aggregator, output_buffer)
@@ -357,7 +358,7 @@ impl AggregatorImpl for RgbdMux {
             Some(name) if name.starts_with("sink_") => {
                 let sink_pads = &mut self.sink_pads.lock().expect("Could not lock sink pads");
                 gst_debug!(
-                    self.cat,
+                    CAT,
                     obj: aggregator,
                     "create_new_pad for name: {}",
                     name
@@ -402,7 +403,7 @@ impl AggregatorImpl for RgbdMux {
             }
             _ => {
                 gst_error!(
-                    self.cat,
+                    CAT,
                     obj: aggregator,
                     "Invalid request pad name. Only sink pads may be requested."
                 );
@@ -422,7 +423,7 @@ impl AggregatorImpl for RgbdMux {
         aggregator: &gst_base::Aggregator,
         _caps: &gst::Caps,
     ) -> Result<gst::Caps, gst::FlowError> {
-        gst_debug!(self.cat, "update_src_caps");
+        gst_debug!(CAT, "update_src_caps");
         // Check how many sink pads has been created
         let no_sink_pads = {
             self.sink_pads
@@ -445,7 +446,7 @@ impl AggregatorImpl for RgbdMux {
     ///* `_caps` - (not used) The CAPS that is currently negotiated for the element.
     fn fixate_src_caps(&self, aggregator: &gst_base::Aggregator, _caps: gst::Caps) -> gst::Caps {
         let elm = aggregator.upcast_ref::<gst::Element>();
-        gst_debug!(self.cat, obj: elm, "fixate_src_caps");
+        gst_debug!(CAT, obj: elm, "fixate_src_caps");
         self.get_current_downstream_caps(elm)
     }
 
@@ -486,7 +487,7 @@ impl AggregatorImpl for RgbdMux {
         event: gst::Event,
     ) -> bool {
         use gst::EventView;
-        gst_debug!(self.cat, obj: aggregator, "Got a new event: {:?}", event);
+        gst_debug!(CAT, obj: aggregator, "Got a new event: {:?}", event);
 
         match event.view() {
             _ => {
@@ -582,7 +583,7 @@ impl RgbdMux {
             // Check whether the aggregator pad has a buffer available
             if !sink_pad.has_buffer() {
                 gst_warning!(
-                    self.cat,
+                    CAT,
                     obj: aggregator,
                     "No buffer is queued on `{}` pad. Dropping all other buffers.",
                     sink_pad_name
@@ -670,7 +671,7 @@ impl RgbdMux {
             .previous_timestamp = gst::CLOCK_TIME_NONE;
 
         gst_warning!(
-            self.cat,
+            CAT,
             obj: aggregator,
             "Dropped buffers to synchronise the streams"
         );
@@ -725,7 +726,7 @@ impl RgbdMux {
         let mut main_buffer = Self::get_tagged_buffer(aggregator, &sink_pad_names[0])
             .unwrap_or_else(|_e| {
                 gst_warning!(
-                    self.cat,
+                    CAT,
                     obj: aggregator,
                     "No buffer is queued on main `{}` pad. Leaving the buffer empty.",
                     sink_pad_names[0]
@@ -752,7 +753,7 @@ impl RgbdMux {
             // Check whether a buffer was received, otherwise skip
             if buffer.is_err() {
                 gst_warning!(
-                    self.cat,
+                    CAT,
                     obj: aggregator,
                     "No buffer is queued on `{}` pad. No corresponding buffer will be attached to the main buffer.",
                     sink_pad_name
@@ -785,7 +786,7 @@ impl RgbdMux {
         )
         .build();
         if !aggregator.send_event(gap_event) {
-            gst_error!(self.cat, obj: aggregator, "Failed to send gap event");
+            gst_error!(CAT, obj: aggregator, "Failed to send gap event");
         }
     }
 
@@ -845,7 +846,7 @@ impl RgbdMux {
                 }
                 _ => {
                     gst_info!(
-                        self.cat,
+                        CAT,
                         "Ignored CAPS field {} of stream {}",
                         field,
                         stream_name,
@@ -908,7 +909,7 @@ impl RgbdMux {
         }
 
         gst_info!(
-            self.cat,
+            CAT,
             obj: element,
             "stream_caps were found to be: {:?}.",
             downstream_caps
@@ -923,14 +924,14 @@ impl RgbdMux {
     /// * `element` - The element that represents the `rgbdmux`.
     #[inline]
     fn renegotiate_downstream_caps(&self, element: &gst::Element) {
-        gst_debug!(self.cat, obj: element, "renegotiate_downstream_caps");
+        gst_debug!(CAT, obj: element, "renegotiate_downstream_caps");
         // Figure out the new caps the element should output
         let ds_caps = self.get_current_downstream_caps(element);
         // And send a CAPS event downstream
         let caps_event = gst::Event::new_caps(&ds_caps).build();
         if !element.send_event(caps_event) {
             gst_error!(
-                self.cat,
+                CAT,
                 obj: element,
                 "Failed to send CAPS negotiation event"
             );
