@@ -1,4 +1,4 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import ConanFile, Meson, tools
 
 class OrcConan(ConanFile):
     name = "orc"
@@ -11,18 +11,18 @@ class OrcConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/orc/archive/%s.tar.gz" % self.version)
 
     def build(self):
-        args = ["--disable-gtk-doc"]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run("./autogen.sh " + " ".join(args))
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.install()
+        args = ["-Dgtk_doc=disabled"]
+        args.append("-Dbenchmarks=disabled")
+        args.append("-Dexamples=disabled")
+        meson = Meson(self)
+        meson.configure(source_folder="orc-" + self.version, args=args)
+        meson.install()
 
     def package(self):
         if self.settings.build_type == "Debug":
