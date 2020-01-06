@@ -1,16 +1,8 @@
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "0.4.29"
-    except:
-        return None
-
 class OrcConan(ConanFile):
     name = "orc"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "0.4.31")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
