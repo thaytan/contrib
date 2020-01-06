@@ -3,17 +3,9 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.9.9"
-    except:
-        return None
-
 class Libxml2Conan(ConanFile):
     name = "libxml2"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.9.10")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
