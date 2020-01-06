@@ -1,7 +1,7 @@
 pub(crate) use crate::d400_limits::*;
 pub(crate) use crate::enabled_streams::EnabledStreams;
-pub(crate) use rs2::stream_profile::StreamResolution;
 use crate::realsense_timestamp_mode::RealsenseTimestampMode;
+pub(crate) use rs2::stream_profile::StreamResolution;
 
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 pub(crate) const DEFAULT_LOOP_ROSBAG: bool = true;

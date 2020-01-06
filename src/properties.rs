@@ -1,8 +1,7 @@
-use glib::{subclass};
+use glib::subclass;
 
+use crate::realsense_timestamp_mode::realsense_timestamp_mode_get_type;
 use crate::settings::*;
-use crate::realsense_timestamp_mode::{realsense_timestamp_mode_get_type};
-
 
 pub(crate) static PROPERTIES: [subclass::Property; 17] = [
     subclass::Property("serial", |name| {
@@ -147,7 +146,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 17] = [
         glib::ParamSpec::boolean(
             name,
             "Include Per Frame Metadata",
-            "Adds librealsense2's per-frame metadata as an additional buffer on the video stream.",
+            "Attempts to include librealsense2's per-frame metadata as an additional buffer on the main buffer. Per-frame metadata is silently ignored if it cannot be fetched from the librealsense2 frames.",
             DEFAULT_ENABLE_METADATA,
             glib::ParamFlags::READWRITE,
         )
