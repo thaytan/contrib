@@ -1,17 +1,9 @@
 from conans import ConanFile, Meson, tools
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.16.0"
-    except:
-        return None
-
 class GStreamerConan(ConanFile):
     name = "gstreamer"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.16.2")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A framework for streaming media"
     license = "LGPL"
