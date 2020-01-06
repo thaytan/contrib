@@ -75,7 +75,7 @@ impl ObjectSubclass for RealsenseSrc {
             "video/rgbd",
             &[
                 // List of available streams meant for indicating their respective priority
-                ("streams", &"depth,infra1,infra2,color"),
+                ("streams", &"depth,infra1,infra2,color,depthmeta,infra1meta,infra2meta,colormeta"),
                 (
                     "framerate",
                     &gst::FractionRange::new(
@@ -632,6 +632,9 @@ impl BaseSrcImpl for RealsenseSrc {
                 );
                 s.set("depth_width", &settings.streams.depth_resolution.width);
                 s.set("depth_height", &settings.streams.depth_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"depthmeta,");
+                }
             }
             if settings.streams.enabled_streams.infra1 {
                 // Add `infra1` stream with its format, width and height into the caps if enabled
@@ -639,6 +642,9 @@ impl BaseSrcImpl for RealsenseSrc {
                 s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_string());
                 s.set("infra1_width", &settings.streams.depth_resolution.width);
                 s.set("infra1_height", &settings.streams.depth_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"infra1meta,");
+                }
             }
             if settings.streams.enabled_streams.infra2 {
                 // Add `infra2` stream with its format, width and height into the caps if enabled
@@ -646,6 +652,9 @@ impl BaseSrcImpl for RealsenseSrc {
                 s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_string());
                 s.set("infra2_width", &settings.streams.depth_resolution.width);
                 s.set("infra2_height", &settings.streams.depth_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"infra2meta,");
+                }
             }
             if settings.streams.enabled_streams.color {
                 // Add `color` stream with its format, width and height into the caps if enabled
@@ -653,6 +662,9 @@ impl BaseSrcImpl for RealsenseSrc {
                 s.set("color_format", &gst_video::VideoFormat::Rgb.to_string());
                 s.set("color_width", &settings.streams.color_resolution.width);
                 s.set("color_height", &settings.streams.color_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"colormeta,");
+                }
             }
 
             // Pop the last ',' contained in streams (not really necessary, but nice)
@@ -961,13 +973,6 @@ impl RealsenseSrc {
         // Determine whether any of the previous streams is enabled
         let is_earlier_stream_enabled = previous_streams.iter().any(|s| *s);
 
-        // Check if we should attach RealSense per-frame meta and do that if so
-        if settings.include_per_frame_metadata {
-            // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
-            let md = self.get_frame_meta(frame)?;
-            self.add_per_frame_metadata(&mut buffer, md, tag, timestamp, frame_duration);
-        }
-
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_earlier_stream_enabled {
             // Attach this new buffer as meta to the output buffer
@@ -987,6 +992,13 @@ impl RealsenseSrc {
                     .expect("Could not get mutable reference to `output_buffer`"),
                 &mut tags,
             );
+        }
+
+        // Check if we should attach RealSense per-frame meta and do that if so
+        if settings.include_per_frame_metadata {
+            // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
+            let md = self.get_frame_meta(frame)?;
+            self.add_per_frame_metadata(output_buffer, md, tag, timestamp, frame_duration);
         }
 
         Ok(())
