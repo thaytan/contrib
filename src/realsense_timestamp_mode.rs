@@ -20,7 +20,7 @@ impl glib::translate::FromGlib<i32> for RealsenseTimestampMode {
             0 => RealsenseTimestampMode::Default,
             1 => RealsenseTimestampMode::AllBuffers,
             2 => RealsenseTimestampMode::RS2,
-            _ => unreachable!(),
+            _ => unreachable!("Invalid RealsenseTimestampMode, options are: 0 (default), 1 (all-buffers) or 2 (RS2)"),
         }
     }
 }
