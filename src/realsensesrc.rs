@@ -302,7 +302,8 @@ impl ObjectImpl for RealsenseSrc {
                 settings.include_per_frame_metadata = do_metadata;
             }
             subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode = value.get::<RealsenseTimestampMode>().expect(&format!("Failed to set property `do-custom-timestamp` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let timestamp_mode = value.get::<RealsenseTimestampMode>()
+                    .expect(&format!("Failed to set property `timestamp-mode` on realsensesrc. Expected a i32 or RealsenseTimestampMode variant, but got: {:?}", value));
                 gst_info!(
                     self.cat,
                     obj: element,
