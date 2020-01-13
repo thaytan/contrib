@@ -9,7 +9,7 @@ class MesaConan(ConanFile):
     license = "custom"
     description = "An open-source implementation of the OpenGL specification"
     options = {"x11": [True, False]}
-    default_options = ("x11=True",)
+    default_options = ("x11=True", )
     generators = "env"
 
     def build_requirements(self):
@@ -33,7 +33,8 @@ class MesaConan(ConanFile):
         self.requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://mesa.freedesktop.org/archive/mesa-%s.tar.xz" % self.version)
+        tools.get("https://mesa.freedesktop.org/archive/mesa-%s.tar.xz" %
+                  self.version)
 
     def build(self):
         args = [
@@ -44,6 +45,7 @@ class MesaConan(ConanFile):
             "-Degl=true",
             "-Dgles1=false",
             "-Dgles2=true",
+            "-Dgles3=true",
             "-Dplatforms=x11",
             "-Dvulkan-drivers=",
             "-Dgallium-drivers=",
@@ -53,5 +55,6 @@ class MesaConan(ConanFile):
         if self.settings.arch == "armv8":
             args.append("-Dgallium-drivers=nouveau,tegra")
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
+        meson.configure(source_folder="%s-%s" % (self.name, self.version),
+                        args=args)
         meson.install()
