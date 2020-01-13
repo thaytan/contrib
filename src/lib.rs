@@ -30,5 +30,5 @@ gst_plugin_define!(
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_REPOSITORY"),
-    "2019-03-25"
+    "2017-12-01"
 );
