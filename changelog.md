@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.9] - 2020-01-03
+
+### Changed
+
+- Updated rust compiler from 1.38.0 to 1.40.0
+
+### Patched
+
+- `realsensesrc` now correctly sets the LIVE-mode to false when playing from ROSBAG.
+
+## [0.1.8] - 2019-12-20
+
+### Changed
+
+- `do-rs2-timestamp` now defaults to `false`, as it proved troublesome. It is thus treated as an advanced options from now on.
+
+## [0.1.7] - 2019-12-12
+
 ### Added
 - `do-rs2-timestamp` property that stamps all buffers with timestamps from `librealsense`, starting from 0 and monotomically increasing. If enabled, this property has higher priority than `do-custom-timestamp`. If used in combination with playing back from rosbag, make sure that property `loop-rosbag=false`. If set to false, behaviour is identical to previous versions.
 - `real-time-rosbag-playback` property that makes playback from rosbag behave as a real-time live source. If set to false, playback from rosbag is independent from real-time and allows arbitrary rate of playback, if downstream element(s) have `sync=false`. If set to true, behaviour is identical to previous versions.
