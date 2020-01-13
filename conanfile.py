@@ -2,11 +2,12 @@ import os
 
 from conans import ConanFile, tools
 
+driver_map = {"10.1.243": "418.87.00"}
+
 
 class CudaConan(ConanFile):
     name = "cuda"
     version = tools.get_env("GIT_TAG", "10.1.243")
-    version_driver = "418.87.00"
     description = "NVIDIA's GPU programming toolkit"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
@@ -21,23 +22,22 @@ class CudaConan(ConanFile):
     def source(self):
         tools.download(
             "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_%s_%s_linux.run"
-            % (self.version, self.version_driver),
-            filename="cuda_%s_%s_linux.run" %
-            (self.version, self.version_driver))
+            % (self.version, driver_map[self.version]),
+            filename="cuda_%s_linux.run" % self.version)
 
     def build(self):
         self.run(
-            "sh cuda_%s_%s_linux.run --silent --override-driver-check --extract=\"%s\""
-            % (self.version, self.version_driver, self.build_folder))
+            "sh cuda_%s_linux.run --silent --override-driver-check --extract=\"%s\""
+            % (self.version, self.build_folder))
         tools.rmdir("cublas")
         tools.rmdir("cuba-samples")
-        os.remove("cuda_%s_%s_linux.run" % (self.version, self.version_driver))
-        os.remove("NVIDIA-Linux-x86_64-%s.run" % self.version_driver)
+        os.remove("cuda_%s_linux.run" % self.version)
+        os.remove("NVIDIA-Linux-x86_64-%s.run" % driver_map[self.version])
 
     def package(self):
         for toolkit in ("cuda-toolkit", "cuda-toolkit/nvvm"):
             self.copy("*", dst="bin", src="%s/bin" % toolkit)
-            self.copy("*", dst="lib64", src="%s/lib64" % toolkit)
+            self.copy("*", dst="lib", src="%s/lib64" % toolkit)
             self.copy("*", dst="include", src="%s/include" % toolkit)
         self.copy("*.bc", src="cuda-toolkit")
         self.copy(pattern="*.pc", dst="lib/pkgconfig")
