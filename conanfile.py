@@ -3,6 +3,7 @@
 
 from conans import ConanFile, tools
 import os
+from datetime import datetime
 
 def get_version():
     git = tools.Git()
@@ -11,6 +12,13 @@ def get_version():
         return tag if tag and branch.startswith("HEAD") else branch
     except:
         return None
+
+def make_cargo_version(version_string):
+    try:
+        version = tools.Version(version_string, loose=False)
+        return "%d.%d.%d" % (version.major, version.minor, version.patch)
+    except:
+        return "0.0.0-nottagged"
 
 
 class RgbdConan(ConanFile):
@@ -25,6 +33,15 @@ class RgbdConan(ConanFile):
         "src/*",
     ]
     generators = "env"
+
+    def source(self):
+        # Override the version supplied to GStreamer, as specified in lib.rs
+        tools.replace_path_in_file(file_path="src/lib.rs", search="\"2017-12-01\"",
+                                   replace=("\"%s\"" % datetime.now().strftime("%Y-%m-%d")))
+        # Override the package version defined in the Cargo.toml file
+        tools.replace_path_in_file(file_path="Cargo.toml", search=(
+                    "[package]\nname = \"%s\"\nversion = \"0.0.0-ohmyconanpleaseoverwriteme\"" % self.name), replace=(
+                    "[package]\nname = \"%s\"\nversion = \"%s\"" % (self.name, make_cargo_version(self.version))))
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)

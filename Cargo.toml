@@ -1,6 +1,6 @@
 [package]
 name = "gst-rgbd"
-version = "0.1.5"
+version = "0.0.0-ohmyconanpleaseoverwriteme" # Overwritten during conan create.
 authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
 license = "LGPL"
 description = "GStreamer plugin for demuxing and muxing `video/rgbd` streams"
