@@ -2,11 +2,27 @@ import os
 
 from conans import ConanFile, Meson, tools
 
+def get_upper_version_bound(version, version_diff="0.1.0"):
+    try:
+        v = tools.Version(version)
+    except:
+        print("Input version is not a valid SemVer")
+    try:
+        v_diff = tools.Version(version_diff)
+        version_out = "%d.%d.%d" % ((int(v.major) + int(v_diff.major)),(int(v.minor) + int(v_diff.minor)), (int(v.patch) + int(v_diff.patch)))
+        if v.prerelease:
+            version_out = version_out + "-" + v.prerelease
+        elif v_diff.prerelease:
+            version_out = version_out + "-" + v_diff.prerelease
+        return version_out
+    except Exception as e:
+        print(e)
+        print("Version diff is not a valid SemVer")
 
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
     version = tools.get_env("GIT_TAG", "1.16.0")
-    version_upper_bound = "1.17.0"
+    version_upper_bound = get_upper_version_bound(version)
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
