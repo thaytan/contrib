@@ -6,6 +6,7 @@ from conans import ConanFile, Meson, tools
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
     version = tools.get_env("GIT_TAG", "1.16.0")
+    version_upper_bound = "1.17.0"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
@@ -50,7 +51,7 @@ class GStreamerPluginsBaseConan(ConanFile):
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.requires("gstreamer/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer/[>=%s <%s]@%s/stable" % (self.version, self.version_upper_bound, self.user))
         if self.options.orc:
             self.requires("orc/[>=0.4.29]@%s/stable" % self.user)
         if self.options.opus:
