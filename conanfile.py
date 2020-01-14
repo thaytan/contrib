@@ -1,7 +1,22 @@
 import os
-
 from conans import ConanFile, Meson, tools
 
+def get_upper_version_bound(version, version_diff):
+    try:
+        v = tools.Version(version)
+    except:
+        print("Input version is not a valid SemVer")
+    try:
+        v_diff = tools.Version(version_diff)
+        version_out = "%d.%d.%d" % ((int(v.major) + int(v_diff.major)),(int(v.minor) + int(v_diff.minor)), (int(v.patch) + int(v_diff.patch)))
+        if v.prerelease:
+            version_out = version_out + "-" + v.prerelease
+        elif v_diff.prerelease:
+            version_out = version_out + "-" + v_diff.prerelease
+        return version_out
+    except Exception as e:
+        print(e)
+        print("Version diff is not a valid SemVer")
 
 class LibNiceConan(ConanFile):
     name = "libnice"
@@ -22,7 +37,8 @@ class LibNiceConan(ConanFile):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
         if self.options.gstreamer:
-            self.requires("gstreamer-plugins-base/[>=1.16.0]@%s/stable" % self.user)
+            gst_version = "1.16.0"
+            self.requires("gstreamer-plugins-base/[>=%s <%s]@%s/stable" % (gst_version,get_upper_version_bound(gst_version, "0.1.0"), self.user))
 
     def source(self):
         tools.get("https://github.com/libnice/libnice/archive/%s.tar.gz" % self.version)
