@@ -1,16 +1,9 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.13"
-    except:
-        return None
 
 class XcbProtoConan(ConanFile):
     name = "xcb-proto"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.13")
     description = "XML-XCB protocol descriptions"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
@@ -18,10 +11,8 @@ class XcbProtoConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xcb.freedesktop.org/dist/xcb-proto-%s.tar.bz2" % self.version)
