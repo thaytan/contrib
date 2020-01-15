@@ -11,6 +11,8 @@ def replace_prefix_in_pc_file(pc_file, prefix):
         old_prefix = ""
         # Get old prefix
         for l in f:
+            if l == "prefix=":
+                return f.read().replace("prefix=", "prefix=%s".format(prefix))
             if "prefix=" in l:
                 old_prefix = l.split("=")[1][:-1]
                 break
@@ -46,14 +48,12 @@ class env(Generator):
             pc_paths = [
                 os.path.join(cpp_info.rootpath, "lib", "pkgconfig"),
                 os.path.join(cpp_info.rootpath, "share", "pkgconfig"),
-               ]
+            ]
             for pc_path in pc_paths:
                 if not os.path.isdir(pc_path):
                     continue
                 for pc in os.listdir(pc_path):
-                    files[pc] = replace_prefix_in_pc_file(
-                        os.path.join(pc_path, pc), cpp_info.rootpath
-                    )
+                    files[pc] = replace_prefix_in_pc_file(os.path.join(pc_path, pc), cpp_info.rootpath)
 
         # Generate pc files from PKG_CONFIG_SYSTEM_PATH
         if hasattr(self.conanfile, "system_pcs") and "PKG_CONFIG_SYSTEM_PATH" in os.environ:
@@ -69,18 +69,13 @@ class env(Generator):
                     with open(os.path.join(pc_path, pc), "r") as pc_file:
                         files[pc] = pc_file.read()
             if len(system_pcs):
-                raise Exception(
-                    "'%s' not available in system pkg-config directories"
-                    % ", ".join(system_pcs)
-                )
+                raise Exception("'%s' not available in system pkg-config directories" % ", ".join(system_pcs))
 
         # Set environment from env_info
         for var, val in self.conanfile.env.items():
             if isinstance(val, str):
                 val = [val]
-            files["env.sh"] += 'export {0}={1}:"${0}"\n'.format(
-                var, os.pathsep.join('"%s"' % p for p in val)
-            )
+            files["env.sh"] += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
 
         return files
 
@@ -103,9 +98,7 @@ class tools(Generator):
         for var, val in self.env.items():
             if isinstance(val, str):
                 val = [val]
-            env_vars += 'export {0}={1}:"${0}"\n'.format(
-                var, os.pathsep.join('"%s"' % p for p in val)
-            )
+            env_vars += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
 
         # Find rootpath
         # 'dependencies' is not indexable
