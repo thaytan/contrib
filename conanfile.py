@@ -1,17 +1,9 @@
 from conans import CMake, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "3.3"
-    except:
-        return None
-
 class GlfwcConan(ConanFile):
-    version = get_version()
     name = "glfw"
+    version = tools.get_env("GIT_TAG", "3.3")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop."
     license = "ZLIB"
@@ -19,17 +11,15 @@ class GlfwcConan(ConanFile):
     options = {
         "x11": [True, False],
     }
-    default_options = (
-        "x11=True",
-    )
+    default_options = ("x11=True", )
     exports = "fix-x11-exts.patch"
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         if self.options.x11:
             self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
             self.requires("libxrandr/[>=1.5.2]@%s/stable" % self.user)
