@@ -1,17 +1,9 @@
 from conans import CMake, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "4.3.1"
-    except:
-        return None
-
 class LibzmqConan(ConanFile):
     name = "libzmq"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "4.3.1")
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL"
@@ -19,10 +11,8 @@ class LibzmqConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/zeromq/libzmq/archive/v%s.tar.gz" % self.version)
