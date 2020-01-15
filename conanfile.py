@@ -3,31 +3,14 @@
 from conans import ConanFile, CMake, tools
 
 def get_version():
-    git = tools.Git()
     try:
-        if git.get_tag():
-            return git.get_tag()
-        else:
-            return git.get_branch()
+        git = tools.Git()
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
     except:
-        return None
+        return tools.get_env("GIT_BRANCH", "master")
 
-def get_upper_version_bound(version, version_diff="0.1.0"):
-    try:
-        v = tools.Version(version)
-    except:
-        print("Input version is not a valid SemVer")
-    try:
-        v_diff = tools.Version(version_diff)
-        version_out = "%d.%d.%d" % ((int(v.major) + int(v_diff.major)),(int(v.minor) + int(v_diff.minor)), (int(v.patch) + int(v_diff.patch)))
-        if v.prerelease:
-            version_out = version_out + "-" + v.prerelease
-        elif v_diff.prerelease:
-            version_out = version_out + "-" + v_diff.prerelease
-        return version_out
-    except Exception as e:
-        print(e)
-        print("Version diff is not a valid SemVer")
+
 
 class DepthMetaConan(ConanFile):
     name = "gstreamer-depth-meta"
@@ -44,10 +27,9 @@ class DepthMetaConan(ConanFile):
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+
         gst_version = "1.16.0"
-        gst_upper_version_bound = get_upper_version_bound(gst_version)
-        # self.requires("gstreamer/[>=%s <%s]@%s/stable" % (gst_version, gst_upper_version_bound, self.user))
-        self.requires("gstreamer-plugins-base/[>=%s <%s]@%s/stable" % (gst_version, gst_upper_version_bound, self.user))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (gst_version, self.user))
 
     def build(self):
         env = {
