@@ -50,7 +50,7 @@ class GStreamerPluginsBaseConan(ConanFile):
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/%s" % (self.gst_version, self.user, self.get_channel))
+        self.requires("gstreamer/%s@%s/%s" % (self.gst_version, self.user, self.gst_channel))
         if self.options.orc:
             self.requires("orc/[>=0.4.29]@%s/stable" % self.user)
         if self.options.opus:
