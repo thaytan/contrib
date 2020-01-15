@@ -1,9 +1,11 @@
-from conans import ConanFile, Meson, tools
 import os
+
+from conans import ConanFile, Meson, tools
+
 
 class GStreamerConan(ConanFile):
     name = "gstreamer"
-    version = tools.get_env("GIT_TAG", "1.16.2")
+    version = tools.get_env("GIT_TAG", "master")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A framework for streaming media"
     license = "LGPL"
@@ -25,7 +27,7 @@ class GStreamerConan(ConanFile):
         self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
         self.build_requires("flex/[>=2.6.4]@%s/stable" % self.user)
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user,)
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user, )
 
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
@@ -42,11 +44,6 @@ class GStreamerConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
