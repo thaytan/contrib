@@ -1,13 +1,6 @@
 from conans import ConanFile, tools
 from conans.model import Generator
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "0.1"
-    except:
-        return None
 
 class ConanCargoWrapper(Generator):
     @property
@@ -24,6 +17,7 @@ pub const LIB_PATHS: &'static [ &'static str ] = &[%(lib_paths)s];
 pub const LIBS: &'static [ &'static str ] = &[%(libs)s];
 pub const INCLUDE_PATHS: &'static [ &'static str ] = &[%(include_paths)s];
 '''
+
         def append_to_template(line):
             return template.replace("}", "    %s\n}" % line)
 
@@ -42,15 +36,17 @@ pub const INCLUDE_PATHS: &'static [ &'static str ] = &[%(include_paths)s];
             new = 'println!(r#"cargo:include=%s"#);' % lib
             template = append_to_template(new)
 
-        template = template % {"lib_paths": comma_separate(self.deps_build_info.lib_paths),
-                               "libs": comma_separate(self.deps_build_info.libs) ,
-                               "include_paths": comma_separate(self.deps_build_info.include_paths)  }
+        template = template % {
+            "lib_paths": comma_separate(self.deps_build_info.lib_paths),
+            "libs": comma_separate(self.deps_build_info.libs),
+            "include_paths": comma_separate(self.deps_build_info.include_paths)
+        }
         return template
 
 
 class CargoGeneratorPackage(ConanFile):
     name = "ConanCargoWrapper"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "0.1")
     url = "https://github.com/lasote/conan-cargo-wrapper"
     description = "Cargo integration generator"
     license = "MIT"
