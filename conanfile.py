@@ -1,28 +1,9 @@
 import os
 from conans import ConanFile, Meson, tools
 
-def get_upper_version_bound(version, version_diff="0.1.0"):
-    try:
-        v = tools.Version(version)
-    except:
-        print("Input version is not a valid SemVer")
-    try:
-        v_diff = tools.Version(version_diff)
-        version_out = "%d.%d.%d" % ((int(v.major) + int(v_diff.major)),(int(v.minor) + int(v_diff.minor)), (int(v.patch) + int(v_diff.patch)))
-        if v.prerelease:
-            version_out = version_out + "-" + v.prerelease
-        elif v_diff.prerelease:
-            version_out = version_out + "-" + v_diff.prerelease
-        return version_out
-    except Exception as e:
-        print(e)
-        print("Version diff is not a valid SemVer")
-
-
 class GStreamerPluginsBadConan(ConanFile):
     name = "gstreamer-plugins-bad"
     version = tools.get_env("GIT_TAG", "1.16.2")
-    upper_version_bound = get_upper_version_bound(version)
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
@@ -77,7 +58,7 @@ class GStreamerPluginsBadConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/[>=%s <%s]@%s/stable" % (self.version, self.upper_version_bound, self.user))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
         if self.options.webrtc:
             self.requires("libnice/[>=0.1.15]@%s/stable" % self.user)
         if self.options.srtp:
