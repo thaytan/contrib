@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
     version = tools.get_env("GIT_TAG", "1.16.0")
-    version_upper_bound = get_upper_version_bound(version)
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
