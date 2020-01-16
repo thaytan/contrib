@@ -3,17 +3,9 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.34.0"
-    except:
-        return None
-
 class AtSpi2CoreConan(ConanFile):
     name = "at-spi2-core"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.34.0")
     description = "Protocol definitions and daemon for D-Bus at-spi"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL2"
@@ -21,10 +13,10 @@ class AtSpi2CoreConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("dbus/[>=1.12.16]@%s/stable" % self.user)
 
