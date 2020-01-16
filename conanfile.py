@@ -1,24 +1,19 @@
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.6.37"
-    except:
-        return None
 
 class LibpngConan(ConanFile):
     name = "libpng"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.6.37")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "A collection of routines used to create PNG format graphics files"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
@@ -31,8 +26,3 @@ class LibpngConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
