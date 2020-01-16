@@ -1,24 +1,17 @@
-from conans import ConanFile, tools, Meson
+from conans import ConanFile, Meson, tools
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "3.1"
-    except:
-        return None
 
 class GperfConan(ConanFile):
     name = "gperf"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "3.1")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://github.com/prozum/conan-libffi"
     license = "GPL3"
     description = "A portable, high level programming interface to various calling conventions"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+    def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git("%s-%s" % (self.name, self.version))
@@ -28,8 +21,3 @@ class GperfConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="%s-%s" % (self.name, self.version))
         meson.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
