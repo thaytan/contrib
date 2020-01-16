@@ -1,17 +1,11 @@
-from conans import ConanFile, CMake, tools
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "4.3.0"
-    except:
-        return None
+from conans import CMake, ConanFile, tools
+
 
 class CppzmqConan(ConanFile):
     name = "cppzmq"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "4.3.0")
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
@@ -19,10 +13,10 @@ class CppzmqConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libzmq/[>=4.3.1]@%s/stable" % self.user)
 
     def source(self):
@@ -34,9 +28,6 @@ class CppzmqConan(ConanFile):
         cmake.install()
 
     def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.cpp", "src")
-            self.copy("*.hpp", "src")
         os.makedirs(os.path.join(self.package_folder, "lib", "pkgconfig"))
         with open(os.path.join(self.package_folder, "lib", "pkgconfig", "cppzmq.pc"), "w+") as pc_file:
             pc_file.write("prefix=%s\n" % self.package_folder)
