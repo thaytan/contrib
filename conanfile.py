@@ -4,17 +4,9 @@ from os import path, remove
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.10.1"
-    except:
-        return None
-
 class FreetypeNoHarfbuzzConan(ConanFile):
     name = "freetype-no-harfbuzz"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.10.1")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
@@ -22,10 +14,8 @@ class FreetypeNoHarfbuzzConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-%s.tar.gz" % self.version.replace(".", "-"))
