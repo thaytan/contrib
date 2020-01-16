@@ -4,17 +4,9 @@ from os import path, remove
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.6.1"
-    except:
-        return None
-
 class HarfbuzzConan(ConanFile):
     name = "harfbuzz"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.6.1")
     license = "Old MIT"
     description = "HarfBuzz text shaping engine"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
@@ -22,11 +14,11 @@ class HarfbuzzConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("freetype-no-harfbuzz/[>=2.10.1]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
@@ -34,7 +26,7 @@ class HarfbuzzConan(ConanFile):
 
     def build(self):
         args = ["--disable-static"]
-        with tools.chdir("%s-%s" % (self.name , self.version)):
+        with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
