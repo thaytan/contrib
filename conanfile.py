@@ -6,7 +6,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class FontconfigConan(ConanFile):
     name = "fontconfig"
-    version = tools.get_env("GIT_TAG", "2.13.1")
+    version = tools.get_env("GIT_TAG", "2.13.92")
     license = "Old MIT"
     description = "A library for configuring and customizing font access"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
@@ -33,6 +33,17 @@ class FontconfigConan(ConanFile):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()
+
+    def package(self):
+        with tools.chdir(self.package_folder + "/etc/fonts/conf.d"):
+            for root, dirs, files in os.walk("."):
+                for filename in files:
+                    os.remove(filename)
+
+        with tools.chdir(self.package_folder + "/etc/fonts/conf.d"):
+            for root, dirs, files in os.walk(self.package_folder + "/share/fontconfig/conf.avail"):
+                for filename in files:
+                    os.symlink("../../../share/fontconfig/conf.avail/" + filename, filename)
 
     def package_info(self):
         self.env_info.FONTCONFIG_PATH.append(
