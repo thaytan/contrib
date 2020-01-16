@@ -18,6 +18,8 @@ gstreamer-video = "0.14"
 gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", tag="0.2.1" }
 librealsense2 = { git = "https://gitlab.com/aivero/public/librealsense-rs", tag="1.0.1" }
 capnp = { version = "0.10.1" }
+lazy_static = "1.4.0"
+
 
 [build-dependencies.capnpc]
 capnpc = { version = "0.10" }
