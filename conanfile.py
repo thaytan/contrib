@@ -3,17 +3,9 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.34.0"
-    except:
-        return None
-
 class AtSpi2AtkConan(ConanFile):
     name = "at-spi2-atk"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.34.0")
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL"
@@ -21,10 +13,10 @@ class AtSpi2AtkConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("atk/[>=2.35.1]@%s/stable" % self.user)
         self.requires("at-spi2-core/[>=2.34.0]@%s/stable" % self.user)
         self.requires("libxml2/[>=2.9.9]@%s/stable" % self.user)
