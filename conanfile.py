@@ -1,23 +1,17 @@
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.2.0"
-    except:
-        return None
 
 class LibSrtpConan(ConanFile):
     name = "libsrtp"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.2.0")
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD"
     description = "Library for SRTP (Secure Realtime Transport Protocol)"
     settings = "os", "arch", "compiler", "build_type"
+    generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+    def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/cisco/libsrtp/archive/v%s.tar.gz" % self.version)
@@ -28,8 +22,3 @@ class LibSrtpConan(ConanFile):
             autotools.configure()
             autotools.make(args=["shared_library"])
             autotools.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
