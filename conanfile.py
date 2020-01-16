@@ -1,5 +1,6 @@
 from conans import ConanFile, Meson, tools
 
+
 class OrcConan(ConanFile):
     name = "orc"
     version = tools.get_env("GIT_TAG", "0.4.31")
@@ -10,7 +11,7 @@ class OrcConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def source(self):
@@ -23,8 +24,3 @@ class OrcConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="orc-" + self.version, args=args)
         meson.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
