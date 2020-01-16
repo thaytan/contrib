@@ -1,36 +1,24 @@
-from conans import ConanFile, tools, Meson
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.3.0"
-    except:
-        return None
+from conans import ConanFile, Meson, tools
+
 
 class IntelVaapiDriverConan(ConanFile):
     name = "intel-vaapi-driver"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.3.0")
     license = "MIT"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
-    options = {
-        "x11": [True, False],
-        "wayland": [True, False]
-    }
-    default_options = (
-        "x11=True",
-        "wayland=False"
-    )
+    options = {"x11": [True, False], "wayland": [True, False]}
+    default_options = ("x11=True", "wayland=False")
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libdrm/[>=2.4.96]@%s/stable" % self.user)
         self.requires("libva/[>=2.3.0]@%s/stable" % self.user)
 
