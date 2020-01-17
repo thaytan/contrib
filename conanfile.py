@@ -22,8 +22,3 @@ class GTestConan(ConanFile):
         cmake.definitions["BUILD_SHARED_LIBS"] = "ON"
         cmake.configure(source_folder="googletest-release-" + self.version)
         cmake.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*.c", "src")
-            self.copy("*.h", "src")
