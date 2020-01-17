@@ -11,17 +11,11 @@ class ExpatConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-
     def source(self):
-        tools.get(
-            "https://github.com/libexpat/libexpat/releases/download/R_{0}/expat-{1}.tar.bz2".format(
-                self.version.replace(".", "_"), self.version
-            )
-        )
+        tools.get("https://github.com/libexpat/libexpat/releases/download/R_{0}/expat-{1}.tar.bz2".format(self.version.replace(".", "_"), self.version))
 
     def build(self):
         args = ["--disable-static"]
