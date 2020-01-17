@@ -4,18 +4,9 @@ from os import path, remove, symlink
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "0.20.1"
-    except:
-        return None
-
-
 class GettextConan(ConanFile):
     name = "gettext"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "0.20.1")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://github.com/prozum/conan-" + name
     description = "GNU internationalization library"
@@ -23,15 +14,11 @@ class GettextConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-
     def source(self):
-        tools.get(
-            "https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version
-        )
+        tools.get("https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]
@@ -50,6 +37,4 @@ class GettextConan(ConanFile):
         )
 
     def package_info(self):
-        self.env_info.gettext_datadir.append(
-            path.join(self.package_folder, "share", "gettext")
-        )
+        self.env_info.gettext_datadir.append(path.join(self.package_folder, "share", "gettext"))
