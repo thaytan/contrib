@@ -3,17 +3,9 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2.35.1"
-    except:
-        return None
-
 class AtkConan(ConanFile):
     name = "atk"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2.35.1")
     description = "GObject-based multi-platform GUI toolkit"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
@@ -21,19 +13,17 @@ class AtkConan(ConanFile):
     options = {
         "introspection": [True, False],
     }
-    default_options = (
-        "introspection=True",
-    )
+    default_options = ("introspection=True", )
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("gettext/[>=0.20.1]@%s/stable" % self.user)
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user,)
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user, )
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
