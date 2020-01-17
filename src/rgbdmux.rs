@@ -20,6 +20,7 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -108,6 +109,8 @@ struct RgbdMux {
     settings: Mutex<Settings>,
     /// Mutex protecting the clock internals of the element
     clock_internals: Mutex<RgbdMuxClockInternals>,
+    /// Contains stream formats that are requested by the downstream element as a HashMap<stream, format> under a Mutex
+    requested_stream_formats: Mutex<HashMap<String, String>>,
 }
 
 /// Internals of the element related to clock that are under Mutex.
@@ -150,6 +153,7 @@ impl ObjectSubclass for RgbdMux {
                 previous_timestamp: gst::CLOCK_TIME_NONE,
                 frameset_duration: gst::CLOCK_TIME_NONE,
             }),
+            requested_stream_formats: Mutex::new(HashMap::new()),
         }
     }
 
@@ -165,10 +169,12 @@ impl ObjectSubclass for RgbdMux {
 
         // sink pads
         let mut sink_caps = gst::Caps::new_simple("video/x-raw", &[]);
-        sink_caps
-            .get_mut()
-            .expect("Could not get mutable reference to sink_caps")
-            .append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
+        {
+            let sink_caps = sink_caps
+                .get_mut()
+                .expect("Could not get mutable reference to sink_caps");
+            sink_caps.append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
+        }
         klass.add_pad_template(
             gst::PadTemplate::new_with_gtype(
                 "sink_%s",
@@ -365,9 +371,7 @@ impl AggregatorImpl for RgbdMux {
                 );
                 // Create new sink pad from the template
                 let new_sink_pad = gst::Pad::new_from_template(
-                    &aggregator
-                        .get_pad_template("sink_%s")
-                        .expect("Could not find sink-pad template"),
+                    &self.get_sink_pad_template_with_modified_format(aggregator, name),
                     Some(name),
                 )
                 .downcast::<gst_base::AggregatorPad>()
@@ -417,7 +421,7 @@ impl AggregatorImpl for RgbdMux {
     /// case when an upstream element has requested sink pads)
     /// # Arguments
     /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
-    ///* `_caps` - (not used) The CAPS that is currently negotiated for the element.
+    /// * `_caps` - (not used) The CAPS that is currently negotiated for the element.
     fn update_src_caps(
         &self,
         aggregator: &gst_base::Aggregator,
@@ -474,31 +478,51 @@ impl AggregatorImpl for RgbdMux {
         }
     }
 
-    /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
-    /// handled locally, all other events are send further downstream.
+    /// Called whenever a query is received at the src pad.
+    /// CAPS query is used to obtain requests for formats of the individual video streams.
     /// # Arguments
     /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
-    /// * `_aggregator_pad` - The pad on received the event.
-    /// * `event` - The event that should be handled.
-    fn sink_event(
-        &self,
-        aggregator: &gst_base::Aggregator,
-        _aggregator_pad: &gst_base::AggregatorPad,
-        event: gst::Event,
-    ) -> bool {
-        gst_debug!(CAT, obj: aggregator, "Got a new event: {:?}", event);
+    /// * `query` - The query that should be handled.
+    fn src_query(&self, aggregator: &gst_base::Aggregator, query: &mut gst::QueryRef) -> bool {
+        match query.view_mut() {
+            // Wait until CAPS query is received on the src pad
+            gst::QueryView::Caps(_query_caps) => {
+                // Get the src_pad used for sending the query to the linked downstream element
+                let src_pad = aggregator.get_static_pad("src").unwrap_or_else(|| {
+                    unreachable!("Element must have a src pad to receive a src_query")
+                });
+                // Get the default CAPS from the src pad template
+                let src_pad_template_caps = aggregator
+                    .get_pad_template("src")
+                    .expect("Could not find src-pad template")
+                    .get_caps();
+                // Create CAPS query
+                let mut request_downstream_caps_query =
+                    gst::Query::new_caps(src_pad_template_caps.as_ref());
 
-        match event.view() {
-            _ => {
-                // By default, pass any other event to all src pads
-                let src_pads = aggregator.get_src_pads();
-                if src_pads.len() == 0 {
-                    // Return false if there is no src pad yet since this element does not handle it
-                    return false;
+                // Send the query and receive the sink CAPS of the downstream element
+                if src_pad.peer_query(&mut request_downstream_caps_query) {
+                    if let Some(requested_caps) = request_downstream_caps_query.get_result() {
+                        // Before extraction, intersect with src pad template caps
+                        let requested_caps =
+                            requested_caps.intersect(&src_pad_template_caps.unwrap_or_else(|| {
+                                unreachable!("Rgbdmux defines a src pad template with caps")
+                            }));
+                        // Extract formats from these caps for use when creating new CAPS
+                        let requested_stream_formats = &mut *self
+                            .requested_stream_formats
+                            .lock()
+                            .expect("Could not lock reqested_stream_formats");
+                        *requested_stream_formats =
+                            self.extract_formats_from_rgbd_caps(&requested_caps);
+                    }
                 }
-                src_pads.iter().all(|pad| pad.push_event(event.clone()))
             }
+            _ => {}
         }
+
+        // Let parent handle all queries
+        self.parent_src_query(aggregator, query)
     }
 }
 
@@ -926,6 +950,93 @@ impl RgbdMux {
                 "Failed to send CAPS negotiation event"
             );
         }
+    }
+
+    /// Extracts format field for each stream in `video/rgbd` CAPS.
+    /// # Arguments
+    /// * `caps` - Formats are extracted from these `video/rgbd` CAPS.
+    /// # Returns
+    /// * `HashMap<String, String>` - Hashmap containing <stream, format>.
+    fn extract_formats_from_rgbd_caps(&self, caps: &gst::Caps) -> HashMap<String, String> {
+        // Create and output HashMap
+        let mut output: HashMap<String, String> = HashMap::new();
+
+        // Iterate over all fields in the input CAPS
+        for (field, value) in caps
+            .iter()
+            .next()
+            .expect("Downstream element of rgbdmux has not CAPS")
+            .iter()
+        {
+            // Disregards fieds that do not include the format
+            if !field.contains("_format") {
+                continue;
+            }
+
+            // Insert new entry with stream name and the corresponding format
+            let stream_name = field.replace("_format", "");
+            output.insert(stream_name, value.get::<String>().unwrap());
+        }
+
+        output
+    }
+
+    /// Determines what pad template to use for a new sink pad. It attaches a format to the CAPS if downstream element has such request.
+    /// If there is no such request, the default sink pad template is returned.
+    /// # Arguments
+    /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
+    /// * `pad_name` - Name of the new sink pad.
+    /// # Returns
+    /// * `gstreamer::PadTemplate` to use for the creation of the new sink pad.
+    fn get_sink_pad_template_with_modified_format(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        pad_name: &str,
+    ) -> gstreamer::PadTemplate {
+        // Lock the stream formats requested by downstream element
+        let requested_stream_formats = &mut *self
+            .requested_stream_formats
+            .lock()
+            .expect("Could not lock reqested_stream_formats");
+
+        // Get the default sink pad template
+        let default_sink_pad_template = aggregator
+            .get_pad_template("sink_%s")
+            .expect("Could not find sink-pad template");
+
+        // Iterate over all requested formats and find the matching stream
+        for (stream_name, format) in requested_stream_formats.iter() {
+            // Match the current request
+            if pad_name == format!("sink_{}", stream_name) {
+                // Create editable version of the default CAPS (since pad template cannot be directly edited)
+                let mut caps = default_sink_pad_template.get_caps().unwrap();
+                {
+                    let caps = caps
+                        .make_mut()
+                        .get_mut_structure(0)
+                        .expect("Could not get mutable CAPS in rgbdmux");
+
+                    // Add the format to the CAPS
+                    caps.set("format", &format);
+                }
+
+                // Return the pad template that was adjusted with new CAPS
+                return gst::PadTemplate::new_with_gtype(
+                    "sink_%s",
+                    default_sink_pad_template.get_property_direction(),
+                    default_sink_pad_template.get_property_presence(),
+                    &caps,
+                    default_sink_pad_template.get_property_gtype(),
+                )
+                .expect(&format!(
+                    "Could not create a custom template for {} pad",
+                    pad_name
+                ));
+            }
+        }
+
+        // If no specific format was requested for the stream by the downstream element, return the default sink pad template
+        default_sink_pad_template
     }
 }
 
