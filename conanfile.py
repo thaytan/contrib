@@ -1,17 +1,11 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "0.6.1"
-    except:
-        return None
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
+
 
 class GstreamerSharkConan(ConanFile):
     name = "gstreamer-shark"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "0.6.1")
     description = "GstShark is a front-end for GStreamer traces "
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL"
@@ -19,10 +13,10 @@ class GstreamerSharkConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("gstreamer/[>=1.16.0]@%s/stable" % self.user)
         self.requires("graphviz/[>=2.42.1]@%s/stable" % self.user)
 
