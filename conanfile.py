@@ -13,6 +13,7 @@ class MesaConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("gettext/[>=0.20.1]@%s/stable" % self.user)
         self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
@@ -29,12 +30,10 @@ class MesaConan(ConanFile):
             self.build_requires("libxxf86vm/[>=1.1.4]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://mesa.freedesktop.org/archive/mesa-%s.tar.xz" %
-                  self.version)
+        tools.get("https://mesa.freedesktop.org/archive/mesa-%s.tar.xz" % self.version)
 
     def build(self):
         args = [
@@ -55,6 +54,5 @@ class MesaConan(ConanFile):
         if self.settings.arch == "armv8":
             args.append("-Dgallium-drivers=nouveau,tegra")
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version),
-                        args=args)
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
         meson.install()
