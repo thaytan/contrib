@@ -2,10 +2,19 @@ import os
 
 from conans import ConanFile, Meson, tools
 
+def get_version():
+    try:
+        git = tools.Git()
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
+    except:
+        return tools.get_env("GIT_BRANCH", "master")
 
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
-    version = tools.get_env("GIT_TAG", "1.16.2")
+    version = get_version()
+    gst_version = "master" if version == "master" else "[~%s]" % version
+    gst_channel = "testing" if version == "master" else "stable"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
@@ -42,7 +51,7 @@ class GStreamerPluginsGoodConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.gst_version, self.user, self.gst_channel))
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         if self.options.vpx:
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
