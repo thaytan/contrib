@@ -13,14 +13,14 @@ class GstreamerNvJetsonPluginsConan(ConanFile):
     exports_sources = ["lib/gstreamer-1.0/*.so"]
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
 
     def package(self):
-        self.copy(pattern="*.so" ,excludes="*libgstnvvideo4linux2.so*")
+        self.copy(pattern="*.so", excludes="*libgstnvvideo4linux2.so*")
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(
-            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
-        )
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
