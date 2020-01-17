@@ -13,10 +13,10 @@ class ItstoolConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libxml2/[>=2.9.9]@%s/stable" % self.user)
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
 
