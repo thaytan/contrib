@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `rgbdmux` - CAPS negotiation of video formats with downstream element, conversion of these formats from `video/rgbd` to `video/x-raw` and subsequent use of the requested formats during creation of new sink pads.
+
 
 ## 0.1.6
 
