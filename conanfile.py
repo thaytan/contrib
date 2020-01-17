@@ -10,25 +10,18 @@ class CairoConan(ConanFile):
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"introspection": [True, False], "zlib": [True, False],
-               "png": [True, False], "fontconfig": [True, False]}
+    options = {"introspection": [True, False], "zlib": [True, False], "png": [True, False], "fontconfig": [True, False]}
     default_options = ("introspection=True", "zlib=True", "png=True", "fontconfig=True")
     generators = "env"
-    scm = {
-        "type": "git",
-        "url": "https://github.com/centricular/cairo.git",
-        "revision": "meson-%s" % version,
-        "recursive": True,
-        "subfolder": ("cairo-%s" % version)
-    }
+    scm = {"type": "git", "url": "https://github.com/centricular/cairo.git", "revision": "meson-%s" % version, "recursive": True, "subfolder": ("cairo-%s" % version)}
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("pixman/[>=0.38.4]@%s/stable" % self.user)
         self.requires("libxrender/[>=0.9.10]@%s/stable" % self.user)
@@ -51,5 +44,4 @@ class CairoConan(ConanFile):
         meson.install()
 
     def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(os.path.join(
-            self.package_folder, "lib", "girepository-1.0"))
+        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
