@@ -16,25 +16,17 @@ class NvJetsonDrivers(ConanFile):
     default_options = "jetson=TX2"
     generators = "env"
 
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+    def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get(
-                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/Tegra186_Linux_R%s_aarch64.tbz2"
-                % (self.version.replace(".", "-"), self.version)
-            )
+            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/Tegra186_Linux_R%s_aarch64.tbz2" % (self.version.replace(".", "-"), self.version))
         elif self.options.jetson == "Nano":
-            tools.get(
-                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/Tegra210_Linux_R%s_aarch64.tbz2"
-                % (self.version.replace(".", "-"), self.version)
-            )
+            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/Tegra210_Linux_R%s_aarch64.tbz2" % (self.version.replace(".", "-"), self.version))
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
-        tools.untargz(
-            "Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder
-        )
+        tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
         tools.rmdir("Linux_for_Tegra")
 
     def package(self):
@@ -47,9 +39,7 @@ class NvJetsonDrivers(ConanFile):
                 new = re.search(r".*\.so", dl)
                 if old:
                     symlink(old.group(0), new.group(0))
-                    print(
-                        "Created symlink from " + old.group(0) + " to " + new.group(0)
-                    )
+                    print("Created symlink from " + old.group(0) + " to " + new.group(0))
 
     def package_info(self):
         self.env_info.JETSON_DRIVER_PATH = path.join(self.package_folder, "lib")
