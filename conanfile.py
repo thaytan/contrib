@@ -39,26 +39,18 @@ class NvJetsonV4l2(ConanFile):
     url = "https://developer.nvidia.com/embedded/linux-tegra"
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
-    default_options = ("jetson=TX2",)
+    default_options = ("jetson=TX2", )
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get(
-                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2"
-                % self.version.replace(".", "-")
-            )
+            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
         elif self.options.jetson == "Nano":
-            tools.get(
-                "https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2"
-                % self.version.replace(".", "-")
-            )
+            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
 
