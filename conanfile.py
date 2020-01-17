@@ -1,5 +1,7 @@
 import os
+
 from conans import ConanFile, Meson, tools
+
 
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
@@ -16,21 +18,16 @@ class GStreamerDevtoolsConan(ConanFile):
         "recursive": True,
         "subfolder": ("gst-devtools-" + version)
     }
-    options = {"gtk_doc": [True, False],
-               "introspection": [True, False],
-               "tests": [True, False],
-               "nls": [True, False]}
+    options = {"gtk_doc": [True, False], "introspection": [True, False], "tests": [True, False], "nls": [True, False]}
     default_options = "gtk_doc=False", "introspection=False", "tests=True", "nls=False"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("git/[>=2.23.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.requires(
-            "gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user)
-        )
+        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("json-glib/[>=1.4.4]@%s/stable" % self.user)
 
     def source(self):
