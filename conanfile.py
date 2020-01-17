@@ -11,10 +11,10 @@ class GLibConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
 
@@ -22,10 +22,7 @@ class GLibConan(ConanFile):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
         # Disable broken gio tests until fixed by upstream (https://gitlab.gnome.org/GNOME/glib/issues/1897)
         # Use tools.replace_in_file()
-        self.run(
-            "sed %s-%s/gio/meson.build -i -e 's/build_tests = .*/build_tests = false/'"
-            % (self.name, self.version)
-        )
+        self.run("sed %s-%s/gio/meson.build -i -e 's/build_tests = .*/build_tests = false/'" % (self.name, self.version))
 
     def build(self):
         args = [
