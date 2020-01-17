@@ -13,10 +13,10 @@ class PythonConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("expat/[>=2.2.7]@%s/stable" % self.user)
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
@@ -25,9 +25,7 @@ class PythonConan(ConanFile):
         self.requires("sqlite/[>=3.30.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(
-                self.version))
+        tools.get("https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(self.version))
 
     def build(self):
         args = [
@@ -47,12 +45,9 @@ class PythonConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-        os.symlink("python3.7",
-                   os.path.join(self.package_folder, "bin", "python"))
+        os.symlink("python3.7", os.path.join(self.package_folder, "bin", "python"))
 
     def package_info(self):
-        self.env_info.PYTHON = os.path.join(self.package_folder, "bin",
-                                            "python")
+        self.env_info.PYTHON = os.path.join(self.package_folder, "bin", "python")
         self.env_info.PYTHONHOME = self.package_folder
-        self.env_info.PYTHONPATH.append(
-            os.path.join(self.package_folder, "lib", "python3.7"))
+        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7"))
