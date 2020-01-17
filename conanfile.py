@@ -14,10 +14,8 @@ class PerlConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/Perl/perl5/archive/v%s.tar.gz" % self.version)
@@ -47,11 +45,5 @@ class PerlConan(ConanFile):
         arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
         platform = "%s-linux" % arch_conv[str(self.settings.arch)]
         self.env_info.PERL = "perl"
-        self.env_info.PERL5LIB.append(
-            os.path.join(self.package_folder, "lib", self.version)
-        )
-        self.env_info.PERL5LIB.append(
-            os.path.join(
-                self.package_folder, "lib", self.version, "%s-thread-multi" % platform
-            )
-        )
+        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version))
+        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, "%s-thread-multi" % platform))
