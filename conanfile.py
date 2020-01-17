@@ -1,9 +1,19 @@
 import os
 from conans import ConanFile, Meson, tools
 
+def get_version():
+    try:
+        git = tools.Git()
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
+    except:
+        return tools.get_env("GIT_BRANCH", "master")
+
 class GStreamerPluginsBadConan(ConanFile):
     name = "gstreamer-plugins-bad"
-    version = tools.get_env("GIT_TAG", "1.16.2")
+    version = get_version()
+    gst_version = "master" if version == "master" else "[~%s]" % version
+    gst_channel = "testing" if version == "master" else "stable"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
@@ -58,20 +68,25 @@ class GStreamerPluginsBadConan(ConanFile):
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.gst_version, self.user, self.gst_channel))
         if self.options.webrtc:
-            self.requires("libnice/[>=0.1.15]@%s/stable" % self.user)
+            libnice_version = "master" if self.version == "master" else "[>=%s]" % "0.1.15"
+            self.requires("libnice/%s@%s/%s" % (libnice_version, self.user, self.gst_channel))
         if self.options.srtp:
             self.requires("libsrtp/[>=2.2.0]@%s/stable" % self.user)
         if self.options.opencv:
             self.requires("opencv/[>=3.4.8]@%s/stable" % self.user)
         if self.options.closedcaption:
             self.requires("pango/[>=1.4.3]@%s/stable" % self.user)
+        if self.options.nvenc or self.options.nvdec:
+            self.requires("cuda/[>=10.1 <10.2]@%s/testing" % self.user)
+            self.requires("orc/[>=0.4.31]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/GStreamer/gst-plugins-bad/archive/%s.tar.gz" % self.version)
+        git = tools.Git()
+        git.clone(url="https://github.com/GStreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
         if self.options.aiveropatchlatency:
-            tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad-" + self.version))
+            tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"))
 
     def build(self):
         args = ["--auto-features=disabled", "-Dgl_api=opengl"]
@@ -90,7 +105,7 @@ class GStreamerPluginsBadConan(ConanFile):
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-bad-" + self.version, args=args)
+        meson.configure(source_folder="gst-plugins-bad", args=args)
         meson.install()
 
     def package_info(self):
