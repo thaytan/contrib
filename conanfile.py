@@ -11,12 +11,12 @@ class SharedMimeInfoConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("itstool/[>=2.0.6]@%s/stable" % self.user)
         self.build_requires("xz/[>=5.2.4]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("libxml2/[>=2.9.9]@%s/stable" % self.user)
 
