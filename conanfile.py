@@ -13,10 +13,10 @@ class ReadlineConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("ncurses/[>=6.1]@%s/stable" % self.user)
 
     def source(self):
