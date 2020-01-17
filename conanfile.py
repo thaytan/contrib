@@ -2,10 +2,17 @@ import os
 
 from conans import ConanFile, Meson, tools
 
+def get_version():
+    try:
+        git = tools.Git()
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
+    except:
+        return tools.get_env("GIT_BRANCH", "master")
 
 class GStreamerConan(ConanFile):
     name = "gstreamer"
-    version = tools.get_env("GIT_TAG", "master")
+    version = get_version()
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A framework for streaming media"
     license = "LGPL"
