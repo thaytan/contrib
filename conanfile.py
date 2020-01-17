@@ -12,6 +12,7 @@ class FribidiConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("meson/[>=0.5.12]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/fribidi/fribidi/archive/v%s.tar.gz" % self.version)
