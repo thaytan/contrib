@@ -6,17 +6,15 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class Bzip2Conan(ConanFile):
     name = "bzip2"
     version = tools.get_env("GIT_TAG", "1.0.8")
-    url = "https://gitlab.com/aivero/public/conan/conan-bison"
+    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A high-quality data compression program"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://sourceware.org/pub/bzip2/bzip2-%s.tar.gz" % self.version)
@@ -36,3 +34,7 @@ class Bzip2Conan(ConanFile):
             "libbz2.so.%s" % self.version,
             os.path.join(self.package_folder, "lib", "libbz2.so"),
         )
+        with tools.chdir(os.path.join(self.package_folder, "bin")):
+            for source, link in (("bzdiff","bzcmp"), ("bzgrep","bzegrep"), ("bzgrep","bzfgrep"), ("bzmore","bzless")):
+                os.remove(link)
+                os.symlink(source, link)
