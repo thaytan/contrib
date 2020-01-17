@@ -1,17 +1,9 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "1.2.0"
-    except:
-        return None
-
 class LibglvndConan(ConanFile):
     name = "libglvnd"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "1.2.0")
     description = "The GL Vendor-Neutral Dispatch library"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
@@ -19,19 +11,17 @@ class LibglvndConan(ConanFile):
     options = {
         "x11": [True, False],
     }
-    default_options = (
-        "x11=True",
-    )
+    default_options = ("x11=True", )
     exports = "ignore-warnings.patch"
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         if self.options.x11:
             self.build_requires("xorgproto/[>=2019.1]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         if self.options.x11:
             self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
             self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
