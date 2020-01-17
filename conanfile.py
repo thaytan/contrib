@@ -12,6 +12,9 @@ class BisonConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     generators = "env"
 
+    def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+
     def requirements(self):
         self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("m4/[>=1.4.18]@%s/stable" % self.user)
@@ -26,6 +29,4 @@ class BisonConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.BISON_PKGDATADIR = os.path.join(
-            self.package_folder, "share", "bison"
-        )
+        self.env_info.BISON_PKGDATADIR = os.path.join(self.package_folder, "share", "bison")
