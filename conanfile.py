@@ -13,11 +13,11 @@ class GdbConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("texinfo/[>=6.6]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
         self.requires("ncurses/[>=6.1]@%s/stable" % self.user)
         self.requires("readline/[>=8.0]@%s/stable" % self.user)
@@ -34,6 +34,4 @@ class GdbConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.PYTHONPATH.append(
-            os.path.join(self.package_folder, "share", "gdb", "python")
-        )
+        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "share", "gdb", "python"))
