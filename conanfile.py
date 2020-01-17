@@ -11,10 +11,10 @@ class LibdrmConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("libpciaccess/[>=0.14]@%s/stable" % self.user)
 
     def source(self):
