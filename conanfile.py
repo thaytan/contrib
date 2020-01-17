@@ -22,7 +22,6 @@ class GstreamerNvJetsonV4l2(ConanFile):
         self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("nv-jetson-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user))
