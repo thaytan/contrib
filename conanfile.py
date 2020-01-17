@@ -43,13 +43,13 @@ class GStreamerPluginsBaseConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("mesa/[>=19.2.0]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("gstreamer/%s@%s/%s" % (self.gst_version, self.user, self.gst_channel))
         if self.options.orc:
             self.requires("orc/[>=0.4.29]@%s/stable" % self.user)
