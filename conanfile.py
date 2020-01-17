@@ -1,17 +1,9 @@
 from conans import ConanFile, Meson, tools
 
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag = git.get_tag()
-        return tag if tag else "2019.1"
-    except:
-        return None
-
 class XorgProtoConan(ConanFile):
     name = "xorgproto"
-    version = get_version()
+    version = tools.get_env("GIT_TAG", "2019.1")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "combined X.Org X11 Protocol headers"
     license = "custom"
@@ -19,11 +11,9 @@ class XorgProtoConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
+        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/archive/individual/proto/xorgproto-%s.tar.bz2" % self.version)
