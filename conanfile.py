@@ -16,7 +16,6 @@ class BisonConan(ConanFile):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("m4/[>=1.4.18]@%s/stable" % self.user)
 
     def source(self):
