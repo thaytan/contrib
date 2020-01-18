@@ -25,6 +25,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "gl": [True, False],
         "nvdec": [True, False],
         "nvenc": [True, False],
+        "nvcodec": [True, False],
         "pnm": [True, False],
         "webrtc": [True, False],
         "srtp": [True, False],
@@ -42,6 +43,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "gl=True",
         "nvdec=False",
         "nvenc=False",
+        "nvcodec=False",
         "pnm=True",
         "webrtc=True",
         "srtp=True",
@@ -59,6 +61,7 @@ class GStreamerPluginsBadConan(ConanFile):
         if self.settings.arch != "x86_64":
             self.options.remove("nvdec")
             self.options.remove("nvenc")
+            self.options.remove("nvcodec")
 
     def build_requirements(self):
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
@@ -78,7 +81,7 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("opencv/[>=3.4.8]@%s/stable" % self.user)
         if self.options.closedcaption:
             self.requires("pango/[>=1.4.3]@%s/stable" % self.user)
-        if self.options.nvenc or self.options.nvdec:
+        if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
             self.requires("cuda/[>=10.1 <10.2]@%s/testing" % self.user)
             self.requires("orc/[>=0.4.31]@%s/stable" % self.user)
 
@@ -104,6 +107,9 @@ class GStreamerPluginsBadConan(ConanFile):
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
+            if self.version == "master":
+                args.append("-Dnvcodec=" + ("enabled" if self.options.nvcodec else "disabled"))
+
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-bad", args=args)
         meson.install()
