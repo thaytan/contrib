@@ -2,19 +2,8 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-def get_version():
-    try:
-        git = tools.Git()
-        tag, branch = git.get_tag(), git.get_branch()
-        return tag if tag and branch.startswith("HEAD") else branch
-    except:
-        return tools.get_env("GIT_BRANCH", "master")
-
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
-    version = get_version()
-    gst_version = "master" if version == "master" else "[~%s]" % version
-    gst_channel = "testing" if version == "master" else "stable"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
@@ -45,13 +34,20 @@ class GStreamerPluginsGoodConan(ConanFile):
     )
     generators = "env"
 
+    def set_version(self):
+        git = tools.Git(folder=self.recipe_folder)
+        tag, branch = git.get_tag(), git.get_branch()
+        self.version = tag if tag and branch.startswith("HEAD") else branch
+
     def build_requirements(self):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.gst_version, self.user, self.gst_channel))
+        gst_version = "master" if self.version == "master" else "[~%s]" % self.version
+        gst_channel = "testing" if self.version == "master" else "stable"
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         if self.options.vpx:
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
