@@ -70,7 +70,7 @@ class GStreamerPluginsBadConan(ConanFile):
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
         if self.options.webrtc:
             libnice_version = "master" if self.version == "master" else "[>=%s]" % "0.1.15"
-            self.requires("libnice/%s@%s/%s" % (libnice_version, self.user, self.gst_channel))
+            self.requires("libnice/%s@%s/%s" % (libnice_version, self.user, gst_channel))
         if self.options.srtp:
             self.requires("libsrtp/[>=2.2.0]@%s/stable" % self.user)
         if self.options.opencv:
