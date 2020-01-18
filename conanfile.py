@@ -58,12 +58,12 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvcodec")
 
     def build_requirements(self):
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         gst_version = "master" if self.version == "master" else "[~%s]" % self.version
         gst_channel = "testing" if self.version == "master" else "stable"
@@ -82,13 +82,13 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("orc/[>=0.4.31]@%s/stable" % self.user)
 
     def source(self):
-        git = tools.Git()
+        git = tools.Git(folder="gst-plugins-bad-" + self.version)
         git.clone(url="https://github.com/GStreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
         if self.options.aiveropatchlatency:
             tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"))
 
     def build(self):
-        args = ["--auto-features=disabled", "-Dgl_api=opengl"]
+        args = ["--auto-features=disabled"]
         args.append("-Dvideoparsers=" + ("enabled" if self.options.videoparsers else "disabled"))
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
@@ -107,7 +107,8 @@ class GStreamerPluginsBadConan(ConanFile):
                 args.append("-Dnvcodec=" + ("enabled" if self.options.nvcodec else "disabled"))
 
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-bad", args=args)
+        meson.configure(source_folder="gst-plugins-bad-%s" % self.version, args=args)
+        meson.build()
         meson.install()
 
     def package_info(self):
