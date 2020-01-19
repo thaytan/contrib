@@ -40,7 +40,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         self.version = tag if tag and branch.startswith("HEAD") else branch
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
@@ -54,7 +54,8 @@ class GStreamerPluginsGoodConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)
-        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0")
+        plugins_bad_branch = "master" if self.version == "master" else "splitmuxsink-muxerpad-map-1.16.0"
+        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", plugins_bad_branch)
 
     def build(self):
         args = ["--auto-features=disabled"]
