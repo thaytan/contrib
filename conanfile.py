@@ -46,7 +46,7 @@ class GStreamerVaapiConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gstreamer-vaapi-" + self.version)
-        git.clone(url="https://github.com/GStreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
+        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gstreamer-vaapi.git", branch=self.version, shallow=True)
 
     def build(self):
         args = ["--auto-features=disabled"]
