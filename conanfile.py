@@ -63,7 +63,8 @@ class GStreamerPluginsBaseConan(ConanFile):
             self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/GStreamer/gst-plugins-base/archive/%s.tar.gz" % self.version)
+        git = tools.Git(folder="gst-plugins-base-" + self.version)
+        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-base.git", branch=self.version, shallow=True)
 
     def build(self):
         args = ["--auto-features=disabled", "-Dgl_platform=egl"]
