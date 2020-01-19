@@ -83,7 +83,7 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)
-        git.clone(url="https://github.com/GStreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
+        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
         if self.options.aiveropatchlatency:
             tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"))
 
