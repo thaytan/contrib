@@ -2,29 +2,55 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-
 class GStreamerVaapiConan(ConanFile):
     name = "gstreamer-vaapi"
-    version = tools.get_env("GIT_TAG", "1.16.2")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
+    options = {
+        "introspection": [True, False],
+        "encoders": [True, False],
+        "egl": [True, False],
+        "x11": [True, False],
+        "drm": [True, False],
+        "glx": [True, False],
+        }
+    default_options = (
+            "introspection=True",
+            "encoders=True",
+            "egl=True",
+            "x11=True",
+            "drm=True",
+            "glx=True",
+            )
     generators = "env"
 
+    def set_version(self):
+        git = tools.Git(folder=self.recipe_folder)
+        tag, branch = git.get_tag(), git.get_branch()
+        self.version = tag if tag and branch.startswith("HEAD") else branch
+
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        if self.options.introspection:
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.version, self.user))
+        gst_version = "master" if self.version == "master" else "[~%s]" % self.version
+        gst_channel = "testing" if self.version == "master" else "stable"
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
+        self.requires("gstreamer-plugins-bad/%s@%s/%s" % (gst_version, self.user, gst_channel))
         self.requires("libva/[>=2.3.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/GStreamer/gstreamer-vaapi/archive/%s.tar.gz" % self.version)
+        git = tools.Git(folder="gstreamer-vaapi-" + self.version)
+        git.clone(url="https://github.com/GStreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
 
     def build(self):
         args = ["--auto-features=disabled"]
+        args.append("-Dwith_encoders=" + ("enabled" if self.options.encoders else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gstreamer-vaapi-" + self.version)
         meson.install()
