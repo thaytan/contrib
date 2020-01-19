@@ -1,31 +1,29 @@
 from conans import ConanFile, CMake, tools
 import os
 
-def get_version():
-    git = tools.Git()
-    try:
-        tag, branch = git.get_tag(), git.get_branch()
-        return tag if tag and branch.startswith("HEAD") else branch
-    except:
-        return None
-
 class GstreamerColorizerConan(ConanFile):
     name = "gstreamer-colorizer"
     license = "LGPL"
-    version = get_version()
     description = "Plugin to colorize 16 bit grayscale depth images with a color map"
     url = "https://aivero.com"
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = ["CMakeLists.txt", "src/*"]
     generators = "env"
-    gst_version = "1.16.0"
+
+    def set_version(self):
+        git = tools.Git(folder=self.recipe_folder)
+        tag, branch = git.get_tag(), git.get_branch()
+        self.version = tag if tag and branch.startswith("HEAD") else branch
 
     def build_requirements(self):
         self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.gst_version, self.user))
+        gst_version = "master" if self.version == "master" else "[~%s]" % "1.16.0"
+        gst_channel = "testing" if self.version == "master" else "stable"
+
+        self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
 
     def build(self):
         env = {
