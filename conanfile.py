@@ -37,7 +37,8 @@ class GStreamerConan(ConanFile):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/GStreamer/gstreamer/archive/%s.tar.gz" % self.version)
+        git = tools.Git(folder="%s-%s" % (self.name, self.version))
+        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gstreamer.git", branch=self.version, shallow=True)
 
     def build(self):
         args = ["--auto-features=disabled"]
