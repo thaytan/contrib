@@ -6,11 +6,14 @@ extern crate gstreamer_base as gst_base;
 extern crate gstreamer_depth_meta as gst_depth_meta;
 extern crate gstreamer_video as gst_video;
 extern crate librealsense2 as rs2;
+#[macro_use]
+extern crate lazy_static;
 
 mod d400_limits;
 mod enabled_streams;
 mod errors;
 mod properties;
+mod realsense_timestamp_mode;
 mod realsensesrc;
 mod rs_meta;
 mod settings;
@@ -29,5 +32,5 @@ gst_plugin_define!(
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_REPOSITORY"),
-    "2019-03-25"
+    "2017-12-01"
 );

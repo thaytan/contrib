@@ -1,8 +1,9 @@
 use glib::subclass;
 
+use crate::realsense_timestamp_mode::realsense_timestamp_mode_get_type;
 use crate::settings::*;
 
-pub(crate) static PROPERTIES: [subclass::Property; 18] = [
+pub(crate) static PROPERTIES: [subclass::Property; 17] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -145,26 +146,18 @@ pub(crate) static PROPERTIES: [subclass::Property; 18] = [
         glib::ParamSpec::boolean(
             name,
             "Include Per Frame Metadata",
-            "Adds librealsense2's per-frame metadata as an additional buffer on the video stream.",
+            "Attempts to include librealsense2's per-frame metadata as an additional buffer on the main buffer. Per-frame metadata is silently ignored if it cannot be fetched from the librealsense2 frames.",
             DEFAULT_ENABLE_METADATA,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("do-custom-timestamp", |name| {
-        glib::ParamSpec::boolean(
+    subclass::Property("timestamp-mode", |name| {
+        glib::ParamSpec::enum_(
             name,
-            "Perform custom timestamp handling",
-            "Adds timestamps to all buffers based on the duration since the element was created. As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers. Does no apply if `do-rs2-timestamp` is enabled.",
-            DEFAULT_DO_CUSTOM_TIMESTAMP,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("do-rs2-timestamp", |name| {
-        glib::ParamSpec::boolean(
-            name,
-            "Utilise rs2 timestamp",
-            "Adds timestamps to all buffers based on the timestamps extracted from librealsense, starting from 0 and monotonically increasing. If used in combination with playing back from rosbag, make sure that property `loop-rosbag=false`. This property has higher priority than `do-rs2-timestamp`. WARNING: This overrides the default GStreamer timestamping mechanism and should ONLY BE USED IF YOU REALLY KNOW WHAT YOU'RE DOING!",
-            DEFAULT_DO_RS2_TIMESTAMP,
+            "The timestamping mode to use on the realsensesrc",
+            "Defines the timestamping mode to use on the realsensesrc's buffers and metabuffers.",
+            realsense_timestamp_mode_get_type(),
+            DEFAULT_TIMESTAMP_MODE as i32,
             glib::ParamFlags::READWRITE,
         )
     }),
