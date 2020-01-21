@@ -26,6 +26,6 @@ class Libx11Conan(ConanFile):
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("{}-{}".format(self.name, self.version)):
+        with tools.chdir("libX11-" + self.version):
             autotools.configure(args=args)
             autotools.install()
