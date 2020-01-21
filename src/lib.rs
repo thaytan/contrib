@@ -25,5 +25,5 @@ gst_plugin_define!(
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_REPOSITORY"),
-    "2019-09-03"
+    "2017-12-01" // This date is replaced with Python's datetime.now() during a conan create run.
 );

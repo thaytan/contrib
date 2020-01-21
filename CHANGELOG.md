@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## 0.2.0 - 2020-01-21
+
+### Removed
+
+- Partial KLV packing. `rgbddemux` now forwards the buffers simply as Cap'n Proto serialised buffers
+
+### Changed
+
+- `rgbddemux` and `rgbdmux` now treats per-frame metadata as top-level streams. This means that they're also included in the `streams` field of the `video/rgbd` CAPS.
 
 
 ## 0.1.6

@@ -1,6 +1,6 @@
 [package]
 name = "gst-rgbd"
-version = "0.1.5"
+version = "0.0.0-ohmyconanpleaseoverwriteme" # Overwritten during conan create.
 authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
 license = "LGPL"
 description = "GStreamer plugin for demuxing and muxing `video/rgbd` streams"
@@ -18,7 +18,6 @@ glib = "0.8"
 gstreamer = { version = "0.14", features = ["subclassing"] }
 gstreamer-base = { version = "0.14", features = ["subclassing"] }
 gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs" }
-byteorder = { version = "1.3.2" }
 lazy_static = "1.4.0"
 
 [lib]
