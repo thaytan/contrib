@@ -21,7 +21,7 @@ class Libx11Conan(ConanFile):
         self.requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libX11-{}.tar.gz".format(self.version), destination="{}-{}".format(self.name, self.version))
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libX11-{}.tar.gz".format(self.version))
 
     def build(self):
         args = ["--disable-static"]
