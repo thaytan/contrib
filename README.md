@@ -11,6 +11,10 @@ This repository acts as an ABI for the [gst-depth-meta-rs](https://gitlab.com/ai
 
 The repository is also used by the [gstreamer-colorizer](https://gitlab.com/aivero/public/gstreamer/gst-colorizer), which can colorize depth-video.
 
-## Examples
+# Contributing
 
-Please see https://aivero.gitlab.io/aivero-architecture/documents/h-cross-cutting-concepts/d-rgbd-caps.html for an example of how the `gst-depth-meta` is used.
+Please see [the contribution guidelines](CONTRIBUTING.md) for instructions on how to contribute.
+
+# License
+
+This project is licensed under the [Apache Version 2 license](LICENSE). Copyright 2019 Aivero.
