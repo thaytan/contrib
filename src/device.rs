@@ -1,3 +1,5 @@
+// License: MIT. See LICENSE file in root directory.
+// Copyright(c) 2019 Aivero. All Rights Reserved.
 use crate::error::Error;
 use crate::low_level_utils::cstring_to_string;
 use crate::sensor::Sensor;
