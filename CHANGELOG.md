@@ -8,6 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [0.1.0] - 2020-01-TODO
+## [0.1.0] - 2020-01-24
 ### Added
 - First version of `k4asrc`
