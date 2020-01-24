@@ -2,15 +2,24 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, tools
+from datetime import datetime
 import os
 
 def get_version():
-    git = tools.Git()
     try:
+        git = tools.Git()
         tag, branch = git.get_tag(), git.get_branch()
         return tag if tag and branch.startswith("HEAD") else branch
     except:
-        return None
+        return tools.get_env("GIT_BRANCH", "master")
+
+
+def make_cargo_version(version_string):
+    try:
+        version = tools.Version(version_string, loose=False)
+        return "%d.%d.%d" % (version.major, version.minor, version.patch)
+    except:
+        return "0.0.0-nottagged"
 
 
 class K4aSrcConan(ConanFile):
@@ -36,6 +45,12 @@ class K4aSrcConan(ConanFile):
     def requirements(self):
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
         self.requires("k4a/[>=1.3.0]@aivero/testing")
+
+    def source(self):
+        # Override the version supplied to GStreamer, as specified in lib.rs
+        tools.replace_path_in_file(file_path="src/lib.rs", search="\"2019-12-04\"", replace=("\"%s\"" % datetime.now().strftime("%Y-%m-%d")))
+        # Override the package version defined in the Cargo.toml file
+        tools.replace_path_in_file(file_path="Cargo.toml", search=("[package]\nname = \"%s\"\nversion = \"0.0.0-ohmyconanpleaseoverwriteme\"" % self.name), replace=("[package]\nname = \"%s\"\nversion = \"%s\"" % (self.name, make_cargo_version(self.version))))
 
     def build(self):
         if self.settings.build_type == 'Release':

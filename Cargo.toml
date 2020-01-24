@@ -1,6 +1,6 @@
 [package]
 name = 'gst-k4a'
-version = '0.1.0'
+version = "0.0.0-ohmyconanpleaseoverwriteme" # Overwritten during conan create.
 authors = ['Andrej Orsula <andrej.orsula@aivero.com>']
 license = 'LGPL'
 description = 'GStreamer plugin containing `video/rgbd` source for an Azure Kinect DK (K4A) device'
