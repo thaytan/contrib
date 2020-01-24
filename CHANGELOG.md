@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## 0.2.1 - 2020-01-24
+
+### Added
+- `rgbdmux` - CAPS negotiation of video formats with downstream element, conversion of these formats from `video/rgbd` to `video/x-raw` and subsequent use of the requested formats during creation of new sink pads.
+
+
 ## 0.2.0 - 2020-01-21
 
 ### Removed
@@ -13,12 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `rgbddemux` and `rgbdmux` now treats per-frame metadata as top-level streams. This means that they're also included in the `streams` field of the `video/rgbd` CAPS.
-
-
-## 0.2.1 - 2020-01-24
-
-### Added
-- `rgbdmux` - CAPS negotiation of video formats with downstream element, conversion of these formats from `video/rgbd` to `video/x-raw` and subsequent use of the requested formats during creation of new sink pads.
 
 
 ## 0.1.6
