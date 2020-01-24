@@ -91,3 +91,50 @@ impl Default for Settings {
         }
     }
 }
+
+impl Settings {
+    /// Determines the applicable `DepthMode` while taking into account what streams are
+    /// enabled, if any.
+    pub(crate) fn determine_depth_mode(&self) -> DepthMode {
+        if self.desired_streams.depth {
+            // If depth is enabled, use `depth-mode` property
+            self.device_settings.depth_mode
+        } else if self.desired_streams.ir {
+            // If IR is enabled without depth, use `K4A_DEPTH_MODE_PASSIVE_IR`
+            DepthMode::K4A_DEPTH_MODE_PASSIVE_IR
+        } else {
+            // If neither depth or IR is enabled, use `K4A_DEPTH_MODE_OFF`
+            DepthMode::K4A_DEPTH_MODE_OFF
+        }
+    }
+
+    /// Determines the applicable `ColorResolution` while taking into account whether
+    /// the color stream is enabled or not.
+    pub(crate) fn determine_color_resolution(&self) -> ColorResolution {
+        // Determine what color mode to use
+        if self.desired_streams.color {
+            // If color is enabled, use `color-resolution` property
+            self.device_settings.color_resolution
+        } else {
+            // If color is disabled, use `K4A_COLOR_RESOLUTION_OFF`
+            ColorResolution::K4A_COLOR_RESOLUTION_OFF
+        }
+    }
+}
+
+// /// Conversion from `Settings` to the applicable `DepthMode` that takes into account
+// /// what streams are enabled, if any.
+// impl From<Settings> for DepthMode {
+//     fn from(settings: Settings) -> DepthMode {
+//         if settings.desired_streams.depth {
+//             // If depth is enabled, use `depth-mode` property
+//             settings.device_settings.depth_mode
+//         } else if settings.desired_streams.ir {
+//             // If IR is enabled without depth, use `K4A_DEPTH_MODE_PASSIVE_IR`
+//             DepthMode::K4A_DEPTH_MODE_PASSIVE_IR
+//         } else {
+//             // If neither depth or IR is enabled, use `K4A_DEPTH_MODE_OFF`
+//             DepthMode::K4A_DEPTH_MODE_OFF
+//         }
+//     }
+// }

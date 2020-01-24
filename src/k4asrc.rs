@@ -483,27 +483,6 @@ impl K4aSrc {
         if settings.desired_streams.is_any_video_enabled() {
             let device_settings = &settings.device_settings;
 
-            // Determine what depth mode to use
-            let desired_depth_mode = if settings.desired_streams.depth {
-                // If depth is enabled, use `depth-mode` property
-                device_settings.depth_mode
-            } else if settings.desired_streams.ir {
-                // If IR is enabled without depth, use `K4A_DEPTH_MODE_PASSIVE_IR`
-                DepthMode::K4A_DEPTH_MODE_PASSIVE_IR
-            } else {
-                // If neither depth or IR is enabled, use `K4A_DEPTH_MODE_OFF`
-                DepthMode::K4A_DEPTH_MODE_OFF
-            };
-
-            // Determine what color mode to use
-            let desired_color_resolution = if settings.desired_streams.color {
-                // If color is enabled, use `color-resolution` property
-                device_settings.color_resolution
-            } else {
-                // If color is disabled, use `K4A_COLOR_RESOLUTION_OFF`
-                ColorResolution::K4A_COLOR_RESOLUTION_OFF
-            };
-
             // TODO: If desired, implement possibility of not having the streams synchronised (requires quite a lot of work)
             // Synchronisation is allowed only if both cameras are enabled
             let synchronised_images_only = (settings.desired_streams.depth
@@ -513,8 +492,8 @@ impl K4aSrc {
             // Create `DeviceConfiguration` based on settings
             let device_configuration = DeviceConfiguration {
                 color_format: device_settings.color_format,
-                color_resolution: desired_color_resolution,
-                depth_mode: desired_depth_mode,
+                color_resolution: settings.determine_color_resolution(),
+                depth_mode: settings.determine_depth_mode(),
                 camera_fps: i32_to_fps(device_settings.framerate)?,
                 synchronized_images_only: synchronised_images_only,
                 depth_delay_off_color_usec: DEPTH_DELAY_OFF_COLOR_USEC,
