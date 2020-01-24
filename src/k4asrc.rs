@@ -394,13 +394,20 @@ impl K4aSrc {
 
         // Determine whether to stream `Playback`
         if !settings.playback_settings.recording_location.is_empty() {
+            // Make sure that only one stream source is selected
+            if !settings.device_settings.serial.is_empty() {
+                return Err(K4aSrcError::Failure(
+                    "k4asrc: Both `serial` and `recording-location` are set, please select only one stream source",
+                ));
+            }
+
             // Open `Playback`
             let playback = Playback::open(&settings.playback_settings.recording_location)?;
             // Configure streaming based on the opened `Playback`
             let record_configuration = self.start_from_playback(&settings, &playback)?;
-
             // Update `stream_source` to `Playback`
             *stream_source = Some(StreamSource::Playback(playback, record_configuration));
+
             // Return `Ok()` if everything went fine and start streaming from `Playback`
             return Ok(());
         }
@@ -495,14 +502,14 @@ impl K4aSrc {
         }
     }
 
-    /// Extract stream properties from `stream_source`.
+    /// Determine `StreamProperties`, containing fields relevant for CAPS `fixate()`, based on the
+    /// selected `StreamSource`.
     ///
     /// # Arguments
-    /// * `stream_source` - The stream source to extract the properties from.
+    /// * `stream_source` - The stream source to extract the properties from, i.e. `Playback` or `Device`.
     ///
     /// # Returns
-    /// * `Ok(Option<StreamProperties>)` on success that contains None is only IMU stream is
-    ///  enabled.
+    /// * `Ok(Option<StreamProperties>)` on success that contains None if only IMU stream is enabled.
     /// * `Err(K4aSrcError)` on failure.
     fn get_stream_properties(
         &self,
@@ -829,18 +836,11 @@ impl ObjectImpl for K4aSrc {
             .downcast_ref::<gst_base::BaseSrc>()
             .expect("k4asrc: Cannot cast to BaseSrc");
 
-        // Lock the internals
-        let internals = &mut *self
-            .internals
-            .lock()
-            .expect("k4asrc: Cannot lock internals in `constructed()`");
-
-        // Determine whether the source is live
-        let recording_location = &internals.settings.playback_settings.recording_location;
-        element.set_live(recording_location.is_empty());
-
         // Set format to time
         element.set_format(gst::Format::Time);
+
+        // The element is live by default, but changes to false once `recording-location` is defined.
+        element.set_live(true);
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
@@ -911,6 +911,9 @@ impl ObjectImpl for K4aSrc {
                     serial
                 );
                 settings.device_settings.serial = serial;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(true);
             }
             subclass::Property("recording-location", ..) => {
                 let recording_location = value
@@ -924,6 +927,9 @@ impl ObjectImpl for K4aSrc {
                     recording_location
                 );
                 settings.playback_settings.recording_location = recording_location;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(false);
             }
             subclass::Property("enable-depth", ..) => {
                 let enable_depth = value.get().expect(&format!("k4asrc: Failed to set property `enable-depth`. Expected a `bool`, but got: {:?}", value));

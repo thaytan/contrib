@@ -18,13 +18,12 @@ pub(crate) struct StreamProperties {
     pub(crate) framerate: i32,
 }
 
-// Note: `.unwrap_or_default()` for resolutions are utilised to avoid error if any of the streams is disabled.
-
 impl TryFrom<&DeviceConfiguration> for StreamProperties {
     type Error = K4aSrcError;
     fn try_from(record_configuration: &DeviceConfiguration) -> Result<Self, Self::Error> {
         Ok(Self {
             color_format: k4a_image_format_to_gst_video_format(&record_configuration.color_format)?,
+            // Note: `.unwrap_or_default()` for resolutions are utilised to avoid error if any of the streams is disabled.
             depth_resolution: depth_mode_to_ir_resolution(record_configuration.depth_mode)
                 .unwrap_or_default(),
             ir_resolution: depth_mode_to_depth_resolution(record_configuration.depth_mode)
@@ -41,6 +40,7 @@ impl TryFrom<&RecordConfiguration> for StreamProperties {
     fn try_from(record_configuration: &RecordConfiguration) -> Result<Self, Self::Error> {
         Ok(Self {
             color_format: k4a_image_format_to_gst_video_format(&record_configuration.color_format)?,
+            // Note: `.unwrap_or_default()` for resolutions are utilised to avoid error if any of the streams is disabled.
             depth_resolution: depth_mode_to_ir_resolution(record_configuration.depth_mode)
                 .unwrap_or_default(),
             ir_resolution: depth_mode_to_depth_resolution(record_configuration.depth_mode)
