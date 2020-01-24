@@ -64,8 +64,8 @@ struct K4aSrcInternals {
 enum StreamSource {
     /// Variant that contains information about playback stream source.
     Playback(Playback, RecordConfiguration),
-    /// Variant that contains information about device stream source. `DeviceConfiguration` is None if only IMU stream is enabled.
-    Device(Device, Option<DeviceConfiguration>),
+    /// Variant that contains information about device stream source.
+    Device(Device, DeviceConfiguration),
 }
 
 /// A struct that contains timestamp of the first buffer for each stream as well as frame duration.
@@ -105,13 +105,12 @@ impl ObjectSubclass for K4aSrc {
                     &format! {"{},{},{},{}", STREAM_ID_DEPTH, STREAM_ID_IR, STREAM_ID_COLOR, STREAM_ID_IMU},
                 ),
                 (
-                    // Framerates at which K4A is capable of providing stream, where `IMU_SAMPLING_RATE_HZ` is selected if only IMU stream is enabled.
+                    // Framerates at which K4A is capable of providing stream
                     "framerate",
                     &gst::List::new(&[
                         &gst::Fraction::new(ALLOWED_FRAMERATES[0], 1),
                         &gst::Fraction::new(ALLOWED_FRAMERATES[1], 1),
                         &gst::Fraction::new(ALLOWED_FRAMERATES[2], 1),
-                        &gst::Fraction::new(IMU_SAMPLING_RATE_HZ, 1),
                     ]),
                 ),
             ],
@@ -166,10 +165,10 @@ impl BaseSrcImpl for K4aSrc {
         // Stop live streaming from K4A `Device`
         match &internals.stream_source {
             Some(StreamSource::Device(device, _device_configuration)) => {
-                device.stop_cameras();
                 if internals.settings.desired_streams.imu {
                     device.stop_imu();
                 }
+                device.stop_cameras();
             }
             Some(StreamSource::Playback(_playback, _record_configuration)) => {}
             None => unreachable!("k4asrc: Stream source is specified before reaching `stop()`"),
@@ -207,85 +206,73 @@ impl BaseSrcImpl for K4aSrc {
             // The first stream in this string is contained in the main buffer
             let mut selected_streams = String::new();
 
-            if let Some(stream_properties) = stream_properties {
-                // Add depth stream with its format, width and height into the caps, if enabled
-                if desired_streams.depth {
-                    selected_streams.push_str(&format!("{},", STREAM_ID_DEPTH));
-                    caps.set(
-                        &format!("{}_format", STREAM_ID_DEPTH),
-                        &k4a_image_format_to_gst_video_format(&DEPTH_FORMAT)
-                            .unwrap()
-                            .to_string(),
-                    );
-                    caps.set(
-                        &format!("{}_width", STREAM_ID_DEPTH),
-                        &stream_properties.depth_resolution.width,
-                    );
-                    caps.set(
-                        &format!("{}_height", STREAM_ID_DEPTH),
-                        &stream_properties.depth_resolution.height,
-                    );
-                }
-                // Add ir stream with its format, width and height into the caps, if enabled
-                if desired_streams.ir {
-                    selected_streams.push_str(&format!("{},", STREAM_ID_IR));
-                    caps.set(
-                        &format!("{}_format", STREAM_ID_IR),
-                        &k4a_image_format_to_gst_video_format(&IR_FORMAT)
-                            .unwrap()
-                            .to_string(),
-                    );
-                    caps.set(
-                        &format!("{}_width", STREAM_ID_IR),
-                        &stream_properties.ir_resolution.width,
-                    );
-                    caps.set(
-                        &format!("{}_height", STREAM_ID_IR),
-                        &stream_properties.ir_resolution.height,
-                    );
-                }
-                // Add color stream with its format, width and height into the caps, if enabled
-                if desired_streams.color {
-                    selected_streams.push_str(&format!("{},", STREAM_ID_COLOR));
-                    caps.set(
-                        &format!("{}_format", STREAM_ID_COLOR),
-                        &stream_properties.color_format.to_string(),
-                    );
-                    caps.set(
-                        &format!("{}_width", STREAM_ID_COLOR),
-                        &stream_properties.color_resolution.width,
-                    );
-                    caps.set(
-                        &format!("{}_height", STREAM_ID_COLOR),
-                        &stream_properties.color_resolution.height,
-                    );
-                }
-                // Add IMU stream, if enabled
-                if desired_streams.imu {
-                    selected_streams.push_str(&format!("{},", STREAM_ID_IMU));
-                }
-
-                // Pop the last ',' contained in streams (not really necessary, but nice)
-                selected_streams.pop();
-                // Fixate the framerate
-                caps.fixate_field_nearest_fraction("framerate", stream_properties.framerate);
-
-                internals.k4a_timestamp_internals.frame_duration = gst::ClockTime::from_nseconds(
-                    std::time::Duration::from_secs_f32(1.0_f32 / stream_properties.framerate as f32)
-                        .as_nanos() as u64,
+            // Add depth stream with its format, width and height into the caps, if enabled
+            if desired_streams.depth {
+                selected_streams.push_str(&format!("{},", STREAM_ID_DEPTH));
+                caps.set(
+                    &format!("{}_format", STREAM_ID_DEPTH),
+                    &k4a_image_format_to_gst_video_format(&DEPTH_FORMAT)
+                        .unwrap()
+                        .to_string(),
                 );
-            } else {
-                // This means that only IMU is enabled, i.e. no `DeviceConfiguration` is available
-                // Add IMU stream into the caps
-                selected_streams.push_str(&STREAM_ID_IMU);
-                // Fixate the framerate to `IMU_SAMPLING_RATE_HZ` if only IMU is enabled
-                caps.fixate_field_nearest_fraction("framerate", IMU_SAMPLING_RATE_HZ);
-
-                internals.k4a_timestamp_internals.frame_duration = gst::ClockTime::from_nseconds(
-                    std::time::Duration::from_secs_f32(1.0_f32 / IMU_SAMPLING_RATE_HZ as f32)
-                        .as_nanos() as u64,
+                caps.set(
+                    &format!("{}_width", STREAM_ID_DEPTH),
+                    &stream_properties.depth_resolution.width,
+                );
+                caps.set(
+                    &format!("{}_height", STREAM_ID_DEPTH),
+                    &stream_properties.depth_resolution.height,
                 );
             }
+            // Add ir stream with its format, width and height into the caps, if enabled
+            if desired_streams.ir {
+                selected_streams.push_str(&format!("{},", STREAM_ID_IR));
+                caps.set(
+                    &format!("{}_format", STREAM_ID_IR),
+                    &k4a_image_format_to_gst_video_format(&IR_FORMAT)
+                        .unwrap()
+                        .to_string(),
+                );
+                caps.set(
+                    &format!("{}_width", STREAM_ID_IR),
+                    &stream_properties.ir_resolution.width,
+                );
+                caps.set(
+                    &format!("{}_height", STREAM_ID_IR),
+                    &stream_properties.ir_resolution.height,
+                );
+            }
+            // Add color stream with its format, width and height into the caps, if enabled
+            if desired_streams.color {
+                selected_streams.push_str(&format!("{},", STREAM_ID_COLOR));
+                caps.set(
+                    &format!("{}_format", STREAM_ID_COLOR),
+                    &stream_properties.color_format.to_string(),
+                );
+                caps.set(
+                    &format!("{}_width", STREAM_ID_COLOR),
+                    &stream_properties.color_resolution.width,
+                );
+                caps.set(
+                    &format!("{}_height", STREAM_ID_COLOR),
+                    &stream_properties.color_resolution.height,
+                );
+            }
+            // Add IMU stream, if enabled
+            if desired_streams.imu {
+                selected_streams.push_str(&format!("{},", STREAM_ID_IMU));
+                caps.fixate_field_nearest_fraction("imu_sampling_rate", IMU_SAMPLING_RATE_HZ);
+            }
+
+            // Pop the last ',' contained in streams (not really necessary, but nice)
+            selected_streams.pop();
+            // Fixate the framerate
+            caps.fixate_field_nearest_fraction("framerate", stream_properties.framerate);
+
+            internals.k4a_timestamp_internals.frame_duration = gst::ClockTime::from_nseconds(
+                std::time::Duration::from_secs_f32(1.0_f32 / stream_properties.framerate as f32)
+                    .as_nanos() as u64,
+            );
 
             // Finally add the streams to the caps
             caps.set("streams", &selected_streams.as_str());
@@ -311,40 +298,38 @@ impl BaseSrcImpl for K4aSrc {
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
-        if desired_streams.is_any_video_enabled() {
-            let capture = self.get_capture(internals)?;
-            // Attach `depth` frame if enabled
-            if desired_streams.depth {
-                self.attach_frame_to_buffer(
-                    internals,
-                    &mut output_buffer,
-                    &capture,
-                    STREAM_ID_DEPTH,
-                    &[],
-                )?;
-            }
+        let capture = self.get_capture(internals)?;
+        // Attach `depth` frame if enabled
+        if desired_streams.depth {
+            self.attach_frame_to_buffer(
+                internals,
+                &mut output_buffer,
+                &capture,
+                STREAM_ID_DEPTH,
+                &[],
+            )?;
+        }
 
-            // Attach `ir` frame if enabled
-            if desired_streams.ir {
-                self.attach_frame_to_buffer(
-                    internals,
-                    &mut output_buffer,
-                    &capture,
-                    STREAM_ID_IR,
-                    &[desired_streams.depth],
-                )?;
-            }
+        // Attach `ir` frame if enabled
+        if desired_streams.ir {
+            self.attach_frame_to_buffer(
+                internals,
+                &mut output_buffer,
+                &capture,
+                STREAM_ID_IR,
+                &[desired_streams.depth],
+            )?;
+        }
 
-            // Attach `color` frame if enabled
-            if desired_streams.color {
-                self.attach_frame_to_buffer(
-                    internals,
-                    &mut output_buffer,
-                    &capture,
-                    STREAM_ID_COLOR,
-                    &[desired_streams.depth, desired_streams.ir],
-                )?;
-            }
+        // Attach `color` frame if enabled
+        if desired_streams.color {
+            self.attach_frame_to_buffer(
+                internals,
+                &mut output_buffer,
+                &capture,
+                STREAM_ID_COLOR,
+                &[desired_streams.depth, desired_streams.ir],
+            )?;
         }
 
         // Attach `IMU` samples if enabled
@@ -386,21 +371,23 @@ impl K4aSrc {
         let stream_source = &mut internals.stream_source;
 
         // Make sure the user enabled at least one of the streams
-        if !settings.desired_streams.is_any_enabled() {
+        if !settings.desired_streams.is_any_video_enabled() {
             return Err(K4aSrcError::Failure(
-                "k4asrc: At least one of the streams must be enabled",
+                "k4asrc: At least one of the video streams must be enabled",
+            ));
+        }
+
+        // Make sure that only one stream source is selected
+        if !settings.device_settings.serial.is_empty()
+            && !settings.playback_settings.recording_location.is_empty()
+        {
+            return Err(K4aSrcError::Failure(
+                "k4asrc: Both `serial` and `recording-location` are set, please select only one stream source",
             ));
         }
 
         // Determine whether to stream `Playback`
         if !settings.playback_settings.recording_location.is_empty() {
-            // Make sure that only one stream source is selected
-            if !settings.device_settings.serial.is_empty() {
-                return Err(K4aSrcError::Failure(
-                    "k4asrc: Both `serial` and `recording-location` are set, please select only one stream source",
-                ));
-            }
-
             // Open `Playback`
             let playback = Playback::open(&settings.playback_settings.recording_location)?;
             // Configure streaming based on the opened `Playback`
@@ -473,33 +460,26 @@ impl K4aSrc {
     /// * `device` - The Device to start streaming from.
     ///
     /// # Returns
-    /// * `Ok(Option<DeviceConfiguration>)` on success that contains None is only IMU stream is
-    /// enabled.
+    /// * `Ok(DeviceConfiguration)` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn start_from_device(
         &self,
         settings: &Settings,
         device: &Device,
-    ) -> Result<Option<DeviceConfiguration>, K4aSrcError> {
+    ) -> Result<DeviceConfiguration, K4aSrcError> {
+        // Create `DeviceConfiguration` based on settings
+        let device_configuration = DeviceConfiguration::try_from(settings)?;
+
+        // Start cameras with the given `DeviceConfiguration`
+        device.start_cameras(&device_configuration)?;
+
         // Start IMU if desired
         if settings.desired_streams.imu {
             device.start_imu()?;
         }
 
-        // Check whether any video stream is enabled
-        if settings.desired_streams.is_any_video_enabled() {
-            // Create `DeviceConfiguration` based on settings
-            let device_configuration = DeviceConfiguration::try_from(settings)?;
-
-            // Start cameras with the given `DeviceConfiguration`
-            device.start_cameras(&device_configuration)?;
-
-            // Return `DeviceConfiguration` if everything went fine
-            Ok(Some(device_configuration))
-        } else {
-            // Return `None` if no video stream is enabled
-            Ok(None)
-        }
+        // Return `DeviceConfiguration` if everything went fine
+        Ok(device_configuration)
     }
 
     /// Determine `StreamProperties`, containing fields relevant for CAPS `fixate()`, based on the
@@ -509,27 +489,21 @@ impl K4aSrc {
     /// * `stream_source` - The stream source to extract the properties from, i.e. `Playback` or `Device`.
     ///
     /// # Returns
-    /// * `Ok(Option<StreamProperties>)` on success that contains None if only IMU stream is enabled.
+    /// * `Ok(StreamProperties)` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn get_stream_properties(
         &self,
         stream_source: &StreamSource,
-    ) -> Result<Option<StreamProperties>, K4aSrcError> {
+    ) -> Result<StreamProperties, K4aSrcError> {
         Ok(match stream_source {
             StreamSource::Playback(_playback, record_configuration) => {
                 // Extract properties from record_configuration is streaming from playback
-                Some(StreamProperties::try_from(record_configuration)?)
+                StreamProperties::try_from(record_configuration)?
             }
-            StreamSource::Device(_device, device_configuration) => match device_configuration {
-                Some(device_configuration) => {
-                    // Extract properties from device_configuration if streaming video from device
-                    Some(StreamProperties::try_from(device_configuration)?)
-                }
-                None => {
-                    // If there is no device_configuration, this means that only streaming from IMU is enabled
-                    None
-                }
-            },
+            StreamSource::Device(_device, device_configuration) => {
+                // Extract properties from device_configuration if streaming video from device
+                StreamProperties::try_from(device_configuration)?
+            }
         })
     }
 

@@ -40,7 +40,7 @@ pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 500;
 /// Default behaviour of looping playback from recording.
 pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
 /// Default behaviour for applying custom timestamps to all buffers.
-pub(crate) const DEFAULT_DO_K4A_TIMESTAMP: bool = true;
+pub(crate) const DEFAULT_DO_K4A_TIMESTAMP: bool = false;
 
 // TODO: If desired, make these into properties with the appropriate support
 pub(crate) const DEPTH_DELAY_OFF_COLOR_USEC: i32 = 0;

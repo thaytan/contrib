@@ -35,15 +35,6 @@ impl Default for Streams {
 }
 
 impl Streams {
-    /// Determine whether at least one stream is enabled. Includes IMU stream.
-    ///
-    /// # Returns
-    /// * `true` if at least one stream is enabled.
-    /// * `false` if no stream is enabled.
-    pub(crate) fn is_any_enabled(&self) -> bool {
-        self.depth | self.ir | self.color | self.imu
-    }
-
     /// Determine whether at least one video stream is enabled. IMU stream is ignored.
     ///
     /// # Returns
