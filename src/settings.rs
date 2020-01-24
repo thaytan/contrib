@@ -1,5 +1,7 @@
+use crate::error::*;
 use crate::streams::*;
-use k4a::{ColorResolution, DepthMode, ImageFormat};
+use k4a::{utilities::i32_to_fps, ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
+use std::convert::{From, TryFrom};
 
 // Streams enabled by default
 /// Determines whether streaming depth frames is enabled by default.
@@ -92,8 +94,35 @@ impl Default for Settings {
     }
 }
 
+/// Determines the applicable `DeviceConfiguration` based on the selected settings.
+impl TryFrom<&Settings> for DeviceConfiguration {
+    type Error = K4aSrcError;
+    fn try_from(settings: &Settings) -> Result<Self, Self::Error> {
+        let device_settings = &settings.device_settings;
+
+        // TODO: If desired, implement possibility of not having the streams synchronised (requires quite a lot of work)
+        // Synchronisation is allowed only if both cameras are enabled
+        let synchronised_images_only = (settings.desired_streams.depth
+            || settings.desired_streams.ir)
+            && settings.desired_streams.color;
+
+        // Create `DeviceConfiguration` based on settings
+        Ok(DeviceConfiguration {
+            color_format: device_settings.color_format,
+            color_resolution: ColorResolution::from(settings),
+            depth_mode: DepthMode::from(settings),
+            camera_fps: i32_to_fps(device_settings.framerate)?,
+            synchronized_images_only: synchronised_images_only,
+            depth_delay_off_color_usec: DEPTH_DELAY_OFF_COLOR_USEC,
+            wired_sync_mode: WIRED_SYNCH_MODE,
+            subordinate_delay_off_master_usec: SUBORDINATE_DELAY_OFF_MASTER_USEC,
+            disable_streaming_indicator: DISABLE_STREAMING_INDICATOR,
+        })
+    }
+}
+
 /// Determines the applicable `DepthMode` while taking into account what streams are
-/// enabled, if any.
+/// enabled, if any. Used when converting to `DeviceConfiguration`.
 impl From<&Settings> for DepthMode {
     fn from(settings: &Settings) -> DepthMode {
         if settings.desired_streams.depth {
@@ -110,7 +139,7 @@ impl From<&Settings> for DepthMode {
 }
 
 /// Determines the applicable `ColorResolution` while taking into account whether
-/// the color stream is enabled or not.
+/// the color stream is enabled or not. Used when converting to `DeviceConfiguration`.
 impl From<&Settings> for ColorResolution {
     fn from(settings: &Settings) -> ColorResolution {
         if settings.desired_streams.color {

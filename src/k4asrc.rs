@@ -481,26 +481,8 @@ impl K4aSrc {
 
         // Check whether any video stream is enabled
         if settings.desired_streams.is_any_video_enabled() {
-            let device_settings = &settings.device_settings;
-
-            // TODO: If desired, implement possibility of not having the streams synchronised (requires quite a lot of work)
-            // Synchronisation is allowed only if both cameras are enabled
-            let synchronised_images_only = (settings.desired_streams.depth
-                || settings.desired_streams.ir)
-                && settings.desired_streams.color;
-
             // Create `DeviceConfiguration` based on settings
-            let device_configuration = DeviceConfiguration {
-                color_format: device_settings.color_format,
-                color_resolution: ColorResolution::from(settings),
-                depth_mode: DepthMode::from(settings),
-                camera_fps: i32_to_fps(device_settings.framerate)?,
-                synchronized_images_only: synchronised_images_only,
-                depth_delay_off_color_usec: DEPTH_DELAY_OFF_COLOR_USEC,
-                wired_sync_mode: WIRED_SYNCH_MODE,
-                subordinate_delay_off_master_usec: SUBORDINATE_DELAY_OFF_MASTER_USEC,
-                disable_streaming_indicator: DISABLE_STREAMING_INDICATOR,
-            };
+            let device_configuration = DeviceConfiguration::try_from(settings)?;
 
             // Start cameras with the given `DeviceConfiguration`
             device.start_cameras(&device_configuration)?;
