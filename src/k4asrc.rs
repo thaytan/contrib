@@ -37,10 +37,17 @@ use std::sync::Mutex;
 
 /// A struct representation of the `k4asrc` element.
 struct K4aSrc {
-    /// Debug category of `k4asrc` element.
-    cat: gst::DebugCategory,
     /// Internals of `k4asrc` element that are locked under mutex.
     internals: Mutex<K4aSrcInternals>,
+}
+
+lazy_static! {
+    /// Debug category of `k4asrc` element.
+    static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
+        "k4asrc",
+        gst::DebugColorFlags::empty(),
+        Some("K4A Source"),
+    );
 }
 
 /// Internals of the element that are under a mutex.
@@ -122,11 +129,6 @@ impl ObjectSubclass for K4aSrc {
 
     fn new() -> Self {
         Self {
-            cat: gst::DebugCategory::new(
-                "k4asrc",
-                gst::DebugColorFlags::empty(),
-                Some("K4A Source"),
-            ),
             internals: Mutex::new(K4aSrcInternals {
                 settings: Settings::default(),
                 stream_source: None,
@@ -765,7 +767,7 @@ impl K4aSrc {
     ) -> Result<(), K4aSrcError> {
         // Make sure there are samples to push
         if imu_samples.is_empty() {
-            gst_warning!(self.cat, "No `ImuSample`s were queued");
+            gst_warning!(CAT, "No `ImuSample`s were queued");
             return Ok(());
         }
 
@@ -941,7 +943,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `serial` from {:?} to {:?}",
                     settings.device_settings.serial,
@@ -954,7 +956,7 @@ impl ObjectImpl for K4aSrc {
                     .get()
                     .expect(&format!("k4asrc: Failed to set property `recording-location`. Expected a `string`, but got: {:?}", value));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `recording-location` from {:?} to {:?}",
                     settings.playback_settings.recording_location,
@@ -965,7 +967,7 @@ impl ObjectImpl for K4aSrc {
             subclass::Property("enable-depth", ..) => {
                 let enable_depth = value.get().expect(&format!("k4asrc: Failed to set property `enable-depth`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `enable-depth` from {} to {}",
                     settings.desired_streams.depth,
@@ -979,7 +981,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `enable-ir` from {} to {}",
                     settings.desired_streams.ir,
@@ -990,7 +992,7 @@ impl ObjectImpl for K4aSrc {
             subclass::Property("enable-color", ..) => {
                 let enable_color = value.get().expect(&format!("k4asrc: Failed to set property `enable-color`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `enable-color` from {} to {}",
                     settings.desired_streams.color,
@@ -1004,7 +1006,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `enable-imu` from {} to {}",
                     settings.desired_streams.imu,
@@ -1022,7 +1024,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `color-format` from {:?} to {:?}",
                     settings.device_settings.color_format,
@@ -1040,7 +1042,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `color-resolution` from {:?} to {:?}",
                     settings.device_settings.color_resolution,
@@ -1058,7 +1060,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `depth-mode` from {:?} to {:?}",
                     settings.device_settings.depth_mode,
@@ -1072,7 +1074,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `framerate` from {} to {}",
                     settings.device_settings.framerate,
@@ -1086,7 +1088,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `loop-recording` from {} to {}",
                     settings.playback_settings.loop_recording,
@@ -1100,7 +1102,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `get-capture-timeout` from {} to {}",
                     settings.device_settings.get_capture_timeout,
@@ -1114,7 +1116,7 @@ impl ObjectImpl for K4aSrc {
                     value
                 ));
                 gst_info!(
-                    self.cat,
+                    CAT,
                     obj: element,
                     "Changing property `do-k4a-timestamp` from {} to {}",
                     settings.do_k4a_timestamp,

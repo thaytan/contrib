@@ -1,43 +1,36 @@
 [package]
-name = 'gst-k4a'
+name = "gst-k4a"
 version = "0.0.0-ohmyconanpleaseoverwriteme" # Overwritten during conan create.
-authors = ['Andrej Orsula <andrej.orsula@aivero.com>']
-license = 'LGPL'
-description = 'GStreamer plugin containing `video/rgbd` source for an Azure Kinect DK (K4A) device'
+authors = ["Andrej Orsula <andrej.orsula@aivero.com>"]
+license = "LGPL"
+description = "GStreamer plugin containing `video/rgbd` source for an Azure Kinect DK (K4A) device"
 keywords = [
-    'Azure Kinect',
-    'K4A',
-    'Source',
-    'GStreamer',
-    'Rust',
+    "Azure Kinect",
+    "K4A",
+    "Source",
+    "GStreamer",
+    "Rust",
 ]
-repository = 'https://gitlab.com/aivero/public/gstreamer/gst-k4a'
-edition = '2018'
-readme = 'README.md'
+repository = "https://gitlab.com/aivero/public/gstreamer/gst-k4a"
+edition = "2018"
+readme = "README.md"
 
-[dependencies.glib]
-version = '0.8'
-
-[dependencies.gstreamer]
-version = '0.14'
-features = ['subclassing']
-
-[dependencies.gstreamer-base]
-version = '0.14'
-features = ['subclassing']
-
-[dependencies.gstreamer-video]
-version = '0.14'
+[dependencies]
+glib = { version = "0.8" }
+gstreamer = { version = "0.14", features = ["subclassing"] }
+gstreamer-base = { version = "0.14", features = ["subclassing"] }
+gstreamer-video = { version = "0.14", features = ["subclassing"] }
+lazy_static = { version = "1.4" }
 
 [dependencies.gstreamer-depth-meta]
-git = 'https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs'
-tag = '0.2.1'
+git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
+tag = "0.2.1"
 
 [dependencies.k4a]
-git = 'https://gitlab.com/aivero/hardware/k4a-rs'
-tag = '0.1.2'
+git = "https://gitlab.com/aivero/hardware/k4a-rs"
+tag = "0.1.2"
 
 [lib]
-name = 'gstk4asrc'
-crate-type = ['cdylib']
-path = 'src/lib.rs'
+name = "gstk4asrc"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
