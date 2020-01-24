@@ -488,9 +488,9 @@ impl AggregatorImpl for RgbdMux {
             // Wait until CAPS query is received on the src pad
             gst::QueryView::Caps(_query_caps) => {
                 // Get the src_pad used for sending the query to the linked downstream element
-                let src_pad = aggregator.get_static_pad("src").unwrap_or_else(|| {
-                    unreachable!("Element must have a src pad to receive a src_query")
-                });
+                let src_pad = aggregator
+                    .get_static_pad("src")
+                    .expect("Element must have a src pad to receive a src_query");
                 // Get the default CAPS from the src pad template
                 let src_pad_template_caps = aggregator
                     .get_pad_template("src")
@@ -504,10 +504,10 @@ impl AggregatorImpl for RgbdMux {
                 if src_pad.peer_query(&mut request_downstream_caps_query) {
                     if let Some(requested_caps) = request_downstream_caps_query.get_result() {
                         // Before extraction, intersect with src pad template caps
-                        let requested_caps =
-                            requested_caps.intersect(&src_pad_template_caps.unwrap_or_else(|| {
-                                unreachable!("Rgbdmux defines a src pad template with caps")
-                            }));
+                        let requested_caps = requested_caps.intersect(
+                            &src_pad_template_caps
+                                .expect("Rgbdmux defines a src pad template with caps"),
+                        );
                         // Extract formats from these caps for use when creating new CAPS
                         let requested_stream_formats = &mut *self
                             .requested_stream_formats
@@ -958,27 +958,19 @@ impl RgbdMux {
     /// # Returns
     /// * `HashMap<String, String>` - Hashmap containing <stream, format>.
     fn extract_formats_from_rgbd_caps(&self, caps: &gst::Caps) -> HashMap<String, String> {
-        // Create and output HashMap
-        let mut output: HashMap<String, String> = HashMap::new();
-
-        // Iterate over all fields in the input CAPS
-        for (field, value) in caps
-            .iter()
+        // Iterate over all fields in the input CAPS and retain only the format field
+        caps.iter()
             .next()
             .expect("Downstream element of rgbdmux has not CAPS")
             .iter()
-        {
-            // Disregards fieds that do not include the format
+            .filter_map(|(field,value)| {
             if !field.contains("_format") {
-                continue;
+                None
             }
-
-            // Insert new entry with stream name and the corresponding format
-            let stream_name = field.replace("_format", "");
-            output.insert(stream_name, value.get::<String>().unwrap());
-        }
-
-        output
+            else {
+                Some((field.replace("_format", ""), value.get::<String>().unwrap()))
+            }
+        }).collect::<HashMap<String, String>>()
     }
 
     /// Determines what pad template to use for a new sink pad. It attaches a format to the CAPS if downstream element has such request.

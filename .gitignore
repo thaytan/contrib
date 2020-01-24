@@ -7,3 +7,4 @@ CMakeLists.txt
 cmake-build-*
 conan/
 build/
+*.code-workspace
