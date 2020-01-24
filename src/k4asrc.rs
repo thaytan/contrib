@@ -492,8 +492,8 @@ impl K4aSrc {
             // Create `DeviceConfiguration` based on settings
             let device_configuration = DeviceConfiguration {
                 color_format: device_settings.color_format,
-                color_resolution: settings.determine_color_resolution(),
-                depth_mode: settings.determine_depth_mode(),
+                color_resolution: ColorResolution::from(settings),
+                depth_mode: DepthMode::from(settings),
                 camera_fps: i32_to_fps(device_settings.framerate)?,
                 synchronized_images_only: synchronised_images_only,
                 depth_delay_off_color_usec: DEPTH_DELAY_OFF_COLOR_USEC,
