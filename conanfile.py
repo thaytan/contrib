@@ -14,8 +14,9 @@ class GStreamerRtspServerConan(ConanFile):
         "examples": [True, False],
         "tests": [True, False],
         "introspection": [True, False],
+        "rtspclientsink": [True, False],
     }
-    default_options = ("examples=False", "tests=False", "introspection=True")
+    default_options = ("examples=False", "tests=False", "introspection=True", "rtspclientsink=True")
     generators = "env"
 
     def build_requirements(self):
@@ -39,6 +40,7 @@ class GStreamerRtspServerConan(ConanFile):
         args.append("-Dcheck=" + ("enabled" if self.options.examples else "disabled"))
         args.append("-Dtools=" + ("enabled" if self.options.tests else "disabled"))
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
+        args.append("-Drtspclientsink=" + ("enabled" if self.options.rtspclientsink else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-rtsp-server-%s" % self.version, args=args)
         meson.install()
