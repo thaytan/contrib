@@ -36,7 +36,7 @@ pub(crate) const DEFAULT_FRAMERATE: i32 = ALLOWED_FRAMERATES[1];
 
 // Default settings for GStreamer specifics
 /// Default timeout duration while waiting for frames when streaming from K4A device.
-pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 500;
+pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 1000;
 /// Default behaviour of looping playback from recording.
 pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
 /// Default behaviour for applying timestamps to buffers.
