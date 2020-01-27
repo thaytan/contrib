@@ -30,8 +30,8 @@ class GStreamerPluginsBadConan(ConanFile):
         "introspection=True",
         "videoparsers=True",
         "gl=True",
-        "nvdec=False",
-        "nvenc=False",
+        "nvdec=True",
+        "nvenc=True",
         "nvcodec=False",
         "pnm=True",
         "webrtc=True",
@@ -50,6 +50,7 @@ class GStreamerPluginsBadConan(ConanFile):
         git = tools.Git(folder=self.recipe_folder)
         tag, branch = git.get_tag(), git.get_branch()
         self.version = tag if tag and branch.startswith("HEAD") else branch
+        self.version = "1.16.2"
 
     def configure(self):
         if self.settings.arch != "x86_64":
@@ -62,6 +63,9 @@ class GStreamerPluginsBadConan(ConanFile):
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
+        if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
+            self.build_requires("cuda/[>=10.1 <10.2]@%s/stable" % self.user)
+            self.build_requires("orc/[>=0.4.31]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
@@ -77,9 +81,7 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("opencv/[>=3.4.8]@%s/stable" % self.user)
         if self.options.closedcaption:
             self.requires("pango/[>=1.4.3]@%s/stable" % self.user)
-        if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
-            self.requires("cuda/[>=10.1 <10.2]@%s/testing" % self.user)
-            self.requires("orc/[>=0.4.31]@%s/stable" % self.user)
+
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)
