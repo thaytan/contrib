@@ -64,14 +64,15 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         )
     }),
     subclass::Property("color-format", |name| {
+        // TODO: replace with GEnum
         glib::ParamSpec::int(
             name,
             "Color Format",
             "Format of the color stream: \
-             \n\t\t\t0 - K4A_IMAGE_FORMAT_COLOR_MJPG \
-             \n\t\t\t1 - K4A_IMAGE_FORMAT_COLOR_NV12 \
-             \n\t\t\t2 - K4A_IMAGE_FORMAT_COLOR_YUY2 \
-             \n\t\t\t3 - K4A_IMAGE_FORMAT_COLOR_BGRA32",
+             \n\t\t\t0 - MJPG \
+             \n\t\t\t1 - NV12 (720p only) \
+             \n\t\t\t2 - YUY2 (720p only) \
+             \n\t\t\t3 - BGRA32 (720p only) ",
             k4a::ImageFormat::K4A_IMAGE_FORMAT_COLOR_MJPG as i32,
             k4a::ImageFormat::K4A_IMAGE_FORMAT_COLOR_BGRA32 as i32,
             DEFAULT_COLOR_FORMAT as i32,
@@ -79,16 +80,17 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         )
     }),
     subclass::Property("color-resolution", |name| {
+        // TODO: replace with GEnum
         glib::ParamSpec::int(
             name,
             "Color Resolution",
             "Resolution of the color stream: \
-             \n\t\t\t1 - K4A_COLOR_RESOLUTION_720P \
-             \n\t\t\t2 - K4A_COLOR_RESOLUTION_1080P \
-             \n\t\t\t3 - K4A_COLOR_RESOLUTION_1440P \
-             \n\t\t\t4 - K4A_COLOR_RESOLUTION_1536P \
-             \n\t\t\t5 - K4A_COLOR_RESOLUTION_2160P \
-             \n\t\t\t6 - K4A_COLOR_RESOLUTION_3072P",
+             \n\t\t\t1 - 720p \
+             \n\t\t\t2 - 1080p \
+             \n\t\t\t3 - 1440p \
+             \n\t\t\t4 - 1536p \
+             \n\t\t\t5 - 2160p \
+             \n\t\t\t6 - 3072p",
             k4a::ColorResolution::K4A_COLOR_RESOLUTION_720P as i32,
             k4a::ColorResolution::K4A_COLOR_RESOLUTION_3072P as i32,
             DEFAULT_COLOR_RESOLUTION as i32,
@@ -96,14 +98,15 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         )
     }),
     subclass::Property("depth-mode", |name| {
+        // TODO: replace with GEnum
         glib::ParamSpec::int(
             name,
             "Depth Mode",
             "Depth capture mode configuration: \
-             \n\t\t\t1 - K4A_DEPTH_MODE_NFOV_2X2BINNED \
-             \n\t\t\t2 - K4A_DEPTH_MODE_NFOV_UNBINNED \
-             \n\t\t\t3 - K4A_DEPTH_MODE_WFOV_2X2BINNED \
-             \n\t\t\t4 - K4A_DEPTH_MODE_WFOV_UNBINNED",
+             \n\t\t\t1 - NFOV_2x2binned \
+             \n\t\t\t2 - NFOV_unbinned \
+             \n\t\t\t3 - WFOV_2x2binned \
+             \n\t\t\t4 - WFOV_unbinned",
             k4a::DepthMode::K4A_DEPTH_MODE_NFOV_2X2BINNED as i32,
             k4a::DepthMode::K4A_DEPTH_MODE_WFOV_UNBINNED as i32,
             DEFAULT_DEPTH_MODE as i32,
@@ -111,10 +114,12 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         )
     }),
     subclass::Property("framerate", |name| {
+        // TODO: replace with GEnum
         glib::ParamSpec::int(
             name,
             "Framerate",
-            "Common framerate of the selected video streams.",
+            "Common framerate of the selected video streams. \
+             (30 FPS is not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)",
             ALLOWED_FRAMERATES[0],
             ALLOWED_FRAMERATES[2],
             DEFAULT_FRAMERATE,
@@ -135,8 +140,8 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
     subclass::Property("get-capture-timeout", |name| {
         glib::ParamSpec::int(
             name,
-            "Wait For Frames Timeout",
-            "Timeout used while waiting for frames from a K4A device in milliseconds. This \
+            "Get Capture Timeout",
+            "Timeout used while waiting for capture from a K4A device in milliseconds. This \
              property applies only if streaming from device.",
             1,
             std::i32::MAX,
@@ -144,15 +149,24 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("do-k4a-timestamp", |name| {
-        glib::ParamSpec::boolean(
+    subclass::Property("timestamp-mode", |name| {
+        // TODO: replace with GEnum
+        glib::ParamSpec::int(
             name,
-            "Perform custom timestamp handling",
-            "Adds timestamps to all buffers based on the duration since the element was created. \
-             As oppose to `do-timestamp`, this property adds the timestamps to all meta Buffers. \
-             This property cannot be enabled if streaming from playback and `loop-recording` \
-             property is set to true.",
-            DEFAULT_DO_K4A_TIMESTAMP,
+            "Timestamp Mode",
+            "Timestamp mode to use: \
+             \n\t\t\t0 - ignore: Do not apply timestamp to any buffer \
+             \n\t\t\t1 - main: Apply timestamps only to the main buffers based on current stream \
+             time (identical to enabling `do-timestamp=true`) \
+             \n\t\t\t2 (default) - all: Apply timestamps to all buffers based on current stream \
+             time, i.e. since the element was last put to PLAYING \
+             \n\t\t\t3 - k4a_common: Apply timestamps to all buffers based on the timestamps obtained \
+             from plysical K4A device or playback \
+             \n\t\t\t4 - k4a_individual: Apply timestamps to all buffers based on the timestamps obtained \
+             from plysical K4A device or playback",
+            TimestampMode::Ignore as i32,
+            TimestampMode::K4aIndividual as i32,
+            DEFAULT_TIMESTAMP_MODE as i32,
             glib::ParamFlags::READWRITE,
         )
     }),

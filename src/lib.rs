@@ -15,6 +15,7 @@ mod properties;
 mod settings;
 mod stream_properties;
 mod streams;
+mod timestamps;
 mod utilities;
 
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {

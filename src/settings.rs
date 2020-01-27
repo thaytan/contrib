@@ -24,7 +24,7 @@ pub(crate) const DEFAULT_COLOR_FORMAT: ImageFormat = ImageFormat::K4A_IMAGE_FORM
 pub(crate) const DEFAULT_COLOR_RESOLUTION: ColorResolution =
     ColorResolution::K4A_COLOR_RESOLUTION_720P;
 /// Default depth mode for streming from K4A device.
-pub(crate) const DEFAULT_DEPTH_MODE: DepthMode = DepthMode::K4A_DEPTH_MODE_WFOV_UNBINNED;
+pub(crate) const DEFAULT_DEPTH_MODE: DepthMode = DepthMode::K4A_DEPTH_MODE_NFOV_UNBINNED;
 
 // Framerates
 /// All allowed framerates for streaming video.
@@ -39,8 +39,8 @@ pub(crate) const DEFAULT_FRAMERATE: i32 = ALLOWED_FRAMERATES[1];
 pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 500;
 /// Default behaviour of looping playback from recording.
 pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
-/// Default behaviour for applying custom timestamps to all buffers.
-pub(crate) const DEFAULT_DO_K4A_TIMESTAMP: bool = false;
+/// Default behaviour for applying timestamps to buffers.
+pub(crate) const DEFAULT_TIMESTAMP_MODE: TimestampMode = TimestampMode::All;
 
 // TODO: If desired, make these into properties with the appropriate support
 pub(crate) const DEPTH_DELAY_OFF_COLOR_USEC: i32 = 0;
@@ -54,7 +54,7 @@ pub(crate) struct Settings {
     pub(crate) device_settings: DeviceSettings,
     pub(crate) playback_settings: PlaybackSettings,
     pub(crate) desired_streams: Streams,
-    pub(crate) do_k4a_timestamp: bool,
+    pub(crate) timestamp_mode: TimestampMode,
 }
 
 /// A struct containing properties specific for streaming from a physical K4A device.
@@ -73,6 +73,16 @@ pub(crate) struct PlaybackSettings {
     pub(crate) loop_recording: bool,
 }
 
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub(crate) enum TimestampMode {
+    Ignore = 0,
+    Main = 1,
+    All = 2,
+    K4aCommon = 3,
+    K4aIndividual = 4,
+}
+
 impl Default for Settings {
     fn default() -> Self {
         Self {
@@ -89,7 +99,7 @@ impl Default for Settings {
                 recording_location: String::default(),
                 loop_recording: DEFAULT_LOOP_RECORDING,
             },
-            do_k4a_timestamp: DEFAULT_DO_K4A_TIMESTAMP,
+            timestamp_mode: DEFAULT_TIMESTAMP_MODE,
         }
     }
 }

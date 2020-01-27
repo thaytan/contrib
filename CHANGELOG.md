@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Expand timestamping capabilities, i.e. `timestamp-mode` property that can take the following forms: `ignore`, `main`, `all`, `k4a_common` and `k4a_individual`.
 
 
 ## [0.1.0] - 2020-01-24
