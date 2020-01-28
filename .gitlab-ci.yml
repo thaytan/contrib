@@ -1,3 +1,4 @@
 include:
   - project: 'aivero/cloud/cicd'
-    file: 'conan-ci.yml'
+    file: 'conan-ci-base.yml'
+    file: 'conan-ci-amd64.yml'
