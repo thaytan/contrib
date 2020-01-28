@@ -1,11 +1,27 @@
 extern crate bindgen;
+extern crate pkg_config;
 
 use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rustc-link-lib=k4a");
-    println!("cargo:rustc-link-lib=k4arecord");
+    let libk4a = pkg_config::Config::new()
+        .atleast_version("1.3.0")
+        .probe("k4a");
+
+    // Determine include paths for `libk4a` if found with pkgconfig
+    // Otherwise use local installation
+    let mut libk4a_include_dirs: Vec<String> = Vec::new();
+    if let Ok(libk4a) = libk4a {
+        libk4a_include_dirs = libk4a
+            .include_paths
+            .iter()
+            .map(|x| ["-I", x.to_str().unwrap()].concat())
+            .collect();
+    } else {
+        println!("cargo:rustc-link-lib=k4a");
+        println!("cargo:rustc-link-lib=k4arecord");
+    }
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
@@ -27,6 +43,7 @@ fn main() {
         .rustified_enum("k4a_firmware_signature_t")
         .rustified_enum("k4a_stream_result_t")
         .rustified_enum("k4a_playback_seek_origin_t")
+        .clang_args(libk4a_include_dirs)
         .generate()
         .expect("Unable to generate bindings for `k4a`");
 
