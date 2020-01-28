@@ -1,7 +1,5 @@
 import os
-
-from conans import CMake, ConanFile, tools
-
+from conans import ConanFile, tools
 
 class KinectAzureSensorSDKConan(ConanFile):
     name = "k4a"
@@ -11,38 +9,37 @@ class KinectAzureSensorSDKConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-k4a"
     settings = "os", "compiler", "build_type", "arch"
     generators = "env"
-    exports = "patches/disable_build_of_examples_and_tools.patch"
-    repo = "Azure-Kinect-Sensor-SDK"
+    exports = "k4a.pc"
 
     def build_requirements(self):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
-        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-
-    def requirements(self):
-        self.requires("glfw/[>=3.3]@%s/stable" % self.user)
-        self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
 
     def source(self):
-        # Clone `Azure-Kinect-Sensor-SDK` repo
-        git = tools.Git(folder=self.repo)
-        git.clone("https://github.com/microsoft/%s.git" % self.repo, branch="release/%s.x" % self.version[:3])
+        version_short=self.version[:3]
+        arch = self.settings.arch
+        if arch == "x86_64":
+            arch = "amd64"
 
-        # Disable building of examples and tools
-        tools.patch(base_path=self.repo, patch_file="patches/disable_build_of_examples_and_tools.patch")
+        debian_repo_url="https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/libk"
+        libk4a = "libk4a%s_%s_%s.deb" % (version_short, self.version, arch)
+        libk4a_dev = "libk4a%s-dev_%s_%s.deb" % (version_short, self.version, arch)
 
-    def build(self):
-        # Build
-        cmake = CMake(self, generator="Ninja")
-        cmake.configure(source_folder=self.repo)
-        cmake.build()
-        cmake.install()
+        # Download `libk4a` and `libk4a-dev` for headers and shared objects
+        tools.download("%s/libk4a%s/%s" % (debian_repo_url, version_short, libk4a), filename=libk4a)
+        tools.download("%s/libk4a%s-dev/%s" % (debian_repo_url, version_short, libk4a_dev),  filename=libk4a_dev)
 
-        # Download `libk4a` and extract `libdepthengine`
-        libk4a_deb = "libk4a%s_%s_%s.deb" % (self.version[:3], self.version, "amd64")
-        tools.download("https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/libk/libk4a%s/%s" % (self.version[:3], libk4a_deb), filename=libk4a_deb)
-        self.run("dpkg -x %s libk4a" % libk4a_deb)
-        self.run("find -iname 'libdepthengine.*' -exec cp {} %s \;" % os.path.join(self.package_folder, "lib"))
+        # Extract shared objects, including the closed-source `libdepthengine.so*`
+        self.run("dpkg -x %s libk4a" % libk4a)
+        # Extract headers
+        self.run("dpkg -x %s libk4a" % libk4a_dev)
+
+
+    def package(self):
+        tools.replace_prefix_in_pc_file("k4a.pc", self.package_folder)
+        self.copy("*", src="libk4a/usr/include", dst="include")
+        self.copy("*", src="libk4a/usr/lib/x86_64-linux-gnu", dst="lib")
+        self.copy("k4a.pc", dst="lib/pkgconfig")
+        
 
     def package_info(self):
         self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib")
