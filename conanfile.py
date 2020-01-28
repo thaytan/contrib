@@ -39,4 +39,5 @@ class CudaConan(ConanFile):
             self.copy("*", dst="include", src="%s/include" % toolkit)
         self.copy("*.bc", src="cuda-toolkit")
         self.copy("*libcuda.so*", dst="lib", keep_path=False)
+        self.copy("*libnvcuvid.so*", dst="lib", keep_path=False)
         self.copy(pattern="*.pc", dst="lib/pkgconfig")
