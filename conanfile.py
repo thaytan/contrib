@@ -20,6 +20,7 @@ class GccConan(ConanFile):
     def build(self):
         args = [
             "--libexecdir=%s" % os.path.join(self.package_folder, "lib"),
+            "--disable-bootstrap",
             "--enable-languages=c,c++",
             "--enable-shared",
             "--enable-threads=posix",
@@ -48,7 +49,7 @@ class GccConan(ConanFile):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
-            autotools.install()
+            autotools.make(target="install-strip")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "ccc")
