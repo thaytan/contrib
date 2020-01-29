@@ -40,4 +40,7 @@ class CudaConan(ConanFile):
         self.copy("*.bc", src="cuda-toolkit")
         self.copy("*libcuda.so*", dst="lib", keep_path=False, symlinks=True)
         self.copy("*libnvcuvid.so*", dst="lib", keep_path=False, symlinks=True)
+        with tools.chdir(os.path.join(self.package_folder, "lib")):
+            os.symlink("libnvcuvid.so.418.87.00", "libnvcuvid.so.1")
+            os.symlink("libnvcuvid.so.1", "libnvcuvid.so")
         self.copy(pattern="*.pc", dst="lib/pkgconfig")
