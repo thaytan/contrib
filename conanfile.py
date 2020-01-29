@@ -6,7 +6,7 @@ from conans import CMake, ConanFile, tools
 class SvtHevcConan(ConanFile):
     name = "svt-hevc"
     version = tools.get_env("GIT_TAG", "1.4.3")
-    license = "bsd"
+    license = "BSD"
     description = "The Scalable Video Technology for HEVC Encoder"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
