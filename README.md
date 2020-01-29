@@ -79,7 +79,6 @@ realsense_demux.src_infra2 ! queue ! glimagesink \
 realsense_demux.src_color ! queue ! glimagesink 
 ```
 
-
 # Contributing
 
 Please see [the contribution guidelines](CONTRIBUTING.md) for instructions on how to contribute.

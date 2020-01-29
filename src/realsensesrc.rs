@@ -157,7 +157,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.rosbag_location = rosbag_location;
                 obj.downcast_ref::<gst_base::BaseSrc>()
                     .unwrap()
-                    .set_live(false);
+                    .set_live(settings.real_time_rosbag_playback);
             }
             subclass::Property("json-location", ..) => {
                 let json_location = value.get::<String>();
@@ -309,7 +309,7 @@ impl ObjectImpl for RealsenseSrc {
                 gst_info!(
                     CAT,
                     obj: element,
-                    "Changing property `do-custom-timestamp` from {:?} to {:?}",
+                    "Changing property `timestamp-mode` from {:?} to {:?}",
                     settings.timestamp_mode,
                     timestamp_mode
                 );
@@ -325,6 +325,9 @@ impl ObjectImpl for RealsenseSrc {
                     real_time_rosbag_playback
                 );
                 settings.real_time_rosbag_playback = real_time_rosbag_playback;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(settings.real_time_rosbag_playback);
             }
             _ => unimplemented!("Property is not implemented"),
         };
@@ -543,7 +546,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 // Compute difference between the current and the first timestamp
                 let time_diff = rs2_timestamp
                     .checked_sub(*base_time)
-                    .unwrap_or_else(|| unreachable!());
+                    .expect("Could not compute timestamp for the buffer");
                 Some(gst::ClockTime::from_nseconds(time_diff.as_nanos() as u64))
             }
             RealsenseTimestampMode::AllBuffers => {
@@ -560,6 +563,7 @@ impl BaseSrcImpl for RealsenseSrc {
             }
             _ => None,
         };
+        gst_debug!(CAT, "Timestamping the buffer {:?}", timestamp);
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
