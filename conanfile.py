@@ -10,7 +10,7 @@ class GccConan(ConanFile):
     description = "The GNU Compiler Collection - C and C++ frontends"
 
     def build_requirements(self):
-        self.build_requires("gcc-bootstrap/7.4.0@%s/stable" % self.user)
+        self.build_requires("bootstrap-gcc/7.4.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))
