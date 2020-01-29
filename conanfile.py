@@ -19,6 +19,7 @@ class GccConan(ConanFile):
 
     def build(self):
         args = [
+            "--libexecdir=%s" % os.path.join(self.package_folder, "lib"),
             "--enable-languages=c,c++",
             "--enable-shared",
             "--enable-threads=posix",
@@ -50,5 +51,5 @@ class GccConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc")
+        self.env_info.CC = os.path.join(self.package_folder, "bin", "ccc")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++")
