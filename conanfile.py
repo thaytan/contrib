@@ -52,5 +52,5 @@ class GccConan(ConanFile):
             autotools.make(target="install-strip")
 
     def package_info(self):
-        self.env_info.CC = os.path.join(self.package_folder, "bin", "ccc")
+        self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++")
