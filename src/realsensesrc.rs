@@ -309,7 +309,7 @@ impl ObjectImpl for RealsenseSrc {
                 gst_info!(
                     CAT,
                     obj: element,
-                    "Changing property `do-custom-timestamp` from {:?} to {:?}",
+                    "Changing property `timestamp-mode` from {:?} to {:?}",
                     settings.timestamp_mode,
                     timestamp_mode
                 );
@@ -563,6 +563,7 @@ impl BaseSrcImpl for RealsenseSrc {
             }
             _ => None,
         };
+        gst_debug!(CAT, "Timestamping the buffer {:?}", timestamp);
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
