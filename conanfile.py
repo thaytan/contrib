@@ -24,3 +24,6 @@ class MakeConan(ConanFile):
             autotools.configure()
             autotools.make()
             autotools.install()
+
+    def package_info(self):
+        self.env_info.MAKE = os.path.join(self.package_folder, "bin", "make")
