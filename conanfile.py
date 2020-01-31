@@ -13,6 +13,7 @@ class IslConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("make/[>=4.3]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("gmp/[>=6.1.2]@%s/stable" % self.user)
