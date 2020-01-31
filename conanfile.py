@@ -15,6 +15,7 @@ class M4Conan(ConanFile):
     def build_requirements(self):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("make/[>=4.3]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/m4/m4-%s.tar.gz" % self.version)
