@@ -293,40 +293,71 @@ impl BaseSrcImpl for K4aSrc {
         let mut output_buffer = gst::buffer::Buffer::new();
 
         let capture = self.get_capture(internals)?;
+
         // Attach `depth` frame if enabled
         if desired_streams.depth {
-            self.attach_frame_to_buffer(
-                base_src,
-                internals,
-                &mut output_buffer,
-                &capture,
-                STREAM_ID_DEPTH,
-                &[],
-            )?;
+            if self
+                .attach_frame_to_buffer(
+                    base_src,
+                    internals,
+                    &mut output_buffer,
+                    &capture,
+                    STREAM_ID_DEPTH,
+                    &[],
+                )
+                .is_err()
+            {
+                gst_warning!(
+                    CAT,
+                    obj: base_src,
+                    "Frame could not be attached to buffer for `{}` stream",
+                    STREAM_ID_DEPTH
+                );
+            }
         }
 
         // Attach `ir` frame if enabled
         if desired_streams.ir {
-            self.attach_frame_to_buffer(
-                base_src,
-                internals,
-                &mut output_buffer,
-                &capture,
-                STREAM_ID_IR,
-                &[desired_streams.depth],
-            )?;
+            if self
+                .attach_frame_to_buffer(
+                    base_src,
+                    internals,
+                    &mut output_buffer,
+                    &capture,
+                    STREAM_ID_IR,
+                    &[desired_streams.depth],
+                )
+                .is_err()
+            {
+                gst_warning!(
+                    CAT,
+                    obj: base_src,
+                    "Frame could not be attached to buffer for `{}` stream",
+                    STREAM_ID_IR
+                );
+            }
         }
 
         // Attach `color` frame if enabled
         if desired_streams.color {
-            self.attach_frame_to_buffer(
-                base_src,
-                internals,
-                &mut output_buffer,
-                &capture,
-                STREAM_ID_COLOR,
-                &[desired_streams.depth, desired_streams.ir],
-            )?;
+            if self
+                .attach_frame_to_buffer(
+                    base_src,
+                    internals,
+                    &mut output_buffer,
+                    &capture,
+                    STREAM_ID_COLOR,
+                    &[desired_streams.depth, desired_streams.ir],
+                )
+                .is_err()
+            {
+                gst_warning!(
+                    CAT,
+                    obj: base_src,
+                    "Frame could not be attached to buffer for `{}` stream",
+                    STREAM_ID_COLOR
+                );
+            }
         }
 
         // Attach `IMU` samples if enabled
@@ -339,7 +370,7 @@ impl BaseSrcImpl for K4aSrc {
     }
 
     fn is_seekable(&self, _base_src: &gst_base::BaseSrc) -> bool {
-        // TODO: If desired, enable seeking for streaming from `Playback`
+        // TODO: If desired, enable and implement seeking for streaming from `Playback`
         false
     }
 }
@@ -429,6 +460,19 @@ impl K4aSrc {
             color: record_configuration.color_track_enabled,
             imu: record_configuration.imu_track_enabled,
         };
+
+        // Make sure that K4A timestamps are not applied with Playback looping
+        match settings.timestamp_mode {
+            TimestampMode::K4aCommon | TimestampMode::K4aIndividual => {
+                if settings.playback_settings.loop_recording {
+                    return Err(K4aSrcError::Failure(
+                        "k4asrc: Property `loop-recording` cannot be set true with `timestamp-mode=k4a-common` \
+                        or `timestamp-mode=k4a-individual` because timestamps would not be monotonically increasing",
+                    ));
+                }
+            }
+            _ => {}
+        }
 
         // Make sure there are no conflicts between the desired and available streams
         if !Streams::are_streams_available(&settings.desired_streams, &available_streams) {
@@ -610,9 +654,10 @@ impl K4aSrc {
             STREAM_ID_DEPTH => capture.get_depth_image(),
             STREAM_ID_IR => capture.get_ir_image(),
             STREAM_ID_COLOR => capture.get_color_image(),
-            _ => unreachable!("k4asrc: There are no more video streams"),
-        };
+            _ => unreachable!("k4asrc: There are no more video streams available from K4A"),
+        }?;
         let frame_buffer = frame.get_buffer()?;
+
         // Form a gst buffer out of mutable slice
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_buffer);
         // Get mutable reference to the buffer
@@ -694,6 +739,7 @@ impl K4aSrc {
         output_buffer: &mut gst::Buffer,
         imu_samples: Vec<ImuSample>,
     ) -> Result<(), K4aSrcError> {
+        // TODO: Determine whether this function can ever return an error
         // Make sure there are samples to push
         if imu_samples.is_empty() {
             gst_warning!(CAT, "No `ImuSample`s were queued");
@@ -865,7 +911,8 @@ impl ObjectImpl for K4aSrc {
         // Set format to time
         element.set_format(gst::Format::Time);
 
-        // The element is live by default, but changes to false once `recording-location` is defined.
+        // The element is live by default, but can be changed to false once `recording-location`
+        // is defined and `real-time-playback=false`
         element.set_live(true);
     }
 
@@ -899,11 +946,14 @@ impl ObjectImpl for K4aSrc {
             subclass::Property("framerate", ..) => {
                 Ok(settings.device_settings.framerate.to_value())
             }
+            subclass::Property("get-capture-timeout", ..) => {
+                Ok(settings.device_settings.get_capture_timeout.to_value())
+            }
             subclass::Property("loop-recording", ..) => {
                 Ok(settings.playback_settings.loop_recording.to_value())
             }
-            subclass::Property("get-capture-timeout", ..) => {
-                Ok(settings.device_settings.get_capture_timeout.to_value())
+            subclass::Property("real-time-playback", ..) => {
+                Ok(settings.playback_settings.loop_recording.to_value())
             }
             subclass::Property("timestamp-mode", ..) => {
                 Ok((settings.timestamp_mode as i32).to_value())
@@ -939,6 +989,7 @@ impl ObjectImpl for K4aSrc {
                     serial
                 );
                 settings.device_settings.serial = serial;
+                // Streaming from Device makes this source always live
                 obj.downcast_ref::<gst_base::BaseSrc>()
                     .unwrap()
                     .set_live(true);
@@ -955,9 +1006,10 @@ impl ObjectImpl for K4aSrc {
                     recording_location
                 );
                 settings.playback_settings.recording_location = recording_location;
+                // Liveliness of the element, when streaming from Playback, depends also on `real-time-playback` property
                 obj.downcast_ref::<gst_base::BaseSrc>()
                     .unwrap()
-                    .set_live(false);
+                    .set_live(settings.playback_settings.real_time_playback);
             }
             subclass::Property("enable-depth", ..) => {
                 let enable_depth = value.get().expect(&format!("k4asrc: Failed to set property `enable-depth`. Expected a `bool`, but got: {:?}", value));
@@ -1077,6 +1129,20 @@ impl ObjectImpl for K4aSrc {
                 );
                 settings.device_settings.framerate = framerate;
             }
+            subclass::Property("get-capture-timeout", ..) => {
+                let get_capture_timeout = value.get().expect(&format!(
+                    "k4asrc: Failed to set property `get-capture-timeout`. Expected a `i32`, but got: {:?}",
+                    value
+                ));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `get-capture-timeout` from {} to {}",
+                    settings.device_settings.get_capture_timeout,
+                    get_capture_timeout
+                );
+                settings.device_settings.get_capture_timeout = get_capture_timeout;
+            }
             subclass::Property("loop-recording", ..) => {
                 let loop_recording = value.get().expect(&format!(
                     "k4asrc: Failed to set property `loop-recording`. Expected a `bool`, but got: {:?}",
@@ -1091,19 +1157,25 @@ impl ObjectImpl for K4aSrc {
                 );
                 settings.playback_settings.loop_recording = loop_recording;
             }
-            subclass::Property("get-capture-timeout", ..) => {
-                let get_capture_timeout = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `get-capture-timeout`. Expected a `i32`, but got: {:?}",
+            subclass::Property("real-time-playback", ..) => {
+                let real_time_playback = value.get().expect(&format!(
+                    "k4asrc: Failed to set property `real-time-playback`. Expected a `bool`, but got: {:?}",
                     value
                 ));
                 gst_info!(
                     CAT,
                     obj: element,
-                    "Changing property `get-capture-timeout` from {} to {}",
-                    settings.device_settings.get_capture_timeout,
-                    get_capture_timeout
+                    "Changing property `real-time-playback` from {} to {}",
+                    settings.playback_settings.real_time_playback,
+                    real_time_playback
                 );
-                settings.device_settings.get_capture_timeout = get_capture_timeout;
+                settings.playback_settings.real_time_playback = real_time_playback;
+                // Make sure that streaming from playback is enabled before changing the liveliness of the element
+                if !settings.playback_settings.recording_location.is_empty() {
+                    obj.downcast_ref::<gst_base::BaseSrc>()
+                        .unwrap()
+                        .set_live(settings.playback_settings.real_time_playback);
+                }
             }
             subclass::Property("timestamp-mode", ..) => {
                 let value: i32 = value.get().expect(&format!(

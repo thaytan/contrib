@@ -2,14 +2,14 @@ use crate::settings::*;
 use glib::subclass;
 
 /// All properties that `k4asrc` element supports.
-pub(crate) static PROPERTIES: [subclass::Property; 13] = [
+pub(crate) static PROPERTIES: [subclass::Property; 14] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
             "Serial Number",
             "Serial number of a K4A device. If unchanged or empty, `recording-location` is used to \
-            locate a file to play from. If both `serial` and `recording-location` are unchanged or \
-            empty, first detected device will be used for streaming.",
+             locate a file to play from. If both `serial` and `recording-location` are unchanged or \
+             empty, first detected device will be used for streaming.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -19,8 +19,8 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
             name,
             "Recording File Location",
             "Location of a recording file to play from. If unchanged or empty, physical device \
-            specified by `serial` is used. If both `serial` and `recording-location` are unchanged \
-            or empty, first detected device will be used.",
+             specified by `serial` is used. If both `serial` and `recording-location` are unchanged \
+             or empty, first detected device will be used.",
             None,
             glib::ParamFlags::READWRITE,
         )
@@ -64,15 +64,18 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         )
     }),
     subclass::Property("color-format", |name| {
-        // TODO: replace with GEnum
+        // TODO: Replace with GEnum
+        // Note: It is possible to convert the color format also when streaming from Playback
+        // by the use of `k4a_playback_set_color_conversion()` (not tested). However, the decision
+        // is to use GStreamer conversion for such purposes instead.
         glib::ParamSpec::int(
             name,
             "Color Format",
-            "Format of the color stream: \
+            "Format of the color stream, applicable only when streaming from device: \
              \n\t\t\t0 - MJPG \
              \n\t\t\t1 - NV12 (720p only) \
              \n\t\t\t2 - YUY2 (720p only) \
-             \n\t\t\t3 - BGRA32 (720p only) ",
+             \n\t\t\t3 - BGRA32 (720p only)",
             k4a::ImageFormat::K4A_IMAGE_FORMAT_COLOR_MJPG as i32,
             k4a::ImageFormat::K4A_IMAGE_FORMAT_COLOR_BGRA32 as i32,
             DEFAULT_COLOR_FORMAT as i32,
@@ -84,7 +87,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         glib::ParamSpec::int(
             name,
             "Color Resolution",
-            "Resolution of the color stream: \
+            "Resolution of the color stream, applicable only when streaming from device: \
              \n\t\t\t1 - 720p \
              \n\t\t\t2 - 1080p \
              \n\t\t\t3 - 1440p \
@@ -102,7 +105,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         glib::ParamSpec::int(
             name,
             "Depth Mode",
-            "Depth capture mode configuration: \
+            "Depth capture mode configuration, applicable only when streaming from device: \
              \n\t\t\t1 - NFOV_2x2binned \
              \n\t\t\t2 - NFOV_unbinned \
              \n\t\t\t3 - WFOV_2x2binned \
@@ -118,11 +121,23 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
         glib::ParamSpec::int(
             name,
             "Framerate",
-            "Common framerate of the selected video streams. \
+            "Common framerate of the selected video streams, applicable only when streaming from device. \
              (30 FPS is not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)",
             ALLOWED_FRAMERATES[0],
             ALLOWED_FRAMERATES[2],
             DEFAULT_FRAMERATE,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("get-capture-timeout", |name| {
+        glib::ParamSpec::int(
+            name,
+            "Get Capture Timeout",
+            "Timeout used while waiting for capture from a K4A device in milliseconds. Applicable \
+             only when streaming from device",
+            1,
+            std::i32::MAX,
+            DEFAULT_GET_CAPTURE_TIMEOUT,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -131,21 +146,22 @@ pub(crate) static PROPERTIES: [subclass::Property; 13] = [
             name,
             "Loop recording",
             "Enables looping of playing from recording recording specified by `recording-location` \
-            property. This property applies only if streaming from playback. This property cannot \
-            be enabled if `do-k4a-timestamp` property is set to true.",
+             property. This property applies only when streaming from Playback. This property cannot \
+             be enabled if `timestamp-mode=k4a_common` or `timestamp-mode=k4a_individual`.",
             DEFAULT_LOOP_RECORDING,
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("get-capture-timeout", |name| {
-        glib::ParamSpec::int(
+    subclass::Property("real-time-playback", |name| {
+        glib::ParamSpec::boolean(
             name,
-            "Get Capture Timeout",
-            "Timeout used while waiting for capture from a K4A device in milliseconds. This \
-             property applies only if streaming from device.",
-            1,
-            std::i32::MAX,
-            DEFAULT_GET_CAPTURE_TIMEOUT,
+            "Real Time Playback",
+            "Determines whether to stream from a recording at the same rate as it was recorded, \
+             i.e. pseudo-live source. If set to false, streaming rate will be determined based on \
+             the recording rate (and hence the negotiated framerate). If set to false and downstream \
+             sink element(s) are set to `async=true`, the streaming rate will be as fast as possible. \
+             This property is applicable only when streaming from Playback.",
+            DEFAULT_REAL_TIME_PLAYBACK,
             glib::ParamFlags::READWRITE,
         )
     }),

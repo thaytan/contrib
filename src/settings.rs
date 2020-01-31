@@ -41,6 +41,8 @@ pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 1000;
 pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
 /// Default behaviour for applying timestamps to buffers.
 pub(crate) const DEFAULT_TIMESTAMP_MODE: TimestampMode = TimestampMode::All;
+/// Default behaviour for liveliness of the element when playing back from a recording.
+pub(crate) const DEFAULT_REAL_TIME_PLAYBACK: bool = true;
 
 // TODO: If desired, make these into properties with the appropriate support
 pub(crate) const DEPTH_DELAY_OFF_COLOR_USEC: i32 = 0;
@@ -71,6 +73,7 @@ pub(crate) struct DeviceSettings {
 pub(crate) struct PlaybackSettings {
     pub(crate) recording_location: String,
     pub(crate) loop_recording: bool,
+    pub(crate) real_time_playback: bool,
 }
 
 #[repr(u32)]
@@ -98,6 +101,7 @@ impl Default for Settings {
             playback_settings: PlaybackSettings {
                 recording_location: String::default(),
                 loop_recording: DEFAULT_LOOP_RECORDING,
+                real_time_playback: DEFAULT_REAL_TIME_PLAYBACK,
             },
             timestamp_mode: DEFAULT_TIMESTAMP_MODE,
         }
