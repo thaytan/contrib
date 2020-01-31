@@ -17,6 +17,7 @@ class GccConan(ConanFile):
 
     def requirements(self):
         self.requires("binutils/[>=2.33.1]@%s/stable" % self.user)
+        self.requires("isl/[>=0.22.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))
