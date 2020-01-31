@@ -33,11 +33,11 @@ class BinutilsConan(ConanFile):
             "--with-system-zlib",
         ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            autotools = AutoToolsBuildEnvironment(self, build_type="Release")
+            autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make(target="configure-host")
             autotools.make(["tooldir=" + self.package_folder])
-            autotools.install(["tooldir=" + self.package_folder])
+            autotools.make(["tooldir=" + self.package_folder], target="install-strip")
 
     def package_info(self):
         self.env_info.LD = os.path.join(self.package_folder, "bin", "ld")
