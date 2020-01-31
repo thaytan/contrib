@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class GccConan(ConanFile):
     name = "gcc"
     version = tools.get_env("GIT_TAG", "7.4.0")
-    isl_version = "0.21"
     settings = "os", "compiler", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom", "FDL", "GPL", "LGPL"
@@ -14,12 +13,12 @@ class GccConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("make/[>=4.3]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("binutils/[>=2.33.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("http://isl.gforge.inria.fr/isl-%s.tar.xz" % self.isl_version)
         tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))
 
     def build(self):
@@ -51,7 +50,6 @@ class GccConan(ConanFile):
             "--enable-cet=auto",
         ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            os.symlink("../isl-" + self.isl_version, "isl")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
