@@ -8,7 +8,7 @@ class GmpConan(ConanFile):
     version = tools.get_env("GIT_TAG", "6.1.2")
     settings = "os", "compiler", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    license = "GPL", "LGPL3"
+    license = "GPL"
     description = "A free library for arbitrary precision arithmetic"
 
     def build_requirements(self):
