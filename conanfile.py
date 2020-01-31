@@ -14,6 +14,7 @@ class GmpConan(ConanFile):
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("m4/[>=1.4.18]@%s/stable" % self.user)
+        self.build_requires("make/[>=4.3]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gmplib.org/download/gmp/gmp-%s.tar.xz" % self.version)
