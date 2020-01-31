@@ -1,6 +1,6 @@
 [package]
 name = "k4a"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Andrej Orsula <andrej.orsula@aivero.com>"]
 description = "Rust FFI bindings for Azure Kinect SDK"
 keywords = ["Azure Kinect SDK", "Rust", "FFI", "idiomatic", "safe"]
