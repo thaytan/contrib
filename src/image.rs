@@ -41,7 +41,7 @@ impl Image {
     /// * `Err(K4aError::Failure)` on failure.
     pub fn get_buffer(&self) -> Result<Vec<u8>> {
         let buffer = unsafe { k4a_image_get_buffer(self.handle) };
-        if buffer == std::ptr::null_mut() {
+        if buffer.is_null() {
             return Err(K4aError::Failure(
                 "`Image` is invalid and does not contain a buffer",
             ));

@@ -374,7 +374,7 @@ impl Device {
             }
         }
 
-        let mut calibration_data= vec![0_u8; calibration_data_length];
+        let mut calibration_data = vec![0_u8; calibration_data_length];
         match unsafe {
             k4a_device_get_raw_calibration(
                 self.handle,

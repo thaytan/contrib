@@ -1,3 +1,4 @@
+use crate::error::*;
 use k4a_sys::*;
 
 use crate::image::Image;
@@ -23,10 +24,16 @@ impl Capture {
     /// [`Capture`](../capture/struct.Capture.html).
     ///
     /// # Returns
-    /// * Color `Image`.
-    pub fn get_color_image(&self) -> Image {
-        Image {
-            handle: unsafe { k4a_capture_get_color_image(self.handle) },
+    /// * `Ok(Image)` with color frame on success.
+    /// * `Err(K4aError::Failure)` on failure.
+    pub fn get_color_image(&self) -> Result<Image> {
+        let handle = unsafe { k4a_capture_get_color_image(self.handle) };
+        if handle.is_null() {
+            Err(K4aError::Failure(
+                "`Capture` does not contain `color` `Image`",
+            ))
+        } else {
+            Ok(Image { handle })
         }
     }
 
@@ -34,10 +41,16 @@ impl Capture {
     /// [`Capture`](../capture/struct.Capture.html).
     ///
     /// # Returns
-    /// * Depth `Image`.
-    pub fn get_depth_image(&self) -> Image {
-        Image {
-            handle: unsafe { k4a_capture_get_depth_image(self.handle) },
+    /// * `Ok(Image)` with depth frame on success.
+    /// * `Err(K4aError::Failure)` on failure.
+    pub fn get_depth_image(&self) -> Result<Image> {
+        let handle = unsafe { k4a_capture_get_depth_image(self.handle) };
+        if handle.is_null() {
+            Err(K4aError::Failure(
+                "`Capture` does not contain `depth` `Image`",
+            ))
+        } else {
+            Ok(Image { handle })
         }
     }
 
@@ -45,10 +58,14 @@ impl Capture {
     /// [`Capture`](../capture/struct.Capture.html).
     ///
     /// # Returns
-    /// * IR `Image`.
-    pub fn get_ir_image(&self) -> Image {
-        Image {
-            handle: unsafe { k4a_capture_get_ir_image(self.handle) },
+    /// * `Ok(Image)` with IR frame on success.
+    /// * `Err(K4aError::Failure)` on failure.
+    pub fn get_ir_image(&self) -> Result<Image> {
+        let handle = unsafe { k4a_capture_get_ir_image(self.handle) };
+        if handle.is_null() {
+            Err(K4aError::Failure("`Capture` does not contain `ir` `Image`"))
+        } else {
+            Ok(Image { handle })
         }
     }
 
