@@ -3,8 +3,8 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class GmpConan(ConanFile):
-    name = "gmp"
+class GccGmpConan(ConanFile):
+    name = "gcc-gmp"
     version = tools.get_env("GIT_TAG", "6.1.2")
     settings = "os", "compiler", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
