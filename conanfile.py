@@ -23,7 +23,7 @@ class MesonConan(ConanFile):
         self.requires("python-setuptools/[>=41.2.0]@%s/stable" % self.user)
         self.requires("ninja/[>=1.9.0]@%s/stable" % self.user)
         self.requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
-        self.requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.requires("cc/[>=1.0.0]@%s/stable" % self.user)
 
     def build(self):
         py_path = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
