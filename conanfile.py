@@ -10,4 +10,4 @@ class CcConan(ConanFile):
     description = "Virtual C/C++ compiler package"
 
     def requirements(self):
-        self.requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.requires("gcc/[>=7.4.0]@%s/stable" % self.user)
