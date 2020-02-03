@@ -52,7 +52,6 @@ class GStreamerPluginsBadConan(ConanFile):
         git = tools.Git(folder=self.recipe_folder)
         tag, branch = git.get_tag(), git.get_branch()
         self.version = tag if tag and branch.startswith("HEAD") else branch
-        self.version = "1.16.2"
 
     def configure(self):
         if self.settings.arch != "x86_64":
