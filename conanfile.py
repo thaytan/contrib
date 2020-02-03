@@ -21,8 +21,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         "matroska": [True, False],
         "videomixer": [True, False],
         "ximagesrc": [True, False],
-        "ximagesrc-xdamage": [True, False],
-        "ximagesrc-xshm": [True, False]
+        "ximagesrc_xdamage": [True, False],
+        "ximagesrc_xshm": [True, False]
     }
     default_options = (
         "autodetect=True",
@@ -37,8 +37,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         "matroska=True",
         "videomixer=True",
         "ximagesrc=True",
-        "ximagesrc-xdamage=True",
-        "ximagesrc-xshm=True"
+        "ximagesrc_xdamage=False",
+        "ximagesrc_xshm=True"
     )
     generators = "env"
 
@@ -80,8 +80,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Dmatroska=" + ("enabled" if self.options.matroska else "disabled"))
         args.append("-Dvideomixer=" + ("enabled" if self.options.videomixer else "disabled"))
         args.append("-Dximagesrc=" + ("enabled" if self.options.ximagesrc else "disabled"))
-        args.append("-Dximagesrc-xdamage=" + ("enabled" if self.options.ximagesrc-xdamage else "disabled"))
-        args.append("-Dximagesrc=-xshm" + ("enabled" if self.options.ximagesrc-xshm else "disabled"))
+        args.append("-Dximagesrc-xdamage=" + ("enabled" if self.options.ximagesrc_xdamage else "disabled"))
+        args.append("-Dxshm=" + ("enabled" if self.options.ximagesrc_xshm else "disabled"))
 
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args)
