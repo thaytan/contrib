@@ -14,8 +14,7 @@ class NodejsConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-        self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def requirements(self):
