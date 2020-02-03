@@ -6,12 +6,8 @@ class MinuzConan(ConanFile):
     version = tools.get_env("GIT_TAG", "2.1.0")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Single C source file zlib-replacement library"
-    license = "ZLIB"
+    license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
-    options = {
-        "x11": [True, False],
-    }
-    default_options = ("x11=True", )
     generators = "env"
 
     def build_requirements(self):
