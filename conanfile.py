@@ -25,7 +25,7 @@ class GccGmpConan(ConanFile):
         args = [
             "--disable-static",
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir("gmp-%s" % self.version):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
