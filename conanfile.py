@@ -18,6 +18,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "pnm": [True, False],
         "webrtc": [True, False],
         "srtp": [True, False],
+        "rtmp2": [True, False],
         "dtls": [True, False],
         "mpegtsmux": [True, False],
         "mpegtsdemux": [True, False],
@@ -36,6 +37,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "pnm=True",
         "webrtc=True",
         "srtp=True",
+        "rtmp2=True",
         "dtls=True",
         "mpegtsmux=True",
         "mpegtsdemux=True",
@@ -96,6 +98,7 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
         args.append("-Dwebrtc=" + ("enabled" if self.options.webrtc else "disabled"))
         args.append("-Dsrtp=" + ("enabled" if self.options.srtp else "disabled"))
+        args.append("-Drtmp2=" + ("enabled" if self.options.rtmp2 else "disabled"))
         args.append("-Ddtls=" + ("enabled" if self.options.srtp else "disabled"))
         args.append("-Dmpegtsmux=" + ("enabled" if self.options.mpegtsmux else "disabled"))
         args.append("-Dmpegtsdemux=" + ("enabled" if self.options.mpegtsdemux else "disabled"))
