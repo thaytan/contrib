@@ -11,7 +11,7 @@ class AutotoolsConan(ConanFile):
     generators = "env"
 
     def requirements(self):
-        self.requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.requires("cc/[>=1.0.0]@%s/stable" % self.user)
         self.requires("make/[>=3.4.0]@%s/stable" % self.user)
         self.requires("autoconf/[>=2.69]@%s/stable" % self.user)
         self.requires("automake/[>=1.16.1]@%s/stable" % self.user)
