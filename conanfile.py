@@ -2,7 +2,7 @@ from conans import ConanFile, tools
 
 
 class GccConan(ConanFile):
-    name = "bootstrap-gcc"
+    name = "gcc"
     version = tools.get_env("GIT_TAG", "7.4.0")
     settings = "os", "compiler", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
