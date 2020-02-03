@@ -14,9 +14,9 @@ class CMakeConan(ConanFile):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
+        self.requires("cc/[>=1.0.0]@%s/stable" % self.user)
         self.requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
         self.requires("ninja/[>=1.9.0]@%s/stable" % self.user)
-        self.requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/Kitware/CMake/releases/download/v{0}/cmake-{0}.tar.gz".format(self.version))
