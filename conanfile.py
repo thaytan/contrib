@@ -62,6 +62,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         if self.options.vpx:
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
+        if self.options.jpeg:
+            self.requires("libjpeg-turbo/[>=2.0.3]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)
