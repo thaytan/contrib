@@ -22,7 +22,9 @@ class GStreamerPluginsGoodConan(ConanFile):
         "videomixer": [True, False],
         "ximagesrc": [True, False],
         "ximagesrc_xdamage": [True, False],
-        "ximagesrc_xshm": [True, False]
+        "ximagesrc_xshm": [True, False],
+        "jpeg": [True, False]
+
     }
     default_options = (
         "autodetect=True",
@@ -38,7 +40,8 @@ class GStreamerPluginsGoodConan(ConanFile):
         "videomixer=True",
         "ximagesrc=True",
         "ximagesrc_xdamage=False",
-        "ximagesrc_xshm=True"
+        "ximagesrc_xshm=True",
+        "jpeg=True"
     )
     generators = "env"
 
@@ -82,6 +85,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Dximagesrc=" + ("enabled" if self.options.ximagesrc else "disabled"))
         args.append("-Dximagesrc-xdamage=" + ("enabled" if self.options.ximagesrc_xdamage else "disabled"))
         args.append("-Dxshm=" + ("enabled" if self.options.ximagesrc_xshm else "disabled"))
+        args.append("-Djpeg=" + ("enabled" if self.options.jpeg else "disabled"))
 
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args)
