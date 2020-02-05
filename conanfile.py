@@ -24,7 +24,7 @@ class LibjpegTurboConan(ConanFile):
     def build(self):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["WITH_JPEG8"] = True
-        cmake.definitions["CMAKE_INSTALL_LIBDIR"] = self.package_folder
+        cmake.definitions["CMAKE_INSTALL_LIBDIR"] = os.path.join(self.package_folder, "lib")
         cmake.configure(source_folder="%s-%s" % (self.name, self.version))
         cmake.build()
         cmake.install()
