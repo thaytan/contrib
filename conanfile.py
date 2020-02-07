@@ -30,6 +30,3 @@ class ItstoolConan(ConanFile):
             autotools.configure()
             autotools.make()
             autotools.install()
-
-    def package_info(self):
-        self.env_info.XDG_DATA_DIRS.append(os.path.join(self.package_folder, "share"))
