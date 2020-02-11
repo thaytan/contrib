@@ -1,4 +1,5 @@
 from conans import CMake, ConanFile, tools
+import os
 
 
 class AmqpCppConan(ConanFile):
@@ -9,6 +10,7 @@ class AmqpCppConan(ConanFile):
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"
     generators = "env"
+    exports = "openssl.patch"
 
     def build_requirements(self):
         self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
@@ -19,6 +21,7 @@ class AmqpCppConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v%s.tar.gz" % self.version)
+        tools.patch(patch_file="openssl.patch", base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
