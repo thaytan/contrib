@@ -12,11 +12,11 @@ class CairoConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"introspection": [True, False], "zlib": [True, False], "png": [True, False], "fontconfig": [True, False]}
     default_options = ("introspection=True", "zlib=True", "png=True", "fontconfig=True")
-    generators = "env"
+    generators ="pkgconf"
     scm = {"type": "git", "url": "https://github.com/centricular/cairo.git", "revision": "meson-%s" % version, "recursive": True, "subfolder": ("cairo-%s" % version)}
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
