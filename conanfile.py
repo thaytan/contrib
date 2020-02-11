@@ -10,13 +10,13 @@ class PythonPipConan(ConanFile):
     license = "MIT"
     description = "High productivity build system"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "env"
+    generators ="pkgconf"
 
     def source(self):
         tools.get("https://github.com/pypa/pip/archive/%s.tar.gz" % self.version)
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("python-setuptools/[>=41.2.0]@%s/stable" % self.user)
 
     def requirements(self):
