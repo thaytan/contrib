@@ -11,10 +11,10 @@ class LibtoolConan(ConanFile):
     license = "GPL"
     description = "A generic library support script"
     exports = "libtool-prefix-fix.patch"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
         self.build_requires("automake/[>=1.16.1]@%s/stable" % self.user)
