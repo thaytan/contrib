@@ -75,7 +75,10 @@ class env(Generator):
         for var, val in self.conanfile.env.items():
             if isinstance(val, str):
                 val = [val]
-            files["env.sh"] += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+            if len(val) > 1:
+                files["env.sh"] += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+            else:
+                files["env.sh"] += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
 
         return files
 
@@ -95,10 +98,14 @@ class tools(Generator):
             os.makedirs(self.output_path)
 
         # Generate wrapper bins
+        env_vars = ""
         for var, val in self.env.items():
             if isinstance(val, str):
                 val = [val]
-            env_vars += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+            if len(val) > 1:
+                env_vars += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+            else:
+                env_vars += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
 
         # Find rootpath
         # 'dependencies' is not indexable
