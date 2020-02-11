@@ -11,10 +11,10 @@ class GstreamerNvJetsonPluginsConan(ConanFile):
     description = "Demo conan package"
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = ["lib/gstreamer-1.0/*.so"]
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
