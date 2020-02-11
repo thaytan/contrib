@@ -13,10 +13,10 @@ class LibglvndConan(ConanFile):
     }
     default_options = ("x11=True", )
     exports = "ignore-warnings.patch"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         if self.options.x11:
             self.build_requires("xorgproto/[>=2019.1]@%s/stable" % self.user)
