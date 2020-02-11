@@ -18,10 +18,10 @@ class Gtk3Conan(ConanFile):
         "introspection=True",
         "x11=True",
     )
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("gettext/[>=0.20.1]@%s/stable" % self.user)
         if self.options.introspection:
