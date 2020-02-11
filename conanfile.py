@@ -11,10 +11,10 @@ class AutoconfConan(ConanFile):
     license = "GPL3"
     description = "A GNU tool for automatically configuring source code"
     exports = "m4-include.patch"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def requirements(self):
