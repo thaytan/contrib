@@ -6,31 +6,6 @@ from conans import ConanFile
 from conans.model import Generator
 
 
-def replace_prefix_in_pc_file(pc_file, prefix):
-    with open(pc_file) as f:
-        old_prefix = ""
-        # Get old prefix
-        for l in f:
-            if l == "prefix=":
-                return f.read().replace("prefix=", "prefix=%s".format(prefix))
-            if "prefix=" in l:
-                old_prefix = l.split("=")[1][:-1]
-                break
-        f.seek(0)
-        if not old_prefix:
-            for l in f:
-                if "libdir=" in l:
-                    old_prefix = l.split("=")[1][:-5]
-                    break
-                if "includedir=" in l:
-                    old_prefix = l.split("=")[1][:-9]
-                    break
-        if not old_prefix:
-            raise Exception("Could not find package prefix in '%s'" % pc_file)
-        f.seek(0)
-        return f.read().replace(old_prefix, prefix)
-
-
 class env(Generator):
     def __init__(self, conanfile):
         super().__init__(conanfile)
@@ -41,42 +16,13 @@ class env(Generator):
 
     @property
     def content(self):
-        files = {"env.sh": ""}
-
-        # Generate pc files
-        for _, cpp_info in self.deps_build_info.dependencies:
-            pc_paths = [
-                os.path.join(cpp_info.rootpath, "lib", "pkgconfig"),
-                os.path.join(cpp_info.rootpath, "share", "pkgconfig"),
-            ]
-            for pc_path in pc_paths:
-                if not os.path.isdir(pc_path):
-                    continue
-                for pc in os.listdir(pc_path):
-                    files[pc] = replace_prefix_in_pc_file(os.path.join(pc_path, pc), cpp_info.rootpath)
-
-        # Generate pc files from PKG_CONFIG_SYSTEM_PATH
-        if hasattr(self.conanfile, "system_pcs") and "PKG_CONFIG_SYSTEM_PATH" in os.environ:
-            if isinstance(self.conanfile.system_pcs, str):
-                self.conanfile.system_pcs = set([self.conanfile.system_pcs])
-            system_pcs = set(self.conanfile.system_pcs)
-            for pc_path in os.environ["PKG_CONFIG_SYSTEM_PATH"].split(os.pathsep):
-                for pc in os.listdir(pc_path):
-                    pc_name = os.path.splitext(pc)[0]
-                    if not pc_name in self.conanfile.system_pcs:
-                        continue
-                    system_pcs.remove(pc_name)
-                    with open(os.path.join(pc_path, pc), "r") as pc_file:
-                        files[pc] = pc_file.read()
-            if len(system_pcs):
-                raise Exception("'%s' not available in system pkg-config directories" % ", ".join(system_pcs))
-
         # Set environment from env_info
+        files = {"env.sh": 'export PKG_CONFIG_PATH="{}"\n'.format(self.output_path)}
         for var, val in self.conanfile.env.items():
             if isinstance(val, str):
                 val = [val]
             if len(val) > 1:
-                files["env.sh"] += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+                files["env.sh"] += 'export {0}={1}"\$\{${0}:+:${0}\}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
                 files["env.sh"] += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
 
@@ -86,7 +32,6 @@ class env(Generator):
 class tools(Generator):
     def __init__(self, conanfile):
         super().__init__(conanfile)
-        self.env = conanfile.env
 
     @property
     def filename(self):
@@ -99,7 +44,7 @@ class tools(Generator):
 
         # Generate wrapper bins
         env_vars = ""
-        for var, val in self.env.items():
+        for var, val in self.conanfile.env.items():
             if isinstance(val, str):
                 val = [val]
             if len(val) > 1:
@@ -129,9 +74,9 @@ class tools(Generator):
         return {}
 
 
-class EnvPackage(ConanFile):
-    name = "env-generator"
+class GeneratorsPackage(ConanFile):
+    name = "generators"
     version = "1.0.0"
     url = "https://gitlab.com/aivero/public/conan-env-generator"
     license = "MIT"
-    description = "Generate environment file for build and runtime"
+    description = "Conan generators"
