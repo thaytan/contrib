@@ -19,6 +19,8 @@ class AmqpCppConan(ConanFile):
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
+        cmake.definitions["AMQP-CPP_BUILD_SHARED"] = "ON"
+        cmake.definitions["AMQP-CPP_LINUX_TCP"] = "ON"
         cmake.configure(source_folder="AMQP-CPP-%s" % self.version)
         cmake.build()
         cmake.install()
