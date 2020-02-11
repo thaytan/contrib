@@ -46,7 +46,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "closedcaption=False",
         "aiveropatchlatency=False",
     )
-    generators = "env"
+    generators ="pkgconf"
 
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
@@ -60,7 +60,7 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvcodec")
 
     def build_requirements(self):
-        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
