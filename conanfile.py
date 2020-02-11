@@ -12,12 +12,12 @@ class GstreamerNvJetsonV4l2(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2", )
-    generators = "env"
+    generators ="pkgconf"
     gst_version = "1.16.0"
     exports_sources = {"patches/*"}
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
 
