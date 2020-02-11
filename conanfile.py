@@ -8,10 +8,10 @@ class OpusConan(ConanFile):
     description = "Modern audio compression for the internet"
     license = "BSD"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://archive.mozilla.org/pub/opus/opus-%s.tar.gz" % self.version)
