@@ -10,10 +10,10 @@ class PythonCairoConan(ConanFile):
     description = "Python bindings for the cairo graphics library"
     license = "LGPL2.1"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
