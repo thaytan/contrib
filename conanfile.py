@@ -10,10 +10,10 @@ class CurlConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "An URL retrieval utility and library"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("zlib/[>=1.2.11]@%s/stable" % self.user)
         self.build_requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
