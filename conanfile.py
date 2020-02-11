@@ -10,7 +10,7 @@ class SccacheConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "env"
+    generators ="pkgconf"
 
     def source(self):
         tools.get(
@@ -18,7 +18,7 @@ class SccacheConan(ConanFile):
         )
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
         self.build_requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
 
