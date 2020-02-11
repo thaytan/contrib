@@ -17,10 +17,10 @@ class GStreamerRtspServerConan(ConanFile):
         "rtspclientsink": [True, False],
     }
     default_options = ("examples=False", "tests=False", "introspection=True", "rtspclientsink=True")
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
         self.build_requires("flex/[>=2.6.4]@%s/stable" % self.user)
