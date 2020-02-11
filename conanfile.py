@@ -11,10 +11,10 @@ class GdkPixbufConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
         self.build_requires("gettext/[>=0.20.1]@%s/stable" % self.user)
