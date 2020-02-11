@@ -1,7 +1,10 @@
-# Environment generator
-A Conan generator that creates an environment file and handles the pkgconfig files of the Conan dependencies.
+# Conan Generators
 
-That involves:
-- Fixing hardcoded paths in the dependencies pkgconfig files
-- Copying the fixed pkgconfig files to the build directory
-- Generate the `env.sh` environment file with environment variables needed for build and runtime
+## `env` generator
+A Conan generator that creates the environment file `env.sh` with environment variables needed for running and building the Conan package
+
+## `tools` generator
+A Conan generator that creates binary wrappers with environment variables defined with Conan
+
+## `pkgconf` generator
+A Conan generator that creates the pkgconfig files with fixed prefix of the Conan dependencies

@@ -74,9 +74,52 @@ class tools(Generator):
         return {}
 
 
+class pkgconf(Generator):
+    def __init__(self, conanfile):
+        super().__init__(conanfile)
+
+    @property
+    def filename(self):
+        pass
+
+    @property
+    def content(self):
+        files = {}
+
+        # Generate pc files
+        for _, cpp_info in self.deps_build_info.dependencies:
+            pc_paths = [
+                os.path.join(cpp_info.rootpath, "lib", "pkgconfig"),
+                os.path.join(cpp_info.rootpath, "share", "pkgconfig"),
+            ]
+            for pc_path in pc_paths:
+                if not os.path.isdir(pc_path):
+                    continue
+                for pc in os.listdir(pc_path):
+                    files[pc] = replace_prefix_in_pc_file(os.path.join(pc_path, pc), cpp_info.rootpath)
+
+        # Generate pc files from PKG_CONFIG_SYSTEM_PATH
+        if hasattr(self.conanfile, "system_pcs") and "PKG_CONFIG_SYSTEM_PATH" in os.environ:
+            if isinstance(self.conanfile.system_pcs, str):
+                self.conanfile.system_pcs = set([self.conanfile.system_pcs])
+            system_pcs = set(self.conanfile.system_pcs)
+            for pc_path in os.environ["PKG_CONFIG_SYSTEM_PATH"].split(os.pathsep):
+                for pc in os.listdir(pc_path):
+                    pc_name = os.path.splitext(pc)[0]
+                    if not pc_name in self.conanfile.system_pcs:
+                        continue
+                    system_pcs.remove(pc_name)
+                    with open(os.path.join(pc_path, pc), "r") as pc_file:
+                        files[pc] = pc_file.read()
+            if len(system_pcs):
+                raise Exception("'%s' not available in system pkg-config directories" % ", ".join(system_pcs))
+
+        return files
+
+
 class GeneratorsPackage(ConanFile):
     name = "generators"
     version = "1.0.0"
-    url = "https://gitlab.com/aivero/public/conan-env-generator"
+    url = "https://gitlab.com/aivero/public/conan-" + name
     license = "MIT"
     description = "Conan generators"
