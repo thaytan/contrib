@@ -35,7 +35,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "opus=True",
         "pango=True",
     )
-    generators = "env"
+    generators ="pkgconf"
 
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
@@ -43,7 +43,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         self.version = tag if tag and branch.startswith("HEAD") else branch
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("mesa/[>=19.2.0]@%s/stable" % self.user)
         if self.options.introspection:
