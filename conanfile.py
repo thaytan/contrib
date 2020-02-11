@@ -8,10 +8,10 @@ class DbusConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "Freedesktop.org message bus system"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("autoconf-archive/[>=2019.01.06]@%s/stable" % self.user)
 
