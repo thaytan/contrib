@@ -10,10 +10,10 @@ class LibjpegTurboConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("yasm/1.3.0@%s/stable" % self.user)
         self.build_requires("cmake/3.15.3@%s/stable" % self.user)
 
