@@ -8,10 +8,10 @@ class LibpngConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "A collection of routines used to create PNG format graphics files"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
