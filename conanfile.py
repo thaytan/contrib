@@ -8,10 +8,10 @@ class YasmConan(ConanFile):
     description = "Yasm is a complete rewrite of the NASM assembler under the “new” BSD License"
     license = "BSD"
     settings = "os_build", "arch_build", "compiler"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/7.4.0@%s/stable" % self.user)
 
     def source(self):
