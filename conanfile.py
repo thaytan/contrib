@@ -13,10 +13,10 @@ class SqliteConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom:Public Domain"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("tcl/[>=8.6.10]@%s/stable" % self.user)
 
