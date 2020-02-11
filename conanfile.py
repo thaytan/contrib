@@ -15,9 +15,9 @@ class RacerConan(ConanFile):
     def source(self):
         tools.get("https://github.com/racer-rust/racer/archive/{}.tar.gz".format(self.version))
 
-    def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("rust/nightly@%s/stable" % self.user)
+    def requirements(self):
+        self.requires("rust/nightly@%s/stable" % self.user)
+        self.requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
