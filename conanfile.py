@@ -10,10 +10,10 @@ class NpmConan(ConanFile):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "os", "arch", "compiler"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def requirements(self):
