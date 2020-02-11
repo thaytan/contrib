@@ -10,10 +10,10 @@ class GdbConan(ConanFile):
     description = "The GNU Debugger"
     license = "GPL3"
     settings = "os", "arch", "compiler"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("texinfo/[>=6.6]@%s/stable" % self.user)
 
