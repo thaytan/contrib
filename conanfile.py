@@ -74,6 +74,31 @@ class tools(Generator):
         return {}
 
 
+def replace_prefix_in_pc_file(pc_file, prefix):
+    with open(pc_file) as f:
+        old_prefix = ""
+        # Get old prefix
+        for l in f:
+            if l == "prefix=":
+                return f.read().replace("prefix=", "prefix=%s".format(prefix))
+            if "prefix=" in l:
+                old_prefix = l.split("=")[1][:-1]
+                break
+        f.seek(0)
+        if not old_prefix:
+            for l in f:
+                if "libdir=" in l:
+                    old_prefix = l.split("=")[1][:-5]
+                    break
+                if "includedir=" in l:
+                    old_prefix = l.split("=")[1][:-9]
+                    break
+        if not old_prefix:
+            raise Exception("Could not find package prefix in '%s'" % pc_file)
+        f.seek(0)
+        return f.read().replace(old_prefix, prefix)
+
+
 class pkgconf(Generator):
     def __init__(self, conanfile):
         super().__init__(conanfile)
