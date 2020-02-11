@@ -10,7 +10,7 @@ class GStreamerDevtoolsConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "env"
+    generators ="pkgconf"
     scm = {
         "type": "git",
         "url": "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror",
@@ -22,7 +22,7 @@ class GStreamerDevtoolsConan(ConanFile):
     default_options = "gtk_doc=False", "introspection=False", "tests=True", "nls=False"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("git/[>=2.23.0]@%s/stable" % self.user)
 
