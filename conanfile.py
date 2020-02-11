@@ -11,10 +11,10 @@ class AutomakeConan(ConanFile):
     license = "GPL"
     description = "A GNU tool for automatically creating Makefiles"
     exports = "automake-include-fix.patch"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
 
