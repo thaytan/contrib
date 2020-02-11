@@ -11,10 +11,10 @@ class HarfbuzzConan(ConanFile):
     description = "HarfBuzz text shaping engine"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("freetype-no-harfbuzz/[>=2.10.1]@%s/stable" % self.user)
 
