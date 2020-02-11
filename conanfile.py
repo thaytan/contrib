@@ -13,10 +13,10 @@ class GlfwcConan(ConanFile):
     }
     default_options = ("x11=True", )
     exports = "fix-x11-exts.patch"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
