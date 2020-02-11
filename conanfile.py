@@ -18,7 +18,7 @@ class RustupConan(ConanFile):
         self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("zlib/1.2.11@%s/stable" % self.user)
+        self.requires("curl/7.66.0@%s/stable" % self.user)
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
 
     def source(self):
