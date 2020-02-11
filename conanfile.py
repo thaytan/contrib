@@ -11,10 +11,10 @@ class RustupConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT", "Apache"
     description = "Systems programming language focused on safety, speed and concurrency"
-    generators = "env"
+    generators ="pkgconf"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
 
     def requirements(self):
