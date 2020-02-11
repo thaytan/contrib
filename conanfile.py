@@ -10,13 +10,13 @@ class MesonConan(ConanFile):
     license = "Apache"
     description = "High productivity build system"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "env"
+    generators ="pkgconf"
 
     def source(self):
         tools.get("https://github.com/mesonbuild/meson/releases/download/{0}/meson-{0}.tar.gz".format(self.version))
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
