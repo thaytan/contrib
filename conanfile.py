@@ -8,8 +8,7 @@ class AutotoolsConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A suite of programming tools 'designed' to assist in making source code"
-    generators ="pkgconf"
-
+    
     def requirements(self):
         self.requires("cc/[>=1.0.0]@%s/stable" % self.user)
         self.requires("make/[>=3.4.0]@%s/stable" % self.user)
