@@ -1,4 +1,5 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
+import os
 
 
 class Libx11Conan(ConanFile):
