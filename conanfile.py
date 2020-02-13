@@ -6,7 +6,7 @@ from conans import CMake, ConanFile, tools
 class OpenalConan(ConanFile):
     name = "openal"
     version = tools.get_env("GIT_TAG", "1.20.1")
-    license = "custom", "Apache"
+    license = "custom"
     description = "Cross-platform 3D audio library, software implementation"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "arch", "build_type"
