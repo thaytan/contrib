@@ -22,7 +22,7 @@ class env(Generator):
             if isinstance(val, str):
                 val = [val]
             if len(val) > 1:
-                files["env.sh"] += 'export {0}={1}"\$\{${0}:+:${0}\}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+                files["env.sh"] += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
                 files["env.sh"] += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
 
@@ -48,7 +48,7 @@ class tools(Generator):
             if isinstance(val, str):
                 val = [val]
             if len(val) > 1:
-                env_vars += 'export {0}={1}:"${0}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+                env_vars += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
                 env_vars += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
 
