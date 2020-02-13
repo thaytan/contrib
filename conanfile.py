@@ -1,3 +1,6 @@
+from conans import ConanFile
+
+
 class EnvPackage(ConanFile):
     name = "env-generator"
     version = "1.0.0"
