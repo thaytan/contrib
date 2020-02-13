@@ -7,7 +7,7 @@ class LibeventConan(ConanFile):
     version = tools.get_env("GIT_TAG", "2.1.11")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    license = "BSD-3"
+    license = "BSD-3-Clause"
     description = "Event notification library https://libevent.org"
     generators = "env"
     exports = "uninstall.patch"
