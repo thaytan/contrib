@@ -72,7 +72,7 @@ class env(Generator):
                 raise Exception("'%s' not available in system pkg-config directories" % ", ".join(system_pcs))
 
         # Set environment from env_info
-        files["env.sh"] = 'export PKG_CONFIG_PATH="%s":"$PKG_CONFIG_PATH"\n' % output_path
+        files["env.sh"] = 'export PKG_CONFIG_PATH="%s":"$PKG_CONFIG_PATH"\n' % self.output_path
         for var, val in self.conanfile.env.items():
             if isinstance(val, str):
                 val = [val]
