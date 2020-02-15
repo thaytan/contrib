@@ -174,7 +174,9 @@ impl ObjectSubclass for RgbdMux {
                 .get_mut()
                 .expect("Could not get mutable reference to sink_caps");
             sink_caps.append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
+            sink_caps.append(gst::Caps::new_simple("image/jpeg", &[]));
         }
+
         klass.add_pad_template(
             gst::PadTemplate::new_with_gtype(
                 "sink_%s",

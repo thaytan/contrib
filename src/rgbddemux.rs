@@ -228,6 +228,11 @@ impl RgbdDemux {
                 stream_name
             )))?;
 
+        // Return "image/jpeg" CAPS if the format is MJPG
+        if stream_format.contains("jpeg") {
+            return Ok(gst::Caps::new_simple("image/jpeg", &[]));
+        }
+
         // Get the width of a stream
         let stream_width = rgbd_caps
             .get::<i32>(&format!("{}_width", stream_name))
@@ -469,10 +474,14 @@ impl ObjectSubclass for RgbdDemux {
 
         // src pads
         let mut src_caps = gst::Caps::new_simple("video/x-raw", &[]);
-        src_caps
-            .get_mut()
-            .unwrap()
-            .append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
+        {
+            let src_caps = src_caps
+                .get_mut()
+                .expect("Could not get mutable reference to src_caps");
+            src_caps.append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
+            src_caps.append(gst::Caps::new_simple("image/jpeg", &[]));
+        }
+
         klass.add_pad_template(
             gst::PadTemplate::new(
                 "src_%s",
