@@ -177,9 +177,13 @@ pub(crate) static PROPERTIES: [subclass::Property; 14] = [
              \n\t\t\t2 (default) - all: Apply timestamps to all buffers based on current stream \
              time, i.e. since the element was last put to PLAYING \
              \n\t\t\t3 - k4a_common: Apply timestamps to all buffers based on the timestamps obtained \
-             from physical K4A device or playback \
+             from physical K4A device or playback. A common timestamp will be applied to all buffers \
+             belonging to one capture. Such timestamp is always based on the frame that belongs to the \
+             main stream (usually `depth`). \
              \n\t\t\t4 - k4a_individual: Apply timestamps to all buffers based on the timestamps obtained \
-             from physical K4A device or playback",
+             from physical K4A device or playback. Each buffer receives an individual timestamp based on \
+             the K4A timestamps of the corresponding frame. Note that `depth` and `ir` streams of K4A are \
+             always synchronised but their timestamps can differ from `color` and `imu` streams.",
             TimestampMode::Ignore as i32,
             TimestampMode::K4aIndividual as i32,
             DEFAULT_TIMESTAMP_MODE as i32,

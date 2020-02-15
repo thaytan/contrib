@@ -91,8 +91,8 @@ This element provides multiple options for timestamping under `timestamp-mode` p
 - **0** - `ignore`: Do not apply timestamp to any buffer
 - **1** - `main`: Apply timestamps only to the main buffers based on current stream time (identical to enabling `do-timestamp=true`)
 - **2** (default) - `all`: Apply timestamps to all buffers based on current stream time, i.e. since the element was last put to PLAYING
-- **3** - `k4a_common`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback
-- **4** - `k4a_individual`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback
+- **3** - `k4a_common`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. A common timestamp will be applied to all buffers belonging to one capture. Such timestamp is always based on the frame that belongs to the main stream (usually `depth`)
+- **4** - `k4a_individual`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. Each buffer receives an individual timestamp based on the K4A timestamps of the corresponding frame. Note that `depth` and `ir` streams of K4A are always synchronised but their timestamps can differ from `color` and `imu` streams
 
 Here are some overall guidelines for their usage:
 

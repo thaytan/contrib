@@ -1007,9 +1007,11 @@ impl ObjectImpl for K4aSrc {
                 );
                 settings.playback_settings.recording_location = recording_location;
                 // Liveliness of the element, when streaming from Playback, depends also on `real-time-playback` property
-                obj.downcast_ref::<gst_base::BaseSrc>()
-                    .unwrap()
-                    .set_live(settings.playback_settings.real_time_playback);
+                if !settings.playback_settings.recording_location.is_empty() {
+                    obj.downcast_ref::<gst_base::BaseSrc>()
+                        .unwrap()
+                        .set_live(settings.playback_settings.real_time_playback);
+                }
             }
             subclass::Property("enable-depth", ..) => {
                 let enable_depth = value.get().expect(&format!("k4asrc: Failed to set property `enable-depth`. Expected a `bool`, but got: {:?}", value));
