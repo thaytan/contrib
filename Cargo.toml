@@ -28,7 +28,7 @@ tag = "0.2.1"
 
 [dependencies.k4a]
 git = "https://gitlab.com/aivero/hardware/k4a-rs"
-tag = "0.1.2"
+tag = "0.1.3"
 
 [lib]
 name = "gstk4asrc"

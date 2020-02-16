@@ -14,10 +14,7 @@ pub(crate) fn k4a_image_format_to_gst_video_format(
     use gst_video::VideoFormat;
     use k4a::ImageFormat::*;
     match image_format {
-        // TODO: Implement MJPG together with `rgbddemux` and `rgbdmux`
-        K4A_IMAGE_FORMAT_COLOR_MJPG => {
-            unimplemented!("k4asrc: Streaming color as MJPG is not yet implemented!")
-        }
+        K4A_IMAGE_FORMAT_COLOR_MJPG => Ok("image/jpeg"),
         K4A_IMAGE_FORMAT_COLOR_NV12 => Ok(VideoFormat::Nv12.to_string()),
         K4A_IMAGE_FORMAT_COLOR_YUY2 => Ok(VideoFormat::Yuy2.to_string()),
         K4A_IMAGE_FORMAT_COLOR_BGRA32 => Ok(VideoFormat::Bgra.to_string()),

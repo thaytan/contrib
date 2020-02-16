@@ -44,7 +44,7 @@ class K4aSrcConan(ConanFile):
 
     def requirements(self):
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
-        self.requires("k4a/[>=1.3.0]@aivero/testing")
+        self.requires("k4a/[>=1.3.0]@%s/stable" % self.user)
 
     def source(self):
         # Override the version supplied to GStreamer, as specified in lib.rs
