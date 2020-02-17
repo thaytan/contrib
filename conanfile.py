@@ -10,7 +10,6 @@ class BisonConan(ConanFile):
     description = "Bison is a general-purpose parser generator"
     license = "GPL-3.0-or-later"
     settings = "os", "arch", "compiler", "build_type"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
