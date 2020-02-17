@@ -10,7 +10,6 @@ class LibXorgUtilMacrosConan(ConanFile):
     license = "custom"
     description = "X.Org Autotools macros"
     settings = "os", "compiler", "build_type", "arch"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
