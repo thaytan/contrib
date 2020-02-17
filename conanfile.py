@@ -8,7 +8,6 @@ class KinectAzureSensorSDKConan(ConanFile):
     description = "Azure Kinect SDK"
     url = "https://gitlab.com/aivero/public/conan/conan-k4a"
     settings = "os", "compiler", "build_type", "arch"
-    generators ="pkgconf"
     exports = "k4a.pc"
 
     def build_requirements(self):
