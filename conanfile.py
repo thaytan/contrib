@@ -11,7 +11,6 @@ class AutomakeConan(ConanFile):
     license = "GPL"
     description = "A GNU tool for automatically creating Makefiles"
     exports = "automake-include-fix.patch"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
