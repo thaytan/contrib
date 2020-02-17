@@ -10,7 +10,6 @@ class SvtHevcConan(ConanFile):
     description = "The Scalable Video Technology for HEVC Encoder"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
