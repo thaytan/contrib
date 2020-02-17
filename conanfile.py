@@ -10,7 +10,6 @@ class PythonMakoConan(ConanFile):
     license = "Apache"
     description = "A super-fast templating language that borrows the best ideas from the existing templating languages"
     settings = "os", "compiler", "build_type", "arch"
-    generators ="pkgconf"
 
     def source(self):
         tools.get("https://github.com/sqlalchemy/mako/archive/rel_%s.tar.gz" % self.version.replace(".", "_"))
