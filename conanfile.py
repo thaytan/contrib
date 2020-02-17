@@ -18,7 +18,6 @@ class Gtk3Conan(ConanFile):
         "introspection=True",
         "x11=True",
     )
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
