@@ -54,17 +54,17 @@ impl K4aColorFormat {
                 },
                 gobject_sys::GEnumValue {
                     value: K4aColorFormat::NV12 as i32,
-                    value_name: b"NV12 (720p only)\0" as *const _ as *const _,
+                    value_name: b"NV12 (<=720p only)\0" as *const _ as *const _,
                     value_nick: b"nv12\0" as *const _ as *const _,
                 },
                 gobject_sys::GEnumValue {
                     value: K4aColorFormat::YUV2 as i32,
-                    value_name: b"YUV2 (720p only)\0" as *const _ as *const _,
+                    value_name: b"YUV2 (<=720p only)\0" as *const _ as *const _,
                     value_nick: b"yuv2\0" as *const _ as *const _,
                 },
                 gobject_sys::GEnumValue {
                     value: K4aColorFormat::BGRA32 as i32,
-                    value_name: b"BGRA32 (720p only)\0" as *const _ as *const _,
+                    value_name: b"BGRA32 (<=720p only)\0" as *const _ as *const _,
                     value_nick: b"bgra32\0" as *const _ as *const _,
                 },
                 gobject_sys::GEnumValue {
