@@ -13,7 +13,6 @@ class LibglvndConan(ConanFile):
     }
     default_options = ("x11=True", )
     exports = "ignore-warnings.patch"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
