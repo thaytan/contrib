@@ -10,7 +10,6 @@ class SccacheConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler", "build_type"
-    generators ="pkgconf"
 
     def source(self):
         tools.get(
