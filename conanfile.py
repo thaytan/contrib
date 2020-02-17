@@ -40,7 +40,6 @@ class NvJetsonV4l2(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2", )
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
