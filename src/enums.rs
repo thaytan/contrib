@@ -19,6 +19,7 @@ use glib::{gobject_sys, StaticType, Type};
 use k4a::{DepthMode, ImageFormat};
 use std::convert::TryFrom;
 
+/// Represents the Azure Kinect's color format and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
 pub(crate) enum K4aColorFormat {
@@ -148,6 +149,7 @@ impl From<K4aColorFormat> for k4a::ImageFormat {
     }
 }
 
+/// Represents the Azure Kinect's color resolution and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
 pub(crate) enum K4aColorResolution {
@@ -298,6 +300,7 @@ impl K4aColorResolution {
     }
 }
 
+/// Represents the Azure Kinect's depth mode and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
 pub(crate) enum K4aDepthMode {
@@ -429,6 +432,8 @@ impl From<K4aDepthMode> for k4a::DepthMode {
     }
 }
 
+/// The Azure Kinect does not have a floating framerate, as with other cameras. We therefore
+/// represent it as an enum here. This enum is used to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
 pub(crate) enum K4aFramerate {
@@ -543,13 +548,19 @@ impl From<K4aFramerate> for k4a::Fps {
     }
 }
 
+/// The k4asrc's timestamp mode, which is used to determine how the source timestamps buffers.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
 pub(crate) enum K4aTimestampMode {
+    /// Don't do any timestamping at all.
     Ignore = 0,
+    /// Only timestamp the main video/rgbd buffer.
     Main = 1,
+    /// Timestamp all video/rgbd buffers using the gst::Element's clock timestamp.
     All = 2,
+    /// Find a common timestamp on the k4a buffers and apply that to all video/rgbd buffers.
     Common = 3,
+    /// Timestamp the video/rgbd buffers with their individual timestamps from k4a.
     Individual = 4,
 }
 
