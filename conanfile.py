@@ -24,7 +24,6 @@ class GStreamerVaapiConan(ConanFile):
             "drm=True",
             "glx=True",
             )
-    generators ="pkgconf"
 
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
