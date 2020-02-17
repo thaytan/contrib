@@ -10,7 +10,6 @@ class PythonPipConan(ConanFile):
     license = "MIT"
     description = "High productivity build system"
     settings = "os", "compiler", "build_type", "arch"
-    generators ="pkgconf"
 
     def source(self):
         tools.get("https://github.com/pypa/pip/archive/%s.tar.gz" % self.version)
