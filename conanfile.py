@@ -8,7 +8,6 @@ class GperfConan(ConanFile):
     url = "https://github.com/prozum/conan-libffi"
     license = "GPL3"
     description = "A portable, high level programming interface to various calling conventions"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
