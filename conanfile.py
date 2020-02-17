@@ -13,7 +13,6 @@ class LibRealsenseConan(ConanFile):
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     options = {"cuda": [True, False], "python": [True, False]}
     default_options = ("cuda=False", "python=True")
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
