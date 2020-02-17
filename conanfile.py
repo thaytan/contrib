@@ -13,7 +13,6 @@ class CudaConan(ConanFile):
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
     exports_sources = ("cuda-10.1.pc", "cudart-10.1.pc")
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
