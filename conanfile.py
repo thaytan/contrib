@@ -10,7 +10,6 @@ class GStreamerDevtoolsConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    generators ="pkgconf"
     scm = {
         "type": "git",
         "url": "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror",
