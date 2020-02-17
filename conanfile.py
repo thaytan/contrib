@@ -46,7 +46,6 @@ class GStreamerPluginsBadConan(ConanFile):
         "closedcaption=False",
         "aiveropatchlatency=False",
     )
-    generators ="pkgconf"
 
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
