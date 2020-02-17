@@ -10,7 +10,6 @@ class RacerConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler"
-    generators ="pkgconf"
 
     def source(self):
         tools.get("https://github.com/racer-rust/racer/archive/{}.tar.gz".format(self.version))
