@@ -15,9 +15,8 @@
 // Boston, MA 02110-1301, USA.
 
 use crate::error::K4aSrcError;
-use glib::value::FromValue;
 use glib::{gobject_sys, StaticType, Type};
-use k4a::{ImageFormat, DepthMode};
+use k4a::{DepthMode, ImageFormat};
 use std::convert::TryFrom;
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
@@ -413,17 +412,19 @@ impl TryFrom<k4a::DepthMode> for K4aDepthMode {
             DepthMode::K4A_DEPTH_MODE_NFOV_UNBINNED => Ok(K4aDepthMode::NfovUnbinned),
             DepthMode::K4A_DEPTH_MODE_WFOV_2X2BINNED => Ok(K4aDepthMode::Wfov2x2Binned),
             DepthMode::K4A_DEPTH_MODE_WFOV_UNBINNED => Ok(K4aDepthMode::WfovUnbinned),
-            _ => Err(K4aSrcError::Failure("Unsupported k4a::DepthMode conversion")),
+            _ => Err(K4aSrcError::Failure(
+                "Unsupported k4a::DepthMode conversion",
+            )),
         }
     }
 }
 impl From<K4aDepthMode> for k4a::DepthMode {
     fn from(value: K4aDepthMode) -> Self {
         match value {
-            K4aDepthMode::Nfov2x2Binned =>  DepthMode::K4A_DEPTH_MODE_NFOV_2X2BINNED,
-            K4aDepthMode::NfovUnbinned =>  DepthMode::K4A_DEPTH_MODE_NFOV_UNBINNED,
-            K4aDepthMode::Wfov2x2Binned =>  DepthMode::K4A_DEPTH_MODE_WFOV_2X2BINNED,
-            K4aDepthMode::WfovUnbinned =>  DepthMode::K4A_DEPTH_MODE_WFOV_UNBINNED,
+            K4aDepthMode::Nfov2x2Binned => DepthMode::K4A_DEPTH_MODE_NFOV_2X2BINNED,
+            K4aDepthMode::NfovUnbinned => DepthMode::K4A_DEPTH_MODE_NFOV_UNBINNED,
+            K4aDepthMode::Wfov2x2Binned => DepthMode::K4A_DEPTH_MODE_WFOV_2X2BINNED,
+            K4aDepthMode::WfovUnbinned => DepthMode::K4A_DEPTH_MODE_WFOV_UNBINNED,
         }
     }
 }
@@ -449,7 +450,9 @@ impl glib::translate::FromGlib<i32> for K4aFramerate {
             0 => K4aFramerate::FPS5,
             1 => K4aFramerate::FPS15,
             2 => K4aFramerate::FPS30,
-            _ => unreachable!("Invalid GstK4aFramerate, options are: 0 (5 FPS), 1 (15 FPS) or 2 (30 FPS)"),
+            _ => unreachable!(
+                "Invalid GstK4aFramerate, options are: 0 (5 FPS), 1 (15 FPS) or 2 (30 FPS)"
+            ),
         }
     }
 }
@@ -536,6 +539,120 @@ impl From<K4aFramerate> for k4a::Fps {
             K4aFramerate::FPS5 => k4a::Fps::K4A_FRAMES_PER_SECOND_5,
             K4aFramerate::FPS15 => k4a::Fps::K4A_FRAMES_PER_SECOND_15,
             K4aFramerate::FPS30 => k4a::Fps::K4A_FRAMES_PER_SECOND_30,
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
+#[repr(u32)]
+pub(crate) enum K4aTimestampMode {
+    Ignore = 0,
+    Main = 1,
+    All = 2,
+    Common = 3,
+    Individual = 4,
+}
+
+impl glib::translate::ToGlib for K4aTimestampMode {
+    type GlibType = i32;
+
+    fn to_glib(&self) -> Self::GlibType {
+        *self as i32
+    }
+}
+impl glib::translate::FromGlib<i32> for K4aTimestampMode {
+    fn from_glib(val: i32) -> Self {
+        match val {
+            0 => K4aTimestampMode::Ignore,
+            1 => K4aTimestampMode::Main,
+            2 => K4aTimestampMode::All,
+            3 => K4aTimestampMode::Common,
+            4 => K4aTimestampMode::Individual,
+            _ => unreachable!(
+                "Invalid GstK4aFramerate, options are: 0 (5 FPS), 1 (15 FPS) or 2 (30 FPS)"
+            ),
+        }
+    }
+}
+impl StaticType for K4aTimestampMode {
+    fn static_type() -> Type {
+        K4aDepthMode::get_glib_type()
+    }
+}
+impl<'a> glib::value::FromValueOptional<'a> for K4aTimestampMode {
+    unsafe fn from_value_optional(value: &glib::Value) -> Option<Self> {
+        Some(glib::value::FromValue::from_value(value))
+    }
+}
+impl<'a> glib::value::FromValue<'a> for K4aTimestampMode {
+    unsafe fn from_value(value: &glib::Value) -> Self {
+        use glib::translate::ToGlibPtr;
+
+        glib::translate::from_glib(gobject_sys::g_value_get_enum(value.to_glib_none().0))
+    }
+}
+
+impl glib::value::SetValue for K4aTimestampMode {
+    unsafe fn set_value(value: &mut glib::Value, this: &Self) {
+        use glib::translate::{ToGlib, ToGlibPtrMut};
+
+        gobject_sys::g_value_set_enum(value.to_glib_none_mut().0, this.to_glib())
+    }
+}
+
+impl K4aTimestampMode {
+    pub fn get_glib_type() -> glib::Type {
+        use std::sync::Once;
+        static ONCE: Once = Once::new();
+        static mut TYPE: glib::Type = glib::Type::Invalid;
+
+        ONCE.call_once(|| {
+            use std::ffi;
+            use std::ptr;
+
+            static mut VALUES: [gobject_sys::GEnumValue; 6] = [
+                gobject_sys::GEnumValue {
+                    value: K4aTimestampMode::Ignore as i32,
+                    value_name: b"Ignore: Do not apply timestamp to any buffer.\0" as *const _ as *const _,
+                    value_nick: b"ignore\0" as *const _ as *const _,
+                },
+                gobject_sys::GEnumValue {
+                    value: K4aTimestampMode::Main as i32,
+                    value_name: b"Main: Apply timestamps only to the main buffers based on current stream time (identical to enabling `do-timestamp=true`).\0" as *const _ as *const _,
+                    value_nick: b"main\0" as *const _ as *const _,
+                },
+                gobject_sys::GEnumValue {
+                    value: K4aTimestampMode::All as i32,
+                    value_name: b"All: Apply timestamps to all buffers based on current stream time, i.e. since the element was last put to PLAYING.\0" as *const _ as *const _,
+                    value_nick: b"all\0" as *const _ as *const _,
+                },
+                gobject_sys::GEnumValue {
+                    value: K4aTimestampMode::Common as i32,
+                    value_name: b"Common: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. A common timestamp will be applied to all buffers belonging to one capture. Such timestamp is always based on the frame that belongs to the main stream (usually `depth`).\0" as *const _ as *const _,
+                    value_nick: b"common\0" as *const _ as *const _,
+                },
+                gobject_sys::GEnumValue {
+                    value: K4aTimestampMode::Individual as i32,
+                    value_name: b"Individual: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. Each buffer receives an individual timestamp based on the K4A timestamps of the corresponding frame. Note that `depth` and `ir` streams of K4A are always synchronised but their timestamps can differ from `color` and `imu` streams.\0" as *const _ as *const _,
+                    value_nick: b"individual\0" as *const _ as *const _,
+                },
+                gobject_sys::GEnumValue {
+                    value: 0,
+                    value_name: ptr::null(),
+                    value_nick: ptr::null(),
+                },
+            ];
+
+            let name = ffi::CString::new("GstK4aTimestampMode").unwrap();
+            unsafe {
+                let type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                TYPE = glib::translate::from_glib(type_);
+            }
+        });
+
+        unsafe {
+            assert_ne!(TYPE, glib::Type::Invalid);
+            TYPE
         }
     }
 }

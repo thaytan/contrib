@@ -14,6 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode};
 use crate::error::*;
 use crate::properties::*;
 use crate::settings::*;
@@ -34,7 +35,6 @@ use k4a::imu_sample::ImuSample;
 use k4a::playback::Playback;
 use k4a::*;
 use std::sync::Mutex;
-use crate::enums::{K4aColorResolution, K4aColorFormat, K4aDepthMode, K4aFramerate};
 
 /// A struct representation of the `k4asrc` element.
 struct K4aSrc {
@@ -465,7 +465,7 @@ impl K4aSrc {
 
         // Make sure that K4A timestamps are not applied with Playback looping
         match settings.timestamp_mode {
-            TimestampMode::K4aCommon | TimestampMode::K4aIndividual => {
+            K4aTimestampMode::Common | K4aTimestampMode::Individual => {
                 if settings.playback_settings.loop_recording {
                     return Err(K4aSrcError::Failure(
                         "k4asrc: Property `loop-recording` cannot be set true with `timestamp-mode=k4a-common` \
@@ -833,13 +833,13 @@ impl K4aSrc {
         let timestamp_mode = internals.settings.timestamp_mode;
         // Proceed based on the selected timestamp mode
         match timestamp_mode {
-            TimestampMode::Ignore | TimestampMode::Main => {
+            K4aTimestampMode::Ignore | K4aTimestampMode::Main => {
                 // Return `CLOCK_TIME_NONE`
                 //     Variant `TimestampMode::Ignore` does not require timestamps
                 //     Variant `TimestampMode::Main` is handled by the parent class
                 gst::CLOCK_TIME_NONE
             }
-            TimestampMode::All => {
+            K4aTimestampMode::All => {
                 // Determine common timestamp (computed only once for the main buffer)
                 if is_buffer_main {
                     // Use element's clock during the computation
@@ -860,7 +860,7 @@ impl K4aSrc {
                 // Return the common timestamp
                 internals.timestamp_internals.common_timestamp
             }
-            TimestampMode::K4aCommon => {
+            K4aTimestampMode::Common => {
                 // Determine common timestamp (computed only once for the main buffer)
                 if is_buffer_main {
                     // Use K4A timestamp of Image/ImuSample during the computation
@@ -879,7 +879,7 @@ impl K4aSrc {
                 // Return the common timestamp
                 internals.timestamp_internals.common_timestamp
             }
-            TimestampMode::K4aIndividual => {
+            K4aTimestampMode::Individual => {
                 // Use K4A timestamp of each Image/ImuSample during the computation
                 let frame_timestamp = timestamp_source.extract_timestamp();
 
@@ -958,7 +958,7 @@ impl ObjectImpl for K4aSrc {
                 Ok(settings.playback_settings.loop_recording.to_value())
             }
             subclass::Property("timestamp-mode", ..) => {
-                Ok((settings.timestamp_mode as i32).to_value())
+                Ok(settings.timestamp_mode.to_value())
             }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         }
@@ -1170,21 +1170,12 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("timestamp-mode", ..) => {
-                let value: i32 = value.get().expect(&format!(
+                let timestamp_mode: K4aTimestampMode = value.get().expect(&format!(
                     "k4asrc: Failed to set property `timestamp-mode`. Expected a `i32`, but got: {:?}",
                     value
                 ));
-                // TODO: Ugly and lazy for now, will be substituted with `GEnum` soon
-                let timestamp_mode = match value {
-                    0 => TimestampMode::Ignore,
-                    1 => TimestampMode::Main,
-                    2 => TimestampMode::All,
-                    3 => TimestampMode::K4aCommon,
-                    4 => TimestampMode::K4aIndividual,
-                    _ => panic!("k4asrc: Failed to set property `timestamp-mode`. Variant {:?} is not valid.", value)
-                };
                 element.set_do_timestamp(match timestamp_mode {
-                    TimestampMode::Main => true,
+                    K4aTimestampMode::Main => true,
                     _ => false,
                 });
                 gst_info!(

@@ -1,8 +1,8 @@
+use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode};
 use crate::error::*;
 use crate::streams::*;
 use k4a::{ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
 use std::convert::{From, TryFrom};
-use crate::enums::{K4aColorResolution, K4aColorFormat, K4aDepthMode, K4aFramerate};
 
 // Streams enabled by default
 /// Determines whether streaming depth frames is enabled by default.
@@ -38,7 +38,7 @@ pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 1000;
 /// Default behaviour of looping playback from recording.
 pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
 /// Default behaviour for applying timestamps to buffers.
-pub(crate) const DEFAULT_TIMESTAMP_MODE: TimestampMode = TimestampMode::All;
+pub(crate) const DEFAULT_TIMESTAMP_MODE: K4aTimestampMode = K4aTimestampMode::All;
 /// Default behaviour for liveliness of the element when playing back from a recording.
 pub(crate) const DEFAULT_REAL_TIME_PLAYBACK: bool = true;
 
@@ -54,7 +54,7 @@ pub(crate) struct Settings {
     pub(crate) device_settings: DeviceSettings,
     pub(crate) playback_settings: PlaybackSettings,
     pub(crate) desired_streams: Streams,
-    pub(crate) timestamp_mode: TimestampMode,
+    pub(crate) timestamp_mode: K4aTimestampMode,
 }
 
 /// A struct containing properties specific for streaming from a physical K4A device.
@@ -72,16 +72,6 @@ pub(crate) struct PlaybackSettings {
     pub(crate) recording_location: String,
     pub(crate) loop_recording: bool,
     pub(crate) real_time_playback: bool,
-}
-
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum TimestampMode {
-    Ignore = 0,
-    Main = 1,
-    All = 2,
-    K4aCommon = 3,
-    K4aIndividual = 4,
 }
 
 impl Default for Settings {
