@@ -9,7 +9,6 @@ class AmqpCppConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"
-    generators ="pkgconf"
     exports = "openssl.patch"
 
     def build_requirements(self):
