@@ -19,6 +19,13 @@ use glib::{gobject_sys, StaticType, Type};
 use k4a::{DepthMode, ImageFormat};
 use std::convert::TryFrom;
 
+// All the enums in this file follow the unsafe GStreamer enum implementation, discussed in the
+// gst-plugin-rs/tutorial, found here:
+// https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs/blob/aa40eae58176f7e263dc9cd0bb45f8ab5da1e625/gst-plugin-tutorial/src/progressbin_output_enum.rs
+// A safer and more concise implementation is available on the master branch of glib-rs, which uses
+// a derive macro called #GEnum. This may have been included in version 0.9.3 of Glib, but the
+// changes are not backwards compatible, and thus require some manual leg-work.
+
 /// Represents the Azure Kinect's color format and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
