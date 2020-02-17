@@ -12,7 +12,6 @@ class GstreamerNvJetsonEgl(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2", )
-    generators ="pkgconf"
     gst_version = "1.16.0"
 
     def build_requirements(self):
