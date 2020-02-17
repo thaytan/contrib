@@ -11,7 +11,6 @@ class PerlConan(ConanFile):
     license = "GPL"
     description = "A highly capable, feature-rich programming language"
     exports = "link-m-pthread.patch"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
