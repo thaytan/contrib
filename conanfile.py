@@ -8,7 +8,6 @@ class Help2ManConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "Conversion tool to create man files"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
