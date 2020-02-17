@@ -8,7 +8,6 @@ class LibVpxConan(ConanFile):
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
