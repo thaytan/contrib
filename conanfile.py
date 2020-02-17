@@ -8,7 +8,6 @@ class GTestConan(ConanFile):
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD-3-Clause"
     settings = "os", "arch", "compiler", "build_type"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
