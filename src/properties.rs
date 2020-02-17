@@ -1,5 +1,23 @@
+// Aivero
+// Copyright (C) <2019> Aivero
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Library General Public
+// License as published by the Free Software Foundation; either
+// version 2 of the License, or (at your option) any later version.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Library General Public License for more details.
+// You should have received a copy of the GNU Library General Public
+// License along with this library; if not, write to the
+// Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
+use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate};
 use crate::settings::*;
 use glib::subclass;
+use std::convert::TryFrom;
 
 /// All properties that `k4asrc` element supports.
 pub(crate) static PROPERTIES: [subclass::Property; 14] = [
@@ -64,68 +82,46 @@ pub(crate) static PROPERTIES: [subclass::Property; 14] = [
         )
     }),
     subclass::Property("color-format", |name| {
-        // TODO: Replace with GEnum
         // Note: It is possible to convert the color format also when streaming from Playback
         // by the use of `k4a_playback_set_color_conversion()` (not tested). However, the decision
         // is to use GStreamer conversion for such purposes instead.
-        glib::ParamSpec::int(
+        glib::ParamSpec::enum_(
             name,
             "Color Format",
-            "Format of the color stream, applicable only when streaming from device: \
-             \n\t\t\t0 - MJPG \
-             \n\t\t\t1 - NV12 (720p only) \
-             \n\t\t\t2 - YUY2 (720p only) \
-             \n\t\t\t3 - BGRA32 (720p only)",
-            k4a::ImageFormat::K4A_IMAGE_FORMAT_COLOR_MJPG as i32,
-            k4a::ImageFormat::K4A_IMAGE_FORMAT_COLOR_BGRA32 as i32,
+            "Format of the color stream, applicable only when streaming from device",
+            K4aColorFormat::get_glib_type(),
             DEFAULT_COLOR_FORMAT as i32,
             glib::ParamFlags::READWRITE,
         )
     }),
     subclass::Property("color-resolution", |name| {
-        // TODO: replace with GEnum
-        glib::ParamSpec::int(
+        glib::ParamSpec::enum_(
             name,
             "Color Resolution",
-            "Resolution of the color stream, applicable only when streaming from device: \
-             \n\t\t\t1 - 720p \
-             \n\t\t\t2 - 1080p \
-             \n\t\t\t3 - 1440p \
-             \n\t\t\t4 - 1536p \
-             \n\t\t\t5 - 2160p \
-             \n\t\t\t6 - 3072p",
-            k4a::ColorResolution::K4A_COLOR_RESOLUTION_720P as i32,
-            k4a::ColorResolution::K4A_COLOR_RESOLUTION_3072P as i32,
+            "Resolution of the color stream, applicable only when streaming from device",
+            K4aColorResolution::get_glib_type(),
             DEFAULT_COLOR_RESOLUTION as i32,
             glib::ParamFlags::READWRITE,
         )
     }),
     subclass::Property("depth-mode", |name| {
-        // TODO: replace with GEnum
-        glib::ParamSpec::int(
+        glib::ParamSpec::enum_(
             name,
             "Depth Mode",
-            "Depth capture mode configuration, applicable only when streaming from device: \
-             \n\t\t\t1 - NFOV_2x2binned \
-             \n\t\t\t2 - NFOV_unbinned \
-             \n\t\t\t3 - WFOV_2x2binned \
-             \n\t\t\t4 - WFOV_unbinned",
-            k4a::DepthMode::K4A_DEPTH_MODE_NFOV_2X2BINNED as i32,
-            k4a::DepthMode::K4A_DEPTH_MODE_WFOV_UNBINNED as i32,
+            "Depth capture mode configuration, applicable only when streaming from device",
+            K4aDepthMode::get_glib_type(),
             DEFAULT_DEPTH_MODE as i32,
             glib::ParamFlags::READWRITE,
         )
     }),
     subclass::Property("framerate", |name| {
-        // TODO: replace with GEnum
-        glib::ParamSpec::int(
+        glib::ParamSpec::enum_(
             name,
             "Framerate",
             "Common framerate of the selected video streams, applicable only when streaming from device. \
              (30 FPS is not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)",
-            ALLOWED_FRAMERATES[0],
-            ALLOWED_FRAMERATES[2],
-            DEFAULT_FRAMERATE,
+            K4aFramerate::get_glib_type(),
+            DEFAULT_FRAMERATE as i32,
             glib::ParamFlags::READWRITE,
         )
     }),
