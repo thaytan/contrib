@@ -10,7 +10,6 @@ class NodejsConan(ConanFile):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "os", "arch", "compiler"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
