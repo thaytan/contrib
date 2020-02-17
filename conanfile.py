@@ -10,7 +10,6 @@ class RapidJsonConan(ConanFile):
     description = "A fast JSON parser/generator for C++ with both SAX/DOM style API"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
