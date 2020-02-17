@@ -10,7 +10,6 @@ class PythonSetuptoolsConan(ConanFile):
     license = "Apache"
     description = ("Easily download, build, install, upgrade, and uninstall Python packages")
     settings = "os", "compiler", "build_type", "arch"
-    generators ="pkgconf"
 
     def source(self):
         tools.get("https://github.com/pypa/setuptools/archive/v%s.tar.gz" % self.version)
