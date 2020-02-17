@@ -12,7 +12,6 @@ class IntelVaapiDriverConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
