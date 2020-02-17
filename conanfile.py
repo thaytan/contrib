@@ -11,7 +11,6 @@ class MesaConan(ConanFile):
     description = "An open-source implementation of the OpenGL specification"
     options = {"x11": [True, False]}
     default_options = ("x11=True", )
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
