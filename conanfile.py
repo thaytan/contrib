@@ -18,7 +18,6 @@ class GStreamerConan(ConanFile):
         "check=True",
         "tools=True",
     )
-    generators ="pkgconf"
 
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
