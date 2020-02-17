@@ -8,7 +8,6 @@ class FribidiConan(ConanFile):
     description = "The Free Implementation of the Unicode Bidirectional Algorithm"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    generators ="pkgconf"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
