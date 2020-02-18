@@ -1,5 +1,6 @@
 use k4a_sys::*;
 
+use crate::camera_calibration::CameraCalibration;
 use crate::error::{K4aError, Result};
 
 /// Struct representation of [`Calibration`](../calibration/struct.Calibration.html) that wraps
@@ -44,6 +45,16 @@ impl Calibration {
                 "Failed to convert raw calibration data into `Calibration`",
             )),
         }
+    }
+
+    /// Get the Depth [CameraCalibration](struct.CameraCalibration.html).
+    pub fn depth_camera_calibration(&self) -> CameraCalibration {
+        CameraCalibration::new(self.handle.depth_camera_calibration)
+    }
+
+    /// Get the Color [CameraCalibration](struct.CameraCalibration.html).
+    pub fn color_camera_calibration(&self) -> CameraCalibration {
+        CameraCalibration::new(self.handle.color_camera_calibration)
     }
 
     /// This function is NOT implemented!

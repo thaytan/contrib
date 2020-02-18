@@ -1,9 +1,12 @@
 pub mod calibration;
+pub mod camera_calibration;
 pub mod capture;
 pub mod device;
 pub mod error;
+pub mod extrinsics;
 pub mod image;
 pub mod imu_sample;
+pub mod intrinsics;
 pub mod playback;
 pub mod record;
 pub mod transformation;
