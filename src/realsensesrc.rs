@@ -743,8 +743,13 @@ impl RealsenseSrc {
             )?;
         }
 
-        // Start the RealSense pipeline
+        // Crate new RealSense pipeline
         let pipeline = rs2::pipeline::Pipeline::new(&context)?;
+
+        // Make sure that the config can be resolved
+        config.resolve(&pipeline)?;
+
+        // Start the RealSense pipeline
         let pipeline_profile = pipeline.start_with_config(&config)?;
 
         // If playing from a rosbag recording, check whether the correct properties were selected
