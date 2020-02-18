@@ -22,4 +22,4 @@ class GoConan(ConanFile):
         self.run("tar -xf " + filename)
 
     def package(self):
-        self.copy("*bin/go*")
+        self.copy("*", src="go/bin", dst="bin")
