@@ -27,7 +27,7 @@ class GccConan(ConanFile):
         args = [
             "--libexecdir=%s" % os.path.join(self.package_folder, "lib"),
             "--disable-bootstrap",
-            "--enable-languages=c,c++",
+            "--enable-languages=c,c++,go",
             "--enable-shared",
             "--enable-threads=posix",
             "--with-system-zlib",
