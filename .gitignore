@@ -3,5 +3,6 @@
 ==== BASE ====
 Cargo.lock
 .idea/
+*.code-workspace
 build/
 cmake-build-*

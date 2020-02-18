@@ -13,7 +13,6 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-
 // Framerate
 pub(crate) const MIN_FRAMERATE: i32 = 6;
 pub(crate) const MAX_FRAMERATE: i32 = 90;

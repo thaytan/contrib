@@ -13,7 +13,6 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};

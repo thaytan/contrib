@@ -32,13 +32,13 @@ use crate::realsense_timestamp_mode::RealsenseTimestampMode;
 use crate::rs_meta::rs_meta_serialization::*;
 use crate::settings::*;
 
-lazy_static!(
-    static ref CAT : gst::DebugCategory = gst::DebugCategory::new(
+lazy_static! {
+    static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
         "realsensesrc",
         gst::DebugColorFlags::empty(),
         Some("Realsense Source"),
     );
-);
+}
 
 /// A struct representation of the `realsensesrc` element
 struct RealsenseSrc {
@@ -773,6 +773,14 @@ impl RealsenseSrc {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!"]
+            ));
+        }
+
+        // Make sure that only one stream source is selected
+        if settings.serial.is_some() && settings.rosbag_location.is_some() {
+            return Err(gst_error_msg!(
+                gst::ResourceError::Settings,
+                ["Both `serial` and `rosbag-location` are defined. Only one of these can be defined!"]
             ));
         }
 
