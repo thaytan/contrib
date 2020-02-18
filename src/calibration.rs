@@ -2,6 +2,7 @@ use k4a_sys::*;
 
 use crate::camera_calibration::CameraCalibration;
 use crate::error::{K4aError, Result};
+use crate::extrinsics::Extrinsics;
 
 /// Struct representation of [`Calibration`](../calibration/struct.Calibration.html) that wraps
 /// around `k4a_calibration_t`.
@@ -55,6 +56,19 @@ impl Calibration {
     /// Get the Color [CameraCalibration](struct.CameraCalibration.html).
     pub fn color_camera_calibration(&self) -> CameraCalibration {
         CameraCalibration::new(self.handle.color_camera_calibration)
+    }
+
+    /// Extrinsic transformation parameters.
+    /// The extrinsic parameters allow 3D coordinate conversions between depth camera, color camera,
+    /// the IMU's gyroscope and accelerometer. To transform from a source to a target 3D coordinate
+    /// system, use the parameters stored under extrinsics(source, target).
+    /// # Arguments
+    /// * `source` - The source stream, see [k4a::CalibrationType](https://microsoft.github.io/Azure-Kinect-Sensor-SDK/release/1.3.x/group___enumerations_ga8d5fae13125f360be86c166684cdb5c5.html#gga8d5fae13125f360be86c166684cdb5c5a972984dcc30591a8f98034fb582fcfcd).
+    /// * `target` - The target stream, see [k4a::CalibrationType](https://microsoft.github.io/Azure-Kinect-Sensor-SDK/release/1.3.x/group___enumerations_ga8d5fae13125f360be86c166684cdb5c5.html#gga8d5fae13125f360be86c166684cdb5c5a972984dcc30591a8f98034fb582fcfcd).
+    /// # Returns
+    /// The extrinsics from source to target.
+    pub fn extrinsics(&self, source: CalibrationType, target: CalibrationType) -> Extrinsics {
+        Extrinsics::new(self.handle.extrinsics[source as usize][target as usize])
     }
 
     /// This function is NOT implemented!

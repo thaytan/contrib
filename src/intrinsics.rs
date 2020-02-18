@@ -4,6 +4,7 @@ use k4a_sys::{
 
 /// Struct representation of [k4a_calibration_intrisic_parameters_t](https://microsoft.github.io/Azure-Kinect-Sensor-SDK/release/1.3.x/unionk4a__calibration__intrinsic__parameters__t.html).
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct IntrinsicsParameters {
     /// Principal point in image, x.
     cx: f32,
@@ -71,8 +72,8 @@ impl IntrinsicsParameters {
 }
 
 /// Rust wrapper for the [k4a_calibration_intrinsics_t](https://microsoft.github.io/Azure-Kinect-Sensor-SDK/release/1.3.x/structk4a__calibration__intrinsics__t.html).
+#[derive(Debug)]
 pub struct Intrinsics {
-    _raw: k4a_calibration_intrinsics_t,
     pub type_: CalibrationModelType,
     pub parameters: IntrinsicsParameters,
 }
@@ -81,7 +82,6 @@ impl Intrinsics {
     /// Creates a new safe wrapper for the [k4a_calibration_intrinsics_t](https://microsoft.github.io/Azure-Kinect-Sensor-SDK/release/1.3.x/structk4a__calibration__intrinsics__t.html).
     pub(crate) fn new(intrinsics: k4a_calibration_intrinsics_t) -> Self {
         Self {
-            _raw: intrinsics,
             type_: intrinsics.type_,
             parameters: IntrinsicsParameters::new(intrinsics.parameters),
         }
