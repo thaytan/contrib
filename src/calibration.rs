@@ -13,6 +13,14 @@ pub struct Calibration {
 // The memory the `k4a_calibration_t` is written to is allocated and owned by the caller, so there
 // is no need to free or release.
 
+impl Default for Calibration {
+    fn default() -> Calibration {
+        Calibration {
+            handle: k4a_calibration_t::default(),
+        }
+    }
+}
+
 impl Calibration {
     /// Converts raw calibration data into [`Calibration`](../calibration/struct.Calibration.html).
     ///
