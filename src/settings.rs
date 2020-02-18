@@ -13,7 +13,6 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-
 pub(crate) use crate::d400_limits::*;
 pub(crate) use crate::enabled_streams::EnabledStreams;
 use crate::realsense_timestamp_mode::RealsenseTimestampMode;

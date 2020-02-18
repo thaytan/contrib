@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2020-02-18
+
+### Added
+- Explicitly call `rs2::Config::resolve()` before starting the pipeline in order to speed up returning of errors if `Config` cannot be resolved.
+
+### Changed
+- Behaviour for setting both `serial` and `rosbag-location`.
+  - Print an informative error stating that only one of these can be specified.
+  - Terminate when both `serial` and `rosbag-location` are specified.
+
+
 ## [1.0.1] - 2020-01-29
 
 ### Fixed
