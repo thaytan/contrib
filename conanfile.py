@@ -12,21 +12,44 @@ class env(Generator):
 
     @property
     def filename(self):
-        pass
+        return "env.sh"
 
     @property
     def content(self):
         # Set environment from env_info
-        files = {"env.sh": 'export PKG_CONFIG_PATH="{}"\n'.format(self.output_path)}
+        content = 'export PKG_CONFIG_PATH="{}"\n'.format(self.output_path)
         for var, val in self.conanfile.env.items():
             if isinstance(val, str):
                 val = [val]
-            if len(val) > 1:
-                files["env.sh"] += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+            if len(val) > 1 or (var in os.environ and os.pathsep in os.environ[var]):
+                content += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
-                files["env.sh"] += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
+                content += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
 
-        return files
+        return content
+
+
+class direnv(Generator):
+    def __init__(self, conanfile):
+        super().__init__(conanfile)
+
+    @property
+    def filename(self):
+        return ".envrc"
+
+    @property
+    def content(self):
+        # Set environment from env_info
+        content = ""
+        for var, val in self.conanfile.env.items():
+            if isinstance(val, str):
+                val = [val]
+            if len(val) > 1 or (var in os.environ and os.pathsep in os.environ[var]):
+                content += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
+            else:
+                content += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
+
+        return content
 
 
 class tools(Generator):
@@ -47,7 +70,7 @@ class tools(Generator):
         for var, val in self.conanfile.env.items():
             if isinstance(val, str):
                 val = [val]
-            if len(val) > 1:
+            if len(val) > 1 or (var in os.environ and os.pathsep in os.environ[var]):
                 env_vars += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
                 env_vars += 'export {0}={1}\n'.format(var, '"%s"' % val[0])
