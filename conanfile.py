@@ -16,7 +16,10 @@ class GoConan(ConanFile):
 
     def source(self):
         arch = {"x86_64": "amd64", "armv8": "arm64"}[str(self.settings.arch)]
-        tools.get("https://dl.google.com/go/go{}.linux-{}.tar.gz".format(self.version, arch))
+        filename = "go{}.linux-{}.tar.gz".format(self.version, arch)
+        tools.download("https://dl.google.com/go/go{}.linux-{}.tar.gz".format(self.version, arch), filename)
+        # Workaround: Python3 in Ubuntu 18.04 does not support ascii encododed tarballs
+        self.run("tar -xf " + filename)
 
     def package(self):
         self.copy("*bin/go*")
