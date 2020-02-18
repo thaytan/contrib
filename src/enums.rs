@@ -27,6 +27,8 @@ use std::convert::TryFrom;
 // changes are not backwards compatible, and thus require some manual leg-work.
 
 /// Represents the Azure Kinect's color format and is used here to implement it as a GStreamer property.
+/// It is a small wrapper around the k4a::ImageFormat enum, storing only the
+/// K4A_IMAGE_FORMAT_COLOR_* part of it.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
 pub(crate) enum K4aColorFormat {
@@ -132,6 +134,9 @@ impl glib::value::SetValue for K4aColorFormat {
     }
 }
 
+/// Try to convert a `k4a::ImageFormat` into a [K4aColorFormat](enum.K4aColorFormat.html). This is a
+/// TryFrom, as `k4a::ImageFormat` is wider than [K4aColorFormat](enum.K4aColorFormat.html), as it
+/// also holds image formats for other streams.
 impl TryFrom<k4a::ImageFormat> for K4aColorFormat {
     type Error = K4aSrcError;
 
@@ -145,6 +150,9 @@ impl TryFrom<k4a::ImageFormat> for K4aColorFormat {
         }
     }
 }
+/// Convert a [K4aColorFormat](enum.K4aColorFormat.html) into a `k4a::ImageFormat`. This can be
+/// converted directly, as all values represented by [K4aColorFormat](enum.K4aColorFormat.html) is
+/// also represented by `k4a::ImageFormat`.
 impl From<K4aColorFormat> for k4a::ImageFormat {
     fn from(cf: K4aColorFormat) -> Self {
         match cf {
@@ -214,6 +222,8 @@ impl glib::value::SetValue for K4aColorResolution {
     }
 }
 
+/// Try to convert a `k4a::ColorResolution` into a [K4aColorResolution](enum.K4aColorResolution.html). This is a
+/// TryFrom, as `k4a::ColorResolution` is wider than [K4aColorResolution](enum.K4aColorResolution.html).
 impl TryFrom<k4a::ColorResolution> for K4aColorResolution {
     type Error = K4aSrcError;
 
@@ -231,7 +241,9 @@ impl TryFrom<k4a::ColorResolution> for K4aColorResolution {
         }
     }
 }
-
+/// Convert a [K4aColorResolution](enum.K4aColorResolution.html) into a `k4a::ColorResolution`. This can be
+/// converted directly, as all values represented by [K4aColorResolution](enum.K4aColorResolution.html) is
+/// also represented by `k4a::ColorResolution`.
 impl From<K4aColorResolution> for k4a::ColorResolution {
     fn from(cr: K4aColorResolution) -> Self {
         match cr {
@@ -413,6 +425,8 @@ impl K4aDepthMode {
     }
 }
 
+/// Try to convert a `k4a::DepthMode` into a [K4aDepthMode](enum.K4aDepthMode.html). This is a
+/// TryFrom, as `k4a::DepthMode` is wider than [K4aDepthMode](enum.K4aDepthMode.html).
 impl TryFrom<k4a::DepthMode> for K4aDepthMode {
     type Error = K4aSrcError;
 
@@ -428,6 +442,9 @@ impl TryFrom<k4a::DepthMode> for K4aDepthMode {
         }
     }
 }
+/// Convert a [K4aDepthMode](enum.K4aDepthMode.html) into a `k4a::DepthMode`. This can be
+/// converted directly, as all values represented by [K4aDepthMode](enum.K4aDepthMode.html) is
+/// also represented by `k4a::DepthMode`.
 impl From<K4aDepthMode> for k4a::DepthMode {
     fn from(value: K4aDepthMode) -> Self {
         match value {
@@ -544,7 +561,7 @@ impl K4aFramerate {
         vec![5, 15, 30]
     }
 }
-
+/// Convert a [K4aFramerate](enum.K4aFramerate.html) into `k4a::Fps`.
 impl From<K4aFramerate> for k4a::Fps {
     fn from(fr: K4aFramerate) -> Self {
         match fr {

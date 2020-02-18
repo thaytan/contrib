@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2020-02-18
+
+### Changed
+
+- Implemented `GEnum` properties for all enum-like int properties on the `k4asrc`.
+
 ## [0.2.0] - 2020-02-17
 
 ### Added
