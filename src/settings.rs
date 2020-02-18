@@ -1,6 +1,23 @@
+// Aivero
+// Copyright (C) <2019> Aivero
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Library General Public
+// License as published by the Free Software Foundation; either
+// version 2 of the License, or (at your option) any later version.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Library General Public License for more details.
+// You should have received a copy of the GNU Library General Public
+// License along with this library; if not, write to the
+// Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
+use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode};
 use crate::error::*;
 use crate::streams::*;
-use k4a::{utilities::i32_to_fps, ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
+use k4a::{ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
 use std::convert::{From, TryFrom};
 
 // Streams enabled by default
@@ -19,20 +36,17 @@ pub(crate) const DEPTH_FORMAT: ImageFormat = ImageFormat::K4A_IMAGE_FORMAT_DEPTH
 /// The format utilised for streaming IR frames from K4A device.
 pub(crate) const IR_FORMAT: ImageFormat = ImageFormat::K4A_IMAGE_FORMAT_IR16;
 /// Default color format for streaming from K4A device.
-pub(crate) const DEFAULT_COLOR_FORMAT: ImageFormat = ImageFormat::K4A_IMAGE_FORMAT_COLOR_NV12;
+pub(crate) const DEFAULT_COLOR_FORMAT: K4aColorFormat = K4aColorFormat::NV12;
 /// Default color resolution for streming from K4A device.
-pub(crate) const DEFAULT_COLOR_RESOLUTION: ColorResolution =
-    ColorResolution::K4A_COLOR_RESOLUTION_720P;
+pub(crate) const DEFAULT_COLOR_RESOLUTION: K4aColorResolution = K4aColorResolution::C720p;
 /// Default depth mode for streming from K4A device.
-pub(crate) const DEFAULT_DEPTH_MODE: DepthMode = DepthMode::K4A_DEPTH_MODE_NFOV_UNBINNED;
+pub(crate) const DEFAULT_DEPTH_MODE: K4aDepthMode = K4aDepthMode::NfovUnbinned;
 
 // Framerates
-/// All allowed framerates for streaming video.
-pub(crate) const ALLOWED_FRAMERATES: [i32; 3] = [5, 15, 30];
 /// The rate at which IMU outputs its measurements.
 pub(crate) const IMU_SAMPLING_RATE_HZ: i32 = 208;
 /// Default framerate for streaming video from K4A device.
-pub(crate) const DEFAULT_FRAMERATE: i32 = ALLOWED_FRAMERATES[1];
+pub(crate) const DEFAULT_FRAMERATE: K4aFramerate = K4aFramerate::FPS15;
 
 // Default settings for GStreamer specifics
 /// Default timeout duration while waiting for frames when streaming from K4A device.
@@ -40,7 +54,7 @@ pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 1000;
 /// Default behaviour of looping playback from recording.
 pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
 /// Default behaviour for applying timestamps to buffers.
-pub(crate) const DEFAULT_TIMESTAMP_MODE: TimestampMode = TimestampMode::All;
+pub(crate) const DEFAULT_TIMESTAMP_MODE: K4aTimestampMode = K4aTimestampMode::All;
 /// Default behaviour for liveliness of the element when playing back from a recording.
 pub(crate) const DEFAULT_REAL_TIME_PLAYBACK: bool = true;
 
@@ -56,16 +70,16 @@ pub(crate) struct Settings {
     pub(crate) device_settings: DeviceSettings,
     pub(crate) playback_settings: PlaybackSettings,
     pub(crate) desired_streams: Streams,
-    pub(crate) timestamp_mode: TimestampMode,
+    pub(crate) timestamp_mode: K4aTimestampMode,
 }
 
 /// A struct containing properties specific for streaming from a physical K4A device.
 pub(crate) struct DeviceSettings {
     pub(crate) serial: String,
-    pub(crate) color_format: ImageFormat,
-    pub(crate) color_resolution: ColorResolution,
-    pub(crate) depth_mode: DepthMode,
-    pub(crate) framerate: i32,
+    pub(crate) color_format: K4aColorFormat,
+    pub(crate) color_resolution: K4aColorResolution,
+    pub(crate) depth_mode: K4aDepthMode,
+    pub(crate) framerate: K4aFramerate,
     pub(crate) get_capture_timeout: i32,
 }
 
@@ -74,16 +88,6 @@ pub(crate) struct PlaybackSettings {
     pub(crate) recording_location: String,
     pub(crate) loop_recording: bool,
     pub(crate) real_time_playback: bool,
-}
-
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum TimestampMode {
-    Ignore = 0,
-    Main = 1,
-    All = 2,
-    K4aCommon = 3,
-    K4aIndividual = 4,
 }
 
 impl Default for Settings {
@@ -122,10 +126,10 @@ impl TryFrom<&Settings> for DeviceConfiguration {
 
         // Create `DeviceConfiguration` based on settings
         Ok(DeviceConfiguration {
-            color_format: device_settings.color_format,
+            color_format: k4a::ImageFormat::from(device_settings.color_format),
             color_resolution: ColorResolution::from(settings),
             depth_mode: DepthMode::from(settings),
-            camera_fps: i32_to_fps(device_settings.framerate)?,
+            camera_fps: k4a::Fps::from(device_settings.framerate),
             synchronized_images_only: synchronised_images_only,
             depth_delay_off_color_usec: DEPTH_DELAY_OFF_COLOR_USEC,
             wired_sync_mode: WIRED_SYNCH_MODE,
@@ -141,7 +145,7 @@ impl From<&Settings> for DepthMode {
     fn from(settings: &Settings) -> DepthMode {
         if settings.desired_streams.depth {
             // If depth is enabled, use `depth-mode` property
-            settings.device_settings.depth_mode
+            DepthMode::from(settings.device_settings.depth_mode)
         } else if settings.desired_streams.ir {
             // If IR is enabled without depth, use `K4A_DEPTH_MODE_PASSIVE_IR`
             DepthMode::K4A_DEPTH_MODE_PASSIVE_IR
@@ -158,7 +162,7 @@ impl From<&Settings> for ColorResolution {
     fn from(settings: &Settings) -> ColorResolution {
         if settings.desired_streams.color {
             // If color is enabled, use `color-resolution` property
-            settings.device_settings.color_resolution
+            ColorResolution::from(settings.device_settings.color_resolution)
         } else {
             // If color is disabled, use `K4A_COLOR_RESOLUTION_OFF`
             ColorResolution::K4A_COLOR_RESOLUTION_OFF

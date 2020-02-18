@@ -38,10 +38,10 @@ You may use conan to install a pre-built release of the gst-k4a package:
 **NOTE:** This does not work yet, as the `k4asrc` has not yet been released.
 
 ```bash
-conan install gst-k4a/0.1.0@aivero/stable -if installation
+conan install gst-k4a/0.3.0@aivero/stable -if installation
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$PWD/installation
 # And validate that the realsensesrc is properly installed
-gst-inspect-1.0 realsensesrc
+gst-inspect-1.0 k4asrc
 ```
 
 ## Build your own
@@ -59,6 +59,7 @@ export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$PWD/target/release
 > Note: `conan install -if build . aivero/stable` might require you to build extra packages. Just follow the instructions in the error message. 
 
 Now you should see the plugin's element `k4asrc`.
+
 ```
 gst-inspect-1.0 k4asrc
 ```
@@ -78,7 +79,7 @@ An example of a pipeline:
 
 ```bash
 gst-launch-1.0 rgbddemux name=k4a_demux \
-k4asrc enable-depth=true enable-ir=true enable-color=true enable-imu=false color-format=1 color-resolution=1 depth-mode=2 framerate=15 ! \
+k4asrc enable-depth=true enable-ir=true enable-color=true enable-imu=false color-format=nv12 color-resolution=720p depth-mode=nfov_unbinned framerate=15fps ! \
 k4a_demux.sink \
 k4a_demux.src_depth ! queue ! glimagesink \
 k4a_demux.src_ir ! queue ! glimagesink \
@@ -88,32 +89,32 @@ k4a_demux.src_color ! queue ! glimagesink
 ## Timestamping
 
 This element provides multiple options for timestamping under `timestamp-mode` property due to the way in which `video/rgbd` CAPS are implemented.
-- **0** - `ignore`: Do not apply timestamp to any buffer
-- **1** - `main`: Apply timestamps only to the main buffers based on current stream time (identical to enabling `do-timestamp=true`)
-- **2** (default) - `all`: Apply timestamps to all buffers based on current stream time, i.e. since the element was last put to PLAYING
-- **3** - `k4a_common`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. A common timestamp will be applied to all buffers belonging to one capture. Such timestamp is always based on the frame that belongs to the main stream (usually `depth`)
-- **4** - `k4a_individual`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. Each buffer receives an individual timestamp based on the K4A timestamps of the corresponding frame. Note that `depth` and `ir` streams of K4A are always synchronised but their timestamps can differ from `color` and `imu` streams
+- `ignore`: Do not apply timestamp to any buffer
+- `main`: Apply timestamps only to the main buffers based on current stream time (identical to enabling `do-timestamp=true`)
+- `all` (default): Apply timestamps to all buffers based on current stream time, i.e. since the element was last put to PLAYING
+- `common`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. A common timestamp will be applied to all buffers belonging to one capture. Such timestamp is always based on the frame that belongs to the main stream (usually `depth`)
+- `individual`: Apply timestamps to all buffers based on the timestamps obtained from physical K4A device or playback. Each buffer receives an individual timestamp based on the K4A timestamps of the corresponding frame. Note that `depth` and `ir` streams of K4A are always synchronised but their timestamps can differ from `color` and `imu` streams
 
 Here are some overall guidelines for their usage:
 
 #### General
-- Although not recommended, options **0** (`ignore`) and **1** (`main`) can be used with one stream enabled, both when streaming from Device and Playback.
+- Although not recommended, options `ignore` and `main` can be used with one stream enabled, both when streaming from Device and Playback.
 
 #### Streaming from Device
-- Option **2** (`all`) is the only reliable alternative that works with multiple streams enabled.
+- Option `all` is the only reliable alternative that works with multiple streams enabled.
 
 #### Streaming from Playback without looping
-- Options **3** (`k4a_common`) and **4** (`k4a_individual`) seem to be always reliable and result in real-life like playback (regardless of `real-time-playback`).
-- Option **2** (`all`) provides as-fast-as-possible playback if the element is set to live (`real-time-playback=true`). Option **2** can also be used if `real-time-playback=false` to result in the same behaviour, however, downstream sink element cannot be set to `async=true` as it would cause the pipeline to freeze due to lack of clock.
+- Options `common` and `individual` seem to be always reliable and result in real-life like playback (regardless of `real-time-playback`).
+- Option `all` provides as-fast-as-possible playback if the element is set to live (`real-time-playback=true`). Option `all` can also be used if `real-time-playback=false` to result in the same behaviour, however, downstream sink element cannot be set to `async=true` as it would cause the pipeline to freeze due to lack of clock.
 
 #### Streaming from Playback with looping
-- Only option **2** (`all`) can be used, which provides as-fast-as-possible playback. Similarly, do not use `real-time-playback=false` with downstream sink element set to `async=true`.
+- Only option `all` can be used, which provides as-fast-as-possible playback. Similarly, do not use `real-time-playback=false` with downstream sink element set to `async=true`.
 
 | **Streaming Source** | **Recommended `real-time-playback`** | **Recommended Option** | **Alternative** |
 |:---------------------:|:------------------------------------:|:---------------------------------------------:|:-----------------------------------:|
-| Device | Does no apply, Always live | **2** (`all`) | - |
-| Playback | Live (true) | **3** (`k4a_common`)  **4**(`k4a_individual`) | **2** (`all`): as-fast -as-possible |
-| Playback with looping | Live(true) | **2** (`all`): as-fast -as-possible | - |
+| Device | Does no apply, Always live | `all` | - |
+| Playback | Live (true) | `common` `individual` | `all`: as-fast -as-possible |
+| Playback with looping | Live(true) | `all`: as-fast -as-possible | - |
 
 
 # Contributing

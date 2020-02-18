@@ -14,6 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode};
 use crate::error::*;
 use crate::properties::*;
 use crate::settings::*;
@@ -32,7 +33,6 @@ use k4a::device::Device;
 use k4a::error::K4aError;
 use k4a::imu_sample::ImuSample;
 use k4a::playback::Playback;
-use k4a::utilities::*;
 use k4a::*;
 use std::sync::Mutex;
 
@@ -88,6 +88,8 @@ impl ObjectSubclass for K4aSrc {
         // Install properties for streaming from K4A
         klass.install_properties(&PROPERTIES);
 
+        let allowed_framerates = K4aFramerate::allowed_framerates();
+
         // Create src pad template with `video/rgbd` caps
         let src_caps = gst::Caps::new_simple(
             "video/rgbd",
@@ -101,9 +103,9 @@ impl ObjectSubclass for K4aSrc {
                     // Framerates at which K4A is capable of providing stream
                     "framerate",
                     &gst::List::new(&[
-                        &gst::Fraction::new(ALLOWED_FRAMERATES[0], 1),
-                        &gst::Fraction::new(ALLOWED_FRAMERATES[1], 1),
-                        &gst::Fraction::new(ALLOWED_FRAMERATES[2], 1),
+                        &gst::Fraction::new(allowed_framerates[0], 1),
+                        &gst::Fraction::new(allowed_framerates[1], 1),
+                        &gst::Fraction::new(allowed_framerates[2], 1),
                     ]),
                 ),
             ],
@@ -463,7 +465,7 @@ impl K4aSrc {
 
         // Make sure that K4A timestamps are not applied with Playback looping
         match settings.timestamp_mode {
-            TimestampMode::K4aCommon | TimestampMode::K4aIndividual => {
+            K4aTimestampMode::Common | K4aTimestampMode::Individual => {
                 if settings.playback_settings.loop_recording {
                     return Err(K4aSrcError::Failure(
                         "k4asrc: Property `loop-recording` cannot be set true with `timestamp-mode=k4a-common` \
@@ -831,13 +833,13 @@ impl K4aSrc {
         let timestamp_mode = internals.settings.timestamp_mode;
         // Proceed based on the selected timestamp mode
         match timestamp_mode {
-            TimestampMode::Ignore | TimestampMode::Main => {
+            K4aTimestampMode::Ignore | K4aTimestampMode::Main => {
                 // Return `CLOCK_TIME_NONE`
                 //     Variant `TimestampMode::Ignore` does not require timestamps
                 //     Variant `TimestampMode::Main` is handled by the parent class
                 gst::CLOCK_TIME_NONE
             }
-            TimestampMode::All => {
+            K4aTimestampMode::All => {
                 // Determine common timestamp (computed only once for the main buffer)
                 if is_buffer_main {
                     // Use element's clock during the computation
@@ -858,7 +860,7 @@ impl K4aSrc {
                 // Return the common timestamp
                 internals.timestamp_internals.common_timestamp
             }
-            TimestampMode::K4aCommon => {
+            K4aTimestampMode::Common => {
                 // Determine common timestamp (computed only once for the main buffer)
                 if is_buffer_main {
                     // Use K4A timestamp of Image/ImuSample during the computation
@@ -877,7 +879,7 @@ impl K4aSrc {
                 // Return the common timestamp
                 internals.timestamp_internals.common_timestamp
             }
-            TimestampMode::K4aIndividual => {
+            K4aTimestampMode::Individual => {
                 // Use K4A timestamp of each Image/ImuSample during the computation
                 let frame_timestamp = timestamp_source.extract_timestamp();
 
@@ -935,13 +937,13 @@ impl ObjectImpl for K4aSrc {
             subclass::Property("enable-color", ..) => Ok(settings.desired_streams.color.to_value()),
             subclass::Property("enable-imu", ..) => Ok(settings.desired_streams.imu.to_value()),
             subclass::Property("color-format", ..) => {
-                Ok((settings.device_settings.color_format as i32).to_value())
+                Ok(settings.device_settings.color_format.to_value())
             }
             subclass::Property("color-resolution", ..) => {
-                Ok((settings.device_settings.color_resolution as i32).to_value())
+                Ok(settings.device_settings.color_resolution.to_value())
             }
             subclass::Property("depth-mode", ..) => {
-                Ok((settings.device_settings.depth_mode as i32).to_value())
+                Ok(settings.device_settings.depth_mode.to_value())
             }
             subclass::Property("framerate", ..) => {
                 Ok(settings.device_settings.framerate.to_value())
@@ -956,7 +958,7 @@ impl ObjectImpl for K4aSrc {
                 Ok(settings.playback_settings.loop_recording.to_value())
             }
             subclass::Property("timestamp-mode", ..) => {
-                Ok((settings.timestamp_mode as i32).to_value())
+                Ok(settings.timestamp_mode.to_value())
             }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         }
@@ -1064,12 +1066,8 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.imu = enable_imu;
             }
             subclass::Property("color-format", ..) => {
-                let value: i32 = value.get().expect(&format!(
+                let value: K4aColorFormat = value.get().expect(&format!(
                     "k4asrc: Failed to set property `color-format`. Expected a `i32`, but got: {:?}",
-                    value
-                ));
-                let color_format = image_format_from_i32(value).expect(&format!(
-                    "k4asrc: Failed to set property `color-format`. Variant {:?} is not valid.",
                     value
                 ));
                 gst_info!(
@@ -1077,17 +1075,13 @@ impl ObjectImpl for K4aSrc {
                     obj: element,
                     "Changing property `color-format` from {:?} to {:?}",
                     settings.device_settings.color_format,
-                    color_format
+                    value
                 );
-                settings.device_settings.color_format = color_format;
+                settings.device_settings.color_format = value;
             }
             subclass::Property("color-resolution", ..) => {
-                let value: i32 = value.get().expect(&format!(
+                let value: K4aColorResolution = value.get().expect(&format!(
                     "k4asrc: Failed to set property `color-resolution`. Expected a `i32`, but got: {:?}",
-                    value
-                ));
-                let color_resolution = color_resolution_from_i32(value).expect(&format!(
-                    "k4asrc: Failed to set property `color-resolution`. Variant {:?} is not valid.",
                     value
                 ));
                 gst_info!(
@@ -1095,17 +1089,13 @@ impl ObjectImpl for K4aSrc {
                     obj: element,
                     "Changing property `color-resolution` from {:?} to {:?}",
                     settings.device_settings.color_resolution,
-                    color_resolution
+                    value
                 );
-                settings.device_settings.color_resolution = color_resolution;
+                settings.device_settings.color_resolution = value;
             }
             subclass::Property("depth-mode", ..) => {
-                let value: i32 = value.get().expect(&format!(
+                let value: K4aDepthMode = value.get().expect(&format!(
                     "k4asrc: Failed to set property `depth-mode`. Expected a `i32`, but got: {:?}",
-                    value
-                ));
-                let depth_mode = depth_mode_from_i32(value).expect(&format!(
-                    "k4asrc: Failed to set property `depth-mode`. Variant {:?} is not valid.",
                     value
                 ));
                 gst_info!(
@@ -1113,9 +1103,9 @@ impl ObjectImpl for K4aSrc {
                     obj: element,
                     "Changing property `depth-mode` from {:?} to {:?}",
                     settings.device_settings.depth_mode,
-                    depth_mode
+                    value
                 );
-                settings.device_settings.depth_mode = depth_mode;
+                settings.device_settings.depth_mode = value;
             }
             subclass::Property("framerate", ..) => {
                 let framerate = value.get().expect(&format!(
@@ -1125,7 +1115,7 @@ impl ObjectImpl for K4aSrc {
                 gst_info!(
                     CAT,
                     obj: element,
-                    "Changing property `framerate` from {} to {}",
+                    "Changing property `framerate` from {:?} to {:?}",
                     settings.device_settings.framerate,
                     framerate
                 );
@@ -1180,21 +1170,12 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("timestamp-mode", ..) => {
-                let value: i32 = value.get().expect(&format!(
+                let timestamp_mode: K4aTimestampMode = value.get().expect(&format!(
                     "k4asrc: Failed to set property `timestamp-mode`. Expected a `i32`, but got: {:?}",
                     value
                 ));
-                // TODO: Ugly and lazy for now, will be substituted with `GEnum` soon
-                let timestamp_mode = match value {
-                    0 => TimestampMode::Ignore,
-                    1 => TimestampMode::Main,
-                    2 => TimestampMode::All,
-                    3 => TimestampMode::K4aCommon,
-                    4 => TimestampMode::K4aIndividual,
-                    _ => panic!("k4asrc: Failed to set property `timestamp-mode`. Variant {:?} is not valid.", value)
-                };
                 element.set_do_timestamp(match timestamp_mode {
-                    TimestampMode::Main => true,
+                    K4aTimestampMode::Main => true,
                     _ => false,
                 });
                 gst_info!(
