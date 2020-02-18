@@ -66,7 +66,7 @@ impl K4aColorFormat {
                 },
                 gobject_sys::GEnumValue {
                     value: K4aColorFormat::BGRA32 as i32,
-                    value_name: b"BGRA32 (<=720p only)\0" as *const _ as *const _,
+                    value_name: b"BGRA32\0" as *const _ as *const _,
                     value_nick: b"bgra32\0" as *const _ as *const _,
                 },
                 gobject_sys::GEnumValue {
