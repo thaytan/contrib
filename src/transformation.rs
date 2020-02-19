@@ -3,17 +3,24 @@ use k4a_sys::*;
 use crate::calibration::Calibration;
 use crate::error::{K4aError, Result};
 use crate::image::Image;
-use crate::utilities::{color_resolution_to_resolution, depth_mode_to_depth_resolution};
+use crate::utilities::{
+    color_resolution_to_resolution, depth_mode_to_depth_resolution, Resolution,
+};
 
 /// Struct representation of [`Transformation`](../transformation/struct.Transformation.html) that
 /// wraps around `k4a_transformation_t`.
-pub struct Transformation<'a> {
+pub struct Transformation {
     pub(crate) handle: k4a_transformation_t,
-    calibration_ref: &'a Calibration,
+    depth_resolution: Resolution,
+    color_resolution: Resolution,
 }
 
+/// Required for moving between threads
+unsafe impl Send for Transformation {}
+unsafe impl Sync for Transformation {}
+
 /// Safe releasing of the `k4a_transformation_t` handle.
-impl Drop for Transformation<'_> {
+impl Drop for Transformation {
     fn drop(&mut self) {
         unsafe {
             k4a_transformation_destroy(self.handle);
@@ -21,7 +28,7 @@ impl Drop for Transformation<'_> {
     }
 }
 
-impl Transformation<'_> {
+impl Transformation {
     /// Create new [`Transformation`](../transformation/struct.Transformation.html).
     ///
     /// # Arguments
@@ -32,7 +39,7 @@ impl Transformation<'_> {
     /// # Returns
     /// * `Ok(Transformation)` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn new<'a>(calibration: &'a Calibration) -> Result<Transformation> {
+    pub fn new(calibration: &Calibration) -> Result<Transformation> {
         let transformation_handle = unsafe { k4a_transformation_create(&calibration.handle) };
         if transformation_handle == std::ptr::null_mut() {
             return Err(K4aError::Failure(
@@ -41,7 +48,8 @@ impl Transformation<'_> {
         }
         Ok(Transformation {
             handle: transformation_handle,
-            calibration_ref: calibration,
+            depth_resolution: depth_mode_to_depth_resolution(calibration.handle.depth_mode)?,
+            color_resolution: color_resolution_to_resolution(calibration.handle.color_resolution)?,
         })
     }
 
@@ -56,13 +64,11 @@ impl Transformation<'_> {
     /// on color camera resolution and it is with format `K4A_IMAGE_FORMAT_DEPTH16`.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn depth_image_to_color_camera(&self, depth_image: Image) -> Result<Image> {
-        let color_resolution =
-            color_resolution_to_resolution((*self.calibration_ref).handle.color_resolution)?;
         let output_image = Image::new(
             ImageFormat::K4A_IMAGE_FORMAT_DEPTH16,
-            color_resolution.width,
-            color_resolution.height,
-            2 * color_resolution.width,
+            self.color_resolution.width,
+            self.color_resolution.height,
+            2 * self.color_resolution.width,
         )?;
         match unsafe {
             k4a_transformation_depth_image_to_color_camera(
@@ -95,13 +101,11 @@ impl Transformation<'_> {
         depth_image: Image,
         color_image: Image,
     ) -> Result<Image> {
-        let depth_resolution =
-            depth_mode_to_depth_resolution((*self.calibration_ref).handle.depth_mode)?;
         let output_image = Image::new(
             ImageFormat::K4A_IMAGE_FORMAT_COLOR_BGRA32,
-            depth_resolution.width,
-            depth_resolution.height,
-            4 * depth_resolution.width,
+            self.depth_resolution.width,
+            self.depth_resolution.height,
+            4 * self.depth_resolution.width,
         )?;
         match unsafe {
             k4a_transformation_color_image_to_depth_camera(
@@ -139,13 +143,11 @@ impl Transformation<'_> {
         depth_image: Image,
         perspective: CalibrationType,
     ) -> Result<Image> {
-        let depth_resolution =
-            depth_mode_to_depth_resolution((*self.calibration_ref).handle.depth_mode)?;
         let output_image = Image::new(
             ImageFormat::K4A_IMAGE_FORMAT_CUSTOM,
-            depth_resolution.width,
-            depth_resolution.height,
-            6 * depth_resolution.width,
+            self.depth_resolution.width,
+            self.depth_resolution.height,
+            6 * self.depth_resolution.width,
         )?;
         match unsafe {
             k4a_transformation_depth_image_to_point_cloud(
