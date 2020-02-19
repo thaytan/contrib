@@ -28,11 +28,13 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
+use k4a::calibration::Calibration;
 use k4a::capture::Capture;
 use k4a::device::Device;
 use k4a::error::K4aError;
 use k4a::imu_sample::ImuSample;
 use k4a::playback::Playback;
+use k4a::transformation::Transformation;
 use k4a::*;
 use std::sync::Mutex;
 
@@ -57,6 +59,10 @@ struct K4aSrcInternals {
     settings: Settings,
     /// Contains information about the utilised K4A source.
     stream_source: Option<StreamSource>,
+    /// Contains calibration connected with either Device or Playback.
+    calibration: Calibration,
+    /// Contains transformation used during rectification.
+    transformation: Option<Transformation>,
     /// Contains initial timestamps for each stream as well as frame duration.
     timestamp_internals: TimestampInternals,
 }
@@ -126,6 +132,8 @@ impl ObjectSubclass for K4aSrc {
             internals: Mutex::new(K4aSrcInternals {
                 settings: Settings::default(),
                 stream_source: None,
+                calibration: Calibration::default(),
+                transformation: None,
                 timestamp_internals: TimestampInternals {
                     frame_duration: gst::CLOCK_TIME_NONE,
                     common_timestamp: gst::CLOCK_TIME_NONE,
@@ -211,14 +219,26 @@ impl BaseSrcImpl for K4aSrc {
                         .unwrap()
                         .to_string(),
                 );
-                caps.set(
-                    &format!("{}_width", STREAM_ID_DEPTH),
-                    &stream_properties.depth_resolution.width,
-                );
-                caps.set(
-                    &format!("{}_height", STREAM_ID_DEPTH),
-                    &stream_properties.depth_resolution.height,
-                );
+                // If rectified, the resolution of the depth stream is identical to color stream.
+                if internals.settings.rectify_depth {
+                    caps.set(
+                        &format!("{}_width", STREAM_ID_DEPTH),
+                        &stream_properties.color_resolution.width,
+                    );
+                    caps.set(
+                        &format!("{}_height", STREAM_ID_DEPTH),
+                        &stream_properties.color_resolution.height,
+                    );
+                } else {
+                    caps.set(
+                        &format!("{}_width", STREAM_ID_DEPTH),
+                        &stream_properties.depth_resolution.width,
+                    );
+                    caps.set(
+                        &format!("{}_height", STREAM_ID_DEPTH),
+                        &stream_properties.depth_resolution.height,
+                    );
+                }
             }
             // Add ir stream with its format, width and height into the caps, if enabled
             if desired_streams.ir {
@@ -387,9 +407,7 @@ impl K4aSrc {
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn start_k4a(&self, internals: &mut K4aSrcInternals) -> Result<(), K4aSrcError> {
-        // Extract `desired_streams` and `stream_source` from `internals`
         let settings = &internals.settings;
-        let stream_source = &mut internals.stream_source;
 
         // Make sure the user enabled at least one of the streams
         if !settings.desired_streams.is_any_video_enabled() {
@@ -407,61 +425,33 @@ impl K4aSrc {
             ));
         }
 
-        // Determine whether to stream `Playback`
-        if !settings.playback_settings.recording_location.is_empty() {
-            // Open `Playback`
-            let playback = Playback::open(&settings.playback_settings.recording_location)?;
-            // Configure streaming based on the opened `Playback`
-            let record_configuration = self.start_from_playback(&settings, &playback)?;
-            // Update `stream_source` to `Playback`
-            *stream_source = Some(StreamSource::Playback(playback, record_configuration));
-
-            // Return `Ok()` if everything went fine and start streaming from `Playback`
-            return Ok(());
+                // Check that color is enabled if the user wants rectified depth images
+        if settings.rectify_depth && (!settings.desired_streams.color || !settings.desired_streams.depth) {
+            return Err(K4aSrcError::Failure("Both Color and depth must be enabled when rectify-depth=true"));
         }
 
-        // If `file_path` is not set, live stream from `Device` is assumed
-        // Open a `Device`
-        let device = if !settings.device_settings.serial.is_empty() {
-            // Open `Device` based on its `serial` number
-            Device::open_with_serial(&settings.device_settings.serial)?
+        // Determine whether to stream from `Playback` or `Device`
+        // If `recording-location` is not set, live stream from `Device` is assumed
+        if !settings.playback_settings.recording_location.is_empty() {
+            self.start_from_playback(internals)?;
         } else {
-            // If no serial is specified, open the first connected `Device`
-            Device::open(0)?
-        };
-        // Configure streaming for the opened `Device`
-        let device_configuration = self.start_from_device(&settings, &device)?;
+            self.start_from_device(internals)?;
+        }
 
-        // Update `stream_source` to `Device`
-        *stream_source = Some(StreamSource::Device(device, device_configuration));
-        // Return `Ok()` if everything went fine and start streaming from `Device`
+        // Return `Ok()` if everything went fine
         Ok(())
     }
 
     /// Start streaming from K4A `Playback`.
     ///
     /// # Arguments
-    /// * `settings` - The setting of the element.
-    /// * `playback` - The Playback to start streaming from.
+    /// * `internals` - The internals of the element that contain settings and stream source.
     ///
     /// # Returns
-    /// * `Ok(RecordConfiguration)` on success.
+    /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
-    fn start_from_playback(
-        &self,
-        settings: &Settings,
-        playback: &Playback,
-    ) -> Result<RecordConfiguration, K4aSrcError> {
-        // Extract `record_configuration` from the `playback`
-        let record_configuration = playback.get_record_configuration()?;
-
-        // Extract available streams from the `record_configuration`
-        let available_streams = Streams {
-            depth: record_configuration.depth_track_enabled,
-            ir: record_configuration.ir_track_enabled,
-            color: record_configuration.color_track_enabled,
-            imu: record_configuration.imu_track_enabled,
-        };
+    fn start_from_playback(&self, internals: &mut K4aSrcInternals) -> Result<(), K4aSrcError> {
+        let settings = &internals.settings;
 
         // Make sure that K4A timestamps are not applied with Playback looping
         match settings.timestamp_mode {
@@ -476,6 +466,20 @@ impl K4aSrc {
             _ => {}
         }
 
+        // Open `Playback`
+        let playback = Playback::open(&settings.playback_settings.recording_location)?;
+
+        // Extract `record_configuration` from the `playback`
+        let record_configuration = playback.get_record_configuration()?;
+
+        // Extract available streams from the `record_configuration`
+        let available_streams = Streams {
+            depth: record_configuration.depth_track_enabled,
+            ir: record_configuration.ir_track_enabled,
+            color: record_configuration.color_track_enabled,
+            imu: record_configuration.imu_track_enabled,
+        };
+
         // Make sure there are no conflicts between the desired and available streams
         if !Streams::are_streams_available(&settings.desired_streams, &available_streams) {
             return Err(K4aSrcError::Failure(
@@ -483,24 +487,57 @@ impl K4aSrc {
             ));
         }
 
+        // Make sure that Playback contains color stream if depth rectification is enabled
+        if settings.rectify_depth && !available_streams.color {
+            return Err(K4aSrcError::Failure(
+                "k4asrc: Depth frames cannot be rectified if the recording does NOT contain `color` stream. \
+                Please set the property `rectify-depth` to false or use a different recording.",
+            ));
+        }
+
+        // Get calibration from the Playback
+        internals.calibration = playback.get_calibration()?;
+
+        // Get Transformation if rectification is enabled
+        if settings.rectify_depth {
+            internals.transformation = Some(Transformation::new(&internals.calibration)?);
+        }
+
+        // Update `stream_source` to `Playback`
+        internals.stream_source = Some(StreamSource::Playback(playback, record_configuration));
+
         // Return `Ok()` if everything went fine
-        Ok(record_configuration)
+        Ok(())
     }
 
     /// Start streaming from K4A `Device`.
     ///
     /// # Arguments
-    /// * `settings` - The setting of the element.
-    /// * `device` - The Device to start streaming from.
+    /// * `internals` - The internals of the element that contain settings and stream source.
     ///
     /// # Returns
-    /// * `Ok(DeviceConfiguration)` on success.
+    /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
-    fn start_from_device(
-        &self,
-        settings: &Settings,
-        device: &Device,
-    ) -> Result<DeviceConfiguration, K4aSrcError> {
+    fn start_from_device(&self, internals: &mut K4aSrcInternals) -> Result<(), K4aSrcError> {
+        let settings = &internals.settings;
+
+        // Make sure that color stream is enabled if depth rectification is desired
+        if settings.rectify_depth && !settings.desired_streams.color {
+            return Err(K4aSrcError::Failure(
+                "k4asrc: Depth frames cannot be rectified if `color` stream is disabled. \
+                Please set `enable-color` to true or the property `rectify-depth` to false.",
+            ));
+        }
+
+        // Open a `Device`
+        let device = if !settings.device_settings.serial.is_empty() {
+            // Open `Device` based on its `serial` number
+            Device::open_with_serial(&settings.device_settings.serial)?
+        } else {
+            // If no serial is specified, open the first connected `Device`
+            Device::open(0)?
+        };
+
         // Create `DeviceConfiguration` based on settings
         let device_configuration = DeviceConfiguration::try_from(settings)?;
 
@@ -512,8 +549,22 @@ impl K4aSrc {
             device.start_imu()?;
         }
 
+        // Get calibration from the Playback
+        internals.calibration = device.get_calibration(
+            device_configuration.depth_mode,
+            device_configuration.color_resolution,
+        )?;
+
+        // Get Transformation if rectification is enabled
+        if settings.rectify_depth {
+            internals.transformation = Some(Transformation::new(&internals.calibration)?);
+        }
+
+        // Update `stream_source` to `Device`
+        internals.stream_source = Some(StreamSource::Device(device, device_configuration));
+
         // Return `DeviceConfiguration` if everything went fine
-        Ok(device_configuration)
+        Ok(())
     }
 
     /// Determine `StreamProperties`, containing fields relevant for CAPS `fixate()`, based on the
@@ -651,13 +702,27 @@ impl K4aSrc {
         stream_id: &str,
         previous_streams: &[bool],
     ) -> Result<(), K4aSrcError> {
-        // Extract the correspond buffer from the capture
+        // Extract the correspond frame from the capture
         let frame = match stream_id {
-            STREAM_ID_DEPTH => capture.get_depth_image(),
+            STREAM_ID_DEPTH => {
+                // Rectify depth, if desired
+                if internals.settings.rectify_depth {
+                    let depth_image = capture.get_depth_image()?;
+                    let transformation = internals
+                        .transformation
+                        .as_ref()
+                        .expect("k4asrc: Transformation for rectification of depth frames is not yet defined.");
+                    transformation.depth_image_to_color_camera(depth_image)
+                } else {
+                    capture.get_depth_image()
+                }
+            }
             STREAM_ID_IR => capture.get_ir_image(),
             STREAM_ID_COLOR => capture.get_color_image(),
             _ => unreachable!("k4asrc: There are no more video streams available from K4A"),
         }?;
+
+        // Extract buffer out the frame
         let frame_buffer = frame.get_buffer()?;
 
         // Form a gst buffer out of mutable slice
@@ -957,9 +1022,8 @@ impl ObjectImpl for K4aSrc {
             subclass::Property("real-time-playback", ..) => {
                 Ok(settings.playback_settings.loop_recording.to_value())
             }
-            subclass::Property("timestamp-mode", ..) => {
-                Ok(settings.timestamp_mode.to_value())
-            }
+            subclass::Property("timestamp-mode", ..) => Ok(settings.timestamp_mode.to_value()),
+            subclass::Property("rectify-depth", ..) => Ok(settings.rectify_depth.to_value()),
             _ => unimplemented!("k4asrc: Property is not implemented"),
         }
     }
@@ -1186,6 +1250,17 @@ impl ObjectImpl for K4aSrc {
                     timestamp_mode
                 );
                 settings.timestamp_mode = timestamp_mode;
+            }
+            subclass::Property("rectify-depth", ..) => {
+                let rectify_depth = value.get().expect(&format!("k4asrc: Failed to set property `rectify-depth`. Expected a `bool`, but got: {:?}", value));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `rectify-depth` from {} to {}",
+                    settings.desired_streams.depth,
+                    rectify_depth
+                );
+                settings.rectify_depth = rectify_depth;
             }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         };

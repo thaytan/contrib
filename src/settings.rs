@@ -41,6 +41,8 @@ pub(crate) const DEFAULT_COLOR_FORMAT: K4aColorFormat = K4aColorFormat::NV12;
 pub(crate) const DEFAULT_COLOR_RESOLUTION: K4aColorResolution = K4aColorResolution::C720p;
 /// Default depth mode for streming from K4A device.
 pub(crate) const DEFAULT_DEPTH_MODE: K4aDepthMode = K4aDepthMode::NfovUnbinned;
+/// Default behaviour for rectifying depth frames.
+pub(crate) const DEFAULT_RECTIFY_DEPTH: bool = false;
 
 // Framerates
 /// The rate at which IMU outputs its measurements.
@@ -71,6 +73,7 @@ pub(crate) struct Settings {
     pub(crate) playback_settings: PlaybackSettings,
     pub(crate) desired_streams: Streams,
     pub(crate) timestamp_mode: K4aTimestampMode,
+    pub(crate) rectify_depth: bool,
 }
 
 /// A struct containing properties specific for streaming from a physical K4A device.
@@ -108,6 +111,7 @@ impl Default for Settings {
                 real_time_playback: DEFAULT_REAL_TIME_PLAYBACK,
             },
             timestamp_mode: DEFAULT_TIMESTAMP_MODE,
+            rectify_depth: DEFAULT_RECTIFY_DEPTH,
         }
     }
 }

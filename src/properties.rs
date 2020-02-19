@@ -19,7 +19,7 @@ use crate::settings::*;
 use glib::subclass;
 
 /// All properties that `k4asrc` element supports.
-pub(crate) static PROPERTIES: [subclass::Property; 14] = [
+pub(crate) static PROPERTIES: [subclass::Property; 15] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -167,6 +167,19 @@ pub(crate) static PROPERTIES: [subclass::Property; 14] = [
             "Timestamp mode to use",
             K4aTimestampMode::get_glib_type(),
             DEFAULT_TIMESTAMP_MODE as i32,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("rectify-depth", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Rectify Depth",
+            "Enables rectification of the depth frames. This produces a depth image where each pixel \
+             matches the corresponding pixel coordinate of the color frame, which also means that the \
+             resulting depth stream will have resolution equal to the color stream. Note that color \
+             stream must be enabled when streaming from a physical device, or recorded as a part of \
+             recording that is played back.",
+            DEFAULT_RECTIFY_DEPTH,
             glib::ParamFlags::READWRITE,
         )
     }),
