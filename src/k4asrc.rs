@@ -425,6 +425,11 @@ impl K4aSrc {
             ));
         }
 
+                // Check that color is enabled if the user wants rectified depth images
+        if settings.rectify_depth && (!settings.desired_streams.color || !settings.desired_streams.depth) {
+            return Err(K4aSrcError::Failure("Both Color and depth must be enabled when rectify-depth=true"));
+        }
+
         // Determine whether to stream from `Playback` or `Device`
         // If `recording-location` is not set, live stream from `Device` is assumed
         if !settings.playback_settings.recording_location.is_empty() {
