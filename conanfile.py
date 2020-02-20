@@ -46,7 +46,7 @@ class Gtk3Conan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback", "-Dwayland_backend=false"]
         meson = Meson(self)
-        meson.configure(source_folder="gtk-" + self.version, args=args)
+        meson.configure(source_folder="gtk-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):
