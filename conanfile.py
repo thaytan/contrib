@@ -19,5 +19,5 @@ class FribidiConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled", "-Ddocs=false"]
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
