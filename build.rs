@@ -28,6 +28,7 @@ fn main() {
         .rustified_enum("rs2_camera_info")
         .rustified_enum("rs2_format")
         .rustified_enum("rs2_stream")
+        .rustified_enum("rs2_distortion")
         .clang_args(path_args)
         .generate()
         .expect("Unable to generate bindings");
