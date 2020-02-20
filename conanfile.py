@@ -89,7 +89,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Djpeg=" + ("enabled" if self.options.jpeg else "disabled"))
 
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args)
+        meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):
