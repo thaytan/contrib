@@ -79,7 +79,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dopus=" + ("enabled" if self.options.opus else "disabled"))
         args.append("-Dpango=" + ("enabled" if self.options.pango else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args)
+        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):
