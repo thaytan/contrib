@@ -31,7 +31,7 @@ class GdkPixbufConan(ConanFile):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback", "-Dinstalled_tests=false", "-Drelocatable=true"]
         with tools.environment_append({"PATH": environ["PATH"] + pathsep + path.join(self.build_folder, "gdk-pixbuf")}):
             meson = Meson(self)
-            meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
+            meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
             meson.install()
 
     def package_info(self):
