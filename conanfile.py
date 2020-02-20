@@ -54,7 +54,7 @@ class MesaConan(ConanFile):
         if self.settings.arch == "armv8":
             args.append("-Dgallium-drivers=nouveau,tegra")
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args)
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):
