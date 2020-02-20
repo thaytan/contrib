@@ -25,5 +25,5 @@ class AtSpi2CoreConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]
         meson = Meson(self)
-        meson.configure(source_folder="at-spi2-core-AT_SPI2_CORE_" + self.version.replace(".", "_"), args=args)
+        meson.configure(source_folder="at-spi2-core-AT_SPI2_CORE_" + self.version.replace(".", "_"), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
