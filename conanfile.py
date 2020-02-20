@@ -39,5 +39,5 @@ class GStreamerDevtoolsConan(ConanFile):
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         args.append("-Dtests=" + ("enabled" if self.options.tests else "disabled"))
         args.append("-Dnls=" + ("enabled" if self.options.nls else "disabled"))
-        meson.configure(source_folder="src/gst-devtools-" + self.version, args=args)
+        meson.configure(source_folder="src/gst-devtools-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
