@@ -41,7 +41,7 @@ class GStreamerRtspServerConan(ConanFile):
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         args.append("-Drtspclientsink=" + ("enabled" if self.options.rtspclientsink else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder="gst-rtsp-server-%s" % self.version, args=args)
+        meson.configure(source_folder="gst-rtsp-server-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):
