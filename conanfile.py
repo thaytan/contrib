@@ -39,7 +39,7 @@ class CairoConan(ConanFile):
         args.append("-Dzlib=" + ("enabled" if self.options.zlib else "disabled"))
         args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
 
-        meson.configure(source_folder="cairo-" + self.version, args=args)
+        meson.configure(source_folder="cairo-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):
