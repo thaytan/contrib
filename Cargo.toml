@@ -1,6 +1,6 @@
 [package]
 name = "librealsense2-sys"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
 description = "Rust FFI bindings for librealsense"
 keywords = ["librealsense", "Rust", "FFI", "generated", "unsafe"]
