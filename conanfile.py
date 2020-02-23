@@ -2,9 +2,10 @@ import os
 
 from conans import ConanFile, Meson, tools
 
+
 class MesaConan(ConanFile):
     name = "mesa"
-    version = tools.get_env("GIT_TAG", "19.2.0")
+    version = tools.get_env("GIT_TAG", "20.0.0")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
