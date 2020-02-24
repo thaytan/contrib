@@ -1,5 +1,7 @@
 import os
+
 from conans import ConanFile, Meson, tools
+
 
 class GStreamerPluginsBaseConan(ConanFile):
     name = "gstreamer-plugins-base"
@@ -12,6 +14,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "gl": [True, False],
         "x11": [True, False],
         "videotestsrc": [True, False],
+        "audiotestsrc": [True, False],
         "videoconvert": [True, False],
         "app": [True, False],
         "playback": [True, False],
@@ -26,6 +29,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "gl=True",
         "x11=True",
         "videotestsrc=True",
+        "audiotestsrc=True",
         "videoconvert=True",
         "app=True",
         "playback=True",
