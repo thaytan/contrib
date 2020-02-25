@@ -75,6 +75,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dx11=" + ("enabled" if self.options.x11 else "disabled"))
         args.append("-Dvideotestsrc=" + ("enabled" if self.options.videotestsrc else "disabled"))
+        args.append("-Daudiotestsrc=" + ("enabled" if self.options.audiotestsrc else "disabled"))
         args.append("-Dvideoconvert=" + ("enabled" if self.options.videoconvert else "disabled"))
         args.append("-Dapp=" + ("enabled" if self.options.app else "disabled"))
         args.append("-Dplayback=" + ("enabled" if self.options.playback else "disabled"))
