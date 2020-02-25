@@ -1,13 +1,24 @@
-// License: Apache 2.0. See LICENSE file in root directory.
-// Copyright(c) 2019 Aivero. All Rights Reserved.
-use std::fmt;
-
-use gst::meta::*;
-use gst::BufferRef;
-use gst::MiniObject;
+// Copyright (C) <2019> Aivero
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Library General Public
+// License as published by the Free Software Foundation; either
+// version 2 of the License, or (at your option) any later version.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Library General Public License for more details.
+// You should have received a copy of the GNU Library General Public
+// License along with this library; if not, write to the
+// Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+// Boston, MA 02110-1301, USA.
 
 use glib;
 use glib::translate::from_glib;
+use gst::meta::*;
+use gst::BufferRef;
+use gst::MiniObject;
+use std::fmt;
 
 use crate::sys;
 pub use crate::sys::TagsMeta;
@@ -66,14 +77,17 @@ impl fmt::Debug for TagsMeta {
     }
 }
 
+pub fn get_tags(tag: &str) -> gst::TagList {
+    let mut tags = gst::tags::TagList::new();
+    tags.get_mut()
+        .unwrap()
+        .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
+    tags
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
-
-    fn get_tags(tag: &str) -> gst::TagList {
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut().unwrap().add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
-        tags
-    }
 
     #[test]
     fn add_and_get_expect_tags_equal() {
@@ -112,7 +126,11 @@ mod tests {
 
         // Assert
         for i in buffer.iter_meta::<TagsMeta>() {
-            assert_eq!(true, false, "A TagsMeta was still present on the buffer: {:#?}", i)
+            assert_eq!(
+                true, false,
+                "A TagsMeta was still present on the buffer: {:#?}",
+                i
+            )
         }
     }
 }
