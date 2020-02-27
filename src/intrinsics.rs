@@ -118,6 +118,19 @@ impl From<rs_coefficients::Reader<'_>> for RsCoefficients {
     }
 }
 
+impl From<[f32; 5]> for RsCoefficients {
+    /// Implements conversion from slice into RsCoefficients.
+    fn from(slice: [f32; 5]) -> Self {
+        Self {
+            a1: slice[0],
+            a2: slice[1],
+            a3: slice[2],
+            a4: slice[3],
+            a5: slice[4],
+        }
+    }
+}
+
 /// K4A distortion coefficients.
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct K4aCoefficients {
@@ -180,6 +193,22 @@ impl From<k4a_coefficients::Reader<'_>> for K4aCoefficients {
             k6: coefficients.get_k6(),
             p1: coefficients.get_p1(),
             p2: coefficients.get_p2(),
+        }
+    }
+}
+
+impl From<[f32; 8]> for K4aCoefficients {
+    /// Implements conversion from slice into K4aCoefficients.
+    fn from(slice: [f32; 8]) -> Self {
+        Self {
+            k1: slice[0],
+            k2: slice[1],
+            k3: slice[2],
+            k4: slice[3],
+            k5: slice[4],
+            k6: slice[5],
+            p1: slice[6],
+            p2: slice[7],
         }
     }
 }
