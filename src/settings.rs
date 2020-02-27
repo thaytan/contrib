@@ -33,6 +33,9 @@ pub(crate) const DEFAULT_TIMESTAMP_MODE: RealsenseTimestampMode = RealsenseTimes
 // Default behaviour for playing back from rosbag recording.
 pub(crate) const DEFAULT_REAL_TIME_ROSBAG_PLAYBACK: bool = false;
 
+/// Default behaviour for attaching camera meta buffers.
+pub(crate) const DEFAULT_ATTACH_CAMERA_META: bool = false;
+
 // Streams enabled by defaults
 pub(crate) const DEFAULT_ENABLE_DEPTH: bool = true;
 pub(crate) const DEFAULT_ENABLE_INFRA1: bool = false;
@@ -61,6 +64,7 @@ pub(crate) struct Settings {
     pub(crate) include_per_frame_metadata: bool,
     pub(crate) timestamp_mode: RealsenseTimestampMode,
     pub(crate) real_time_rosbag_playback: bool,
+    pub(crate) attach_camera_meta: bool,
 }
 
 /// A struct containing properties of `realsensesrc` about streams
@@ -99,6 +103,7 @@ impl Default for Settings {
             include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
             timestamp_mode: DEFAULT_TIMESTAMP_MODE,
             real_time_rosbag_playback: DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
+            attach_camera_meta: DEFAULT_ATTACH_CAMERA_META,
         }
     }
 }

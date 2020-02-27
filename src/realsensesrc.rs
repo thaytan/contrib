@@ -14,6 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use std::collections::HashMap;
 use std::sync::Mutex;
 
 use glib::subclass;
@@ -21,8 +22,10 @@ use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 
+use camera_meta::Distortion;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
+use gst_depth_meta::{camera_meta, camera_meta::*};
 use rs2;
 use rs2::high_level_utils::StreamInfo;
 
@@ -50,6 +53,8 @@ struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
     base_time: std::time::Duration,
+    /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`.
+    camera_meta_serialised: Vec<u8>,
 }
 
 /// An enum containing the current state of the RealSense pipeline
@@ -111,6 +116,7 @@ impl ObjectSubclass for RealsenseSrc {
                 settings: Settings::default(),
                 state: State::Stopped,
                 base_time: std::time::Duration::new(0, 0),
+                camera_meta_serialised: Vec::default(),
             }),
         }
     }
@@ -329,6 +335,20 @@ impl ObjectImpl for RealsenseSrc {
                     .unwrap()
                     .set_live(settings.real_time_rosbag_playback);
             }
+            subclass::Property("attach-camera-meta", ..) => {
+                let attach_camera_meta = value.get().expect(&format!(
+                    "Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}",
+                    value
+                ));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `attach-camera-meta` from {} to {}",
+                    settings.attach_camera_meta,
+                    attach_camera_meta
+                );
+                settings.attach_camera_meta = attach_camera_meta;
+            }
             _ => unimplemented!("Property is not implemented"),
         };
     }
@@ -380,6 +400,9 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("timestamp-mode", ..) => Ok(settings.timestamp_mode.to_value()),
             subclass::Property("real-time-rosbag-playback", ..) => {
                 Ok(settings.real_time_rosbag_playback.to_value())
+            }
+            subclass::Property("attach-camera-meta", ..) => {
+                Ok(settings.attach_camera_meta.to_value())
             }
             _ => unimplemented!("Property is not implemented"),
         }
@@ -465,7 +488,7 @@ impl BaseSrcImpl for RealsenseSrc {
         }
 
         let pipeline = self
-            .prepare_and_start_librealsense_pipeline(&config, &mut internals.settings)
+            .prepare_and_start_librealsense_pipeline(&config, internals)
             .map_err(|e| {
                 gst_error_msg!(
                     gst::ResourceError::Settings,
@@ -639,6 +662,18 @@ impl BaseSrcImpl for RealsenseSrc {
             )?;
         }
 
+        // Attach Cap'n Proto serialised `CameraMeta` if enabled
+        if settings.attach_camera_meta {
+            // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
+            let camera_meta = internals.camera_meta_serialised.clone();
+            self.attach_camera_meta(
+                timestamp,
+                gst_clock_frame_duration,
+                &mut output_buffer,
+                camera_meta,
+            )?;
+        }
+
         Ok(output_buffer)
     }
 
@@ -704,6 +739,11 @@ impl BaseSrcImpl for RealsenseSrc {
                 }
             }
 
+            // Add `camerameta` into `streams`, if enabled
+            if settings.attach_camera_meta {
+                selected_streams.push_str("camerameta,");
+            }
+
             // Pop the last ',' contained in streams (not really necessary, but nice)
             selected_streams.pop();
 
@@ -723,12 +763,14 @@ impl RealsenseSrc {
     /// function returns a `RealsenseError` if any of those operations fails.
     /// # Arguments
     /// * `config` - The librealsense configuration to use for the camera.
-    /// * `settings` - The settings for the realsensesrc.
+    /// * `internals` - The internals of the realsensesrc.
     fn prepare_and_start_librealsense_pipeline(
         &self,
         config: &rs2::config::Config,
-        settings: &mut Settings,
+        internals: &mut RealsenseSrcInternals,
     ) -> Result<rs2::pipeline::Pipeline, RealsenseError> {
+        let settings = &mut internals.settings;
+
         // Get context and a list of connected devices
         let context = rs2::context::Context::new()?;
 
@@ -756,6 +798,11 @@ impl RealsenseSrc {
         // and update them
         if settings.rosbag_location.is_some() {
             self.configure_rosbag_settings(&mut *settings, &pipeline_profile)?;
+        }
+
+        // Setup camera meta, if enabled
+        if settings.attach_camera_meta {
+            Self::setup_camera_meta(internals, &pipeline_profile)?;
         }
 
         Ok(pipeline)
@@ -1306,6 +1353,343 @@ impl RealsenseSrc {
         }
 
         Ok(())
+    }
+
+    /// Sets up the serialised CameraMeta from Realsense PipelineProfile.
+    ///
+    /// # Arguments
+    /// * `internals` - The internals of the element that contain settings and timestamp internals.
+    /// * `pipeline_profile` - RealSense PipelineProfile.
+    ///
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(RealsenseError)` on failure.
+    fn setup_camera_meta(
+        internals: &mut RealsenseSrcInternals,
+        pipeline_profile: &rs2::pipeline_profile::PipelineProfile,
+    ) -> Result<(), RealsenseError> {
+        let desired_streams = &internals.settings.streams.enabled_streams;
+
+        // Get the sensors and active stream profiles from the pipeline profile
+        let sensors = pipeline_profile.get_device()?.query_sensors()?;
+        let stream_profiles = pipeline_profile.get_streams()?;
+
+        // Create intrinsics and insert the appropriate streams
+        let intrinsics = Self::extract_intrinsics(desired_streams, &stream_profiles)?;
+
+        // Create extrinsics and insert the appropriate transformations
+        let extrinsics = Self::extract_extrinsics(desired_streams, &stream_profiles)?;
+
+        // Create camera meta from the intrinsics, extrinsics and depth scale
+        let camera_meta = CameraMeta::new(intrinsics, extrinsics, Self::get_depth_scale(sensors));
+
+        // Serialise the CameraMeta.
+        internals.camera_meta_serialised = camera_meta
+            .serialise()
+            .map_err(|err| RealsenseError(format!("Cannot serialise camera meta: {}", err)))?;
+
+        // Return Ok if everything went fine
+        Ok(())
+    }
+
+    /// Extract Intrinsics from the active RealSense stream profiles, while taking into account what streams are enabled.
+    ///
+    /// # Arguments
+    /// * `desired_streams` - Desired streams.
+    /// * `stream_profiles` - Active stream profiles.
+    ///
+    /// # Returns
+    /// * `HashMap<String, camera_meta::Intrinsics>` containing Intrinsics corresponding to a stream.
+    fn extract_intrinsics(
+        desired_streams: &EnabledStreams,
+        stream_profiles: &Vec<rs2::stream_profile::StreamProfile>,
+    ) -> Result<HashMap<String, camera_meta::Intrinsics>, RealsenseError> {
+        let mut intrinsics: HashMap<String, camera_meta::Intrinsics> = HashMap::new();
+
+        // Iterate over all stream profile, extract intrinsics and assign them to the appropriate stream
+        for stream_profile in stream_profiles.iter() {
+            let stream_data = stream_profile.get_data()?;
+            let stream_id = Self::rs2_stream_to_id(stream_data.stream, stream_data.index);
+
+            // Make sure that the stream is enabled for streaming
+            if Self::is_stream_enabled(stream_id, desired_streams) {
+                intrinsics.insert(
+                    stream_id.to_string(),
+                    Self::rs2_intrinsics_to_camera_meta_intrinsics(
+                        stream_profile.get_intrinsics()?,
+                    ),
+                );
+            }
+        }
+
+        Ok(intrinsics)
+    }
+
+    /// Convert Realsense Extrinsics into CameraMeta Intrinsics.
+    ///
+    /// # Arguments
+    /// * `rs2_intrinsics` - RealSense intrinsics to convert.
+    ///
+    /// # Returns
+    /// * `camera_meta::Intrinsics` containing the converted intrinsics.
+    fn rs2_intrinsics_to_camera_meta_intrinsics(
+        rs2_intrinsics: rs2::intrinsics::Intrinsics,
+    ) -> camera_meta::Intrinsics {
+        use rs2::intrinsics::Distortion as rs2_dis;
+
+        let distortion = match rs2_intrinsics.model {
+            rs2_dis::RS2_DISTORTION_NONE => Distortion::None,
+            rs2_dis::RS2_DISTORTION_MODIFIED_BROWN_CONRADY => Distortion::RsModifiedBrownConrady(
+                camera_meta::RsCoefficients::from(rs2_intrinsics.coeffs),
+            ),
+            rs2_dis::RS2_DISTORTION_INVERSE_BROWN_CONRADY => Distortion::RsInverseBrownConrady(
+                camera_meta::RsCoefficients::from(rs2_intrinsics.coeffs),
+            ),
+            rs2_dis::RS2_DISTORTION_FTHETA => {
+                Distortion::RsFTheta(camera_meta::RsCoefficients::from(rs2_intrinsics.coeffs))
+            }
+            rs2_dis::RS2_DISTORTION_BROWN_CONRADY => {
+                Distortion::RsBrownConrady(camera_meta::RsCoefficients::from(rs2_intrinsics.coeffs))
+            }
+            rs2_dis::RS2_DISTORTION_KANNALA_BRANDT4 => Distortion::RsKannalaBrandt4(
+                camera_meta::RsCoefficients::from(rs2_intrinsics.coeffs),
+            ),
+            rs2_dis::RS2_DISTORTION_COUNT => {
+                unreachable!("RS2_DISTORTION_COUNT is not a valid distotion model")
+            }
+        };
+
+        camera_meta::Intrinsics {
+            fx: rs2_intrinsics.fx,
+            fy: rs2_intrinsics.fy,
+            cx: rs2_intrinsics.ppx,
+            cy: rs2_intrinsics.ppy,
+            distortion,
+        }
+    }
+
+    /// Extract extrinsics from the active RealSense stream profiles, while taking into account what streams are enabled.
+    ///
+    /// # Arguments
+    /// * `desired_streams` - Desired streams.
+    /// * `stream_profiles` - Active stream profiles.
+    ///
+    /// # Returns
+    /// * `HashMap<(String, String), camera_meta::Transformation>` containing Transformation
+    /// in a hashmap of <(from, to), Transformation>.
+    fn extract_extrinsics(
+        desired_streams: &EnabledStreams,
+        stream_profiles: &Vec<rs2::stream_profile::StreamProfile>,
+    ) -> Result<HashMap<(String, String), camera_meta::Transformation>, RealsenseError> {
+        let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
+
+        // Determine the main stream from which all transformations are taken
+        let main_stream_id = Self::determine_main_stream(desired_streams);
+        let (main_stream_rs2_stream, main_stream_rs2_index) =
+            Self::stream_id_to_rs2_stream(main_stream_id);
+
+        // Get the stream profile for the main stream
+        let main_stream_profile = stream_profiles
+            .iter()
+            .find(|stream_profile| match stream_profile.get_data() {
+                Ok(stream) => {
+                    stream.stream == main_stream_rs2_stream
+                        && if main_stream_rs2_index == -1 {
+                            true
+                        } else {
+                            stream.index == main_stream_rs2_index
+                        }
+                }
+                _ => false,
+            })
+            .expect("There is no stream profile for the primary enabled stream");
+
+        // Iterate over all stream profiles and find extrinsics to the other enabled streams
+        for stream_profile in stream_profiles.iter() {
+            let stream_data = stream_profile.get_data()?;
+            let stream_id = Self::rs2_stream_to_id(stream_data.stream, stream_data.index);
+
+            if stream_id == main_stream_id {
+                // Skip the main buffer
+                continue;
+            }
+
+            // Make sure that the stream is enabled for streaming
+            if Self::is_stream_enabled(stream_id, desired_streams) {
+                extrinsics.insert(
+                    (main_stream_id.to_string(), stream_id.to_string()),
+                    Self::rs2_extrinsics_to_camera_meta_transformation(
+                        main_stream_profile.get_extrinsics_to(stream_profile)?,
+                    ),
+                );
+            }
+        }
+
+        Ok(extrinsics)
+    }
+
+    /// Convert RealSense Extrinsics into CameraMeta Transformation, which is used for creation of camera_meta::Extrinsics.
+    ///
+    /// # Arguments
+    /// * `rs2_extrinsics` - Realsense extrinsics to convert.
+    ///
+    /// # Returns
+    /// * `camera_meta::Transformation` containing the converted transformation.
+    fn rs2_extrinsics_to_camera_meta_transformation(
+        rs2_extrinsics: rs2::extrinsics::Extrinsics,
+    ) -> camera_meta::Transformation {
+        camera_meta::Transformation::new(
+            camera_meta::Translation::from(rs2_extrinsics.translation),
+            camera_meta::RotationMatrix::from(rs2_extrinsics.rotation),
+        )
+    }
+
+    /// Extract the depth scale from RealSense Sensors.
+    ///
+    /// # Arguments
+    /// * `sensors` - List of active RealSense sensors.
+    ///
+    /// # Returns
+    /// * `f32` containing the depth scale, in metres. Default value of 0.001 is returned if depth sensor is not active.
+    fn get_depth_scale(sensors: Vec<rs2::sensor::Sensor>) -> f32 {
+        for sensor in sensors.iter() {
+            let depth_scale = sensor.get_depth_scale();
+            if let Ok(depth_scale) = depth_scale {
+                // Return the depth scale as soon as it is found in sensors.
+                return depth_scale;
+            }
+        }
+        // If depth scale cannot be found (depth stream is not active), return the default depth scale.
+        0.001
+    }
+
+    /// Attach Cap'n Proto serialised CameraMeta to `output_buffer`.
+    ///
+    /// # Arguments
+    /// * `timestamp` - The timestamp of the buffer.
+    /// * `frame_duration` - The duration of the buffer.
+    /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
+    /// * `camera_meta` - Serialised CameraMeta to attach to the `output_buffer`.
+    ///
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(RealsenseError)` on failure.
+    fn attach_camera_meta(
+        &self,
+        timestamp: Option<gst::ClockTime>,
+        frame_duration: gst::ClockTime,
+        output_buffer: &mut gst::Buffer,
+        camera_meta: Vec<u8>,
+    ) -> Result<(), RealsenseError> {
+        let camera_meta_stream_id = "camerameta";
+
+        // Form a gst buffer out of mutable slice
+        let mut buffer = gst::buffer::Buffer::from_mut_slice(camera_meta);
+        // Get mutable reference to the buffer
+        let buffer_mut_ref = buffer.get_mut().expect(&format!(
+            "Cannot get mutable reference to {} buffer",
+            camera_meta_stream_id
+        ));
+
+        // Set timestamp
+        if let Some(timestamp) = timestamp {
+            buffer_mut_ref.set_pts(timestamp);
+            buffer_mut_ref.set_dts(timestamp);
+        };
+        buffer_mut_ref.set_duration(frame_duration);
+
+        // Create an appropriate tag
+        let mut tags = gst::tags::TagList::new();
+        tags.get_mut()
+            .expect(&format!(
+                "Cannot get mutable reference to {} tags",
+                camera_meta_stream_id
+            ))
+            .add::<gst::tags::Title>(&camera_meta_stream_id, gst::TagMergeMode::Append);
+
+        // Add tag to this new buffer
+        TagsMeta::add(buffer_mut_ref, &mut tags);
+        // Attach this new buffer as meta to the output buffer
+        BufferMeta::add(
+            output_buffer
+                .get_mut()
+                .expect("Cannot get mutable reference to output buffer"),
+            &mut buffer,
+        );
+
+        Ok(())
+    }
+
+    /// Determine the main stream, while taking into account the priority `depth > infra1 > infra2 > color`, and return the corresponding ID.
+    ///
+    /// # Arguments
+    /// * `streams` - Struct containing enabled streams.
+    ///
+    /// # Returns
+    /// * `&str` containing the ID of the main stream.
+    fn determine_main_stream(streams: &EnabledStreams) -> &str {
+        if streams.depth {
+            "depth"
+        } else if streams.infra1 {
+            "infra1"
+        } else if streams.infra2 {
+            "infra2"
+        } else {
+            "color"
+        }
+    }
+
+    /// Convert RealSense stream type and index into its correspond GStreamer ID.
+    ///
+    /// # Arguments
+    /// * `stream` - Stream type.
+    /// * `index` - Index of the sream.
+    ///
+    /// # Returns
+    /// * `&str` containing the ID of the stream.
+    fn rs2_stream_to_id(stream: rs2::rs2_stream, index: i32) -> &'static str {
+        match stream {
+            rs2::rs2_stream::RS2_STREAM_DEPTH => "depth",
+            rs2::rs2_stream::RS2_STREAM_INFRARED => match index {
+                1 => "infra1",
+                2 => "infra2",
+                _ => unreachable!("Each RealSense device has only two infrared streams"),
+            },
+            rs2::rs2_stream::RS2_STREAM_COLOR => "color",
+            _ => unimplemented!("Other RealSense streams are not supported"),
+        }
+    }
+
+    /// Convert GStreamer ID of a stream into the corresponding RealSense stream type and index.
+    ///
+    /// # Arguments
+    /// * `id` - ID of the stream.
+    ///
+    /// # Returns
+    /// * `(stream type, index)` of the stream.
+    fn stream_id_to_rs2_stream(id: &str) -> (rs2::rs2_stream, i32) {
+        match id {
+            "depth" => (rs2::rs2_stream::RS2_STREAM_DEPTH, -1),
+            "infra1" => (rs2::rs2_stream::RS2_STREAM_INFRARED, 1),
+            "infra2" => (rs2::rs2_stream::RS2_STREAM_INFRARED, 2),
+            "color" => (rs2::rs2_stream::RS2_STREAM_COLOR, -1),
+            _ => unimplemented!("Other RealSense streams are not supported"),
+        }
+    }
+
+    /// Determines whether a specific stream id is enabled in `streams`.
+    ///
+    /// # Arguments
+    /// * `stream_id` - Stream ID.
+    /// * `streams` - Struct containing the enabled streams.
+    ///
+    /// # Returns
+    /// * `true` if a stream with the `stream_id` is enabled, `false` otherwise .
+    fn is_stream_enabled(stream_id: &str, streams: &EnabledStreams) -> bool {
+        (stream_id == "depth" && streams.depth)
+            || (stream_id == "infra1" && streams.infra1)
+            || (stream_id == "infra2" && streams.infra2)
+            || (stream_id == "color" && streams.color)
     }
 }
 
