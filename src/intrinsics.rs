@@ -7,35 +7,35 @@ use k4a_sys::{
 #[derive(Debug)]
 pub struct IntrinsicsParameters {
     /// Principal point in image, x.
-    cx: f32,
+    pub cx: f32,
     /// Principal point in image, y.
-    cy: f32,
+    pub cy: f32,
     /// Focal length x.
-    fx: f32,
+    pub fx: f32,
     /// Focal length y.
-    fy: f32,
+    pub fy: f32,
     /// k1 radial distortion coefficient.
-    k1: f32,
+    pub k1: f32,
     /// k2 radial distortion coefficient
-    k2: f32,
+    pub k2: f32,
     /// k3 radial distortion coefficient
-    k3: f32,
+    pub k3: f32,
     /// k4 radial distortion coefficient
-    k4: f32,
+    pub k4: f32,
     /// k5 radial distortion coefficient
-    k5: f32,
+    pub k5: f32,
     /// k6 radial distortion coefficient
-    k6: f32,
+    pub k6: f32,
     /// Center of distortion in Z=1 plane, x (only used for Rational6KT)
-    codx: f32,
+    pub codx: f32,
     /// Center of distortion in Z=1 plane, y (only used for Rational6KT)
-    cody: f32,
+    pub cody: f32,
     /// Tangential distortion coefficient 2.
-    p2: f32,
+    pub p2: f32,
     /// Tangential distortion coefficient 1.
-    p1: f32,
+    pub p1: f32,
     /// Metric radius.
-    metric_radius: f32,
+    pub metric_radius: f32,
 }
 
 impl IntrinsicsParameters {
