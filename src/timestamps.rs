@@ -30,6 +30,7 @@ pub(crate) struct TimestampInternals {
 pub(crate) enum TimestampSource<'a> {
     Image(&'a k4a::image::Image),
     ImuSample(&'a k4a::imu_sample::ImuSample),
+    None,
 }
 
 impl<'a> TimestampSource<'a> {
@@ -43,6 +44,7 @@ impl<'a> TimestampSource<'a> {
             TimestampSource::ImuSample(imu_sample) => {
                 gst::ClockTime::from_useconds(imu_sample.get_acc_timestamp())
             }
+            TimestampSource::None => gst::CLOCK_TIME_NONE,
         }
     }
 }

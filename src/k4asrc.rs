@@ -14,7 +14,9 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode};
+use crate::enums::{
+    K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode,
+};
 use crate::error::*;
 use crate::properties::*;
 use crate::settings::*;
@@ -22,20 +24,25 @@ use crate::stream_properties::*;
 use crate::streams::*;
 use crate::timestamps::*;
 use crate::utilities::*;
+use camera_meta::Distortion;
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::tags::TagsMeta;
+use gst_depth_meta::{camera_meta, camera_meta::*};
 use k4a::calibration::Calibration;
+use k4a::camera_calibration::CameraCalibration;
 use k4a::capture::Capture;
 use k4a::device::Device;
 use k4a::error::K4aError;
 use k4a::imu_sample::ImuSample;
 use k4a::playback::Playback;
 use k4a::transformation::Transformation;
+use k4a::CalibrationType::*;
 use k4a::*;
+use std::collections::HashMap;
 use std::sync::Mutex;
 
 /// A struct representation of the `k4asrc` element.
@@ -59,10 +66,8 @@ struct K4aSrcInternals {
     settings: Settings,
     /// Contains information about the utilised K4A source.
     stream_source: Option<StreamSource>,
-    /// Contains calibration connected with either Device or Playback.
-    calibration: Calibration,
-    /// Contains transformation used during rectification.
-    transformation: Option<Transformation>,
+    /// Contains calibration data specific to the Device or Playback the is utilised for streaming.
+    camera: CameraInternals,
     /// Contains initial timestamps for each stream as well as frame duration.
     timestamp_internals: TimestampInternals,
 }
@@ -73,6 +78,14 @@ enum StreamSource {
     Playback(Playback, RecordConfiguration),
     /// Variant that contains information about device stream source.
     Device(Device, DeviceConfiguration),
+}
+
+/// A Struct that contains calibration data specific to the Device or Playback the is utilised for streaming.
+struct CameraInternals {
+    /// Contains transformation used during rectification. Valid only if `rectify-depth=true`.
+    transformation: Option<Transformation>,
+    /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`.
+    camera_meta_serialised: Vec<u8>,
 }
 
 impl ObjectSubclass for K4aSrc {
@@ -132,8 +145,10 @@ impl ObjectSubclass for K4aSrc {
             internals: Mutex::new(K4aSrcInternals {
                 settings: Settings::default(),
                 stream_source: None,
-                calibration: Calibration::default(),
-                transformation: None,
+                camera: CameraInternals {
+                    transformation: None,
+                    camera_meta_serialised: Vec::default(),
+                },
                 timestamp_internals: TimestampInternals {
                     frame_duration: gst::CLOCK_TIME_NONE,
                     common_timestamp: gst::CLOCK_TIME_NONE,
@@ -280,6 +295,11 @@ impl BaseSrcImpl for K4aSrc {
                 caps.fixate_field_nearest_fraction("imu_sampling_rate", IMU_SAMPLING_RATE_HZ);
             }
 
+            // Add `camerameta` into `streams` if enabled
+            if internals.settings.attach_camera_meta {
+                selected_streams.push_str(&format!("{},", STREAM_ID_CAMERAMETA));
+            }
+
             // Pop the last ',' contained in streams (not really necessary, but nice)
             selected_streams.pop();
             // Fixate the framerate
@@ -388,6 +408,13 @@ impl BaseSrcImpl for K4aSrc {
             self.attach_imu_samples(base_src, internals, &mut output_buffer, imu_samples)?;
         }
 
+        // Attach Cap'n Proto serialised `CameraMeta` if enabled
+        if internals.settings.attach_camera_meta {
+            // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
+            let camera_meta = internals.camera.camera_meta_serialised.clone();
+            self.attach_camera_meta(base_src, internals, &mut output_buffer, camera_meta)?;
+        }
+
         Ok(output_buffer)
     }
 
@@ -423,11 +450,6 @@ impl K4aSrc {
             return Err(K4aSrcError::Failure(
                 "k4asrc: Both `serial` and `recording-location` are set, please select only one stream source",
             ));
-        }
-
-                // Check that color is enabled if the user wants rectified depth images
-        if settings.rectify_depth && (!settings.desired_streams.color || !settings.desired_streams.depth) {
-            return Err(K4aSrcError::Failure("Both Color and depth must be enabled when rectify-depth=true"));
         }
 
         // Determine whether to stream from `Playback` or `Device`
@@ -495,13 +517,10 @@ impl K4aSrc {
             ));
         }
 
-        // Get calibration from the Playback
-        internals.calibration = playback.get_calibration()?;
-
-        // Get Transformation if rectification is enabled
-        if settings.rectify_depth {
-            internals.transformation = Some(Transformation::new(&internals.calibration)?);
-        }
+        // Get Calibration from the Playback
+        let calibration = playback.get_calibration()?;
+        // Setup camera internals based on the extracted Calibration
+        Self::setup_camera_internals(internals, calibration)?;
 
         // Update `stream_source` to `Playback`
         internals.stream_source = Some(StreamSource::Playback(playback, record_configuration));
@@ -549,21 +568,50 @@ impl K4aSrc {
             device.start_imu()?;
         }
 
-        // Get calibration from the Playback
-        internals.calibration = device.get_calibration(
+        // Get Calibration from the Playback
+        let calibration = device.get_calibration(
             device_configuration.depth_mode,
             device_configuration.color_resolution,
         )?;
-
-        // Get Transformation if rectification is enabled
-        if settings.rectify_depth {
-            internals.transformation = Some(Transformation::new(&internals.calibration)?);
-        }
+        // Setup camera internals based on the extracted Calibration
+        Self::setup_camera_internals(internals, calibration)?;
 
         // Update `stream_source` to `Device`
         internals.stream_source = Some(StreamSource::Device(device, device_configuration));
 
         // Return `DeviceConfiguration` if everything went fine
+        Ok(())
+    }
+
+    /// Sets up the camera internals from K4A Calibration.
+    ///
+    /// # Arguments
+    /// * `internals` - The internals of the element that contain settings and timestamp internals.
+    /// * `calibration` - K4A Calibration of the utilised Device or Playback.
+    ///
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(K4aSrcError)` on failure.
+    fn setup_camera_internals(
+        internals: &mut K4aSrcInternals,
+        calibration: Calibration,
+    ) -> Result<(), K4aSrcError> {
+        let settings = &internals.settings;
+        let camera = &mut internals.camera;
+
+        // Get Transformation if rectification is enabled
+        if settings.rectify_depth {
+            camera.transformation = Some(Transformation::new(&calibration)?)
+        }
+
+        // Serialise the CameraMeta associated with Calibration, if attaching camera meta is desired.
+        if settings.attach_camera_meta {
+            camera.camera_meta_serialised = Self::extract_camera_meta(settings, &calibration)
+                .serialise()
+                .map_err(|_err| K4aSrcError::Failure("k4asrc: Cannot serialise camera meta"))?
+        }
+
+        // Return Ok if everything went fine
         Ok(())
     }
 
@@ -684,6 +732,7 @@ impl K4aSrc {
     /// `previous_streams` is enabled, the frame is attached as meta buffer.
     ///
     /// # Arguments
+    /// * `base_src` - This element (k4asrc).
     /// * `internals` - The internals of the element that contain settings and stream source.
     /// * `output_buffer` - The output buffer to which frames will be attached.
     /// * `capture` - Capture to extract the frames from.
@@ -708,7 +757,7 @@ impl K4aSrc {
                 // Rectify depth, if desired
                 if internals.settings.rectify_depth {
                     let depth_image = capture.get_depth_image()?;
-                    let transformation = internals
+                    let transformation = internals.camera
                         .transformation
                         .as_ref()
                         .expect("k4asrc: Transformation for rectification of depth frames is not yet defined.");
@@ -791,10 +840,10 @@ impl K4aSrc {
     /// the frame is attached as meta buffer. Unimplemented!
     ///
     /// # Arguments
+    /// * `base_src` - This element (k4asrc).
     /// * `internals` - The internals of the element that contain settings and stream source.
     /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
     /// * `imu_samples` - ImuSamples to attach to the `output_buffer`.
-    /// * `previous_streams` - An indicator of what previous streams are enabled.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -959,6 +1008,260 @@ impl K4aSrc {
             }
         }
     }
+
+    /// Attach Cap'n Proto serialised CameraMeta to `output_buffer`.
+    ///
+    /// # Arguments
+    /// * `base_src` - This element (k4asrc).
+    /// * `internals` - The internals of the element that contain settings and stream source.
+    /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
+    /// * `camera_meta` - Serialised CameraMeta to attach to the `output_buffer`.
+    ///
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(K4aSrcError)` on failure.
+    fn attach_camera_meta(
+        &self,
+        base_src: &gst_base::BaseSrc,
+        internals: &mut K4aSrcInternals,
+        output_buffer: &mut gst::Buffer,
+        camera_meta: Vec<u8>,
+    ) -> Result<(), K4aSrcError> {
+        // Form a gst buffer out of mutable slice
+        let mut buffer = gst::buffer::Buffer::from_mut_slice(camera_meta);
+        // Get mutable reference to the buffer
+        let buffer_mut_ref = buffer.get_mut().expect(&format!(
+            "k4asrc: Cannot get mutable reference to {} buffer",
+            STREAM_ID_CAMERAMETA
+        ));
+
+        // Set buffer duration
+        buffer_mut_ref.set_duration(internals.timestamp_internals.frame_duration);
+
+        // Set timestamps if desired, based on timestamp_mode
+        let timestamp = self.determine_timestamp(base_src, internals, false, TimestampSource::None);
+        if timestamp != gst::CLOCK_TIME_NONE {
+            buffer_mut_ref.set_pts(timestamp);
+            buffer_mut_ref.set_dts(timestamp);
+        }
+
+        // Create an appropriate tag
+        let mut tags = gst::tags::TagList::new();
+        tags.get_mut()
+            .expect(&format!(
+                "k4asrc: Cannot get mutable reference to {} tags",
+                STREAM_ID_CAMERAMETA
+            ))
+            .add::<gst::tags::Title>(&STREAM_ID_CAMERAMETA, gst::TagMergeMode::Append);
+
+        // Add tag to this new buffer
+        TagsMeta::add(buffer_mut_ref, &mut tags);
+        // Attach this new buffer as meta to the output buffer
+        BufferMeta::add(
+            output_buffer
+                .get_mut()
+                .expect("k4asrc: Cannot get mutable reference to output buffer"),
+            &mut buffer,
+        );
+
+        Ok(())
+    }
+
+    /// Convert K4A Calibration into CameraMeta while taking settings, e.g. enabled streams, into consideration.
+    ///
+    /// # Arguments
+    /// * `settings` - Settings of the element.
+    /// * `calibration` - Calibration of the utilised Device or Playback.
+    ///
+    /// # Returns
+    /// * `CameraMeta` containing the appropriate parameters.
+    fn extract_camera_meta(settings: &Settings, calibration: &Calibration) -> CameraMeta {
+        let desired_streams = &settings.desired_streams;
+
+        // Get the depth and color camera calibration
+        let depth_calibration = calibration.depth_camera_calibration();
+        let color_calibration = calibration.color_camera_calibration();
+
+        // Create intrinsics and insert the appropriate streams
+        let intrinsics =
+            Self::extract_intrinsics(&desired_streams, &depth_calibration, &color_calibration);
+
+        // Create extrinsics and insert the appropriate transformations
+        let extrinsics = Self::extract_extrinsics(&desired_streams, &calibration);
+
+        // K4A Depth is always in millimetres (0.001), due to its DEPTH16 K4A format.
+        CameraMeta::new(intrinsics, extrinsics, 0.001)
+    }
+
+    /// Extract Intrinsics from K4A Calibration.
+    ///
+    /// # Arguments
+    /// * `desired_streams` - Desired streams.
+    /// * `depth_calibration` - Calibration of the depth camera.
+    /// * `color_calibration` - Calibration of the color camera.
+    ///
+    /// # Returns
+    /// * `HashMap<String, camera_meta::Intrinsics>` containing Intrinsics corresponding to a stream.
+    fn extract_intrinsics(
+        desired_streams: &Streams,
+        depth_calibration: &CameraCalibration,
+        color_calibration: &CameraCalibration,
+    ) -> HashMap<String, camera_meta::Intrinsics> {
+        let mut intrinsics: HashMap<String, camera_meta::Intrinsics> = HashMap::new();
+        if desired_streams.depth {
+            intrinsics.insert(
+                STREAM_ID_DEPTH.to_string(),
+                Self::k4a_intrinsics_to_camera_meta_intrinsics(&depth_calibration.intrinsics),
+            );
+        }
+        if desired_streams.ir {
+            intrinsics.insert(
+                STREAM_ID_IR.to_string(),
+                Self::k4a_intrinsics_to_camera_meta_intrinsics(&depth_calibration.intrinsics),
+            );
+        }
+        if desired_streams.color {
+            intrinsics.insert(
+                STREAM_ID_COLOR.to_string(),
+                Self::k4a_intrinsics_to_camera_meta_intrinsics(&color_calibration.intrinsics),
+            );
+        }
+        intrinsics
+    }
+
+    /// Extract Entrinsics from K4A Calibration.
+    ///
+    /// # Arguments
+    /// * `desired_streams` - Desired streams.
+    /// * `calibration` - Calibration of the utilised Device or Playback.
+    ///
+    /// # Returns
+    /// * `HashMap<(String, String), camera_meta::Transformation>` containing Transformation
+    /// in a hashmap of <(from, to), Transformation>.
+    fn extract_extrinsics(
+        desired_streams: &Streams,
+        calibration: &Calibration,
+    ) -> HashMap<(String, String), camera_meta::Transformation> {
+        // Create extrinsics and insert the appropriate transformations
+        let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
+        let main_stream = Self::determine_main_stream(desired_streams);
+        let main_stream_calibration_type =
+            Self::determine_main_stream_calibration_type(desired_streams);
+        if desired_streams.ir && main_stream != STREAM_ID_IR {
+            extrinsics.insert(
+                (main_stream.to_string(), STREAM_ID_IR.to_string()),
+                Self::k4a_extrinsics_to_camera_meta_transformation(
+                    calibration
+                        .extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_DEPTH),
+                ),
+            );
+        }
+        if desired_streams.color && main_stream != STREAM_ID_COLOR {
+            extrinsics.insert(
+                (main_stream.to_string(), STREAM_ID_COLOR.to_string()),
+                Self::k4a_extrinsics_to_camera_meta_transformation(
+                    calibration
+                        .extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_COLOR),
+                ),
+            );
+        }
+        if desired_streams.imu {
+            extrinsics.insert(
+                (main_stream.to_string(), format!("{}_gyro", STREAM_ID_IMU)),
+                Self::k4a_extrinsics_to_camera_meta_transformation(
+                    calibration.extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_GYRO),
+                ),
+            );
+            extrinsics.insert(
+                (main_stream.to_string(), format!("{}_accel", STREAM_ID_IMU)),
+                Self::k4a_extrinsics_to_camera_meta_transformation(
+                    calibration
+                        .extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_ACCEL),
+                ),
+            );
+        }
+        extrinsics
+    }
+
+    /// Convert K4A Intrinsics into CameraMeta Intrinsics.
+    ///
+    /// # Arguments
+    /// * `k4a_intrinsics` - K4a intrinsics to convert.
+    ///
+    /// # Returns
+    /// * `camera_meta::Intrinsics` containing the converted intrinsics.
+    fn k4a_intrinsics_to_camera_meta_intrinsics(
+        k4a_intrinsics: &k4a::intrinsics::Intrinsics,
+    ) -> camera_meta::Intrinsics {
+        use k4a::CalibrationModelType::*;
+        let c = &k4a_intrinsics.parameters;
+        let distortion = match k4a_intrinsics.type_ {
+            K4A_CALIBRATION_LENS_DISTORTION_MODEL_BROWN_CONRADY => Distortion::K4aBrownConrady(
+                camera_meta::K4aCoefficients::new(c.k1, c.k2, c.k3, c.k4, c.k5, c.k6, c.p1, c.p2),
+            ),
+            // THETA, POLYNOMIAL_3K and RATIONAL_6KT are deprecated
+            K4A_CALIBRATION_LENS_DISTORTION_MODEL_UNKNOWN
+            | K4A_CALIBRATION_LENS_DISTORTION_MODEL_THETA
+            | K4A_CALIBRATION_LENS_DISTORTION_MODEL_POLYNOMIAL_3K
+            | K4A_CALIBRATION_LENS_DISTORTION_MODEL_RATIONAL_6KT => Distortion::Unknown,
+        };
+        camera_meta::Intrinsics {
+            fx: c.fx,
+            fy: c.fy,
+            cx: c.cx,
+            cy: c.cy,
+            distortion,
+        }
+    }
+
+    /// Convert K4A Extrinsics into CameraMeta Transformation, which is used for creation of camera_meta::Extrinsics.
+    ///
+    /// # Arguments
+    /// * `k4a_extrinsics` - K4a extrinsics to convert.
+    ///
+    /// # Returns
+    /// * `camera_meta::Transformation` containing the converted transformation.
+    fn k4a_extrinsics_to_camera_meta_transformation(
+        k4a_extrinsics: k4a::extrinsics::Extrinsics,
+    ) -> camera_meta::Transformation {
+        camera_meta::Transformation::new(
+            camera_meta::Translation::from(k4a_extrinsics.translation),
+            camera_meta::RotationMatrix::from(k4a_extrinsics.rotation),
+        )
+    }
+
+    /// Determine the main stream, while taking into account the priority `depth > ir > color`, and return the corresponding ID.
+    ///
+    /// # Arguments
+    /// * `streams` - Struct containing enabled streams.
+    ///
+    /// # Returns
+    /// * `&str` containing the ID of the main stream.
+    fn determine_main_stream(streams: &Streams) -> &str {
+        if streams.depth {
+            STREAM_ID_DEPTH
+        } else if streams.ir {
+            STREAM_ID_IR
+        } else {
+            STREAM_ID_COLOR
+        }
+    }
+
+    /// Determine the calibration type of the main stream, while taking into account the priority `depth == ir > color`.
+    /// This function is useful for extracting Extrinsics from k4a::Calibration.
+    ///
+    /// # Arguments
+    /// * `streams` - Struct containing enabled streams.
+    ///
+    /// # Returns
+    /// * `k4a::CalibrationType` containing the corresponding calibration type.
+    fn determine_main_stream_calibration_type(streams: &Streams) -> k4a::CalibrationType {
+        if streams.depth | streams.ir {
+            K4A_CALIBRATION_TYPE_DEPTH
+        } else {
+            K4A_CALIBRATION_TYPE_COLOR
+        }
+    }
 }
 
 impl ElementImpl for K4aSrc {}
@@ -1024,6 +1327,9 @@ impl ObjectImpl for K4aSrc {
             }
             subclass::Property("timestamp-mode", ..) => Ok(settings.timestamp_mode.to_value()),
             subclass::Property("rectify-depth", ..) => Ok(settings.rectify_depth.to_value()),
+            subclass::Property("attach-camera-meta", ..) => {
+                Ok(settings.attach_camera_meta.to_value())
+            }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         }
     }
@@ -1261,6 +1567,20 @@ impl ObjectImpl for K4aSrc {
                     rectify_depth
                 );
                 settings.rectify_depth = rectify_depth;
+            }
+            subclass::Property("attach-camera-meta", ..) => {
+                let attach_camera_meta = value.get().expect(&format!(
+                    "k4asrc: Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}",
+                    value
+                ));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `attach-camera-meta` from {} to {}",
+                    settings.attach_camera_meta,
+                    attach_camera_meta
+                );
+                settings.attach_camera_meta = attach_camera_meta;
             }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         };

@@ -14,12 +14,14 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode};
+use crate::enums::{
+    K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode,
+};
 use crate::settings::*;
 use glib::subclass;
 
 /// All properties that `k4asrc` element supports.
-pub(crate) static PROPERTIES: [subclass::Property; 15] = [
+pub(crate) static PROPERTIES: [subclass::Property; 16] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -180,6 +182,16 @@ pub(crate) static PROPERTIES: [subclass::Property; 15] = [
              stream must be enabled when streaming from a physical device, or recorded as a part of \
              recording that is played back.",
             DEFAULT_RECTIFY_DEPTH,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("attach-camera-meta", |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Attach Camera Meta",
+            "If enabled, `video/rgbd` will also contain the meta associated with K4A camera, such as \
+             intrinsics and extrinsics.",
+            DEFAULT_ATTACH_CAMERA_META,
             glib::ParamFlags::READWRITE,
         )
     }),
