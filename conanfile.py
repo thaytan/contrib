@@ -23,6 +23,9 @@ class GStreamerPluginsBaseConan(ConanFile):
         "orc": [True, False],
         "opus": [True, False],
         "pango": [True, False],
+        "audioconvert": [True, False],
+        "videoscale": [True, False],
+        "audioresample": [True, False]
     }
     default_options = (
         "introspection=True",
@@ -38,6 +41,9 @@ class GStreamerPluginsBaseConan(ConanFile):
         "orc=True",
         "opus=True",
         "pango=True",
+        "audioconvert=False",
+        "videoscale=False",
+        "audioresample=False"
     )
 
     def set_version(self):
@@ -83,6 +89,9 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dorc=" + ("enabled" if self.options.orc else "disabled"))
         args.append("-Dopus=" + ("enabled" if self.options.opus else "disabled"))
         args.append("-Dpango=" + ("enabled" if self.options.pango else "disabled"))
+        args.append("-Daudioresample=" + ("enabled" if self.options.audiotestsrc else "disabled"))
+        args.append("-Dvideoscale=" + ("enabled" if self.options.videoscale else "disabled"))
+        args.append("-Daudioconvert=" + ("enabled" if self.options.audioconvert else "disabled"))
         meson = Meson(self)
         meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
