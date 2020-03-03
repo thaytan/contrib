@@ -92,10 +92,6 @@ The following is the list of functionalities that are not yet mapped. Feel free 
 - Exporting to ply
 - Others ...
 
-*stream_profile*
-- Extrinsics
-- Intrinsics
-
 *sensor*
 - Majority of functionalities
 

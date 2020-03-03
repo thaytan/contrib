@@ -2,6 +2,8 @@
 // Copyright(c) 2019 Aivero. All Rights Reserved.
 
 use crate::error::Error;
+use crate::extrinsics::*;
+use crate::intrinsics::*;
 use rs2;
 
 /// Struct representation of [`StreamProfile`](../stream_profile/struct.Pipeline.html) that wraps
@@ -115,10 +117,23 @@ impl StreamProfile {
     /// Obtain intrinsics of a [`StreamProfile`](../stream_profile/struct.Pipeline.html).
     ///
     /// # Returns
-    /// * `Ok(rs2_intrinsics)` on success.
+    /// * `Ok(Intrinsics)` on success.
     /// * `Err(Error)` on failure.
-    pub fn get_intrinsics(&self) -> Result<rs2::rs2_intrinsics, Error> {
-        unimplemented!()
+    pub fn get_intrinsics(&self) -> Result<Intrinsics, Error> {
+        let mut error = Error::default();
+        let mut intrinsics = RsIntrinsicsWrapper::default();
+        unsafe {
+            rs2::rs2_get_video_stream_intrinsics(
+                self.handle,
+                &mut intrinsics._handle,
+                error.inner(),
+            );
+        }
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(Intrinsics::new(intrinsics._handle))
+        }
     }
 
     /// Obtain extrinsics between two [`StreamProfile`](../stream_profile/struct.Pipeline.html)s.
@@ -128,9 +143,35 @@ impl StreamProfile {
     /// * `to` - Target [`StreamProfile`](../stream_profile/struct.Pipeline.html).
     ///
     /// # Returns
-    /// * `Ok(rs2_extrinsics)` on success.
+    /// * `Ok(Extrinsics)` on success.
     /// * `Err(Error)` on failure.
-    pub fn get_extrinsics(_from: &Self, _to: &Self) -> Result<rs2::rs2_extrinsics, Error> {
-        unimplemented!()
+    pub fn get_extrinsics(from: &Self, to: &Self) -> Result<Extrinsics, Error> {
+        let mut error = Error::default();
+        let mut extrinsics = RsExtrinsicsWrapper::default();
+        unsafe {
+            rs2::rs2_get_extrinsics(
+                from.handle,
+                to.handle,
+                &mut extrinsics._handle,
+                error.inner(),
+            );
+        }
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(Extrinsics::new(extrinsics._handle))
+        }
+    }
+
+    /// Obtain extrinsics to another [`StreamProfile`](../stream_profile/struct.Pipeline.html).
+    ///
+    /// # Arguments
+    /// * `target` - Target [`StreamProfile`](../stream_profile/struct.Pipeline.html).
+    ///
+    /// # Returns
+    /// * `Ok(Extrinsics)` on success.
+    /// * `Err(Error)` on failure.
+    pub fn get_extrinsics_to(&self, target: &Self) -> Result<Extrinsics, Error> {
+        Self::get_extrinsics(self, target)
     }
 }
