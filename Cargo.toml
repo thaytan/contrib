@@ -26,9 +26,7 @@ branch = "298-camera-meta-and-cleanup"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
-# TODO: Replace branch with corresponding tag once merged
-branch = "intrinsics-and-extrinsics"
-# tag = "1.1.0"
+tag = "1.1.0"
 
 [build-dependencies.capnpc]
 capnpc = { version = "0.10" }
