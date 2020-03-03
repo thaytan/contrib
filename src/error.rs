@@ -85,3 +85,10 @@ impl From<K4aSrcError> for gst::FlowError {
         }
     }
 }
+
+/// Conversion from `gst::ErrorMessage` to K4aSrcError.
+impl From<gst::ErrorMessage> for K4aSrcError {
+    fn from(error: gst::ErrorMessage) -> K4aSrcError {
+        K4aSrcError::Failure(std::boxed::Box::leak(format!("{}", error).into_boxed_str()))
+    }
+}

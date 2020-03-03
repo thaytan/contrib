@@ -29,8 +29,7 @@ use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
-use gst_depth_meta::buffer::BufferMeta;
-use gst_depth_meta::tags::TagsMeta;
+use gst_depth_meta::rgbd;
 use gst_depth_meta::{camera_meta, camera_meta::*};
 use k4a::calibration::Calibration;
 use k4a::camera_calibration::CameraCalibration;
@@ -82,9 +81,9 @@ enum StreamSource {
 
 /// A Struct that contains calibration data specific to the Device or Playback the is utilised for streaming.
 struct CameraInternals {
-    /// Contains transformation used during rectification. Valid only if `rectify-depth=true`.
+    /// Contains transformation used during rectification. Valid only if `rectify-depth=true`, otherwise None.
     transformation: Option<Transformation>,
-    /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`.
+    /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`, otherwise empty.
     camera_meta_serialised: Vec<u8>,
 }
 
@@ -116,7 +115,7 @@ impl ObjectSubclass for K4aSrc {
                 // A list of the available K4A streams, indicating their respective priority
                 (
                     "streams",
-                    &format! {"{},{},{},{}", STREAM_ID_DEPTH, STREAM_ID_IR, STREAM_ID_COLOR, STREAM_ID_IMU},
+                    &format! {"{},{},{},{},{}", STREAM_ID_DEPTH, STREAM_ID_IR, STREAM_ID_COLOR, STREAM_ID_IMU, STREAM_ID_CAMERAMETA},
                 ),
                 (
                     // Framerates at which K4A is capable of providing stream
@@ -295,13 +294,14 @@ impl BaseSrcImpl for K4aSrc {
                 caps.fixate_field_nearest_fraction("imu_sampling_rate", IMU_SAMPLING_RATE_HZ);
             }
 
-            // Add `camerameta` into `streams` if enabled
+            // Add camerameta stream, if enabled
             if internals.settings.attach_camera_meta {
                 selected_streams.push_str(&format!("{},", STREAM_ID_CAMERAMETA));
             }
 
             // Pop the last ',' contained in streams (not really necessary, but nice)
             selected_streams.pop();
+
             // Fixate the framerate
             caps.fixate_field_nearest_fraction("framerate", stream_properties.framerate);
 
@@ -334,6 +334,7 @@ impl BaseSrcImpl for K4aSrc {
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
+        // Get capture from the stream source
         let capture = self.get_capture(internals)?;
 
         // Attach `depth` frame if enabled
@@ -777,59 +778,42 @@ impl K4aSrc {
         // Form a gst buffer out of mutable slice
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_buffer);
         // Get mutable reference to the buffer
-        let buffer_mut_ref = buffer.get_mut().expect(&format!(
-            "k4asrc: Cannot get mutable reference to {} buffer",
-            stream_id
-        ));
+        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            [
+                "k4asrc: Cannot get mutable reference to {} buffer",
+                stream_id
+            ]
+        ))?;
 
         // Determine whether any of the previous streams is enabled
         let is_buffer_main = !previous_streams.iter().any(|s| *s);
 
-        // Set buffer duration
-        buffer_mut_ref.set_duration(internals.timestamp_internals.frame_duration);
-
-        // Set timestamps if desired, based on timestamp_mode
-        let timestamp = self.determine_timestamp(
-            base_src,
-            internals,
-            is_buffer_main,
-            TimestampSource::Image(&frame),
+        // Set buffer duration and timestamp
+        self.set_duration_and_timestamp(
+            buffer_mut_ref,
+            internals.timestamp_internals.frame_duration,
+            self.determine_timestamp(
+                base_src,
+                internals,
+                is_buffer_main,
+                TimestampSource::Image(&frame),
+            ),
         );
-        if timestamp != gst::CLOCK_TIME_NONE {
-            buffer_mut_ref.set_pts(timestamp);
-            buffer_mut_ref.set_dts(timestamp);
-        }
-
-        // Create an appropriate tag
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .expect(&format!(
-                "k4asrc: Cannot get mutable reference to {} tags",
-                stream_id
-            ))
-            .add::<gst::tags::Title>(&stream_id, gst::TagMergeMode::Append);
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_buffer_main {
-            // Else put this frame into the output buffer
-            *output_buffer = buffer;
-            // Add the tag
-            TagsMeta::add(
-                output_buffer
-                    .get_mut()
-                    .expect("k4asrc: Cannot get mutable reference to output buffer"),
-                &mut tags,
-            );
+            // Fill the main buffer and tag it adequately
+            rgbd::fill_main_buffer_and_tag(output_buffer, buffer, stream_id)?;
         } else {
-            // Add tag to this new buffer
-            TagsMeta::add(buffer_mut_ref, &mut tags);
-            // Attach this new buffer as meta to the output buffer
-            BufferMeta::add(
-                output_buffer
-                    .get_mut()
-                    .expect("k4asrc: Cannot get mutable reference to output buffer"),
-                &mut buffer,
-            );
+            // Attach the secondary buffer and tag it adequately
+            rgbd::attach_aux_buffer_and_tag(output_buffer.get_mut().ok_or(gst_error_msg!(
+                gst::ResourceError::Failed,
+                [
+                    "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
+                    stream_id
+                ]
+            ))?, &mut buffer, stream_id)?;
         }
 
         Ok(())
@@ -873,36 +857,34 @@ impl K4aSrc {
         // Form a gst buffer out of the IMU samples
         let mut buffer = self.gst_buffer_from_imu_samples(imu_samples)?;
         // Get mutable reference to the buffer
-        let buffer_mut_ref = buffer.get_mut().expect(&format!(
-            "k4asrc: Cannot get mutable reference to IMU buffer",
-        ));
-
-        // Set buffer duration
-        buffer_mut_ref.set_duration(internals.timestamp_internals.frame_duration);
-        // Set timestamp
-        if timestamp != gst::CLOCK_TIME_NONE {
-            buffer_mut_ref.set_pts(timestamp);
-            buffer_mut_ref.set_dts(timestamp);
-        }
-
-        // Create an appropriate tag
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .expect(&format!(
-                "k4asrc: Cannot get mutable reference to {} tags",
+        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            [
+                "k4asrc: Cannot get mutable reference to {} buffer",
                 STREAM_ID_IMU
-            ))
-            .add::<gst::tags::Title>(&STREAM_ID_IMU, gst::TagMergeMode::Append);
+            ]
+        ))?;
 
-        // Add tag to this new buffer
-        TagsMeta::add(buffer_mut_ref, &mut tags);
-        // Attach this new buffer as meta to the output buffer
-        BufferMeta::add(
-            output_buffer
-                .get_mut()
-                .expect("k4asrc: Cannot get mutable reference to output buffer"),
-            &mut buffer,
+        // Set buffer duration and timestamp
+        self.set_duration_and_timestamp(
+            buffer_mut_ref,
+            internals.timestamp_internals.frame_duration,
+            timestamp,
         );
+
+        // Attach the IMU buffer and tag it adequately
+        rgbd::attach_aux_buffer_and_tag(
+            output_buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            [
+                "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
+                STREAM_ID_IMU
+            ]
+        ))?,
+            &mut buffer,
+            STREAM_ID_IMU,
+        )?;
+
         Ok(())
     }
 
@@ -1009,6 +991,27 @@ impl K4aSrc {
         }
     }
 
+    /// Set `duration` and `timestamp` of a `buffer`.
+    ///
+    /// # Arguments
+    /// * `buffer` - Mutable reference to a buffer that should be modified.
+    /// * `duration` - Desired duration of the `buffer`.
+    /// * `timestamp` - Desired timestamp of the `buffer`.
+    fn set_duration_and_timestamp(
+        &self,
+        buffer: &mut gst::BufferRef,
+        duration: gst::ClockTime,
+        timestamp: gst::ClockTime,
+    ) {
+        // Set buffer duration
+        buffer.set_duration(duration);
+        // Set timestamp
+        if timestamp != gst::CLOCK_TIME_NONE {
+            buffer.set_pts(timestamp);
+            buffer.set_dts(timestamp);
+        }
+    }
+
     /// Attach Cap'n Proto serialised CameraMeta to `output_buffer`.
     ///
     /// # Arguments
@@ -1030,39 +1033,33 @@ impl K4aSrc {
         // Form a gst buffer out of mutable slice
         let mut buffer = gst::buffer::Buffer::from_mut_slice(camera_meta);
         // Get mutable reference to the buffer
-        let buffer_mut_ref = buffer.get_mut().expect(&format!(
-            "k4asrc: Cannot get mutable reference to {} buffer",
-            STREAM_ID_CAMERAMETA
-        ));
-
-        // Set buffer duration
-        buffer_mut_ref.set_duration(internals.timestamp_internals.frame_duration);
-
-        // Set timestamps if desired, based on timestamp_mode
-        let timestamp = self.determine_timestamp(base_src, internals, false, TimestampSource::None);
-        if timestamp != gst::CLOCK_TIME_NONE {
-            buffer_mut_ref.set_pts(timestamp);
-            buffer_mut_ref.set_dts(timestamp);
-        }
-
-        // Create an appropriate tag
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .expect(&format!(
-                "k4asrc: Cannot get mutable reference to {} tags",
+        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            [
+                "k4asrc: Cannot get mutable reference to {} buffer",
                 STREAM_ID_CAMERAMETA
-            ))
-            .add::<gst::tags::Title>(&STREAM_ID_CAMERAMETA, gst::TagMergeMode::Append);
+            ]
+        ))?;
 
-        // Add tag to this new buffer
-        TagsMeta::add(buffer_mut_ref, &mut tags);
-        // Attach this new buffer as meta to the output buffer
-        BufferMeta::add(
-            output_buffer
-                .get_mut()
-                .expect("k4asrc: Cannot get mutable reference to output buffer"),
-            &mut buffer,
+        // Set buffer duration and timestamp
+        self.set_duration_and_timestamp(
+            buffer_mut_ref,
+            internals.timestamp_internals.frame_duration,
+            self.determine_timestamp(base_src, internals, false, TimestampSource::None),
         );
+
+        // Attach the camera_meta buffer and tag it adequately
+        rgbd::attach_aux_buffer_and_tag(
+            output_buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            [
+                "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
+                STREAM_ID_CAMERAMETA
+            ]
+        ))?,
+            &mut buffer,
+            STREAM_ID_CAMERAMETA,
+        )?;
 
         Ok(())
     }

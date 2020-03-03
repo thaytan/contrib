@@ -114,7 +114,7 @@ Here are some overall guidelines for their usage:
 |:---------------------:|:------------------------------------:|:---------------------------------------------:|:-----------------------------------:|
 | Device | Does no apply, Always live | `all` | - |
 | Playback | Live (true) | `common` `individual` | `all`: as-fast -as-possible |
-| Playback with looping | Live(true) | `all`: as-fast -as-possible | - |
+| Playback with looping | Live (true) | `all`: as-fast -as-possible | - |
 
 
 # Contributing
