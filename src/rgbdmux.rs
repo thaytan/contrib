@@ -19,7 +19,7 @@ use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
-use gst_depth_meta::tags::TagsMeta;
+use gst_depth_meta::rgbd;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -98,6 +98,12 @@ impl Error for MuxingError {}
 impl Display for MuxingError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "RGBD muxing error: {}", self.0)
+    }
+}
+/// Conversion from `gst::ErrorMessage` to MuxingError.
+impl From<gst::ErrorMessage> for MuxingError {
+    fn from(error: gst::ErrorMessage) -> MuxingError {
+        MuxingError(std::boxed::Box::leak(format!("{}", error).into_boxed_str()))
     }
 }
 
@@ -365,12 +371,7 @@ impl AggregatorImpl for RgbdMux {
         match req_name {
             Some(name) if name.starts_with("sink_") => {
                 let sink_pads = &mut self.sink_pads.lock().expect("Could not lock sink pads");
-                gst_debug!(
-                    CAT,
-                    obj: aggregator,
-                    "create_new_pad for name: {}",
-                    name
-                );
+                gst_debug!(CAT, obj: aggregator, "create_new_pad for name: {}", name);
                 // Create new sink pad from the template
                 let new_sink_pad = gst::Pad::new_from_template(
                     &self.get_sink_pad_template_with_modified_format(aggregator, name),
@@ -545,18 +546,6 @@ impl RgbdMux {
             .expect("Could not downcast pad to AggregatorPad")
     }
 
-    /// Tags a `buffer` with a title tag based on the `stream_name`.
-    /// # Arguments
-    /// * `buffer` - The buffer to tag.
-    /// * `stream_name` - The name to use for the title tag.
-    #[inline]
-    fn tag_buffer(buffer: &mut gst::BufferRef, stream_name: &str) {
-        let mut tags = gst::tags::TagList::new();
-        tags.make_mut()
-            .add::<gst::tags::Title>(&stream_name, gst::TagMergeMode::Append);
-        TagsMeta::add(buffer, &mut tags);
-    }
-
     /// Get a buffer from the pad with the given `pad_name` on the given `aggregator`. This function
     /// also tags the buffer with a correct title tag.
     /// # Arguments
@@ -580,10 +569,14 @@ impl RgbdMux {
             let stream_name = &pad_name[5..];
 
             // Tag the buffer
-            Self::tag_buffer(buffer_mut, stream_name);
-        }
-        else {
-            gst_warning!(CAT, obj:aggregator, "Could not tag a buffer from pad: {}", pad_name);
+            rgbd::tag_buffer(buffer_mut, stream_name)?;
+        } else {
+            gst_warning!(
+                CAT,
+                obj: aggregator,
+                "Could not tag a buffer from pad: {}",
+                pad_name
+            );
         }
 
         // Return the tagged buffer
@@ -772,7 +765,7 @@ impl RgbdMux {
                 Ok(mut buffer) => {
                     // Attach to the main bufer
                     BufferMeta::add(main_buffer_mut_ref, &mut buffer);
-                },
+                }
                 Err(_) => {
                     gst_warning!(
                         CAT,
@@ -946,11 +939,7 @@ impl RgbdMux {
         // And send a CAPS event downstream
         let caps_event = gst::Event::new_caps(&ds_caps).build();
         if !element.send_event(caps_event) {
-            gst_error!(
-                CAT,
-                obj: element,
-                "Failed to send CAPS negotiation event"
-            );
+            gst_error!(CAT, obj: element, "Failed to send CAPS negotiation event");
         }
     }
 
@@ -965,14 +954,14 @@ impl RgbdMux {
             .next()
             .expect("Downstream element of rgbdmux has not CAPS")
             .iter()
-            .filter_map(|(field,value)| {
-            if !field.contains("_format") {
-                None
-            }
-            else {
-                Some((field.replace("_format", ""), value.get::<String>().unwrap()))
-            }
-        }).collect::<HashMap<String, String>>()
+            .filter_map(|(field, value)| {
+                if !field.contains("_format") {
+                    None
+                } else {
+                    Some((field.replace("_format", ""), value.get::<String>().unwrap()))
+                }
+            })
+            .collect::<HashMap<String, String>>()
     }
 
     /// Determines what pad template to use for a new sink pad. It attaches a format to the CAPS if downstream element has such request.
