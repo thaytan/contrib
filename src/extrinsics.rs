@@ -15,3 +15,18 @@ impl Extrinsics {
         }
     }
 }
+
+pub(crate) struct RsExtrinsicsWrapper {
+    pub(crate) _handle: rs2::rs2_extrinsics,
+}
+
+impl Default for RsExtrinsicsWrapper {
+    fn default() -> Self {
+        Self {
+            _handle: rs2::rs2_extrinsics {
+                rotation: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                translation: [0.0, 0.0, 0.0],
+            },
+        }
+    }
+}

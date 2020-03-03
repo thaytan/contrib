@@ -36,3 +36,24 @@ impl Intrinsics {
 
 /// Rustified name for `rs2_distortion` struct
 pub type Distortion = rs2::rs2_distortion;
+
+pub(crate) struct RsIntrinsicsWrapper {
+    pub(crate) _handle: rs2::rs2_intrinsics,
+}
+
+impl Default for RsIntrinsicsWrapper {
+    fn default() -> Self {
+        Self {
+            _handle: rs2::rs2_intrinsics {
+                width: 0,
+                height: 0,
+                ppx: 0.0,
+                ppy: 0.0,
+                fx: 0.0,
+                fy: 0.0,
+                model: Distortion::RS2_DISTORTION_NONE,
+                coeffs: [0.0, 0.0, 0.0, 0.0, 0.0],
+            },
+        }
+    }
+}

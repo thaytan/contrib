@@ -121,23 +121,18 @@ impl StreamProfile {
     /// * `Err(Error)` on failure.
     pub fn get_intrinsics(&self) -> Result<Intrinsics, Error> {
         let mut error = Error::default();
-        let mut intrinsics = rs2::rs2_intrinsics {
-            width: 0,
-            height: 0,
-            ppx: 0.0,
-            ppy: 0.0,
-            fx: 0.0,
-            fy: 0.0,
-            model: Distortion::RS2_DISTORTION_NONE,
-            coeffs: [0.0, 0.0, 0.0, 0.0, 0.0],
-        };
+        let mut intrinsics = RsIntrinsicsWrapper::default();
         unsafe {
-            rs2::rs2_get_video_stream_intrinsics(self.handle, &mut intrinsics, error.inner());
+            rs2::rs2_get_video_stream_intrinsics(
+                self.handle,
+                &mut intrinsics._handle,
+                error.inner(),
+            );
         }
         if error.check() {
             Err(error)
         } else {
-            Ok(Intrinsics::new(intrinsics))
+            Ok(Intrinsics::new(intrinsics._handle))
         }
     }
 
@@ -152,17 +147,19 @@ impl StreamProfile {
     /// * `Err(Error)` on failure.
     pub fn get_extrinsics(from: &Self, to: &Self) -> Result<Extrinsics, Error> {
         let mut error = Error::default();
-        let mut extrinsics = rs2::rs2_extrinsics {
-            rotation: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
-            translation: [0.0, 0.0, 0.0],
-        };
+        let mut extrinsics = RsExtrinsicsWrapper::default();
         unsafe {
-            rs2::rs2_get_extrinsics(from.handle, to.handle, &mut extrinsics, error.inner());
+            rs2::rs2_get_extrinsics(
+                from.handle,
+                to.handle,
+                &mut extrinsics._handle,
+                error.inner(),
+            );
         }
         if error.check() {
             Err(error)
         } else {
-            Ok(Extrinsics::new(extrinsics))
+            Ok(Extrinsics::new(extrinsics._handle))
         }
     }
 
