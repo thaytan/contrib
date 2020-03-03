@@ -23,8 +23,7 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 
 use camera_meta::Distortion;
-use gst_depth_meta::buffer::BufferMeta;
-use gst_depth_meta::tags::TagsMeta;
+use gst_depth_meta::rgbd;
 use gst_depth_meta::{camera_meta, camera_meta::*};
 use rs2;
 use rs2::high_level_utils::StreamInfo;
@@ -53,7 +52,7 @@ struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
     base_time: std::time::Duration,
-    /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`.
+    /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`, otherwise empty.
     camera_meta_serialised: Vec<u8>,
 }
 
@@ -88,7 +87,7 @@ impl ObjectSubclass for RealsenseSrc {
                 // List of available streams meant for indicating their respective priority
                 (
                     "streams",
-                    &"depth,infra1,infra2,color,depthmeta,infra1meta,infra2meta,colormeta",
+                    &"depth,infra1,infra2,color,depthmeta,infra1meta,infra2meta,colormeta,camerameta",
                 ),
                 (
                     "framerate",
@@ -978,37 +977,30 @@ impl RealsenseSrc {
     /// * `frame_duration` - The duration of the buffer.
     fn add_per_frame_metadata(
         &self,
-        buffer: &mut gst::Buffer,
+        buffer: &mut gst::BufferRef,
         frame_meta: Vec<u8>,
         tag: &str,
         timestamp: Option<gst::ClockTime>,
         duration: gst::ClockTime,
-    ) {
+    ) -> Result<(), RealsenseError> {
         // If we were able to read some metadata add it to the buffer
         let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
 
-        let tag_name = format!("{}meta", tag);
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .expect("Cannot get mutable reference to `tags`")
-            .add::<gst::tags::Title>(&tag_name.as_str(), gst::TagMergeMode::Append);
-
-        let frame_meta_mut = frame_meta_buffer
-            .get_mut()
-            .expect("Could not add tags to `frame_meta_buffer`");
-        TagsMeta::add(frame_meta_mut, &mut tags);
+        // Set duration and timestamps
+        let frame_meta_mut = frame_meta_buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            ["Cannot get mutable reference to the buffer for {}meta", tag]
+        ))?;
         if let Some(ts) = timestamp {
             frame_meta_mut.set_dts(ts);
             frame_meta_mut.set_pts(ts);
         }
         frame_meta_mut.set_duration(duration);
 
-        BufferMeta::add(
-            buffer
-                .get_mut()
-                .expect("Could not add `frame_meta_buffer` onto frame buffer."),
-            &mut frame_meta_buffer,
-        );
+        // Attach the meta buffer and tag it adequately
+        rgbd::attach_aux_buffer_and_tag(buffer, &mut frame_meta_buffer, &format!("{}meta", tag))?;
+
+        Ok(())
     }
 
     /// Extract a frame from the RealSense camera, outputting it in `output_buffer` on the given
@@ -1037,15 +1029,9 @@ impl RealsenseSrc {
         frame_duration: gst::ClockTime,
     ) -> Result<(), RealsenseError> {
         // Extract the frame from frames based on its type and id
-        let frame = find_frame_with_id(frames, stream_type, stream_id).ok_or(RealsenseError(
-            "Failed to find a suitable frame on realsensesrc".to_owned(),
-        ))?;
-
-        // Create the appropriate tag
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .expect("Could not get mutable reference to `tags`")
-            .add::<gst::tags::Title>(&tag, gst::TagMergeMode::Append);
+        let frame = Self::find_frame_with_id(frames, stream_type, stream_id).ok_or(
+            RealsenseError("Failed to find a suitable frame on realsensesrc".to_owned()),
+        )?;
 
         // Extract the frame data into a new buffer
         let frame_data = frame
@@ -1053,12 +1039,13 @@ impl RealsenseSrc {
             .map_err(|e| RealsenseError(e.get_message()))?;
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_data);
 
-        let buffer_mut_ref = buffer
-            .get_mut()
-            .expect("Could not get a mutable reference to the buffer");
-
-        // Add tag to this new buffer
-        TagsMeta::add(buffer_mut_ref, &mut tags);
+        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            [
+                "Cannot get mutable reference to the buffer for {} stream",
+                tag
+            ]
+        ))?;
 
         // Set timestamp
         if let Some(timestamp) = timestamp {
@@ -1072,30 +1059,40 @@ impl RealsenseSrc {
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_earlier_stream_enabled {
-            // Attach this new buffer as meta to the output buffer
-            BufferMeta::add(
-                output_buffer
-                    .get_mut()
-                    .expect("Could not get mutable reference to `output_buffer`"),
+            // Attach the auxiliary buffer and tag it adequately
+            rgbd::attach_aux_buffer_and_tag(
+                output_buffer.get_mut().ok_or(gst_error_msg!(
+                    gst::ResourceError::Failed,
+                    [
+                        "Cannot get mutable reference to the main buffer while attaching {} stream",
+                        tag
+                    ]
+                ))?,
                 &mut buffer,
-            );
+                tag,
+            )?;
         } else {
-            // Else put this frame into the output buffer
-            *output_buffer = buffer;
-            // Add the tag
-            TagsMeta::add(
-                output_buffer
-                    .get_mut()
-                    .expect("Could not get mutable reference to `output_buffer`"),
-                &mut tags,
-            );
+            // Fill the main buffer and tag it adequately
+            rgbd::fill_main_buffer_and_tag(output_buffer, buffer, tag)?;
         }
-
         // Check if we should attach RealSense per-frame meta and do that if so
+
         if settings.include_per_frame_metadata {
             // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
             let md = self.get_frame_meta(frame)?;
-            self.add_per_frame_metadata(output_buffer, md, tag, timestamp, frame_duration);
+            self.add_per_frame_metadata(
+                output_buffer.get_mut().ok_or(gst_error_msg!(
+                    gst::ResourceError::Failed,
+                    [
+                        "Cannot get mutable reference to the main buffer while attaching {}meta",
+                        tag
+                    ]
+                ))?,
+                md,
+                tag,
+                timestamp,
+                frame_duration,
+            )?;
         }
 
         Ok(())
@@ -1586,10 +1583,13 @@ impl RealsenseSrc {
         // Form a gst buffer out of mutable slice
         let mut buffer = gst::buffer::Buffer::from_mut_slice(camera_meta);
         // Get mutable reference to the buffer
-        let buffer_mut_ref = buffer.get_mut().expect(&format!(
-            "Cannot get mutable reference to {} buffer",
-            camera_meta_stream_id
-        ));
+        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            [
+                "Cannot get mutable reference to the buffer for {}",
+                camera_meta_stream_id
+            ]
+        ))?;
 
         // Set timestamp
         if let Some(timestamp) = timestamp {
@@ -1598,24 +1598,18 @@ impl RealsenseSrc {
         };
         buffer_mut_ref.set_duration(frame_duration);
 
-        // Create an appropriate tag
-        let mut tags = gst::tags::TagList::new();
-        tags.get_mut()
-            .expect(&format!(
-                "Cannot get mutable reference to {} tags",
-                camera_meta_stream_id
-            ))
-            .add::<gst::tags::Title>(&camera_meta_stream_id, gst::TagMergeMode::Append);
-
-        // Add tag to this new buffer
-        TagsMeta::add(buffer_mut_ref, &mut tags);
-        // Attach this new buffer as meta to the output buffer
-        BufferMeta::add(
-            output_buffer
-                .get_mut()
-                .expect("Cannot get mutable reference to output buffer"),
+        // Attach the camera_meta buffer and tag it adequately
+        rgbd::attach_aux_buffer_and_tag(
+            output_buffer.get_mut().ok_or(gst_error_msg!(
+                gst::ResourceError::Failed,
+                [
+                    "Cannot get mutable reference to the main buffer while attaching {}",
+                    camera_meta_stream_id
+                ]
+            ))?,
             &mut buffer,
-        );
+            camera_meta_stream_id,
+        )?;
 
         Ok(())
     }
@@ -1691,33 +1685,33 @@ impl RealsenseSrc {
             || (stream_id == "infra2" && streams.infra2)
             || (stream_id == "color" && streams.color)
     }
-}
 
-/// Attempt to find the frame for the given `stream_id` in the Vector of frames extracted from the
-/// RealSense camera. This function returns `None` on missing or erroneous frames.
-/// # Arguments
-/// * `frames` - A vector of frames extracted from librealsense.
-/// * `stream_type` - The type of the stream to look for.
-/// * `stream_id` - The id of the frame you wish to find.
-fn find_frame_with_id(
-    frames: &Vec<rs2::frame::Frame>,
-    stream_type: rs2::rs2_stream,
-    stream_id: i32,
-) -> Option<&rs2::frame::Frame> {
-    frames.iter().find(|f| match f.get_stream_profile() {
-        Ok(profile) => match profile.get_data() {
-            Ok(data) => {
-                data.stream == stream_type
-                    && if stream_id == -1 {
-                        true
-                    } else {
-                        data.index == stream_id
-                    }
-            }
+    /// Attempt to find the frame for the given `stream_id` in the Vector of frames extracted from the
+    /// RealSense camera. This function returns `None` on missing or erroneous frames.
+    /// # Arguments
+    /// * `frames` - A vector of frames extracted from librealsense.
+    /// * `stream_type` - The type of the stream to look for.
+    /// * `stream_id` - The id of the frame you wish to find.
+    fn find_frame_with_id(
+        frames: &Vec<rs2::frame::Frame>,
+        stream_type: rs2::rs2_stream,
+        stream_id: i32,
+    ) -> Option<&rs2::frame::Frame> {
+        frames.iter().find(|f| match f.get_stream_profile() {
+            Ok(profile) => match profile.get_data() {
+                Ok(data) => {
+                    data.stream == stream_type
+                        && if stream_id == -1 {
+                            true
+                        } else {
+                            data.index == stream_id
+                        }
+                }
+                _ => false,
+            },
             _ => false,
-        },
-        _ => false,
-    })
+        })
+    }
 }
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
