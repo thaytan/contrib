@@ -15,6 +15,7 @@
 
 #![crate_type = "cdylib"]
 
+#[macro_use]
 extern crate gstreamer as gst;
 extern crate gstreamer_sys as gst_sys;
 
@@ -27,6 +28,7 @@ pub(crate) mod camera_meta_capnp {
 pub mod buffer;
 pub mod camera_meta;
 mod intrinsics;
+pub mod rgbd;
 mod sys;
 pub mod tags;
 mod transformation;

@@ -5,6 +5,10 @@ This repository contains the rust bindings for `gst-depth-meta` ([this repositor
 1. BufferMeta, which allows developers to add buffers as metadata onto other buffers.
 2. TagsMeta, which allows developers to tag buffers, such that their content can be identified later downstream.
 
+To interface with both BufferMeta and TagsMeta, it is recommended to utilise the safe functions from the [`rgbd`](src/rgbd.rs) module.
+
+Furthermore, this project repository contains [`camera_meta`](src/camera_meta.rs) module that provides list of all [`intrinsics`](src/intrinsics.rs) and [`extrinsics`](src/transformation.rs) for a calibrated camera setup, alongside (de)serialisation with *Cap'n Proto*.
+
 ## Use
 
 `gst-depth-meta-rs` is used in Aivero's custom Rust-based GStreamer elements:
@@ -14,6 +18,7 @@ This repository contains the rust bindings for `gst-depth-meta` ([this repositor
 - [gst-3dq-bin](https://gitlab.com/aivero/streaming/gst-3dq-bin)
 - [gst-depth-webrtc](https://gitlab.com/aivero/streaming/gst-depth-webrtc)
 - [gst-realsense](https://gitlab.com/aivero/public/gstreamer/gst-realsense)
+- [gst-k4a](https://gitlab.com/aivero/public/gstreamer/gst-k4a)
 
 ## Examples
 
