@@ -11,6 +11,4 @@ readme = "README.md"
 
 [dependencies.librealsense2-sys]
 git = "https://gitlab.com/aivero/public/librealsense-sys"
-# TODO: Replace branch with corresponding tag once merged
-branch = "rustify-distortion-enum"
-# tag = "0.3.0"
+tag = "0.3.0"
