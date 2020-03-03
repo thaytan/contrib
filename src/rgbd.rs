@@ -237,3 +237,207 @@ pub fn remove_aux_buffers_with_tags(
     // Return Ok() if everything went fine
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use gst::Buffer;
+
+    #[test]
+    fn new_buffer_no_tag() {
+        gst::init().unwrap();
+
+        let buffer = Buffer::new();
+
+        // Make sure there is no tag in a new buffer
+        assert!(get_tag(&buffer).is_err());
+    }
+
+    #[test]
+    fn beffer_tag() {
+        gst::init().unwrap();
+
+        let mut buffer = Buffer::new();
+        let original_tag = "depth";
+
+        // Create main buffer with a tag
+        tag_buffer(buffer.get_mut().unwrap(), original_tag).unwrap();
+
+        // Extract the tag from the buffer
+        let tag = get_tag(&buffer).unwrap();
+
+        // Make sure the tag stayed the same
+        assert_eq!(tag, original_tag);
+    }
+
+    #[test]
+    fn main_buffer_tag() {
+        gst::init().unwrap();
+
+        let mut main_buffer = Buffer::new();
+        let buffer = Buffer::new();
+        let original_tag = "depth";
+
+        // Create main buffer with a tag
+        fill_main_buffer_and_tag(&mut main_buffer, buffer, original_tag).unwrap();
+
+        // Extract the tag from the buffer
+        let tag = get_tag(&main_buffer).unwrap();
+
+        // Make sure the tag stayed the same
+        assert_eq!(tag, original_tag);
+    }
+
+    #[test]
+    fn aux_buffers_tag() {
+        gst::init().unwrap();
+
+        let mut main_buffer = Buffer::new();
+        let mut buffer_depth = Buffer::new();
+        let mut buffer_color = Buffer::new();
+        let original_tag_depth = "depth";
+        let original_tag_color = "color";
+
+        // Attach buffers to the main buffer
+        attach_aux_buffer_and_tag(
+            main_buffer.get_mut().unwrap(),
+            &mut buffer_depth,
+            original_tag_depth,
+        )
+        .unwrap();
+        attach_aux_buffer_and_tag(
+            main_buffer.get_mut().unwrap(),
+            &mut buffer_color,
+            original_tag_color,
+        )
+        .unwrap();
+
+        // Get the auxiliary buffers
+        let aux_buffers = get_aux_buffers(&main_buffer);
+
+        // Make sure the length is correct
+        assert_eq!(aux_buffers.len(), 2);
+
+        // Extract the tag from the buffer
+        let tag_depth = get_tag(&aux_buffers[0]).unwrap();
+        let tag_color = get_tag(&aux_buffers[1]).unwrap();
+
+        // Make sure the tags stayed the same
+        assert_eq!(tag_depth, original_tag_depth);
+        assert_eq!(tag_color, original_tag_color);
+    }
+
+    #[test]
+    fn tag_clearing() {
+        gst::init().unwrap();
+
+        let mut buffer = Buffer::new();
+        let original_tag = "depth";
+
+        // Create main buffer with a tag
+        tag_buffer(buffer.get_mut().unwrap(), original_tag).unwrap();
+
+        // Extract the tag from the buffer
+        let tag = get_tag(&buffer).unwrap();
+
+        // Make sure the tag stayed the same
+        assert_eq!(tag, original_tag);
+
+        clear_tags(buffer.get_mut().unwrap());
+
+        // Make sure there is no tag anymore
+        assert!(get_tag(&buffer).is_err());
+    }
+
+    #[test]
+    fn tag_replace() {
+        gst::init().unwrap();
+
+        let mut buffer = Buffer::new();
+        let original_tag = "depth";
+        let new_tag = "color";
+
+        // Create main buffer with a tag
+        tag_buffer(buffer.get_mut().unwrap(), original_tag).unwrap();
+
+        // Extract the tag from the buffer
+        let tag = get_tag(&buffer).unwrap();
+
+        // Make sure the tag stayed the same
+        assert_eq!(tag, original_tag);
+
+        replace_tag(buffer.get_mut().unwrap(), new_tag).unwrap();
+
+        // Extract the tag from the buffer again
+        let tag = get_tag(&buffer).unwrap();
+
+        // Make sure the tag changed
+        assert_eq!(tag, new_tag);
+    }
+
+    #[test]
+    fn remove_specific_aux_buffers() {
+        gst::init().unwrap();
+
+        let mut main_buffer = Buffer::new();
+        let mut buffer_depth = Buffer::new();
+        let mut buffer_color = Buffer::new();
+        let mut buffer_infra = Buffer::new();
+        let original_tag_depth = "depth";
+        let original_tag_color = "color";
+        let original_tag_infra = "infra";
+
+        // Attach buffers to the main buffer
+        attach_aux_buffer_and_tag(
+            main_buffer.get_mut().unwrap(),
+            &mut buffer_depth,
+            original_tag_depth,
+        )
+        .unwrap();
+        attach_aux_buffer_and_tag(
+            main_buffer.get_mut().unwrap(),
+            &mut buffer_color,
+            original_tag_color,
+        )
+        .unwrap();
+        attach_aux_buffer_and_tag(
+            main_buffer.get_mut().unwrap(),
+            &mut buffer_infra,
+            original_tag_infra,
+        )
+        .unwrap();
+
+        // Get the auxiliary buffers
+        let aux_buffers = get_aux_buffers(&main_buffer);
+
+        // Make sure the length is correct
+        assert_eq!(aux_buffers.len(), 3);
+
+        // Extract the tag from the buffer
+        let tag_depth = get_tag(&aux_buffers[0]).unwrap();
+        let tag_color = get_tag(&aux_buffers[1]).unwrap();
+        let tag_infra = get_tag(&aux_buffers[2]).unwrap();
+
+        // Make sure the tags stayed the same
+        assert_eq!(tag_depth, original_tag_depth);
+        assert_eq!(tag_color, original_tag_color);
+        assert_eq!(tag_infra, original_tag_infra);
+
+        // Remove depth and color
+        remove_aux_buffers_with_tags(
+            main_buffer.get_mut().unwrap(),
+            &[original_tag_color, original_tag_depth],
+        )
+        .unwrap();
+
+        // Get the auxiliary buffers
+        let aux_buffers = get_aux_buffers(&main_buffer);
+
+        // Make sure the length is correct
+        assert_eq!(aux_buffers.len(), 1);
+
+        // Make sure the correct buffer remains (infra)
+        let tag_infra = get_tag(&aux_buffers[0]).unwrap();
+        assert_eq!(tag_infra, original_tag_infra);
+    }
+}
