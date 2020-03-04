@@ -1139,9 +1139,13 @@ impl K4aSrc {
     ) -> HashMap<(String, String), camera_meta::Transformation> {
         // Create extrinsics and insert the appropriate transformations
         let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
+
+        // Determine the main stream from which all extrinsics are computed
         let main_stream = Self::determine_main_stream(desired_streams);
         let main_stream_calibration_type =
             Self::determine_main_stream_calibration_type(desired_streams);
+
+        // Insert extrinsics from main stream to the IR, unless it is the main stream itself
         if desired_streams.ir && main_stream != STREAM_ID_IR {
             extrinsics.insert(
                 (main_stream.to_string(), STREAM_ID_IR.to_string()),
@@ -1151,6 +1155,8 @@ impl K4aSrc {
                 ),
             );
         }
+
+        // Insert extrinsics from main stream to the color, unless it is the main stream itself
         if desired_streams.color && main_stream != STREAM_ID_COLOR {
             extrinsics.insert(
                 (main_stream.to_string(), STREAM_ID_COLOR.to_string()),
@@ -1160,6 +1166,8 @@ impl K4aSrc {
                 ),
             );
         }
+
+        // Insert extrinsics from main stream to the IMU, for both gyroscope and accelerometer
         if desired_streams.imu {
             extrinsics.insert(
                 (main_stream.to_string(), format!("{}_gyro", STREAM_ID_IMU)),
@@ -1198,7 +1206,13 @@ impl K4aSrc {
             K4A_CALIBRATION_LENS_DISTORTION_MODEL_UNKNOWN
             | K4A_CALIBRATION_LENS_DISTORTION_MODEL_THETA
             | K4A_CALIBRATION_LENS_DISTORTION_MODEL_POLYNOMIAL_3K
-            | K4A_CALIBRATION_LENS_DISTORTION_MODEL_RATIONAL_6KT => Distortion::Unknown,
+            | K4A_CALIBRATION_LENS_DISTORTION_MODEL_RATIONAL_6KT => {
+                gst_warning!(
+                    CAT,
+                    "One of the K4A cameras utilises an unknown or deprecated distorion model.",
+                );
+                Distortion::Unknown
+            }
         };
         camera_meta::Intrinsics {
             fx: c.fx,
