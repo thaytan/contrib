@@ -119,8 +119,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 16] = [
         glib::ParamSpec::enum_(
             name,
             "Framerate",
-            "Common framerate of the selected video streams, applicable only when streaming from device. \
-             (30 FPS is not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)",
+            "Common framerate of the selected video streams, applicable only when streaming from device.",
             K4aFramerate::get_glib_type(),
             DEFAULT_FRAMERATE as i32,
             glib::ParamFlags::READWRITE,

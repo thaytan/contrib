@@ -56,12 +56,12 @@ impl K4aColorFormat {
                 },
                 gobject_sys::GEnumValue {
                     value: K4aColorFormat::NV12 as i32,
-                    value_name: b"NV12 (<=720p only)\0" as *const _ as *const _,
+                    value_name: b"NV12 (720p only)\0" as *const _ as *const _,
                     value_nick: b"nv12\0" as *const _ as *const _,
                 },
                 gobject_sys::GEnumValue {
                     value: K4aColorFormat::YUV2 as i32,
-                    value_name: b"YUV2 (<=720p only)\0" as *const _ as *const _,
+                    value_name: b"YUV2 (720p only)\0" as *const _ as *const _,
                     value_nick: b"yuv2\0" as *const _ as *const _,
                 },
                 gobject_sys::GEnumValue {
@@ -487,7 +487,7 @@ impl glib::translate::FromGlib<i32> for K4aFramerate {
 }
 impl StaticType for K4aFramerate {
     fn static_type() -> Type {
-        K4aDepthMode::get_glib_type()
+        K4aFramerate::get_glib_type()
     }
 }
 impl<'a> glib::value::FromValueOptional<'a> for K4aFramerate {
@@ -534,7 +534,7 @@ impl K4aFramerate {
                 },
                 gobject_sys::GEnumValue {
                     value: K4aFramerate::FPS30 as i32,
-                    value_name: b"30 FPS\0" as *const _ as *const _,
+                    value_name: b"30 FPS (not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)\0" as *const _ as *const _,
                     value_nick: b"30fps\0" as *const _ as *const _,
                 },
                 gobject_sys::GEnumValue {
@@ -611,7 +611,7 @@ impl glib::translate::FromGlib<i32> for K4aTimestampMode {
 }
 impl StaticType for K4aTimestampMode {
     fn static_type() -> Type {
-        K4aDepthMode::get_glib_type()
+        K4aTimestampMode::get_glib_type()
     }
 }
 impl<'a> glib::value::FromValueOptional<'a> for K4aTimestampMode {

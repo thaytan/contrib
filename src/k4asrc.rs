@@ -14,9 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::{
-    K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode,
-};
+use crate::enums::*;
 use crate::error::*;
 use crate::properties::*;
 use crate::settings::*;
@@ -1433,8 +1431,8 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.imu = enable_imu;
             }
             subclass::Property("color-format", ..) => {
-                let value: K4aColorFormat = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `color-format`. Expected a `i32`, but got: {:?}",
+                let value = value.get().expect(&format!(
+                    "k4asrc: Failed to set property `color-format`. Expected `K4aColorFormat` or `i32`, but got: {:?}",
                     value
                 ));
                 gst_info!(
@@ -1447,8 +1445,8 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.color_format = value;
             }
             subclass::Property("color-resolution", ..) => {
-                let value: K4aColorResolution = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `color-resolution`. Expected a `i32`, but got: {:?}",
+                let value = value.get().expect(&format!(
+                    "k4asrc: Failed to set property `color-resolution`. Expected `K4aColorResolution` or `i32`, but got: {:?}",
                     value
                 ));
                 gst_info!(
@@ -1461,8 +1459,8 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.color_resolution = value;
             }
             subclass::Property("depth-mode", ..) => {
-                let value: K4aDepthMode = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `depth-mode`. Expected a `i32`, but got: {:?}",
+                let value = value.get().expect(&format!(
+                    "k4asrc: Failed to set property `depth-mode`. Expected `K4aDepthMode` or `i32`, but got: {:?}",
                     value
                 ));
                 gst_info!(
@@ -1476,7 +1474,7 @@ impl ObjectImpl for K4aSrc {
             }
             subclass::Property("framerate", ..) => {
                 let framerate = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `framerate`. Expected a `i32`, but got: {:?}",
+                    "k4asrc: Failed to set property `framerate`. Expected `K4aFramerate` or `i32`, but got: {:?}",
                     value
                 ));
                 gst_info!(
@@ -1537,8 +1535,8 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode: K4aTimestampMode = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `timestamp-mode`. Expected a `i32`, but got: {:?}",
+                let timestamp_mode = value.get().expect(&format!(
+                    "k4asrc: Failed to set property `timestamp-mode`. Expected `K4aTimestampMode` or `i32`, but got: {:?}",
                     value
                 ));
                 element.set_do_timestamp(match timestamp_mode {
