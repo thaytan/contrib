@@ -59,3 +59,10 @@ impl Display for StreamEnableError {
         write!(f, "Could not enable stream: {}", self.0)
     }
 }
+
+/// Conversion from `gst::ErrorMessage` to RealsenseError.
+impl From<gst::ErrorMessage> for RealsenseError {
+    fn from(error: gst::ErrorMessage) -> RealsenseError {
+        RealsenseError(format!("{}", error))
+    }
+}
