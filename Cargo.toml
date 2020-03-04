@@ -21,9 +21,7 @@ lazy_static = "1.4.0"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-# TODO: Replace branch with corresponding tag once merged
-branch = "298-camera-meta-and-cleanup"
-# tag = "0.3.0"
+tag = "0.3.0"
 
 [lib]
 name = "gstrgbd"
