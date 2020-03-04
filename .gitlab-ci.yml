@@ -4,7 +4,18 @@ stages:
   - test
   - doc
 
+variables:
+  CONAN_DATA_PATH: "$CI_PROJECT_DIR/conan_data"
+  CONAN_ARCH: x86_64
+
 before_script:
+  - conan --version
+  - conan config install https://gitlab.com/aivero/public/conan/conan-config.git
+  - conan profile update settings.compiler.libcxx=libstdc++11 linux_x86_64
+  - conan config set general.default_profile=linux_$CONAN_ARCH
+  - conan config set storage.path=${CONAN_DATA_PATH}
+  - echo -e "[credential]\n\thelper = store" > ~/.gitconfig
+  - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com" > ~/.git-credentials
   - conan install . aivero/stable -if build
   - source build/env.sh
 
