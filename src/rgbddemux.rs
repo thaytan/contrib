@@ -17,8 +17,7 @@
 use glib::subclass;
 use gst::prelude::*;
 use gst::subclass::prelude::*;
-use gst_depth_meta::buffer::BufferMeta;
-use gst_depth_meta::tags::TagsMeta;
+use gst_depth_meta::rgbd;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -33,7 +32,6 @@ lazy_static! {
     );
 }
 
-
 #[derive(Debug, Clone)]
 pub struct RgbdDemuxingError(pub String);
 impl Error for RgbdDemuxingError {}
@@ -44,12 +42,14 @@ impl Display for RgbdDemuxingError {
 }
 impl From<RgbdDemuxingError> for gst::FlowError {
     fn from(error: RgbdDemuxingError) -> Self {
-        gst_error!(
-            CAT,
-            "{:?}",
-            error
-        );
+        gst_error!(CAT, "{:?}", error);
         gst::FlowError::Error
+    }
+}
+/// Conversion from `gst::ErrorMessage` to RgbdDemuxingError.
+impl From<gst::ErrorMessage> for RgbdDemuxingError {
+    fn from(error: gst::ErrorMessage) -> RgbdDemuxingError {
+        RgbdDemuxingError(format!("{}", error))
     }
 }
 
@@ -272,12 +272,7 @@ impl RgbdDemux {
         stream_name: &str,
         template: Option<gst::PadTemplate>,
     ) -> Option<gst::Pad> {
-        gst_debug!(
-            CAT,
-            obj: element,
-            "create_new_src_pad for {}",
-            stream_name
-        );
+        gst_debug!(CAT, obj: element, "create_new_src_pad for {}", stream_name);
         // Lock the internals
         let internals = &mut *self.internals.lock().expect("Could not lock internals");
 
@@ -346,21 +341,13 @@ impl RgbdDemux {
             .lock()
             .expect("Failed to lock internals in rgbddemux");
 
-        // Go through all meta buffers attached to the main buffer in order to extract them and push to the corresponding src pads
-        for meta in main_buffer.iter_meta::<BufferMeta>() {
-            // Get GstBuffer from meta of the main buffer
-            let additional_buffer = unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) };
-
+        // Go through all auxiliary buffers attached to the main buffer in order to extract them and push to the corresponding src pads
+        for additional_buffer in rgbd::get_aux_buffers(&main_buffer) {
             // Push the additional buffer to the corresponding src pad
             let _flow_combiner_result = internals.flow_combiner.update_flow(
                 self.push_buffer_to_corresponding_pad(&internals.src_pads, additional_buffer)
                     .map_err(|e| {
-                        gst_warning!(
-                            CAT,
-                            obj: element,
-                            "Failed to push a stacked buffer: {}",
-                            e
-                        );
+                        gst_warning!(CAT, obj: element, "Failed to push a stacked buffer: {}", e);
                         gst::FlowError::Error
                     }),
             );
@@ -370,19 +357,14 @@ impl RgbdDemux {
             CAT,
             obj: element,
             "All meta buffers have been pushed. Now pushing a buffer, tagged: {:?}:",
-            self.extract_tag_title(&main_buffer)
+            rgbd::get_tag(&main_buffer)
         );
 
         // Push the main buffer to the corresponding src pad
         let _ignore = internals.flow_combiner.update_flow(
             self.push_buffer_to_corresponding_pad(&internals.src_pads, main_buffer)
                 .map_err(|e| {
-                    gst_warning!(
-                        CAT,
-                        obj: element,
-                        "Failed to push a main buffer: {}",
-                        e
-                    );
+                    gst_warning!(CAT, obj: element, "Failed to push a main buffer: {}", e);
                     gst::FlowError::Error
                 }),
         ); // removing ; means fail if we cannot push main buffer.
@@ -400,7 +382,7 @@ impl RgbdDemux {
         buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, RgbdDemuxingError> {
         // Extract tag title from the buffer
-        let tag_title = self.extract_tag_title(&buffer)?;
+        let tag_title = rgbd::get_tag(&buffer)?;
 
         // Match the tag title with a corresponding src pad
         let src_pad = src_pads
@@ -416,34 +398,6 @@ impl RgbdDemux {
         src_pad.push(buffer).map_err(|_| {
             RgbdDemuxingError("Failed to push buffer onto its corresponding pad".to_owned())
         })
-    }
-
-    /// Extract the Title tag from the given buffer.
-    /// # Arguments
-    /// * `buffer` - The buffer from which the title tag should be extracted.
-    fn extract_tag_title(&self, buffer: &gst::Buffer) -> Result<String, RgbdDemuxingError> {
-        // Get GstTagList from GstBuffer
-        let meta = buffer
-            .get_meta::<TagsMeta>()
-            .ok_or(RgbdDemuxingError(format!(
-                "No meta detected in buffer `{:?}`",
-                buffer
-            )))?;
-        let tag_list = unsafe { gst::tags::TagList::from_glib_none(meta.tags) };
-
-        // Get the tag title from GstTagList
-        let gst_tag_title =
-            &tag_list
-                .get::<gst::tags::Title>()
-                .ok_or(RgbdDemuxingError(format!(
-                    "No tag title detected in buffer `{:?}`",
-                    buffer
-                )))?;
-        let title = gst_tag_title.get().ok_or(RgbdDemuxingError(format!(
-            "Invalid tag title detected in buffer `{:?}`",
-            buffer
-        )))?;
-        Ok(title.to_string())
     }
 }
 
@@ -547,12 +501,7 @@ impl ElementImpl for RgbdDemux {
         name: Option<String>,
         _caps: Option<&gst::Caps>,
     ) -> Option<gst::Pad> {
-        gst_debug!(
-            CAT,
-            obj: element,
-            "Requesting new pad with name {:?}",
-            name
-        );
+        gst_debug!(CAT, obj: element, "Requesting new pad with name {:?}", name);
         // Get the pads name and reject any requests that are not for src pads
         let name = name.unwrap_or("src_%s".to_string());
         if !name.starts_with("src_") {
