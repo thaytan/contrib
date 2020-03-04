@@ -25,6 +25,8 @@ pub(crate) const STREAM_ID_IR: &str = "ir";
 pub(crate) const STREAM_ID_COLOR: &str = "color";
 /// ID of the IMU stream.
 pub(crate) const STREAM_ID_IMU: &str = "imu";
+/// ID of the camera meta stream.
+pub(crate) const STREAM_ID_CAMERAMETA: &str = "camerameta";
 
 /// A struct containing information about what streams are enabled.
 #[derive(Clone, Copy)]

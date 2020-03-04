@@ -14,7 +14,9 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode};
+use crate::enums::{
+    K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode,
+};
 use crate::error::*;
 use crate::streams::*;
 use k4a::{ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
@@ -43,6 +45,8 @@ pub(crate) const DEFAULT_COLOR_RESOLUTION: K4aColorResolution = K4aColorResoluti
 pub(crate) const DEFAULT_DEPTH_MODE: K4aDepthMode = K4aDepthMode::NfovUnbinned;
 /// Default behaviour for rectifying depth frames.
 pub(crate) const DEFAULT_RECTIFY_DEPTH: bool = false;
+/// Default behaviour for attaching camera meta buffers.
+pub(crate) const DEFAULT_ATTACH_CAMERA_META: bool = false;
 
 // Framerates
 /// The rate at which IMU outputs its measurements.
@@ -74,6 +78,7 @@ pub(crate) struct Settings {
     pub(crate) desired_streams: Streams,
     pub(crate) timestamp_mode: K4aTimestampMode,
     pub(crate) rectify_depth: bool,
+    pub(crate) attach_camera_meta: bool,
 }
 
 /// A struct containing properties specific for streaming from a physical K4A device.
@@ -112,6 +117,7 @@ impl Default for Settings {
             },
             timestamp_mode: DEFAULT_TIMESTAMP_MODE,
             rectify_depth: DEFAULT_RECTIFY_DEPTH,
+            attach_camera_meta: DEFAULT_ATTACH_CAMERA_META,
         }
     }
 }
