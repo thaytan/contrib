@@ -1,0 +1,36 @@
+image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
+
+stages:
+  - test
+  - doc
+
+before_script:
+  - conan install . aivero/stable -if build
+  - source build/env.sh
+
+test:
+  stage: test
+  tags:
+   - x86_64
+  script:
+    - rustc --version
+    - cargo --version
+    - cargo test --verbose
+
+pages:
+  stage: doc
+  tags:
+    - x86_64
+  script:
+    - cargo doc --no-deps
+    - mv target/doc public
+    - echo '<meta http-equiv="refresh" content="0; url={{ LIBRARY NAME }}">' > public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+
+cache:
+  paths:
+    - target/
