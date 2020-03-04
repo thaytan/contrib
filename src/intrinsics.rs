@@ -212,3 +212,37 @@ impl From<[f32; 8]> for K4aCoefficients {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rs_coefficients_from_slice() {
+        let rs_coefficients_slice = [1.1, 2.2, 3.3, 4.4, 5.5];
+
+        let rs_coefficients = RsCoefficients::from(rs_coefficients_slice);
+
+        assert_eq!(rs_coefficients.a1, 1.1);
+        assert_eq!(rs_coefficients.a2, 2.2);
+        assert_eq!(rs_coefficients.a3, 3.3);
+        assert_eq!(rs_coefficients.a4, 4.4);
+        assert_eq!(rs_coefficients.a5, 5.5);
+    }
+
+    #[test]
+    fn k4a_coefficients_from_slice() {
+        let k4a_coefficients_slice = [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8];
+
+        let k4a_coefficients = K4aCoefficients::from(k4a_coefficients_slice);
+
+        assert_eq!(k4a_coefficients.k1, 1.1);
+        assert_eq!(k4a_coefficients.k2, 2.2);
+        assert_eq!(k4a_coefficients.k3, 3.3);
+        assert_eq!(k4a_coefficients.k4, 4.4);
+        assert_eq!(k4a_coefficients.k5, 5.5);
+        assert_eq!(k4a_coefficients.k6, 6.6);
+        assert_eq!(k4a_coefficients.p1, 7.7);
+        assert_eq!(k4a_coefficients.p2, 8.8);
+    }
+}

@@ -223,6 +223,34 @@ mod tests {
     }
 
     #[test]
+    fn inverse_rotation_matrix() {
+        for _ in 0..TEST_ITERATIONS {
+            let original = RotationMatrix {
+                r11: random(),
+                r12: random(),
+                r13: random(),
+                r21: random(),
+                r22: random(),
+                r23: random(),
+                r31: random(),
+                r32: random(),
+                r33: random(),
+            };
+
+            let inverted = original.inverse();
+            assert_eq!(inverted.r11, original.r11);
+            assert_eq!(inverted.r12, original.r21);
+            assert_eq!(inverted.r13, original.r31);
+            assert_eq!(inverted.r21, original.r12);
+            assert_eq!(inverted.r22, original.r22);
+            assert_eq!(inverted.r23, original.r32);
+            assert_eq!(inverted.r31, original.r13);
+            assert_eq!(inverted.r32, original.r23);
+            assert_eq!(inverted.r33, original.r33);
+        }
+    }
+
+    #[test]
     fn inverse_loop() {
         for _ in 0..TEST_ITERATIONS {
             let transformation = initialise_random_transformation();
@@ -238,13 +266,41 @@ mod tests {
                     < ROUNDING_ERROR_LIMIT
             );
             assert!(
-                (original.translation.x - transformation_assert_clone.translation.x).abs()
+                (original.translation.y - transformation_assert_clone.translation.y).abs()
                     < ROUNDING_ERROR_LIMIT
             );
             assert!(
-                (original.translation.x - transformation_assert_clone.translation.x).abs()
+                (original.translation.z - transformation_assert_clone.translation.z).abs()
                     < ROUNDING_ERROR_LIMIT
             );
         }
+    }
+
+    #[test]
+    fn translation_from_slice() {
+        let translation_slice = [1.1, 2.2, 3.3];
+
+        let translation = Translation::from(translation_slice);
+
+        assert_eq!(translation.x, 1.1);
+        assert_eq!(translation.y, 2.2);
+        assert_eq!(translation.z, 3.3);
+    }
+
+    #[test]
+    fn rotation_from_slice() {
+        let rotation_matrix_slice = [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9];
+
+        let rotation_matrix = RotationMatrix::from(rotation_matrix_slice);
+
+        assert_eq!(rotation_matrix.r11, 1.1);
+        assert_eq!(rotation_matrix.r12, 2.2);
+        assert_eq!(rotation_matrix.r13, 3.3);
+        assert_eq!(rotation_matrix.r21, 4.4);
+        assert_eq!(rotation_matrix.r22, 5.5);
+        assert_eq!(rotation_matrix.r23, 6.6);
+        assert_eq!(rotation_matrix.r31, 7.7);
+        assert_eq!(rotation_matrix.r32, 8.8);
+        assert_eq!(rotation_matrix.r33, 9.9);
     }
 }

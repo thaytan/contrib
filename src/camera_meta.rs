@@ -352,6 +352,15 @@ mod tests {
     use rand::random;
     const TEST_ITERATIONS: usize = 100;
 
+    /// Initialise CameraMeta for a setup with "depth", "ir" and "color" streams.
+    /// This struct contains the following, with randomised numerical entries.
+    ///     Intrinsics
+    ///         - "depth"
+    ///         - "ir"
+    ///         - "color"
+    ///     Extrinsics
+    ///         - "depth" -> "ir"
+    ///         - "depth" -> "color"
     fn initialise_random_camera_meta() -> CameraMeta {
         let mut intrinsics: HashMap<String, Intrinsics> = HashMap::new();
 
@@ -399,7 +408,7 @@ mod tests {
                 },
             },
         };
-        intrinsics.insert("ir".to_string(), intrinsics_color);
+        intrinsics.insert("color".to_string(), intrinsics_color);
 
         let mut extrinsics: HashMap<(String, String), Transformation> = HashMap::new();
 
@@ -471,7 +480,7 @@ mod tests {
     }
 
     #[test]
-    fn extrinsics_getter() {
+    fn get_extrinsics_depth_ir_color_and_vice_versa() {
         let camera_meta = initialise_random_camera_meta();
         assert!(camera_meta
             .get_extrinsics("depth".to_string(), "color".to_string())
