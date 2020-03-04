@@ -19,6 +19,8 @@ before_script:
   - conan install . aivero/stable -if build
   - source build/env.sh
 
+# scripts inspired by: https://users.rust-lang.org/t/my-gitlab-config-docs-tests/16396
+
 test:
   stage: test
   tags:
@@ -41,6 +43,7 @@ pages:
       - public
   only:
     - master
+    - tags
 
 cache:
   paths:
