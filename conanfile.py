@@ -16,7 +16,8 @@ class GitConan(ConanFile):
 
     def requirements(self):
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
-
+        self.requires("curl/[>=7.66.0]@%s/stable" % self.user)
+    
     def source(self):
         tools.get("https://www.kernel.org/pub/software/scm/git/git-%s.tar.xz" % self.version)
 
