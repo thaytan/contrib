@@ -14,7 +14,7 @@ def get_version():
 class GStreamerDevtoolsConan(ConanFile):
     name = "gstreamer-devtools"
     version = get_version()
-    gst_version = tools.get_env("GIT_TAG", "1.16.0")
+    gst_version = tools.get_env("GIT_TAG", "1.16.2")
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
