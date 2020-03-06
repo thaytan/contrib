@@ -19,33 +19,26 @@ class GStreamerDevtoolsConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    scm = {
-        "type": "git",
-        "url": "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git",
-        "revision": "rebased-aivero_mse_compare_changes",
-        "recursive": True,
-        "subfolder": ("src/gst-devtools-" + version)
-    }
+
     options = {"gtk_doc": [True, False], "introspection": [True, False], "tests": [True, False], "nls": [True, False]}
     default_options = "gtk_doc=False", "introspection=False", "tests=True", "nls=False"
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
-        self.build_requires("git/[>=2.23.0]@%s/stable" % self.user)
+
+    def source(self):
+        git = tools.Git(folder="gst-devtools")
+        git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "rebased-aivero_mse_compare_changes")
 
     def requirements(self):
-        self.requires("env-generator/[~1.0.0]@%s/stable" % self.user)
         self.requires(
             "gstreamer-plugins-base/[~%s]@%s/stable" % (self.gst_version, self.user)
         )
         self.requires("json-glib/[~1.4.4]@%s/stable" % self.user)
 
     def build(self):
+        args = ["--auto-features=disabled"]
         meson = Meson(self)
-        args = ["-Dgtk_doc=" + ("enabled" if self.options.gtk_doc else "disabled")]
-        args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
-        args.append("-Dtests=" + ("enabled" if self.options.tests else "disabled"))
-        args.append("-Dnls=" + ("enabled" if self.options.nls else "disabled"))
-        meson.configure(source_folder="src/gst-devtools-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder="gst-devtools", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
