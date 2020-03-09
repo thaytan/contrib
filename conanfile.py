@@ -46,12 +46,20 @@ class NvJetsonV4l2(ConanFile):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def source(self):
-        if self.options.jetson in ("TX2", "Xavier"):
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
-        elif self.options.jetson == "Nano":
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
+        if self.version == "32.3.1":
+            if self.options.jetson in ("TX2", "Xavier"):
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/T186/public_sources.tbz2" % self.version.replace(".", "-"))
+            elif self.options.jetson == "Nano":
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/T210/public_sources.tbz2" % self.version.replace(".", "-"))
+            else:
+                raise KeyError("Unknown option: " + self.options.jetson)
         else:
-            raise KeyError("Unknown option: " + self.options.jetson)
+            if self.options.jetson in ("TX2", "Xavier"):
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
+            elif self.options.jetson == "Nano":
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
+            else:
+                raise KeyError("Unknown option: " + self.options.jetson)
 
         tools.untargz("public_sources/v4l2_libs_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
