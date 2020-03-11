@@ -31,7 +31,7 @@ class RustConan(ConanFile):
         }
         with tools.environment_append(env):
             self.run("sh rustup.sh -y --default-toolchain " + self.version)
-            self.run("./bin/rustup component add rust-src")
+            self.run("./bin/rustup component add rust-src rustc-dev")
 
     def package(self):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
