@@ -12,11 +12,11 @@ class NodejsConan(ConanFile):
     settings = "os", "arch", "compiler"
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def requirements(self):
+        self.requires("generators/1.0.0@%s/stable" % self.user)
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
