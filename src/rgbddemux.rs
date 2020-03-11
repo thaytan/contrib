@@ -32,6 +32,22 @@ lazy_static! {
     );
 }
 
+/// Default behaviour for distributing timestamps of the main buffer to the auxiliary buffers.
+const DEFAULT_DISTRIBUTE_TIMESTAMPS: bool = false;
+
+static PROPERTIES: [subclass::Property; 1] = [subclass::Property(
+    "distribute-timestamps",
+    |name| {
+        glib::ParamSpec::boolean(
+            name,
+            "Distribute Timestamps",
+            "If enabled, timestamps of the main buffers will be distributed to the auxiliary buffers embedded within the `video/rbgd` stream.",
+            DEFAULT_DISTRIBUTE_TIMESTAMPS,
+            glib::ParamFlags::READWRITE,
+        )
+    },
+)];
+
 #[derive(Debug, Clone)]
 pub struct RgbdDemuxingError(pub String);
 impl Error for RgbdDemuxingError {}
@@ -65,6 +81,22 @@ struct RgbdDemuxInternals {
     src_pads: HashMap<String, gst::Pad>,
     /// A flow combiner
     flow_combiner: gst_base::UniqueFlowCombiner,
+    /// Settings based on properties of the element
+    settings: Settings,
+}
+
+/// A struct containing properties of `rgbddemux` element
+struct Settings {
+    /// Analogous to `distribute-timestamps` property
+    distribute_timestamps: bool,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            distribute_timestamps: DEFAULT_DISTRIBUTE_TIMESTAMPS,
+        }
+    }
 }
 
 impl RgbdDemux {
@@ -341,6 +373,31 @@ impl RgbdDemux {
             .lock()
             .expect("Failed to lock internals in rgbddemux");
 
+        // Distribute the timestamp of the main buffer to the auxiliary buffers, if enabled
+        if internals.settings.distribute_timestamps {
+            // Get timestamp of the main buffer
+            let common_pts = main_buffer.get_pts();
+            let common_dts = main_buffer.get_dts();
+            let common_duration = main_buffer.get_duration();
+
+            // Get a mutable reference to the main buffer
+            // Note: I could not figure out a better/easier way of doing that. Please let me know if you find some.
+            let main_buffer_mut_ref =
+                unsafe { gst::BufferRef::from_mut_ptr(main_buffer.as_mut_ptr()) };
+
+            // Go through all auxiliary buffers
+            for additional_buffer in &mut rgbd::get_aux_buffers_mut(main_buffer_mut_ref) {
+                // Make the buffer mutable so that we can edit its timestamps
+                let additional_buffer = additional_buffer.get_mut()
+                .expect("rgbddemux: Cannot get mutable reference to an auxiliary buffer when distributing timestamps.");
+
+                // Distribute the timestamp of the main buffer to the auxiliary buffers
+                additional_buffer.set_pts(common_pts);
+                additional_buffer.set_dts(common_dts);
+                additional_buffer.set_duration(common_duration);
+            }
+        }
+
         // Go through all auxiliary buffers attached to the main buffer in order to extract them and push to the corresponding src pads
         for additional_buffer in rgbd::get_aux_buffers(&main_buffer) {
             // Push the additional buffer to the corresponding src pad
@@ -396,7 +453,7 @@ impl RgbdDemux {
         gst_debug!(CAT, "Pushing per-frame meta for {}", tag_title);
 
         src_pad.push(buffer).map_err(|_| {
-            RgbdDemuxingError("Failed to push buffer onto its corresponding pad".to_owned())
+            RgbdDemuxingError("Failed to push buffer onto its corresponding pad".to_string())
         })
     }
 }
@@ -414,6 +471,7 @@ impl ObjectSubclass for RgbdDemux {
             internals: Mutex::new(RgbdDemuxInternals {
                 src_pads: HashMap::new(),
                 flow_combiner: gst_base::UniqueFlowCombiner::new(),
+                settings: Settings::default(),
             }),
         }
     }
@@ -425,6 +483,8 @@ impl ObjectSubclass for RgbdDemux {
             "Demuxes  a single `video/rgbd` into multiple `video/x-raw`",
             "Raphael Dürscheid <rd@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
+
+        klass.install_properties(&PROPERTIES);
 
         // src pads
         let mut src_caps = gst::Caps::new_simple("video/x-raw", &[]);
@@ -481,6 +541,49 @@ impl ObjectImpl for RgbdDemux {
         element
             .add_pad(&sink_pad)
             .expect("Failed to add sink pad in rgbddemux");
+    }
+
+    fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
+        let element = obj
+            .downcast_ref::<gst::Element>()
+            .expect("Failed to cast `obj` to a gst::Element");
+        let settings = &mut self
+            .internals
+            .lock()
+            .expect("rgbddemux: Could not lock internals to access settings in `set_property()`")
+            .settings;
+
+        let property = &PROPERTIES[id];
+        match *property {
+            subclass::Property("distribute-timestamps", ..) => {
+                let distribute_timestamps = value.get().expect(&format!("Failed to set property `distribute-timestamps` on `rgbddemux`. Expected a boolean, but got: {:?}", value));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `distribute-timestamps` from {} to {}",
+                    settings.distribute_timestamps,
+                    distribute_timestamps
+                );
+                settings.distribute_timestamps = distribute_timestamps;
+            }
+            _ => unimplemented!("Property is not implemented"),
+        };
+    }
+
+    fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
+        let settings = &self
+            .internals
+            .lock()
+            .expect("rgbddemux: Could not lock internals to access settings in `set_property()`")
+            .settings;
+
+        let prop = &PROPERTIES[id];
+        match *prop {
+            subclass::Property("distribute-timestamps", ..) => {
+                Ok(settings.distribute_timestamps.to_value())
+            }
+            _ => unimplemented!("Property is not implemented"),
+        }
     }
 }
 
