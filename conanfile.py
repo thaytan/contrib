@@ -43,3 +43,4 @@ class RustConan(ConanFile):
 
     def package_info(self):
         self.env_info.RUST_SRC_PATH = os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")
+        self.env_info.SOURCE_MAP.append("rustc|%s" % os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src"))
