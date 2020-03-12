@@ -1,3 +1,6 @@
+variables:
+  CONAN_SKIP_BROKEN_SYMLINKS_CHECK: True
+
 include:
   - project: 'aivero/cloud/cicd'
     file: 'conan-ci-base.yml'
