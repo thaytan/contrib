@@ -2,60 +2,31 @@
 # Build and test the Release version:
 # #######
 
-armv8-bionic-release-stable:
-  extends:
-    - .core
-    - .armv8
-    - .release
-    - .stable
+armv8-bionic-release-stable-tx1:
+  extends: armv8-bionic-release-stable
   variables:
+    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
 
-armv8-bionic-release-testing:
-  extends:
-    - .core
-    - .armv8
-    - .release
-    - .testing
+armv8-bionic-release-testing-tx1:
+  extends: armv8-bionic-release-testing
   variables:
-    CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
-
-armv8-bionic-release-stable-package:
-  extends:
-    - .armv8
-    - .release
-    - .stable
-    - .package
-  variables:
+    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
 
 # #######
 # Build and test the Debug version:
 # #######
 
-armv8-bionic-debug-stable:
-  extends:
-    - .core
-    - .armv8
-    - .debug
-    - .stable
-
-armv8-bionic-debug-testing:
-  extends:
-    - .core
-    - .armv8
-    - .debug
-    - .testing
-
-
-armv8-bionic-testing-tx1:
-  extends: armv8-bionic-release-testing
+armv8-bionic-debug-stable-tx1:
+  extends: armv8-bionic-debug-stable
   variables:
     CONAN_BUILD_OPTIONS: "-o jetson=Nano"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
 
-armv8-bionic-release-tx1:
-  extends: armv8-bionic-release-stable
+armv8-bionic-debug-testing-tx1:
+  extends: armv8-bionic-debug-testing
   variables:
     CONAN_BUILD_OPTIONS: "-o jetson=Nano"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
+
