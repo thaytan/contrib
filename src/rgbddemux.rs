@@ -53,7 +53,7 @@ pub struct RgbdDemuxingError(pub String);
 impl Error for RgbdDemuxingError {}
 impl Display for RgbdDemuxingError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "DddqEncError: {:?}", self.0)
+        write!(f, "RgbdDemuxError: {:?}", self.0)
     }
 }
 impl From<RgbdDemuxingError> for gst::FlowError {
