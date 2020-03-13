@@ -29,6 +29,24 @@ armv8-bionic-release-stable-package:
   variables:
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
 
+# #######
+# Build and test the Debug version:
+# #######
+
+armv8-bionic-debug-stable:
+  extends:
+    - .core
+    - .armv8
+    - .debug
+    - .stable
+
+armv8-bionic-debug-testing:
+  extends:
+    - .core
+    - .armv8
+    - .debug
+    - .testing
+
 
 armv8-bionic-testing-tx1:
   extends: armv8-bionic-release-testing
