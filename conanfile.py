@@ -17,6 +17,7 @@ class GdkPixbufConan(ConanFile):
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
         self.build_requires("gettext/[>=0.20.1]@%s/stable" % self.user)
+        self.build_requires("imagemagick/7.0.9.25@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
@@ -29,6 +30,7 @@ class GdkPixbufConan(ConanFile):
 
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback", "-Dinstalled_tests=false", "-Drelocatable=true"]
+        self.run('convert gdk-pixbuf-{0}/tests/icc-profile.png +profile "*" gdk-pixbuf-{0}/tests/icc-profile.png'.format(self.version))
         with tools.environment_append({"PATH": environ["PATH"] + pathsep + path.join(self.build_folder, "gdk-pixbuf")}):
             meson = Meson(self)
             meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
