@@ -1,3 +1,5 @@
+import os
+
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
@@ -27,3 +29,6 @@ class ImagemagickConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+
+    def package_info(self):
+        self.env_info.MAGICK_CONFIGURE_PATH = os.path.join(self.package_folder, "etc", "ImageMagick-" + self.version.split(".")[0])
