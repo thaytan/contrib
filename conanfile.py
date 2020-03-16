@@ -14,7 +14,7 @@ class ImagemagickConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("cc/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
@@ -23,7 +23,7 @@ class ImagemagickConan(ConanFile):
         tools.get("https://github.com/ImageMagick/ImageMagick/archive/%s.tar.gz" % self.tar_version)
 
     def build(self):
-        args = ["--disable-static"]
+        args = ["--disable-static", "--disable-dependency-tracking"]
         with tools.chdir("ImageMagick-%s" % self.tar_version):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
