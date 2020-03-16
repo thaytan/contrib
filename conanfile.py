@@ -1,6 +1,7 @@
 import os
 
 from conans import ConanFile, tools
+from six import StringIO
 
 
 class RustConan(ConanFile):
