@@ -46,4 +46,4 @@ class RustConan(ConanFile):
         self.env_info.RUST_SRC_PATH = os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")
         git_hash = StringIO()
         self.run("rustc -Vv | grep commit-hash | cut -b 14-", output=git_hash)
-        self.env_info.SOURCE_MAP.append("/rustc/%s/src|%s" % (git_hash.getvalue(), os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")))
+        self.env_info.SOURCE_MAP.append("/rustc/%s/src|%s" % (git_hash.getvalue()[81:-1], os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")))
