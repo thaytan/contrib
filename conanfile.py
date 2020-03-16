@@ -5,7 +5,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class ImagemagickConan(ConanFile):
     name = "imagemagick"
-    version = tools.get_env("GIT_TAG", "7.0.9.25")
+    version = tools.get_env("GIT_TAG", "7.0.10.0")
     tar_version = "%s-%s" % (version[:version.rfind(".")], version[version.rfind(".") + 1:])
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
@@ -20,7 +20,7 @@ class ImagemagickConan(ConanFile):
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://imagemagick.org/download/ImageMagick-%s.tar.xz" % self.tar_version)
+        tools.get("https://github.com/ImageMagick/ImageMagick/archive/%s.tar.gz" % self.tar_version)
 
     def build(self):
         args = ["--disable-static"]
