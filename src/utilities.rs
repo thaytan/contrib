@@ -25,7 +25,7 @@ use crate::error::*;
 /// * `Ok(&'static str)` on sucess.
 /// * `Err(K4aError::Failure)` if conversion of custom format is attempted.
 pub(crate) fn k4a_image_format_to_gst_video_format(
-    image_format: &k4a::ImageFormat,
+    image_format: k4a::ImageFormat,
 ) -> Result<&'static str, K4aSrcError> {
     use gst_video::VideoFormat;
     use k4a::ImageFormat::*;

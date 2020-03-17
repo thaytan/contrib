@@ -227,7 +227,7 @@ impl BaseSrcImpl for K4aSrc {
                 selected_streams.push_str(&format!("{},", STREAM_ID_DEPTH));
                 caps.set(
                     &format!("{}_format", STREAM_ID_DEPTH),
-                    &k4a_image_format_to_gst_video_format(&DEPTH_FORMAT)
+                    &k4a_image_format_to_gst_video_format(DEPTH_FORMAT)
                         .unwrap()
                         .to_string(),
                 );
@@ -257,7 +257,7 @@ impl BaseSrcImpl for K4aSrc {
                 selected_streams.push_str(&format!("{},", STREAM_ID_IR));
                 caps.set(
                     &format!("{}_format", STREAM_ID_IR),
-                    &k4a_image_format_to_gst_video_format(&IR_FORMAT)
+                    &k4a_image_format_to_gst_video_format(IR_FORMAT)
                         .unwrap()
                         .to_string(),
                 );
@@ -337,17 +337,15 @@ impl BaseSrcImpl for K4aSrc {
 
         // Attach `depth` frame if enabled
         if desired_streams.depth {
-            if self
-                .attach_frame_to_buffer(
-                    base_src,
-                    internals,
-                    &mut output_buffer,
-                    &capture,
-                    STREAM_ID_DEPTH,
-                    &[],
-                )
-                .is_err()
-            {
+            let res = self.attach_frame_to_buffer(
+                base_src,
+                internals,
+                &mut output_buffer,
+                &capture,
+                STREAM_ID_DEPTH,
+                &[],
+            );
+            if res.is_err() {
                 gst_warning!(
                     CAT,
                     obj: base_src,
@@ -359,17 +357,15 @@ impl BaseSrcImpl for K4aSrc {
 
         // Attach `ir` frame if enabled
         if desired_streams.ir {
-            if self
-                .attach_frame_to_buffer(
-                    base_src,
-                    internals,
-                    &mut output_buffer,
-                    &capture,
-                    STREAM_ID_IR,
-                    &[desired_streams.depth],
-                )
-                .is_err()
-            {
+            let res = self.attach_frame_to_buffer(
+                base_src,
+                internals,
+                &mut output_buffer,
+                &capture,
+                STREAM_ID_IR,
+                &[desired_streams.depth],
+            );
+            if res.is_err() {
                 gst_warning!(
                     CAT,
                     obj: base_src,
@@ -381,17 +377,15 @@ impl BaseSrcImpl for K4aSrc {
 
         // Attach `color` frame if enabled
         if desired_streams.color {
-            if self
-                .attach_frame_to_buffer(
-                    base_src,
-                    internals,
-                    &mut output_buffer,
-                    &capture,
-                    STREAM_ID_COLOR,
-                    &[desired_streams.depth, desired_streams.ir],
-                )
-                .is_err()
-            {
+            let res = self.attach_frame_to_buffer(
+                base_src,
+                internals,
+                &mut output_buffer,
+                &capture,
+                STREAM_ID_COLOR,
+                &[desired_streams.depth, desired_streams.ir],
+            );
+            if res.is_err() {
                 gst_warning!(
                     CAT,
                     obj: base_src,
@@ -502,7 +496,7 @@ impl K4aSrc {
         };
 
         // Make sure there are no conflicts between the desired and available streams
-        if !Streams::are_streams_available(&settings.desired_streams, &available_streams) {
+        if !Streams::are_streams_available(settings.desired_streams, available_streams) {
             return Err(K4aSrcError::Failure(
                 "k4asrc: Some of the desired stream(s) are not available in the recording for playback",
             ));
@@ -1071,18 +1065,19 @@ impl K4aSrc {
     /// # Returns
     /// * `CameraMeta` containing the appropriate parameters.
     fn extract_camera_meta(settings: &Settings, calibration: &Calibration) -> CameraMeta {
-        let desired_streams = &settings.desired_streams;
-
         // Get the depth and color camera calibration
         let depth_calibration = calibration.depth_camera_calibration();
         let color_calibration = calibration.color_camera_calibration();
 
         // Create intrinsics and insert the appropriate streams
-        let intrinsics =
-            Self::extract_intrinsics(&desired_streams, &depth_calibration, &color_calibration);
+        let intrinsics = Self::extract_intrinsics(
+            settings.desired_streams,
+            &depth_calibration,
+            &color_calibration,
+        );
 
         // Create extrinsics and insert the appropriate transformations
-        let extrinsics = Self::extract_extrinsics(&desired_streams, &calibration);
+        let extrinsics = Self::extract_extrinsics(settings.desired_streams, &calibration);
 
         // K4A Depth is always in millimetres (0.001), due to its DEPTH16 K4A format.
         CameraMeta::new(intrinsics, extrinsics, 0.001)
@@ -1098,7 +1093,7 @@ impl K4aSrc {
     /// # Returns
     /// * `HashMap<String, camera_meta::Intrinsics>` containing Intrinsics corresponding to a stream.
     fn extract_intrinsics(
-        desired_streams: &Streams,
+        desired_streams: Streams,
         depth_calibration: &CameraCalibration,
         color_calibration: &CameraCalibration,
     ) -> HashMap<String, camera_meta::Intrinsics> {
@@ -1134,7 +1129,7 @@ impl K4aSrc {
     /// * `HashMap<(String, String), camera_meta::Transformation>` containing Transformation
     /// in a hashmap of <(from, to), Transformation>.
     fn extract_extrinsics(
-        desired_streams: &Streams,
+        desired_streams: Streams,
         calibration: &Calibration,
     ) -> HashMap<(String, String), camera_meta::Transformation> {
         // Create extrinsics and insert the appropriate transformations
@@ -1246,7 +1241,7 @@ impl K4aSrc {
     ///
     /// # Returns
     /// * `&str` containing the ID of the main stream.
-    fn determine_main_stream(streams: &Streams) -> &str {
+    fn determine_main_stream(streams: Streams) -> &'static str {
         if streams.depth {
             STREAM_ID_DEPTH
         } else if streams.ir {
@@ -1264,7 +1259,7 @@ impl K4aSrc {
     ///
     /// # Returns
     /// * `k4a::CalibrationType` containing the corresponding calibration type.
-    fn determine_main_stream_calibration_type(streams: &Streams) -> k4a::CalibrationType {
+    fn determine_main_stream_calibration_type(streams: Streams) -> k4a::CalibrationType {
         if streams.depth | streams.ir {
             K4A_CALIBRATION_TYPE_DEPTH
         } else {
@@ -1358,10 +1353,7 @@ impl ObjectImpl for K4aSrc {
         let property = &PROPERTIES[id];
         match *property {
             subclass::Property("serial", ..) => {
-                let serial = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `serial`. Expected a `string`, but got: {:?}",
-                    value
-                ));
+                let serial = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `serial`. Expected a `string`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1378,7 +1370,7 @@ impl ObjectImpl for K4aSrc {
             subclass::Property("recording-location", ..) => {
                 let recording_location = value
                     .get()
-                    .expect(&format!("k4asrc: Failed to set property `recording-location`. Expected a `string`, but got: {:?}", value));
+                    .unwrap_or_else(|| panic!("k4asrc: Failed to set property `recording-location`. Expected a `string`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1395,7 +1387,7 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("enable-depth", ..) => {
-                let enable_depth = value.get().expect(&format!("k4asrc: Failed to set property `enable-depth`. Expected a `bool`, but got: {:?}", value));
+                let enable_depth = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-depth`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1406,10 +1398,7 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.depth = enable_depth;
             }
             subclass::Property("enable-ir", ..) => {
-                let enable_ir = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `enable-ir`. Expected a `bool`, but got: {:?}",
-                    value
-                ));
+                let enable_ir = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-ir`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1420,7 +1409,7 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.ir = enable_ir;
             }
             subclass::Property("enable-color", ..) => {
-                let enable_color = value.get().expect(&format!("k4asrc: Failed to set property `enable-color`. Expected a `bool`, but got: {:?}", value));
+                let enable_color = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-color`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1431,10 +1420,7 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.color = enable_color;
             }
             subclass::Property("enable-imu", ..) => {
-                let enable_imu = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `enable-imu`. Expected a `bool`, but got: {:?}",
-                    value
-                ));
+                let enable_imu = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-imu`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1445,10 +1431,7 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.imu = enable_imu;
             }
             subclass::Property("color-format", ..) => {
-                let value = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `color-format`. Expected `K4aColorFormat` or `i32`, but got: {:?}",
-                    value
-                ));
+                let value = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `color-format`. Expected `K4aColorFormat` or `i32`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1459,10 +1442,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.color_format = value;
             }
             subclass::Property("color-resolution", ..) => {
-                let value = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `color-resolution`. Expected `K4aColorResolution` or `i32`, but got: {:?}",
-                    value
-                ));
+                let value = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `color-resolution`. Expected `K4aColorResolution` or `i32`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1473,10 +1453,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.color_resolution = value;
             }
             subclass::Property("depth-mode", ..) => {
-                let value = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `depth-mode`. Expected `K4aDepthMode` or `i32`, but got: {:?}",
-                    value
-                ));
+                let value = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `depth-mode`. Expected `K4aDepthMode` or `i32`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1487,10 +1464,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.depth_mode = value;
             }
             subclass::Property("framerate", ..) => {
-                let framerate = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `framerate`. Expected `K4aFramerate` or `i32`, but got: {:?}",
-                    value
-                ));
+                let framerate = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `framerate`. Expected `K4aFramerate` or `i32`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1501,10 +1475,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.framerate = framerate;
             }
             subclass::Property("get-capture-timeout", ..) => {
-                let get_capture_timeout = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `get-capture-timeout`. Expected a `i32`, but got: {:?}",
-                    value
-                ));
+                let get_capture_timeout = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `get-capture-timeout`. Expected a `i32`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1515,10 +1486,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.get_capture_timeout = get_capture_timeout;
             }
             subclass::Property("loop-recording", ..) => {
-                let loop_recording = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `loop-recording`. Expected a `bool`, but got: {:?}",
-                    value
-                ));
+                let loop_recording = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `loop-recording`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1529,10 +1497,7 @@ impl ObjectImpl for K4aSrc {
                 settings.playback_settings.loop_recording = loop_recording;
             }
             subclass::Property("real-time-playback", ..) => {
-                let real_time_playback = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `real-time-playback`. Expected a `bool`, but got: {:?}",
-                    value
-                ));
+                let real_time_playback = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `real-time-playback`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1549,10 +1514,7 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `timestamp-mode`. Expected `K4aTimestampMode` or `i32`, but got: {:?}",
-                    value
-                ));
+                let timestamp_mode = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `timestamp-mode`. Expected `K4aTimestampMode` or `i32`, but got: {:?}", value));
                 element.set_do_timestamp(match timestamp_mode {
                     K4aTimestampMode::Main => true,
                     _ => false,
@@ -1567,7 +1529,7 @@ impl ObjectImpl for K4aSrc {
                 settings.timestamp_mode = timestamp_mode;
             }
             subclass::Property("rectify-depth", ..) => {
-                let rectify_depth = value.get().expect(&format!("k4asrc: Failed to set property `rectify-depth`. Expected a `bool`, but got: {:?}", value));
+                let rectify_depth = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `rectify-depth`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1578,10 +1540,7 @@ impl ObjectImpl for K4aSrc {
                 settings.rectify_depth = rectify_depth;
             }
             subclass::Property("attach-camera-meta", ..) => {
-                let attach_camera_meta = value.get().expect(&format!(
-                    "k4asrc: Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}",
-                    value
-                ));
+                let attach_camera_meta = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
