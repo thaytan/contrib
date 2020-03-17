@@ -18,10 +18,15 @@ class GStreamerPerfConan(ConanFile):
         "subfolder": ("gst-perf-" + version)
     }
 
-    def build_requirements(self):
-        self.requires("generators/[>=1.0.0]@%s/stable" % self.user) 
+    def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user) 
         self.requires("gstreamer/[>=%s]@%s/stable" % (self.version,self.user)) 
+
+    def build_requirements(self):
+        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user) 
+        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user) 
+        self.build_requires("automake/[>=1.16.1]@%s/stable" % self.user) 
+        self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user) 
 
     def source(self):
         git = tools.Git(folder="src/gst-perf-" + self.version)
@@ -30,7 +35,7 @@ class GStreamerPerfConan(ConanFile):
 
     def build(self):
         with tools.chdir("sources"):
-            self.run("bash autogen.sh")
+            self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()
