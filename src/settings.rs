@@ -62,7 +62,7 @@ pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
 /// Default behaviour for applying timestamps to buffers.
 pub(crate) const DEFAULT_TIMESTAMP_MODE: K4aTimestampMode = K4aTimestampMode::All;
 /// Default behaviour for liveliness of the element when playing back from a recording.
-pub(crate) const DEFAULT_REAL_TIME_PLAYBACK: bool = true;
+pub(crate) const DEFAULT_REAL_TIME_PLAYBACK: bool = false;
 
 // TODO: If desired, make these into properties with the appropriate support
 pub(crate) const DEPTH_DELAY_OFF_COLOR_USEC: i32 = 0;
