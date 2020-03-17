@@ -28,11 +28,7 @@ impl EnabledStreams {
     /// * `true` if at least one stream is enabled.
     /// * `false` if no stream is enabled.
     pub(crate) fn any(&self) -> bool {
-        if self.depth || self.infra1 || self.infra2 || self.color {
-            true
-        } else {
-            false
-        }
+        self.depth || self.infra1 || self.infra2 || self.color
     }
 
     /// Determines whether there are any conflict between `enabled_streams` and

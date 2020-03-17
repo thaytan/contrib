@@ -176,7 +176,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.json_location = json_location;
             }
             subclass::Property("enable-depth", ..) => {
-                let enable_depth = value.get().expect(&format!("Failed to set property `enable-depth` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let enable_depth = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-depth` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -187,7 +187,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enabled_streams.depth = enable_depth;
             }
             subclass::Property("enable-infra1", ..) => {
-                let enable_infra1 = value.get().expect(&format!("Failed to set property `enable-infra` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let enable_infra1 = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-infra` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -198,7 +198,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enabled_streams.infra1 = enable_infra1;
             }
             subclass::Property("enable-infra2", ..) => {
-                let enable_infra2 = value.get().expect(&format!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let enable_infra2 = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -209,7 +209,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enabled_streams.infra2 = enable_infra2;
             }
             subclass::Property("enable-color", ..) => {
-                let enable_color = value.get().expect(&format!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let enable_color = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -220,7 +220,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.enabled_streams.color = enable_color;
             }
             subclass::Property("depth-width", ..) => {
-                let depth_width = value.get().expect(&format!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));
+                let depth_width = value.get().unwrap_or_else(|| panic!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -231,7 +231,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.depth_resolution.width = depth_width;
             }
             subclass::Property("depth-height", ..) => {
-                let depth_height = value.get().expect(&format!("Failed to set property `depth-height` on realsensesrc. Expected an int, but got: {:?}", value));
+                let depth_height = value.get().unwrap_or_else(|| panic!("Failed to set property `depth-height` on realsensesrc. Expected an int, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -242,7 +242,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.depth_resolution.height = depth_height;
             }
             subclass::Property("color-width", ..) => {
-                let color_width = value.get().expect(&format!("Failed to set property `color-width` on realsensesrc. Expected an int, but got: {:?}", value));
+                let color_width = value.get().unwrap_or_else(|| panic!("Failed to set property `color-width` on realsensesrc. Expected an int, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -253,7 +253,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.color_resolution.width = color_width;
             }
             subclass::Property("color-height", ..) => {
-                let color_height = value.get().expect(&format!("Failed to set property `color-height` on realsensesrc. Expected an int, but got: {:?}", value));
+                let color_height = value.get().unwrap_or_else(|| panic!("Failed to set property `color-height` on realsensesrc. Expected an int, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -264,7 +264,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.streams.color_resolution.height = color_height;
             }
             subclass::Property("framerate", ..) => {
-                let framerate = value.get().expect(&format!("Failed to set property `framerate` on realsensesrc. Expected an int, but got: {:?}", value));
+                let framerate = value.get().unwrap_or_else(|| panic!("Failed to set property `framerate` on realsensesrc. Expected an int, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -276,7 +276,7 @@ impl ObjectImpl for RealsenseSrc {
                 // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             }
             subclass::Property("loop-rosbag", ..) => {
-                let loop_rosbag = value.get().expect(&format!("Failed to set property `loop-rosbag` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let loop_rosbag = value.get().unwrap_or_else(|| panic!("Failed to set property `loop-rosbag` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -287,7 +287,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.loop_rosbag = loop_rosbag;
             }
             subclass::Property("wait-for-frames-timeout", ..) => {
-                let wait_for_frames_timeout = value.get().expect(&format!("Failed to set property `wait-for-frames-timeout` on realsensesrc. Expected an int, but got: {:?}", value));
+                let wait_for_frames_timeout = value.get().unwrap_or_else(|| panic!("Failed to set property `wait-for-frames-timeout` on realsensesrc. Expected an int, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -298,7 +298,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.wait_for_frames_timeout = wait_for_frames_timeout;
             }
             subclass::Property("include-per-frame-metadata", ..) => {
-                let do_metadata = value.get().expect(&format!("Failed to set property `include-per-frame-metadata` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let do_metadata = value.get().unwrap_or_else(|| panic!("Failed to set property `include-per-frame-metadata` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -310,7 +310,7 @@ impl ObjectImpl for RealsenseSrc {
             }
             subclass::Property("timestamp-mode", ..) => {
                 let timestamp_mode = value.get::<RealsenseTimestampMode>()
-                    .expect(&format!("Failed to set property `timestamp-mode` on realsensesrc. Expected a i32 or RealsenseTimestampMode variant, but got: {:?}", value));
+                    .unwrap_or_else(|| panic!("Failed to set property `timestamp-mode` on realsensesrc. Expected a i32 or RealsenseTimestampMode variant, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -321,7 +321,7 @@ impl ObjectImpl for RealsenseSrc {
                 settings.timestamp_mode = timestamp_mode;
             }
             subclass::Property("real-time-rosbag-playback", ..) => {
-                let real_time_rosbag_playback = value.get().expect(&format!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));
+                let real_time_rosbag_playback = value.get().unwrap_or_else(|| panic!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -335,10 +335,7 @@ impl ObjectImpl for RealsenseSrc {
                     .set_live(settings.real_time_rosbag_playback);
             }
             subclass::Property("attach-camera-meta", ..) => {
-                let attach_camera_meta = value.get().expect(&format!(
-                    "Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}",
-                    value
-                ));
+                let attach_camera_meta = value.get().unwrap_or_else(|| panic!("Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -913,7 +910,7 @@ impl RealsenseSrc {
     /// * `serial` - The serial number of the device to configure.
     /// * `json_location` - The absolute path to the file containing the JSON configuration.
     fn load_json(
-        devices: &Vec<rs2::device::Device>,
+        devices: &[rs2::device::Device],
         serial: &str,
         json_location: &str,
     ) -> Result<(), RealsenseError> {
@@ -927,10 +924,9 @@ impl RealsenseSrc {
                     _ => false,
                 },
             )
-            .ok_or(RealsenseError(format!(
-                "Could not find a device with id: {}",
-                serial
-            )))?;
+            .ok_or_else(|| {
+                RealsenseError(format!("Could not find a device with id: {}", serial))
+            })?;
 
         if !device.is_advanced_mode_enabled()? {
             device.set_advanced_mode(true)?;
@@ -938,8 +934,7 @@ impl RealsenseSrc {
         let json_content = std::fs::read_to_string(json_location).map_err(|e| {
             RealsenseError(format!(
                 "Cannot read RealSense configuration from \"{}\": {:?}",
-                json_location.clone(),
-                e
+                json_location, e
             ))
         })?;
 
@@ -1018,7 +1013,7 @@ impl RealsenseSrc {
     /// * `timestamp` - The timestamp to give to the frame.
     fn extract_frame(
         &self,
-        frames: &Vec<rs2::frame::Frame>,
+        frames: &[rs2::frame::Frame],
         output_buffer: &mut gst::Buffer,
         tag: &str,
         stream_type: rs2::rs2_stream,
@@ -1029,9 +1024,9 @@ impl RealsenseSrc {
         frame_duration: gst::ClockTime,
     ) -> Result<(), RealsenseError> {
         // Extract the frame from frames based on its type and id
-        let frame = Self::find_frame_with_id(frames, stream_type, stream_id).ok_or(
-            RealsenseError("Failed to find a suitable frame on realsensesrc".to_owned()),
-        )?;
+        let frame = Self::find_frame_with_id(frames, stream_type, stream_id).ok_or_else(|| {
+            RealsenseError("Failed to find a suitable frame on realsensesrc".to_string())
+        })?;
 
         // Extract the frame data into a new buffer
         let frame_data = frame
@@ -1176,7 +1171,7 @@ impl RealsenseSrc {
                 self.update_stream(
                     "depth",
                     stream_info,
-                    &stream_settings.enabled_streams.depth,
+                    stream_settings.enabled_streams.depth,
                     &mut stream_settings.depth_resolution,
                     &mut stream_settings.framerate,
                 );
@@ -1193,7 +1188,7 @@ impl RealsenseSrc {
                         self.update_stream(
                             "infra1",
                             stream_info,
-                            &stream_settings.enabled_streams.infra1,
+                            stream_settings.enabled_streams.infra1,
                             &mut stream_settings.depth_resolution,
                             &mut stream_settings.framerate,
                         );
@@ -1206,7 +1201,7 @@ impl RealsenseSrc {
                         self.update_stream(
                             "infra2",
                             stream_info,
-                            &stream_settings.enabled_streams.infra2,
+                            stream_settings.enabled_streams.infra2,
                             &mut stream_settings.depth_resolution,
                             &mut stream_settings.framerate,
                         );
@@ -1224,7 +1219,7 @@ impl RealsenseSrc {
                 self.update_stream(
                     "color",
                     stream_info,
-                    &stream_settings.enabled_streams.color,
+                    stream_settings.enabled_streams.color,
                     &mut stream_settings.color_resolution,
                     &mut stream_settings.framerate,
                 );
@@ -1247,12 +1242,12 @@ impl RealsenseSrc {
         &self,
         stream_id: &str,
         stream_info: &StreamInfo,
-        stream_settings_enabled: &bool,
+        stream_settings_enabled: bool,
         stream_settings_resolution: &mut StreamResolution,
         stream_settings_framerate: &mut i32,
     ) {
         // There is no need to update if the stream is not even enabled.
-        if *stream_settings_enabled {
+        if stream_settings_enabled {
             // Update the stream resolution, if applicable
             self.update_resolution_based_on_rosbag(
                 stream_id,
@@ -1264,7 +1259,7 @@ impl RealsenseSrc {
             self.update_framerate_based_on_rosbag(
                 stream_id,
                 stream_settings_framerate,
-                &stream_info.data.framerate,
+                stream_info.data.framerate,
             );
         } else {
             // Notify STDOUT that there is a stream that was not enabled
@@ -1311,9 +1306,9 @@ impl RealsenseSrc {
         &self,
         stream_id: &str,
         settings_framerate: &mut i32,
-        rosbag_framerate: &i32,
+        rosbag_framerate: i32,
     ) {
-        if settings_framerate != rosbag_framerate {
+        if settings_framerate != &rosbag_framerate {
             gst_warning!(
                 CAT,
                 "The selected framerate of {} fps for the `{}` stream differs from the framerate in the rosbag recording. Setting the stream's framerate to {} fps.",
@@ -1321,7 +1316,7 @@ impl RealsenseSrc {
                 stream_id,
                 rosbag_framerate,
             );
-            *settings_framerate = rosbag_framerate.clone();
+            *settings_framerate = rosbag_framerate;
         }
     }
 
@@ -1399,7 +1394,7 @@ impl RealsenseSrc {
     /// * `HashMap<String, camera_meta::Intrinsics>` containing Intrinsics corresponding to a stream.
     fn extract_intrinsics(
         desired_streams: &EnabledStreams,
-        stream_profiles: &Vec<rs2::stream_profile::StreamProfile>,
+        stream_profiles: &[rs2::stream_profile::StreamProfile],
     ) -> Result<HashMap<String, camera_meta::Intrinsics>, RealsenseError> {
         let mut intrinsics: HashMap<String, camera_meta::Intrinsics> = HashMap::new();
 
@@ -1476,7 +1471,7 @@ impl RealsenseSrc {
     /// in a hashmap of <(from, to), Transformation>.
     fn extract_extrinsics(
         desired_streams: &EnabledStreams,
-        stream_profiles: &Vec<rs2::stream_profile::StreamProfile>,
+        stream_profiles: &[rs2::stream_profile::StreamProfile],
     ) -> Result<HashMap<(String, String), camera_meta::Transformation>, RealsenseError> {
         let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
 
@@ -1693,7 +1688,7 @@ impl RealsenseSrc {
     /// * `stream_type` - The type of the stream to look for.
     /// * `stream_id` - The id of the frame you wish to find.
     fn find_frame_with_id(
-        frames: &Vec<rs2::frame::Frame>,
+        frames: &[rs2::frame::Frame],
         stream_type: rs2::rs2_stream,
         stream_id: i32,
     ) -> Option<&rs2::frame::Frame> {
