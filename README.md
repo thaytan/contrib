@@ -31,7 +31,11 @@ conan search -r aivero gst-realsense
 You may use conan to install a pre-built release of the gst-realsense package:
 
 ```bash
-conan install gst-realsense/0.1.9@aivero/stable -if installation
+# List all releases:
+conan search -r aivero gst-realsense
+
+# Choose one of the releases and:
+conan install gst-realsense/*CHOSEN_RELEASE*@aivero/stable -if installation
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$PWD/installation
 # And validate that the realsensesrc is properly installed
 gst-inspect-1.0 realsensesrc
@@ -41,21 +45,27 @@ gst-inspect-1.0 realsensesrc
 
 If you have made changes to the `realsensesrc` that you wish to try, you may want to build the project locally:
 
-```
+```bash
 cd gst-realsense
 conan install -if build . aivero/stable
 source build/env.sh
 cargo build --release
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$PWD/target/release
 ```
+
 > Note: `conan install -if build . aivero/stable` might require you to build extra packages. Just follow the instructions in the error message. 
 
 Now you should see the plugin's element `realsensesrc`.
-```
+
+```bash
 gst-inspect-1.0 realsensesrc
 ```
 
-## Running in combination with [`rgbddemux`](https://gitlab.com/aivero/public/gstreamer/gst-rgbd)
+## Use
+ 
+This section details various aspects of using the `realsensesrc`.
+
+### In combination with [`rgbddemux`](https://gitlab.com/aivero/public/gstreamer/gst-rgbd)
 
 Source and export `GST_PLUGIN_PATH` in a single terminal for both `realsensesrc` and `rgbddemux` (if not done before).
 ```
@@ -78,6 +88,43 @@ realsense_demux.src_depth ! queue ! glimagesink  \
 realsense_demux.src_infra2 ! queue ! glimagesink \
 realsense_demux.src_color ! queue ! glimagesink 
 ```
+
+### Timestamping
+
+The `realsensesrc` supports a couple of different timestamping modes, those are:
+
+- `default`: The `realsensesrc` uses GStreamer's BaseSink timestamping implementation. This may in some cases mean that the primary `video/rgbd` buffer is timestamped, and in other cases not. None of the meta buffers are timestamped.
+- `all-buffers`: This mode timestamps all `video/rgbd` buffers using the pipeline clock.
+- `rs2`: Librealsense timestamps are converted into GStreamer timestamps and timestamped on every `video/rgbd` buffer.
+
+There is an interplay between the four properties `serial`, `rosbag-location`, `real-time-rosbag-playback` and `timestamp-mode`
+and the pipeline's sink. In some cases this means that there is a right and a wrong timestamping mode for the `realsensesrc`.
+Timestamping problems will surface as a frozen pipeline, where only one or a few frames make it through. The table below
+lists some combinations that can be used as guidelines:
+
+| source | is-live | timestamp-mode | sink | supported |
+|--------|---------|----------------|------|-----------|
+| serial | always  | default        | glimagesink | no |
+| serial | always  | all-buffers    | glimagesink | yes |
+| serial | always  | rs2            | glimagesink | no |
+| serial | always  | default        | filesink | yes |
+| serial | always  | all-buffers    | filesink | yes |
+| serial | always  | rs2            | filesink | yes |
+| rosbag | false   | default        | glimagesink | yes (at non-real-time playback speed) |
+| rosbag | false   | all-buffers    | glimagesink | yes (at non-real-time playback speed) |
+| rosbag | false   | rs2            | glimagesink | yes (looping not supported) |
+| rosbag | true    | default        | glimagesink | yes |
+| rosbag | true    | all-buffers    | glimagesink | yes |
+| rosbag | true    | rs2            | glimagesink | yes (looping not supported) |
+| rosbag | false   | default        | filesink | yes |
+| rosbag | false   | all-buffers    | filesink | yes |
+| rosbag | false   | rs2            | filesink | yes (looping not supported) |
+| rosbag | true    | default        | filesink | yes |
+| rosbag | true    | all-buffers    | filesink | yes |
+| rosbag | true    | rs2            | filesink | yes (looping not supported) |
+
+We encourage you to play around with the settings and notify Aivero via email or issues if there's anything which does
+make sense.
 
 # Contributing
 
