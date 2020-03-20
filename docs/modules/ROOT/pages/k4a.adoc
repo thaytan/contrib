@@ -1,0 +1,7 @@
+= Azure Kinect
+
+// tag::k4a[]
+
+TODO: Add documenation
+
+// end::k4a[]
