@@ -1,0 +1,7 @@
+= GStreamer Depth Meta
+
+// tag::depth_meta[]
+
+TODO: Add documentation
+
+// end::depth_meta[]
