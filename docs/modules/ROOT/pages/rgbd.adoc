@@ -2,6 +2,85 @@
 
 // tag::rgbd[]
 
-TODO: Add documentation
+== Definitions
+
+* elementary stream: A `video/x-raw` stream, which there is out-of-the-box support for in GStreamer.
+* elementary pad: A pad producing or consuming an elementary stream. `rgbddemux` has elementary pads on the src-side.
+
+== Functionality and motivation
+
+This plugin contains elements to convert between `video/rgbd` and elementary streams. The plugin
+contains two elements:
+
+* `rgbddemux` - Splits a `video/rgbd` stream into one or more elementary streams.
+* `rgbdmux` - Combines one to many elementary streams into a `video/rgbd` stream.
+
+The `rgbd` plugin was implemented to add support for depth video in GStreamer. Many depth video cameras produce multiple
+video streams simultaneously (e.g. Intel's RealSense and Microsoft's Azure Kinect). The `video/rgbd` caps adds support
+for these synchronous raw streams and the `rgbd` plugin presents the interface between the `video/rgbd` stream and
+the rest of GStreamer.
+
+== Pads
+
+Both elements have a single `video/rgbd` always pad and produce elementary pads on request, and shares the following
+behaviour:
+
+* If a pad is requested (e.g. `*_color`), which is not included in the `video/rgbd` `streams` field, the element will block and produce no data.
+* If a stream is included in `video/rgbd`, but no pad is requested for it, the stream will be ignored and the buffers dropped.
+
+In other words, the requested elementary pads must be a subset of the `streams`.
+
+== Caps
+
+=== Mapping
+
+The elements execute map the `video/rgbd` CAPS in to a set of `video/x-raw` CAPS or vice-versa. The `rgbddemux` uses the
+following rules when mapping from `video/rgbd` to `video/x-raw`:
+
+. Produce exactly one `video/x-raw` elementary pad per entry in the `streams`-field.
+. The `framerate`, `f`, is shared across all streams
+. Each entry, `s`, in the `streams` field must have
+    * `s_width`
+    * `s_height`
+    * `s_format`
+. The resulting caps will be: `video/x-raw,format=s_format,width=s_width,height=s_height,framerate=f`
+
+The exact opposite applies when `rgbdmux` maps from `video/x-raw` to `video/rgbd`.
+
+=== Negotiation and signals
+
+The elements will start a CAPS negotiation whenever the user requests an elementary pad. This will start the negotiation originating on the elementary side of the
+element and not affect the `video/rgbd`-side.
+
+TODO:: Implement CAPS negotiation on the `video/rgbd`-side.
+
+If the elements discover a stream in the `streams`-field, for which the user has not requested a pad, the `pad-added`
+signal will be fired to notify the user that a stream is available on the given pad. The `pad-added` signal
+will be immediately followed by a `STREAM_START` event and subsequent caps negotiation.
+
+== rgbdmux-specific behaviour
+
+Muxing a video-stream, especially after transport across the internet, comes with some issues. We need to be able to
+handle frames that are late - or missing entirely. The `rgbdmux` element is based on GStreamer's `Aggregator`, which
+handles some of this for us, but the default behaviour of that element is to wait indefinitely for late frames. We have
+therefore extended this with custom behaviour, which can be controlled with the following properties:
+
+* `deadline-multiplier` - Controls the deadline of the late buffers. It is used in correspondence with:
+* `drop-if-missing` - Enables deadline-based aggregation. If any of the buffers do not make it before the deadline, all
+buffers are dropped, and no `video/rgbd` buffer is produced for the frame at hand.
+* `drop-to-synchronise` - If any of the streams drop out of sync, this flag will cause the `rgbdmux` to inspect the
+incoming buffers, pick the buffer with the highest timestamp and drop all others until their timestamp matches that of
+the highest.
+* `send-gap-events` - A flag to determine if the `rgbdmux` should send gap events for buffers that are dropped.
+
+TODO:: Some users might also be interested in receiving just the frames that made it in time. This behaviour is on our
+schedule and will be added some time in the future.
+
+The goal of the customisable behaviour is to support multiple uses of the `video/rgbd` streams. This is based on the
+assumption that a human consumer may have different requirements for the stream compared to a robot consumer.
+
+== Known issues
+
+* All elementary pads on `rgbddemux` must be immediately followed by a `queue`.
 
 // end::rgbd[]
