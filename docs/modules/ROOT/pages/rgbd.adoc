@@ -22,6 +22,8 @@ the rest of GStreamer.
 
 == Pads
 
+=== Elementary Pads
+
 Both elements have a single `video/rgbd` always pad and produce elementary pads on request, and shares the following
 behaviour:
 
@@ -29,6 +31,12 @@ behaviour:
 * If a stream is included in `video/rgbd`, but no pad is requested for it, the stream will be ignored and the buffers dropped.
 
 In other words, the requested elementary pads must be a subset of the `streams`.
+
+=== Metadata Pads
+
+A notable exception to the above is the metadata pads. Metadata pads are identified by their name, and **must end with "meta"**.
+Metadata pads are handled separately from elementary pads, and do not require a `width`, `height` and `format` field to
+be present in the `video/rgbd` caps. All metadata are treated as `meta/x-klv` (but are not packed as so).
 
 == Caps
 
