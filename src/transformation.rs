@@ -129,6 +129,7 @@ impl RotationMatrix {
     ///
     /// # Returns
     /// * Newly created RotationMatrix.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         r11: f32,
         r12: f32,
@@ -208,7 +209,6 @@ mod tests {
     use super::*;
     use rand::random;
     const TEST_ITERATIONS: usize = 100;
-    const ROUNDING_ERROR_LIMIT: f32 = 0.000001; // 1 um
 
     fn initialise_random_transformation() -> Transformation {
         Transformation {
@@ -219,6 +219,23 @@ mod tests {
             },
             // TODO [not too important]: Generate random rotation matrix that is valid so that it can be properly tested.
             rotation: RotationMatrix::default(),
+        }
+    }
+
+    /// Return true if `a` and `b` are nearly equal.
+    /// Adapted from https://floating-point-gui.de/errors/comparison
+    fn nearly_equal_f32(a: f32, b: f32) -> bool {
+        let diff = (a - b).abs();
+
+        #[allow(clippy::float_cmp)]
+        let are_equal = a == b;
+
+        if are_equal {
+            true
+        } else if a == 0.0 || b == 0.0 || diff < std::f32::MIN_POSITIVE {
+            diff < (std::f32::EPSILON * std::f32::MIN_POSITIVE)
+        } else {
+            (diff / (a.abs() + b.abs()).min(std::f32::MAX)) < std::f32::EPSILON
         }
     }
 
@@ -238,15 +255,15 @@ mod tests {
             };
 
             let inverted = original.inverse();
-            assert_eq!(inverted.r11, original.r11);
-            assert_eq!(inverted.r12, original.r21);
-            assert_eq!(inverted.r13, original.r31);
-            assert_eq!(inverted.r21, original.r12);
-            assert_eq!(inverted.r22, original.r22);
-            assert_eq!(inverted.r23, original.r32);
-            assert_eq!(inverted.r31, original.r13);
-            assert_eq!(inverted.r32, original.r23);
-            assert_eq!(inverted.r33, original.r33);
+            assert!(nearly_equal_f32(inverted.r11, original.r11));
+            assert!(nearly_equal_f32(inverted.r12, original.r21));
+            assert!(nearly_equal_f32(inverted.r13, original.r31));
+            assert!(nearly_equal_f32(inverted.r21, original.r12));
+            assert!(nearly_equal_f32(inverted.r22, original.r22));
+            assert!(nearly_equal_f32(inverted.r23, original.r32));
+            assert!(nearly_equal_f32(inverted.r31, original.r13));
+            assert!(nearly_equal_f32(inverted.r32, original.r23));
+            assert!(nearly_equal_f32(inverted.r33, original.r33));
         }
     }
 
@@ -263,15 +280,15 @@ mod tests {
             // Due to f32 rounding error
             assert!(
                 (original.translation.x - transformation_assert_clone.translation.x).abs()
-                    < ROUNDING_ERROR_LIMIT
+                    < std::f32::EPSILON
             );
             assert!(
                 (original.translation.y - transformation_assert_clone.translation.y).abs()
-                    < ROUNDING_ERROR_LIMIT
+                    < std::f32::EPSILON
             );
             assert!(
                 (original.translation.z - transformation_assert_clone.translation.z).abs()
-                    < ROUNDING_ERROR_LIMIT
+                    < std::f32::EPSILON
             );
         }
     }
@@ -282,9 +299,9 @@ mod tests {
 
         let translation = Translation::from(translation_slice);
 
-        assert_eq!(translation.x, 1.1);
-        assert_eq!(translation.y, 2.2);
-        assert_eq!(translation.z, 3.3);
+        assert!(nearly_equal_f32(translation.x, 1.1));
+        assert!(nearly_equal_f32(translation.y, 2.2));
+        assert!(nearly_equal_f32(translation.z, 3.3));
     }
 
     #[test]
@@ -293,14 +310,14 @@ mod tests {
 
         let rotation_matrix = RotationMatrix::from(rotation_matrix_slice);
 
-        assert_eq!(rotation_matrix.r11, 1.1);
-        assert_eq!(rotation_matrix.r12, 2.2);
-        assert_eq!(rotation_matrix.r13, 3.3);
-        assert_eq!(rotation_matrix.r21, 4.4);
-        assert_eq!(rotation_matrix.r22, 5.5);
-        assert_eq!(rotation_matrix.r23, 6.6);
-        assert_eq!(rotation_matrix.r31, 7.7);
-        assert_eq!(rotation_matrix.r32, 8.8);
-        assert_eq!(rotation_matrix.r33, 9.9);
+        assert!(nearly_equal_f32(rotation_matrix.r11, 1.1));
+        assert!(nearly_equal_f32(rotation_matrix.r12, 2.2));
+        assert!(nearly_equal_f32(rotation_matrix.r13, 3.3));
+        assert!(nearly_equal_f32(rotation_matrix.r21, 4.4));
+        assert!(nearly_equal_f32(rotation_matrix.r22, 5.5));
+        assert!(nearly_equal_f32(rotation_matrix.r23, 6.6));
+        assert!(nearly_equal_f32(rotation_matrix.r31, 7.7));
+        assert!(nearly_equal_f32(rotation_matrix.r32, 8.8));
+        assert!(nearly_equal_f32(rotation_matrix.r33, 9.9));
     }
 }
