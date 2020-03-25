@@ -20,8 +20,8 @@ use gst::BufferRef;
 use gst::MiniObject;
 use std::fmt;
 
-use crate::sys;
-pub use crate::sys::TagsMeta;
+use crate::rgbd::sys;
+pub use crate::rgbd::sys::TagsMeta;
 
 /// The TagsMeta API is intended to allow developers to add Tags onto gst buffers, which can be used
 /// to identify different buffers from each other.

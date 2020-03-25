@@ -20,8 +20,8 @@ use gst::BufferRef;
 use gst::MiniObject;
 use std::fmt;
 
-use crate::sys;
-pub use crate::sys::BufferMeta;
+use crate::rgbd::sys;
+pub use crate::rgbd::sys::BufferMeta;
 
 /// The BufferMeta API is intended to allow developers to add gst buffers as metadata onto buffers.
 /// This represents a very generic container format that can hold basically any data.

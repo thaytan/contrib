@@ -210,6 +210,7 @@ pub fn remove_aux_buffers_with_tags(
     let mut remaining_buffers: Vec<gst::Buffer> = vec![];
 
     // Loop over all auxiliary buffers
+    #[allow(clippy::while_let_loop)]
     loop {
         // Check if there are any auxiliary buffers left, break if not
         let meta = match main_buffer.get_meta_mut::<BufferMeta>() {
@@ -230,8 +231,8 @@ pub fn remove_aux_buffers_with_tags(
     }
 
     // Return the remaining buffers back
-    for i in 0..remaining_buffers.len() {
-        BufferMeta::add(main_buffer, &mut remaining_buffers[i]);
+    for buffer in &mut remaining_buffers {
+        BufferMeta::add(main_buffer, buffer);
     }
 
     // Return Ok() if everything went fine
