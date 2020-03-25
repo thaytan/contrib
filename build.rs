@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 fn main() {
     let mut config = pkg_config::Config::new();
-    config.atleast_version("2.17.0");
+    config.atleast_version("2.33.1");
 
     let path_args: Vec<String> = match config.probe("realsense2") {
         Ok(library) => library
