@@ -20,7 +20,9 @@ lazy_static = "1.4.0"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "0.3.0"
+branch = "rgbd-timestamps"
+# TODO: update tag once  merged
+# tag = "0.4.0"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"

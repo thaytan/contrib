@@ -14,11 +14,12 @@
 // Boston, MA 02110-1301, USA.
 
 use glib::subclass;
+use gst_depth_meta::rgbd_timestamps::TimestampMode;
 
-use crate::realsense_timestamp_mode::realsense_timestamp_mode_get_type;
 use crate::settings::*;
 
-pub(crate) static PROPERTIES: [subclass::Property; 18] = [
+lazy_static! {
+pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 18] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -141,7 +142,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 18] = [
         glib::ParamSpec::boolean(
             name,
             "Loop Rosbag",
-            "Enables looping of playing from rosbag recording specified by `rosbag-location` property. This property applies only if `rosbag-location` and no `serial` are specified.",
+            "Enables looping of playing from rosbag recording specified by `rosbag-location` property. This property applies only if `rosbag-location` and no `serial` are specified. This property cannot be enabled if `timestamp-mode=camera_common` or `timestamp-mode=camera_individual`.",
             DEFAULT_LOOP_ROSBAG,
             glib::ParamFlags::READWRITE,
         )
@@ -166,16 +167,6 @@ pub(crate) static PROPERTIES: [subclass::Property; 18] = [
             glib::ParamFlags::READWRITE,
         )
     }),
-    subclass::Property("timestamp-mode", |name| {
-        glib::ParamSpec::enum_(
-            name,
-            "The timestamping mode to use on the realsensesrc",
-            "Defines the timestamping mode to use on the realsensesrc's buffers and metabuffers.",
-            realsense_timestamp_mode_get_type(),
-            DEFAULT_TIMESTAMP_MODE as i32,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
     subclass::Property("real-time-rosbag-playback", |name| {
         glib::ParamSpec::boolean(
             name,
@@ -195,4 +186,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 18] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    // Register "timestamp-mode" property
+    TimestampMode::get_property_type()
 ];
+}

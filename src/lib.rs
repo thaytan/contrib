@@ -28,7 +28,6 @@ mod d400_limits;
 mod enabled_streams;
 mod errors;
 mod properties;
-mod realsense_timestamp_mode;
 mod realsensesrc;
 mod rs_meta;
 mod settings;

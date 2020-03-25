@@ -15,20 +15,16 @@
 
 pub(crate) use crate::d400_limits::*;
 pub(crate) use crate::enabled_streams::EnabledStreams;
-use crate::realsense_timestamp_mode::RealsenseTimestampMode;
 pub(crate) use rs2::stream_profile::StreamResolution;
 
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
-pub(crate) const DEFAULT_LOOP_ROSBAG: bool = true;
+pub(crate) const DEFAULT_LOOP_ROSBAG: bool = false;
 
 // Default timeout used while waiting for frames from a realsense device in milliseconds.
 pub(crate) const DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT: u32 = 2500;
 
 // Default behaviour for enablind metadata
 pub(crate) const DEFAULT_ENABLE_METADATA: bool = false;
-
-// Default behaviour for adding custom timestamps to the buffers.
-pub(crate) const DEFAULT_TIMESTAMP_MODE: RealsenseTimestampMode = RealsenseTimestampMode::RS2;
 
 // Default behaviour for playing back from rosbag recording.
 pub(crate) const DEFAULT_REAL_TIME_ROSBAG_PLAYBACK: bool = false;
@@ -62,7 +58,6 @@ pub(crate) struct Settings {
     pub(crate) loop_rosbag: bool,
     pub(crate) wait_for_frames_timeout: u32,
     pub(crate) include_per_frame_metadata: bool,
-    pub(crate) timestamp_mode: RealsenseTimestampMode,
     pub(crate) real_time_rosbag_playback: bool,
     pub(crate) attach_camera_meta: bool,
 }
@@ -101,7 +96,6 @@ impl Default for Settings {
             loop_rosbag: DEFAULT_LOOP_ROSBAG,
             wait_for_frames_timeout: DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
             include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
-            timestamp_mode: DEFAULT_TIMESTAMP_MODE,
             real_time_rosbag_playback: DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
             attach_camera_meta: DEFAULT_ATTACH_CAMERA_META,
         }

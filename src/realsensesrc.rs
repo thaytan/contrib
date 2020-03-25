@@ -15,7 +15,7 @@
 // Boston, MA 02110-1301, USA.
 
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use glib::subclass;
 use gst::subclass::prelude::*;
@@ -23,14 +23,12 @@ use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 
 use camera_meta::Distortion;
-use gst_depth_meta::rgbd;
-use gst_depth_meta::{camera_meta, camera_meta::*};
+use gst_depth_meta::{camera_meta, camera_meta::*, rgbd, rgbd_timestamps::*};
 use rs2;
 use rs2::high_level_utils::StreamInfo;
 
 use crate::errors::*;
 use crate::properties::*;
-use crate::realsense_timestamp_mode::RealsenseTimestampMode;
 use crate::rs_meta::rs_meta_serialization::*;
 use crate::settings::*;
 
@@ -45,13 +43,14 @@ lazy_static! {
 /// A struct representation of the `realsensesrc` element
 struct RealsenseSrc {
     internals: Mutex<RealsenseSrcInternals>,
+    /// Contains timestamp internals utilised by `RgbdTimestamps` trait.
+    timestamp_internals: Arc<Mutex<TimestampInternals>>,
 }
 
 /// Internals of the element that are under Mutex
 struct RealsenseSrcInternals {
     settings: Settings,
     state: State,
-    base_time: std::time::Duration,
     /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`, otherwise empty.
     camera_meta_serialised: Vec<u8>,
 }
@@ -78,7 +77,8 @@ impl ObjectSubclass for RealsenseSrc {
             "Niclas Moeslund Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
 
-        klass.install_properties(&PROPERTIES);
+        // Install properties for streaming from RealSense
+        klass.install_properties(PROPERTIES.as_ref());
 
         // Create src pad template with `video/rgbd` caps
         let src_caps = gst::Caps::new_simple(
@@ -114,9 +114,9 @@ impl ObjectSubclass for RealsenseSrc {
             internals: Mutex::new(RealsenseSrcInternals {
                 settings: Settings::default(),
                 state: State::Stopped,
-                base_time: std::time::Duration::new(0, 0),
                 camera_meta_serialised: Vec::default(),
             }),
+            timestamp_internals: Arc::new(Mutex::new(TimestampInternals::default())),
         }
     }
 }
@@ -308,18 +308,6 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 settings.include_per_frame_metadata = do_metadata;
             }
-            subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode = value.get::<RealsenseTimestampMode>()
-                    .unwrap_or_else(|| panic!("Failed to set property `timestamp-mode` on realsensesrc. Expected a i32 or RealsenseTimestampMode variant, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `timestamp-mode` from {:?} to {:?}",
-                    settings.timestamp_mode,
-                    timestamp_mode
-                );
-                settings.timestamp_mode = timestamp_mode;
-            }
             subclass::Property("real-time-rosbag-playback", ..) => {
                 let real_time_rosbag_playback = value.get().unwrap_or_else(|| panic!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));
                 gst_info!(
@@ -344,6 +332,17 @@ impl ObjectImpl for RealsenseSrc {
                     attach_camera_meta
                 );
                 settings.attach_camera_meta = attach_camera_meta;
+            }
+            subclass::Property("timestamp-mode", ..) => {
+                let timestamp_mode = value.get::<TimestampMode>()
+                    .unwrap_or_else(|| panic!("Failed to set property `timestamp-mode` on realsensesrc. Expected a i32 or TimestampMode variant, but got: {:?}", value));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `timestamp-mode`  to {:?}",
+                    timestamp_mode
+                );
+                self.set_timestamp_mode(element, timestamp_mode);
             }
             _ => unimplemented!("Property is not implemented"),
         };
@@ -393,13 +392,18 @@ impl ObjectImpl for RealsenseSrc {
             subclass::Property("include-per-frame-metadata", ..) => {
                 Ok(settings.include_per_frame_metadata.to_value())
             }
-            subclass::Property("timestamp-mode", ..) => Ok(settings.timestamp_mode.to_value()),
             subclass::Property("real-time-rosbag-playback", ..) => {
                 Ok(settings.real_time_rosbag_playback.to_value())
             }
             subclass::Property("attach-camera-meta", ..) => {
                 Ok(settings.attach_camera_meta.to_value())
             }
+            subclass::Property("timestamp-mode", ..) => Ok(self
+                .get_timestamp_internals()
+                .lock()
+                .unwrap()
+                .timestamp_mode
+                .to_value()),
             _ => unimplemented!("Property is not implemented"),
         }
     }
@@ -548,113 +552,69 @@ impl BaseSrcImpl for RealsenseSrc {
             .wait_for_frames(internals.settings.wait_for_frames_timeout)
             .map_err(|_| gst::FlowError::Eos)?;
 
-        let timestamp = match settings.timestamp_mode {
-            RealsenseTimestampMode::RS2 => {
-                // Base timestamps on librealsense timestamps, div by 1000 to convert to seconds
-                let rs2_timestamp = std::time::Duration::from_secs_f64(
-                    frames[0]
-                        .get_timestamp()
-                        .map_err(|_| gst::FlowError::Error)?
-                        / 1000.0,
-                );
-                // Initialise base_time based on first timestamp
-                let base_time = &mut internals.base_time;
-                if base_time.as_nanos() == 0 {
-                    *base_time = rs2_timestamp;
-                }
-                // Compute difference between the current and the first timestamp
-                let time_diff = rs2_timestamp
-                    .checked_sub(*base_time)
-                    .expect("Could not compute timestamp for the buffer");
-                Some(gst::ClockTime::from_nseconds(time_diff.as_nanos() as u64))
-            }
-            RealsenseTimestampMode::AllBuffers => {
-                // Calculate a common `timestamp` if `do-custom-timestamp` is enabled, else set to None
-                // This computation is similar to `gst_element_get_current_running_time` that will be
-                // available in 1.18 https://gstreamer.freedesktop.org/documentation/gstreamer/
-                // gstelement.html?gi-language=c#gst_element_get_current_running_time
-                let element_clock = element.get_clock();
-                if let Some(element_clock) = element_clock {
-                    Some(element_clock.get_time() - element.get_base_time())
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
-        gst_debug!(CAT, "Timestamping the buffer {:?}", timestamp);
-
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
-        let frame_duration = std::time::Duration::from_secs_f32(1.0_f32 / streams.framerate as f32);
-        let gst_clock_frame_duration =
-            gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64);
-
         // Attach `depth` frame if enabled
         if streams.enabled_streams.depth {
-            self.extract_frame(
-                &frames,
-                &mut output_buffer,
-                "depth",
-                rs2::rs2_stream::RS2_STREAM_DEPTH,
-                -1,
-                &[],
+            self.attach_frame_to_buffer(
+                element,
                 settings,
-                timestamp,
-                gst_clock_frame_duration,
+                &mut output_buffer,
+                &frames,
+                "depth",
+                -1,
+                rs2::rs2_stream::RS2_STREAM_DEPTH,
+                &[],
             )?;
         }
 
         // Attach `infra1` frame if enabled
         if streams.enabled_streams.infra1 {
-            self.extract_frame(
-                &frames,
-                &mut output_buffer,
-                "infra1",
-                rs2::rs2_stream::RS2_STREAM_INFRARED,
-                1,
-                &[streams.enabled_streams.depth],
+            self.attach_frame_to_buffer(
+                element,
                 settings,
-                timestamp,
-                gst_clock_frame_duration,
+                &mut output_buffer,
+                &frames,
+                "infra1",
+                1,
+                rs2::rs2_stream::RS2_STREAM_INFRARED,
+                &[streams.enabled_streams.depth],
             )?;
         }
 
         // Attach `infra2` frame if enabled
         if streams.enabled_streams.infra2 {
-            self.extract_frame(
-                &frames,
+            self.attach_frame_to_buffer(
+                element,
+                settings,
                 &mut output_buffer,
+                &frames,
                 "infra2",
-                rs2::rs2_stream::RS2_STREAM_INFRARED,
                 2,
+                rs2::rs2_stream::RS2_STREAM_INFRARED,
                 &[
                     streams.enabled_streams.depth,
                     streams.enabled_streams.infra1,
                 ],
-                settings,
-                timestamp,
-                gst_clock_frame_duration,
             )?;
         }
 
         // Attach `color` frame if enabled
         if streams.enabled_streams.color {
-            self.extract_frame(
-                &frames,
+            self.attach_frame_to_buffer(
+                element,
+                settings,
                 &mut output_buffer,
+                &frames,
                 "color",
-                rs2::rs2_stream::RS2_STREAM_COLOR,
                 -1,
+                rs2::rs2_stream::RS2_STREAM_COLOR,
                 &[
                     streams.enabled_streams.depth,
                     streams.enabled_streams.infra1,
                     streams.enabled_streams.infra2,
                 ],
-                settings,
-                timestamp,
-                gst_clock_frame_duration,
             )?;
         }
 
@@ -662,12 +622,7 @@ impl BaseSrcImpl for RealsenseSrc {
         if settings.attach_camera_meta {
             // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
             let camera_meta = internals.camera_meta_serialised.clone();
-            self.attach_camera_meta(
-                timestamp,
-                gst_clock_frame_duration,
-                &mut output_buffer,
-                camera_meta,
-            )?;
+            self.attach_camera_meta(element, &mut output_buffer, camera_meta)?;
         }
 
         Ok(output_buffer)
@@ -748,6 +703,9 @@ impl BaseSrcImpl for RealsenseSrc {
 
             // Fixate the framerate
             s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
+
+            // Update buffer duration for `RgbdTimestamps` trait
+            self.set_buffer_duration(settings.streams.framerate as f32);
         }
         self.parent_fixate(element, caps)
     }
@@ -968,29 +926,18 @@ impl RealsenseSrc {
     /// * `buffer` - The gst::Buffer to which the metadata should be added.
     /// * `frame_meta` - A byte vector containing the serialized metadata.
     /// * `tag` - The tag of the stream.
-    /// * `timestamp` - The timestamp of the buffer.
-    /// * `frame_duration` - The duration of the buffer.
     fn add_per_frame_metadata(
         &self,
+        element: &gst_base::BaseSrc,
         buffer: &mut gst::BufferRef,
         frame_meta: Vec<u8>,
         tag: &str,
-        timestamp: Option<gst::ClockTime>,
-        duration: gst::ClockTime,
     ) -> Result<(), RealsenseError> {
         // If we were able to read some metadata add it to the buffer
         let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
 
-        // Set duration and timestamps
-        let frame_meta_mut = frame_meta_buffer.get_mut().ok_or(gst_error_msg!(
-            gst::ResourceError::Failed,
-            ["Cannot get mutable reference to the buffer for {}meta", tag]
-        ))?;
-        if let Some(ts) = timestamp {
-            frame_meta_mut.set_dts(ts);
-            frame_meta_mut.set_pts(ts);
-        }
-        frame_meta_mut.set_duration(duration);
+        // Set timestamps using `RgbdTimestamps` trait
+        self.set_rgbd_timestamp(element, buffer, false, gst::CLOCK_TIME_NONE);
 
         // Attach the meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(buffer, &mut frame_meta_buffer, &format!("{}meta", tag))?;
@@ -999,29 +946,27 @@ impl RealsenseSrc {
     }
 
     /// Extract a frame from the RealSense camera, outputting it in `output_buffer` on the given
-    /// `element`. This function outputs the frame as main buffer if `previous_streams` is empty or
+    /// `base_src`. This function outputs the frame as main buffer if `previous_streams` is empty or
     /// all `false` and as a meta buffer if `previous_streams` contains any `true`s.
     /// # Arguments
-    /// * `element` - The element that represents the `realsensesrc`.
-    /// * `frames` - A collection of frames that was extracted from the RealSense camera (or ROSBAG)
-    /// * `output_buffer` - The buffer which the frames should be extracted into.
-    /// * `tag` - The tag to give to the buffer. This may be used to identify the type of the stream later downstream.
-    /// * `stream_type` - The type of the stream we should extract.
-    /// * `stream_id` - The id of the stream to extract.
-    /// * `previous_streams` - A list of booleans. If any is ticked, it means we should extract the next frame as secondary buffer.
+    /// * `base_src` - The element that represents the `realsensesrc`.
     /// * `settings` - The settings for the `realsensesrc`.
-    /// * `timestamp` - The timestamp to give to the frame.
-    fn extract_frame(
+    /// * `output_buffer` - The buffer which the frames should be extracted into.
+    /// * `frames` - A collection of frames that was extracted from the RealSense camera (or ROSBAG)
+    /// * `tag` - The tag to give to the buffer. This may be used to identify the type of the stream later downstream.
+    /// * `stream_id` - The id of the stream to extract.
+    /// * `stream_type` - The type of the stream we should extract.
+    /// * `previous_streams` - A list of booleans. If any is ticked, it means we should extract the next frame as secondary buffer.
+    fn attach_frame_to_buffer(
         &self,
-        frames: &[rs2::frame::Frame],
-        output_buffer: &mut gst::Buffer,
-        tag: &str,
-        stream_type: rs2::rs2_stream,
-        stream_id: i32,
-        previous_streams: &[bool],
+        base_src: &gst_base::BaseSrc,
         settings: &Settings,
-        timestamp: Option<gst::ClockTime>,
-        frame_duration: gst::ClockTime,
+        output_buffer: &mut gst::Buffer,
+        frames: &[rs2::frame::Frame],
+        tag: &str,
+        stream_id: i32,
+        stream_type: rs2::rs2_stream,
+        previous_streams: &[bool],
     ) -> Result<(), RealsenseError> {
         // Extract the frame from frames based on its type and id
         let frame = Self::find_frame_with_id(frames, stream_type, stream_id).ok_or_else(|| {
@@ -1042,18 +987,22 @@ impl RealsenseSrc {
             ]
         ))?;
 
-        // Set timestamp
-        if let Some(timestamp) = timestamp {
-            buffer_mut_ref.set_pts(timestamp);
-            buffer_mut_ref.set_dts(timestamp);
-        };
-        buffer_mut_ref.set_duration(frame_duration);
-
         // Determine whether any of the previous streams is enabled
-        let is_earlier_stream_enabled = previous_streams.iter().any(|s| *s);
+        let is_buffer_main = !previous_streams.iter().any(|stream| *stream);
+
+        // Extract timestamp from RealSense frame, div by 1000 to convert to seconds
+        let camera_timestamp = gst::ClockTime::from_nseconds(
+            std::time::Duration::from_secs_f64(frame.get_timestamp()? / 1000.0).as_nanos() as u64,
+        );
+
+        // Set timestamps using `RgbdTimestamps` trait
+        self.set_rgbd_timestamp(base_src, buffer_mut_ref, is_buffer_main, camera_timestamp);
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
-        if is_earlier_stream_enabled {
+        if is_buffer_main {
+            // Fill the main buffer and tag it adequately
+            rgbd::fill_main_buffer_and_tag(output_buffer, buffer, tag)?;
+        } else {
             // Attach the auxiliary buffer and tag it adequately
             rgbd::attach_aux_buffer_and_tag(
                 output_buffer.get_mut().ok_or(gst_error_msg!(
@@ -1066,16 +1015,14 @@ impl RealsenseSrc {
                 &mut buffer,
                 tag,
             )?;
-        } else {
-            // Fill the main buffer and tag it adequately
-            rgbd::fill_main_buffer_and_tag(output_buffer, buffer, tag)?;
         }
-        // Check if we should attach RealSense per-frame meta and do that if so
 
+        // Check if we should attach RealSense per-frame meta and do that if so
         if settings.include_per_frame_metadata {
             // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
             let md = self.get_frame_meta(frame)?;
             self.add_per_frame_metadata(
+                base_src,
                 output_buffer.get_mut().ok_or(gst_error_msg!(
                     gst::ResourceError::Failed,
                     [
@@ -1085,8 +1032,6 @@ impl RealsenseSrc {
                 ))?,
                 md,
                 tag,
-                timestamp,
-                frame_duration,
             )?;
         }
 
@@ -1568,8 +1513,7 @@ impl RealsenseSrc {
     /// * `Err(RealsenseError)` on failure.
     fn attach_camera_meta(
         &self,
-        timestamp: Option<gst::ClockTime>,
-        frame_duration: gst::ClockTime,
+        element: &gst_base::BaseSrc,
         output_buffer: &mut gst::Buffer,
         camera_meta: Vec<u8>,
     ) -> Result<(), RealsenseError> {
@@ -1586,12 +1530,8 @@ impl RealsenseSrc {
             ]
         ))?;
 
-        // Set timestamp
-        if let Some(timestamp) = timestamp {
-            buffer_mut_ref.set_pts(timestamp);
-            buffer_mut_ref.set_dts(timestamp);
-        };
-        buffer_mut_ref.set_duration(frame_duration);
+        // Set timestamps using `RgbdTimestamps` trait
+        self.set_rgbd_timestamp(element, buffer_mut_ref, false, gst::CLOCK_TIME_NONE);
 
         // Attach the camera_meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
@@ -1706,6 +1646,12 @@ impl RealsenseSrc {
             },
             _ => false,
         })
+    }
+}
+
+impl RgbdTimestamps for RealsenseSrc {
+    fn get_timestamp_internals(&self) -> Arc<Mutex<TimestampInternals>> {
+        self.timestamp_internals.clone()
     }
 }
 
