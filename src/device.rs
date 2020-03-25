@@ -139,12 +139,10 @@ impl Device {
         }
         if error.check() {
             Err(error)
+        } else if *is_enabled == 1 {
+            Ok(true)
         } else {
-            if *is_enabled == 1 {
-                Ok(true)
-            } else {
-                Ok(false)
-            }
+            Ok(false)
         }
     }
 
@@ -158,7 +156,7 @@ impl Device {
     /// * `Err(Error)` on failure.
     pub fn set_advanced_mode(&self, enable: bool) -> Result<(), Error> {
         let mut error = Error::default();
-        if enable == true {
+        if enable {
             unsafe {
                 rs2::rs2_toggle_advanced_mode(self.handle, 1, error.inner());
             };
@@ -216,10 +214,12 @@ impl Device {
         if !self.is_advanced_mode_enabled()? {
             self.set_advanced_mode(true)?;
         }
-        let json_content = std::fs::read_to_string(json_path).expect(&format!(
-            "Cannot read RealSense JSON configuration from file \"{}\"",
-            json_path
-        ));
+        let json_content = std::fs::read_to_string(json_path).unwrap_or_else(|_| {
+            panic!(
+                "Cannot read RealSense JSON configuration from file \"{}\"",
+                json_path
+            )
+        });
         self.load_json(&json_content)?;
         Ok(())
     }

@@ -26,7 +26,7 @@ impl Playback {
     /// * `Playback`
     pub fn create_from_device(device: &Device) -> Playback {
         Playback {
-            handle: device.handle.clone(),
+            handle: device.handle,
         }
     }
 
@@ -45,7 +45,7 @@ impl Playback {
         pipeline_profile: &PipelineProfile,
     ) -> Result<Playback, Error> {
         Ok(Playback {
-            handle: pipeline_profile.get_device()?.handle.clone(),
+            handle: pipeline_profile.get_device()?.handle,
         })
     }
 
@@ -87,12 +87,10 @@ impl Playback {
         let ret = unsafe { rs2::rs2_playback_device_is_real_time(self.handle, error.inner()) };
         if error.check() {
             Err(error)
+        } else if ret == 0 {
+            Ok(false)
         } else {
-            if ret == 0 {
-                Ok(false)
-            } else {
-                Ok(true)
-            }
+            Ok(true)
         }
     }
 

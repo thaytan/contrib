@@ -24,7 +24,7 @@ impl Drop for Error {
 impl Default for Error {
     fn default() -> Self {
         Self {
-            handle: 0 as *mut rs2::rs2_error,
+            handle: std::ptr::null_mut::<rs2::rs2_error>(),
         }
     }
 }
