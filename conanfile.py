@@ -40,8 +40,10 @@ class KinectAzureSensorSDKConan(ConanFile):
 
     def package(self):
         tools.replace_prefix_in_pc_file("k4a.pc", self.package_folder)
+        x = os.listdir("libk4a/usr/lib")
+        print(x)
         self.copy("*", src="libk4a/usr/include", dst="include")
-        self.copy("*", src="libk4a/usr/lib/x86_64-linux-gnu", dst="lib")
+        self.copy("*", src="libk4a/usr/lib/" + x[0], dst="lib")
         self.copy("k4a.pc", dst="lib/pkgconfig")
         
 
