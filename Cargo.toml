@@ -9,11 +9,11 @@ edition = "2018"
 [dependencies]
 glib = "0.8"
 glib-sys = "0.9"
-gstreamer = "0.14"
+gstreamer = { version = "0.14", features = ["subclassing"] }
 gstreamer-sys = "0.8"
 gstreamer-video = "0.14"
 gstreamer-video-sys = "0.8"
-gstreamer-base = "0.14"
+gstreamer-base = { version = "0.14", features = ["subclassing"] }
 capnp = "0.12"
 
 [build-dependencies]
