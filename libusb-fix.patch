@@ -8,7 +8,7 @@ index 9216c75..a230bcf 100644
 -    find_path(LIBUSB_INC libusb.h HINTS PATH_SUFFIXES libusb-1.0)
 -    include(FindPackageHandleStandardArgs)
 -    find_package_handle_standard_args(usb "libusb not found; using internal version" LIBUSB_LIB LIBUSB_INC)
--    if (USB_FOUND)
+-    if (USB_FOUND AND NOT USE_EXTERNAL_USB)
 +    find_package(PkgConfig)
 +    if(NOT PKG_CONFIG_FOUND)
 +        message(FATAL_ERROR "\n\n PkgConfig package is missing!\n\n")
