@@ -20,15 +20,14 @@ use crate::properties::*;
 use crate::settings::*;
 use crate::stream_properties::*;
 use crate::streams::*;
-use crate::timestamps::*;
+use crate::timestamp_source::*;
 use crate::utilities::*;
 use camera_meta::Distortion;
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
-use gst_depth_meta::rgbd;
-use gst_depth_meta::{camera_meta, camera_meta::*};
+use gst_depth_meta::{camera_meta, camera_meta::*, rgbd, rgbd_timestamps::*};
 use k4a::calibration::Calibration;
 use k4a::camera_calibration::CameraCalibration;
 use k4a::capture::Capture;
@@ -40,12 +39,14 @@ use k4a::transformation::Transformation;
 use k4a::CalibrationType::*;
 use k4a::*;
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 /// A struct representation of the `k4asrc` element.
 struct K4aSrc {
     /// Internals of `k4asrc` element that are locked under mutex.
     internals: Mutex<K4aSrcInternals>,
+    /// Contains timestamp internals utilised by `RgbdTimestamps` trait.
+    timestamp_internals: Arc<Mutex<TimestampInternals>>,
 }
 
 lazy_static! {
@@ -65,8 +66,6 @@ struct K4aSrcInternals {
     stream_source: Option<StreamSource>,
     /// Contains calibration data specific to the Device or Playback the is utilised for streaming.
     camera: CameraInternals,
-    /// Contains initial timestamps for each stream as well as frame duration.
-    timestamp_internals: TimestampInternals,
 }
 
 /// An enum that contains information about stream source from either playback and physical K4A device.
@@ -102,7 +101,7 @@ impl ObjectSubclass for K4aSrc {
         );
 
         // Install properties for streaming from K4A
-        klass.install_properties(&PROPERTIES);
+        klass.install_properties(PROPERTIES.as_ref());
 
         let allowed_framerates = K4aFramerate::allowed_framerates();
 
@@ -146,12 +145,8 @@ impl ObjectSubclass for K4aSrc {
                     transformation: None,
                     camera_meta_serialised: Vec::default(),
                 },
-                timestamp_internals: TimestampInternals {
-                    frame_duration: gst::CLOCK_TIME_NONE,
-                    common_timestamp: gst::CLOCK_TIME_NONE,
-                    first_frame_timestamp: gst::CLOCK_TIME_NONE,
-                },
             }),
+            timestamp_internals: Arc::new(Mutex::new(TimestampInternals::default())),
         }
     }
 }
@@ -304,10 +299,8 @@ impl BaseSrcImpl for K4aSrc {
             // Fixate the framerate
             caps.fixate_field_nearest_fraction("framerate", stream_properties.framerate);
 
-            internals.timestamp_internals.frame_duration = gst::ClockTime::from_nseconds(
-                std::time::Duration::from_secs_f32(1.0_f32 / stream_properties.framerate as f32)
-                    .as_nanos() as u64,
-            );
+            // Update buffer duration for `RgbdTimestamps` trait
+            self.set_buffer_duration(stream_properties.framerate as f32);
 
             // Finally add the streams to the caps
             caps.set("streams", &selected_streams.as_str());
@@ -338,7 +331,7 @@ impl BaseSrcImpl for K4aSrc {
 
         // Attach `depth` frame if enabled
         if desired_streams.depth {
-            let res = Self::attach_frame_to_buffer(
+            let res = self.attach_frame_to_buffer(
                 base_src,
                 internals,
                 &mut output_buffer,
@@ -358,7 +351,7 @@ impl BaseSrcImpl for K4aSrc {
 
         // Attach `ir` frame if enabled
         if desired_streams.ir {
-            let res = Self::attach_frame_to_buffer(
+            let res = self.attach_frame_to_buffer(
                 base_src,
                 internals,
                 &mut output_buffer,
@@ -378,7 +371,7 @@ impl BaseSrcImpl for K4aSrc {
 
         // Attach `color` frame if enabled
         if desired_streams.color {
-            let res = Self::attach_frame_to_buffer(
+            let res = self.attach_frame_to_buffer(
                 base_src,
                 internals,
                 &mut output_buffer,
@@ -399,14 +392,14 @@ impl BaseSrcImpl for K4aSrc {
         // Attach `IMU` samples if enabled
         if desired_streams.imu {
             let imu_samples = Self::get_available_imu_samples(internals)?;
-            Self::attach_imu_samples(base_src, internals, &mut output_buffer, imu_samples)?;
+            self.attach_imu_samples(base_src, &mut output_buffer, imu_samples)?;
         }
 
         // Attach Cap'n Proto serialised `CameraMeta` if enabled
         if internals.settings.attach_camera_meta {
             // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
             let camera_meta = internals.camera.camera_meta_serialised.clone();
-            Self::attach_camera_meta(base_src, internals, &mut output_buffer, camera_meta)?;
+            self.attach_camera_meta(base_src, &mut output_buffer, camera_meta)?;
         }
 
         Ok(output_buffer)
@@ -468,19 +461,6 @@ impl K4aSrc {
     /// * `Err(K4aSrcError)` on failure.
     fn start_from_playback(internals: &mut K4aSrcInternals) -> Result<(), K4aSrcError> {
         let settings = &internals.settings;
-
-        // Make sure that K4A timestamps are not applied with Playback looping
-        match settings.timestamp_mode {
-            K4aTimestampMode::Common | K4aTimestampMode::Individual => {
-                if settings.playback_settings.loop_recording {
-                    return Err(K4aSrcError::Failure(
-                        "k4asrc: Property `loop-recording` cannot be set true with `timestamp-mode=k4a-common` \
-                        or `timestamp-mode=k4a-individual` because timestamps would not be monotonically increasing",
-                    ));
-                }
-            }
-            _ => {}
-        }
 
         // Open `Playback`
         let playback = Playback::open(&settings.playback_settings.recording_location)?;
@@ -735,6 +715,7 @@ impl K4aSrc {
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn attach_frame_to_buffer(
+        &self,
         base_src: &gst_base::BaseSrc,
         internals: &mut K4aSrcInternals,
         output_buffer: &mut gst::Buffer,
@@ -779,17 +760,10 @@ impl K4aSrc {
         // Determine whether any of the previous streams is enabled
         let is_buffer_main = !previous_streams.iter().any(|stream| *stream);
 
-        // Set buffer duration and timestamp
-        Self::set_duration_and_timestamp(
-            buffer_mut_ref,
-            internals.timestamp_internals.frame_duration,
-            Self::determine_timestamp(
-                base_src,
-                internals,
-                is_buffer_main,
-                TimestampSource::Image(&frame),
-            ),
-        );
+        // Extract timestamp from K4A
+        let camera_timestamp = TimestampSource::Image(&frame).extract_timestamp();
+        // Set timestamps using `RgbdTimestamps` trait
+        self.set_rgbd_timestamp(base_src, buffer_mut_ref, is_buffer_main, camera_timestamp);
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_buffer_main {
@@ -815,7 +789,6 @@ impl K4aSrc {
     ///
     /// # Arguments
     /// * `base_src` - This element (k4asrc).
-    /// * `internals` - The internals of the element that contain settings and stream source.
     /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
     /// * `imu_samples` - ImuSamples to attach to the `output_buffer`.
     ///
@@ -823,8 +796,8 @@ impl K4aSrc {
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn attach_imu_samples(
+        &self,
         base_src: &gst_base::BaseSrc,
-        internals: &mut K4aSrcInternals,
         output_buffer: &mut gst::Buffer,
         imu_samples: Vec<ImuSample>,
     ) -> Result<(), K4aSrcError> {
@@ -835,13 +808,8 @@ impl K4aSrc {
             return Ok(());
         }
 
-        // Determine timestamps based on timestamp_mode
-        let timestamp = Self::determine_timestamp(
-            base_src,
-            internals,
-            false,
-            TimestampSource::ImuSample(&imu_samples[0]),
-        );
+        // Extract timestamp from K4A, based on the first IMU sample
+        let camera_timestamp = TimestampSource::ImuSample(&imu_samples[0]).extract_timestamp();
 
         // Form a gst buffer out of the IMU samples
         let mut buffer = Self::gst_buffer_from_imu_samples(imu_samples)?;
@@ -854,12 +822,8 @@ impl K4aSrc {
             ]
         ))?;
 
-        // Set buffer duration and timestamp
-        Self::set_duration_and_timestamp(
-            buffer_mut_ref,
-            internals.timestamp_internals.frame_duration,
-            timestamp,
-        );
+        // Set timestamps using `RgbdTimestamps` trait
+        self.set_rgbd_timestamp(base_src, buffer_mut_ref, false, camera_timestamp);
 
         // Attach the IMU buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
@@ -894,173 +858,10 @@ impl K4aSrc {
         );
     }
 
-    /// Determine the timestamp to use for a buffer based on the selected `timestamp-mode`.
-    ///
-    /// # Arguments
-    /// * `base_src` - This element (k4asrc).
-    /// * `internals` - The internals of the element that contain settings and timestamp internals.
-    /// * `is_buffer_main` - A flag that determines whether the buffer is main or not.
-    /// Useful for `TimestampMode::All` and `TimestampMode::K4aCommon` modes.
-    /// * `timestamp_source` -  Contains struct that can be used for extraction of timestamps.
-    /// Useful for `TimestampMode::K4aCommon` and `TimestampMode::K4aIndividual` modes.
-    ///
-    /// # Returns
-    /// * `gst::ClockTime` containing the timestamp or gst::CLOCK_TIME_NONE if the selected mode
-    /// does not require timestamp.
-    fn determine_timestamp(
-        base_src: &gst_base::BaseSrc,
-        internals: &mut K4aSrcInternals,
-        is_buffer_main: bool,
-        timestamp_source: TimestampSource,
-    ) -> gst::ClockTime {
-        // Proceed based on the selected timestamp mode
-        match internals.settings.timestamp_mode {
-            K4aTimestampMode::Ignore | K4aTimestampMode::Main => {
-                // Return `CLOCK_TIME_NONE`
-                //     Variant `TimestampMode::Ignore` does not require timestamps
-                //     Variant `TimestampMode::Main` is handled by the parent class
-                gst::CLOCK_TIME_NONE
-            }
-            K4aTimestampMode::All => {
-                let time_internals = &mut internals.timestamp_internals;
-
-                // Determine common timestamp (computed only once for the main buffer)
-                if is_buffer_main {
-                    // This mode utilises the current running time to determine the timestamps
-                    let running_time = Self::get_running_time(base_src);
-
-                    // The timestamp is also based on whether the element is live or not
-                    if base_src.is_live() {
-                        // Use current running time for live mode
-                        time_internals.common_timestamp = running_time;
-                    } else {
-                        // Non-live mode must have first buffer with timestamp of 0
-                        if time_internals.first_frame_timestamp == gst::CLOCK_TIME_NONE {
-                            // Compute first frame timestamp based on running time, if not yet defined
-                            time_internals.first_frame_timestamp = running_time;
-                        }
-                        // Once first frame offset is initialised,
-                        // subtract from it the current running time
-                        time_internals.common_timestamp =
-                            running_time - time_internals.first_frame_timestamp;
-                    }
-                }
-
-                // Return the common timestamp (for all buffers)
-                time_internals.common_timestamp
-            }
-            K4aTimestampMode::Common => {
-                let time_internals = &mut internals.timestamp_internals;
-
-                // Extract the K4A timestamp
-                // This function cannot return CLOCK_TIME_NONE here as it is based on the main buffer (Image)
-                let frame_timestamp = timestamp_source.extract_timestamp();
-
-                // Determine common timestamp (computed only once for the main buffer)
-                if is_buffer_main {
-                    if time_internals.first_frame_timestamp == gst::CLOCK_TIME_NONE {
-                        // Compute first frame timestamp, if not yet defined
-                        if base_src.is_live() {
-                            // For live mode, get the offset of the first frame based on the K4A timestamp and current running time
-                            time_internals.first_frame_timestamp =
-                                frame_timestamp - Self::get_running_time(base_src);
-                        } else {
-                            // For non-line mode, get the offset of the first frame based only on the K4A timestamp, so that the first buffer has timestamp of 0
-                            time_internals.first_frame_timestamp = frame_timestamp;
-                        }
-                    }
-                    // Once first frame offset is initialised, subtract from it the timestamp of the frame
-                    time_internals.common_timestamp =
-                        frame_timestamp - time_internals.first_frame_timestamp;
-                }
-
-                // Return the common timestamp (for all buffers)
-                internals.timestamp_internals.common_timestamp
-            }
-            K4aTimestampMode::Individual => {
-                let time_internals = &mut internals.timestamp_internals;
-
-                // Extract the K4A timestamp
-                let frame_timestamp = timestamp_source.extract_timestamp();
-
-                // Use timestamp of the main buffer if we are dealing with meta streams that do not have K4A timestamps
-                if frame_timestamp == gst::CLOCK_TIME_NONE {
-                    return time_internals.common_timestamp;
-                }
-
-                // Compute first frame timestamp, if not yet defined
-                if time_internals.first_frame_timestamp == gst::CLOCK_TIME_NONE {
-                    if base_src.is_live() {
-                        // For live mode, get the offset of the first frame based on the K4A timestamp and current running time
-                        time_internals.first_frame_timestamp =
-                            frame_timestamp - Self::get_running_time(base_src);
-                    } else {
-                        // For non-line mode, get the offset of the first frame based only on the K4A timestamp, so that the first buffer has timestamp of 0
-                        time_internals.first_frame_timestamp = frame_timestamp;
-                    }
-                }
-
-                // Update the common timestamp when processing the main buffer
-                // The common timestamp is used for meta streams that do not have K4A timestamps
-                if is_buffer_main {
-                    // Use the timestamp of the corresponding buffer, subtracted by the first frame offset
-                    time_internals.common_timestamp =
-                        frame_timestamp - time_internals.first_frame_timestamp;
-                    return time_internals.common_timestamp;
-                }
-
-                // Use the timestamp of the corresponding buffer, subtracted by the first frame offset
-                frame_timestamp - time_internals.first_frame_timestamp
-            }
-        }
-    }
-
-    /// Get the running time of the element as a difference between the element's clock time
-    /// and its base time. Returns GST_CLOCK_TIME_NONE if the element has no clock or invalid base time.
-    ///
-    /// # Arguments
-    /// * `base_src` - This element (k4asrc).
-    ///
-    /// # Returns
-    /// * `gst::ClockTime` containing the running time of the element.
-    fn get_running_time(base_src: &gst_base::BaseSrc) -> gst::ClockTime {
-        if let Some(element_clock) = base_src.get_clock() {
-            element_clock.get_time() - base_src.get_base_time()
-        } else {
-            gst_warning!(
-                CAT,
-                obj: base_src,
-                "Element has no clock, unable to determine timestamps for `timestamp-mode=all`",
-            );
-            gst::CLOCK_TIME_NONE
-        }
-    }
-
-    /// Set `duration` and `timestamp` of a `buffer`.
-    ///
-    /// # Arguments
-    /// * `buffer` - Mutable reference to a buffer that should be modified.
-    /// * `duration` - Desired duration of the `buffer`.
-    /// * `timestamp` - Desired timestamp of the `buffer`.
-    fn set_duration_and_timestamp(
-        buffer: &mut gst::BufferRef,
-        duration: gst::ClockTime,
-        timestamp: gst::ClockTime,
-    ) {
-        // Set buffer duration
-        buffer.set_duration(duration);
-        // Set timestamp
-        if timestamp != gst::CLOCK_TIME_NONE {
-            buffer.set_pts(timestamp);
-            buffer.set_dts(timestamp);
-        }
-    }
-
     /// Attach Cap'n Proto serialised CameraMeta to `output_buffer`.
     ///
     /// # Arguments
     /// * `base_src` - This element (k4asrc).
-    /// * `internals` - The internals of the element that contain settings and stream source.
     /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
     /// * `camera_meta` - Serialised CameraMeta to attach to the `output_buffer`.
     ///
@@ -1068,8 +869,8 @@ impl K4aSrc {
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn attach_camera_meta(
+        &self,
         base_src: &gst_base::BaseSrc,
-        internals: &mut K4aSrcInternals,
         output_buffer: &mut gst::Buffer,
         camera_meta: Vec<u8>,
     ) -> Result<(), K4aSrcError> {
@@ -1084,12 +885,8 @@ impl K4aSrc {
             ]
         ))?;
 
-        // Set buffer duration and timestamp
-        Self::set_duration_and_timestamp(
-            buffer_mut_ref,
-            internals.timestamp_internals.frame_duration,
-            Self::determine_timestamp(base_src, internals, false, TimestampSource::None),
-        );
+        // Set timestamps using `RgbdTimestamps` trait
+        self.set_rgbd_timestamp(base_src, buffer_mut_ref, false, gst::CLOCK_TIME_NONE);
 
         // Attach the camera_meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
@@ -1319,6 +1116,12 @@ impl K4aSrc {
     }
 }
 
+impl RgbdTimestamps for K4aSrc {
+    fn get_timestamp_internals(&self) -> Arc<Mutex<TimestampInternals>> {
+        self.timestamp_internals.clone()
+    }
+}
+
 impl ElementImpl for K4aSrc {}
 
 impl ObjectImpl for K4aSrc {
@@ -1380,11 +1183,16 @@ impl ObjectImpl for K4aSrc {
             subclass::Property("real-time-playback", ..) => {
                 Ok(settings.playback_settings.loop_recording.to_value())
             }
-            subclass::Property("timestamp-mode", ..) => Ok(settings.timestamp_mode.to_value()),
             subclass::Property("rectify-depth", ..) => Ok(settings.rectify_depth.to_value()),
             subclass::Property("attach-camera-meta", ..) => {
                 Ok(settings.attach_camera_meta.to_value())
             }
+            subclass::Property("timestamp-mode", ..) => Ok(self
+                .get_timestamp_internals()
+                .lock()
+                .unwrap()
+                .timestamp_mode
+                .to_value()),
             _ => unimplemented!("k4asrc: Property is not implemented"),
         }
     }
@@ -1564,21 +1372,6 @@ impl ObjectImpl for K4aSrc {
                         .set_live(settings.playback_settings.real_time_playback);
                 }
             }
-            subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `timestamp-mode`. Expected `K4aTimestampMode` or `i32`, but got: {:?}", value));
-                element.set_do_timestamp(match timestamp_mode {
-                    K4aTimestampMode::Main => true,
-                    _ => false,
-                });
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `timestamp-mode` from {:?} to {:?}",
-                    settings.timestamp_mode,
-                    timestamp_mode
-                );
-                settings.timestamp_mode = timestamp_mode;
-            }
             subclass::Property("rectify-depth", ..) => {
                 let rectify_depth = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `rectify-depth`. Expected a `bool`, but got: {:?}", value));
                 gst_info!(
@@ -1600,6 +1393,17 @@ impl ObjectImpl for K4aSrc {
                     attach_camera_meta
                 );
                 settings.attach_camera_meta = attach_camera_meta;
+            }
+            subclass::Property("timestamp-mode", ..) => {
+                let timestamp_mode = value.get::<TimestampMode>()
+                    .unwrap_or_else(|| panic!("k4asrc: Failed to set property `timestamp-mode`. Expected `TimestampMode` or `i32`, but got: {:?}", value));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `timestamp-mode`  to {:?}",
+                    timestamp_mode
+                );
+                self.set_timestamp_mode(element, timestamp_mode);
             }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         };

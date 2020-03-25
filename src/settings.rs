@@ -14,9 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::{
-    K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode,
-};
+use crate::enums::*;
 use crate::error::*;
 use crate::streams::*;
 use k4a::{ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
@@ -59,8 +57,6 @@ pub(crate) const DEFAULT_FRAMERATE: K4aFramerate = K4aFramerate::FPS15;
 pub(crate) const DEFAULT_GET_CAPTURE_TIMEOUT: i32 = 1000;
 /// Default behaviour of looping playback from recording.
 pub(crate) const DEFAULT_LOOP_RECORDING: bool = false;
-/// Default behaviour for applying timestamps to buffers.
-pub(crate) const DEFAULT_TIMESTAMP_MODE: K4aTimestampMode = K4aTimestampMode::All;
 /// Default behaviour for liveliness of the element when playing back from a recording.
 pub(crate) const DEFAULT_REAL_TIME_PLAYBACK: bool = false;
 
@@ -76,7 +72,6 @@ pub(crate) struct Settings {
     pub(crate) device_settings: DeviceSettings,
     pub(crate) playback_settings: PlaybackSettings,
     pub(crate) desired_streams: Streams,
-    pub(crate) timestamp_mode: K4aTimestampMode,
     pub(crate) rectify_depth: bool,
     pub(crate) attach_camera_meta: bool,
 }
@@ -115,7 +110,6 @@ impl Default for Settings {
                 loop_recording: DEFAULT_LOOP_RECORDING,
                 real_time_playback: DEFAULT_REAL_TIME_PLAYBACK,
             },
-            timestamp_mode: DEFAULT_TIMESTAMP_MODE,
             rectify_depth: DEFAULT_RECTIFY_DEPTH,
             attach_camera_meta: DEFAULT_ATTACH_CAMERA_META,
         }
