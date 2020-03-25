@@ -3,7 +3,7 @@ from conans import ConanFile, tools
 
 class KinectAzureSensorSDKConan(ConanFile):
     name = "k4a"
-    version = tools.get_env("GIT_TAG", "1.3.0")
+    version = tools.get_env("GIT_TAG", "1.4.0")
     license = "MIT"
     description = "Azure Kinect SDK"
     url = "https://gitlab.com/aivero/public/conan/conan-k4a"
@@ -17,10 +17,14 @@ class KinectAzureSensorSDKConan(ConanFile):
     def source(self):
         version_short=self.version[:3]
         arch = self.settings.arch
+        debian_repo_url = ""
         if arch == "x86_64":
             arch = "amd64"
+            debian_repo_url="https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/libk"
+        if arch == "armv8":
+            arch = "arm64"
+            debian_repo_url="https://packages.microsoft.com/ubuntu/18.04/multiarch/prod/pool/main/libk/"
 
-        debian_repo_url="https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/libk"
         libk4a = "libk4a%s_%s_%s.deb" % (version_short, self.version, arch)
         libk4a_dev = "libk4a%s-dev_%s_%s.deb" % (version_short, self.version, arch)
 
