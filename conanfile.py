@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools
 class CairoConan(ConanFile):
     name = "cairo"
     version = tools.get_env("GIT_TAG", "1.16.0")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
