@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class DirenvConan(ConanFile):
     name = "direnv"
     version = tools.get_env("GIT_TAG", "2.21.2")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A shell extension that manages your environment"
     license = "MIT"
     settings = "os", "arch", "compiler"
