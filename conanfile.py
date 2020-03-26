@@ -36,7 +36,6 @@ class NvJetsonV4l2(ConanFile):
     version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
-    url = "https://developer.nvidia.com/embedded/linux-tegra"
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2", )
