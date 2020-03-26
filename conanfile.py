@@ -5,7 +5,6 @@ class LibxdamageConan(ConanFile):
     name = "libxdamage"
     version = tools.get_env("GIT_TAG", "1.1.5")
     description = "X11 damaged region extension library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
 
