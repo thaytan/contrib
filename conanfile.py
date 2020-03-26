@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class BisonConan(ConanFile):
     name = "bison"
     version = tools.get_env("GIT_TAG", "3.3")
-    url = "https://gitlab.com/aivero/public/conan/conan" + name
     description = "Bison is a general-purpose parser generator"
     license = "GPL-3.0-or-later"
     settings = "os", "arch", "compiler", "build_type"
