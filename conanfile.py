@@ -7,7 +7,6 @@ class Sdl2Conan(ConanFile):
     name = "sdl2"
     version = tools.get_env("GIT_TAG", "2.0.10")
     description = "A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"
 
