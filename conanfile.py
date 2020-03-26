@@ -133,6 +133,5 @@ class tools(Generator):
 class EnvPackage(ConanFile):
     name = "env-generator"
     version = "1.0.0"
-    url = "https://gitlab.com/aivero/public/conan-" + name
     license = "MIT"
     description = "Generate environment file for build and runtime"
