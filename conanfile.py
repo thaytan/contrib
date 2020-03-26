@@ -5,7 +5,6 @@ class LibxpmConan(ConanFile):
     name = "libxpm"
     version = tools.get_env("GIT_TAG", "3.5.13")
     description = "X11 pixmap library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
 
