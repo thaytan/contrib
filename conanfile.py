@@ -5,7 +5,6 @@ class LibffiConan(ConanFile):
     name = "libffi"
     version = tools.get_env("GIT_TAG", "3.3-rc0")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "A portable, high level programming interface to various calling conventions"
 
