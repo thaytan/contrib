@@ -7,7 +7,6 @@ class MakeConan(ConanFile):
     name = "make"
     version = tools.get_env("GIT_TAG", "4.3")
     settings = "os", "compiler", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "GNU make utility to maintain groups of programs"
 
