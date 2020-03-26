@@ -5,7 +5,6 @@ class XcbProtoConan(ConanFile):
     name = "xcb-proto"
     version = tools.get_env("GIT_TAG", "1.13")
     description = "XML-XCB protocol descriptions"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
