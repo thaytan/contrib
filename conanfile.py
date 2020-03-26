@@ -5,7 +5,6 @@ class LibxrandrConan(ConanFile):
     name = "libxrandr"
     version = tools.get_env("GIT_TAG", "1.5.2")
     description = "X11 RandR extension library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
