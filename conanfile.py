@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools
 class GStreamerLibavConan(ConanFile):
     name = "gstreamer-libav"
     version = tools.get_env("GIT_TAG", "1.16.0")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
     license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
