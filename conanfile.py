@@ -7,7 +7,6 @@ class WasiSdkConan(ConanFile):
     name = "wasi-sdk"
     version = tools.get_env("GIT_TAG", "8.0")
     settings = "os", "compiler", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "WASI-enabled C/C++ toolchain"
 
