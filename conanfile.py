@@ -7,7 +7,6 @@ class MesaConan(ConanFile):
     name = "mesa"
     version = tools.get_env("GIT_TAG", "20.0.0")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "An open-source implementation of the OpenGL specification"
     options = {"x11": [True, False]}
