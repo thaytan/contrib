@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 class GStreamerPluginsGoodConan(ConanFile):
     name = "gstreamer-plugins-good"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
