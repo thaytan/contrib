@@ -7,7 +7,6 @@ class LibxcbConan(ConanFile):
     name = "libxkbcommon"
     version = tools.get_env("GIT_TAG", "0.8.4")
     description = "Keymap handling library for toolkits and window systems"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
