@@ -7,7 +7,6 @@ class TexinfoConan(ConanFile):
     name = "texinfo"
     version = tools.get_env("GIT_TAG", "6.6")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL3"
     description = "GNU documentation system for on-line information and printed output"
 
