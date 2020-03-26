@@ -3,7 +3,6 @@ from conans import ConanFile, Meson, tools
 
 class GStreamerPluginsBadConan(ConanFile):
     name = "gstreamer-plugins-bad"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     exports = "reduce_latency.patch"
