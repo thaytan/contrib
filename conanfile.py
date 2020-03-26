@@ -8,7 +8,6 @@ class LibuuidConan(ConanFile):
     name = "libuuid"
     version = tools.get_env("GIT_TAG", "1.0.3")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD-3-Clause"
     description = "Portable uuid C library"
 
