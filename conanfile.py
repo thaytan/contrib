@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class NpmConan(ConanFile):
     name = "npm"
     version = tools.get_env("GIT_TAG", "6.13.6")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "os", "arch", "compiler"
