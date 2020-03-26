@@ -13,25 +13,11 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-#![crate_type = "cdylib"]
-
-#[macro_use]
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
-extern crate gstreamer_sys as gst_sys;
-
-extern crate capnp;
-pub(crate) mod camera_meta_capnp {
-    #![allow(dead_code)]
-    include!(concat!(env!("OUT_DIR"), "/camera_meta_capnp.rs"));
-}
-
-mod common;
-
-pub mod camera_meta;
-pub mod rgbd;
+#[allow(clippy::module_inception)]
 pub mod rgbd_timestamps;
+pub mod timestamp_internals;
+pub mod timestamp_mode;
 
-pub use camera_meta::*;
-pub use rgbd::*;
 pub use rgbd_timestamps::*;
+pub use timestamp_internals::*;
+pub use timestamp_mode::*;

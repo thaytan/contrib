@@ -13,25 +13,22 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-#![crate_type = "cdylib"]
+#[cfg(test)]
+pub(crate) mod tests {
+    /// Return true if `a` and `b` are nearly equal.
+    /// Adapted from https://floating-point-gui.de/errors/comparison
+    pub(crate) fn nearly_equal_f32(a: f32, b: f32) -> bool {
+        let diff = (a - b).abs();
 
-#[macro_use]
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
-extern crate gstreamer_sys as gst_sys;
+        #[allow(clippy::float_cmp)]
+        let are_equal = a == b;
 
-extern crate capnp;
-pub(crate) mod camera_meta_capnp {
-    #![allow(dead_code)]
-    include!(concat!(env!("OUT_DIR"), "/camera_meta_capnp.rs"));
+        if are_equal {
+            true
+        } else if a == 0.0 || b == 0.0 || diff < std::f32::MIN_POSITIVE {
+            diff < (std::f32::EPSILON * std::f32::MIN_POSITIVE)
+        } else {
+            (diff / (a.abs() + b.abs()).min(std::f32::MAX)) < std::f32::EPSILON
+        }
+    }
 }
-
-mod common;
-
-pub mod camera_meta;
-pub mod rgbd;
-pub mod rgbd_timestamps;
-
-pub use camera_meta::*;
-pub use rgbd::*;
-pub use rgbd_timestamps::*;

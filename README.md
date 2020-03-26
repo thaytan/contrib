@@ -5,9 +5,11 @@ This repository contains the rust bindings for `gst-depth-meta` ([this repositor
 1. BufferMeta, which allows developers to add buffers as metadata onto other buffers.
 2. TagsMeta, which allows developers to tag buffers, such that their content can be identified later downstream.
 
-To interface with both BufferMeta and TagsMeta, it is recommended to utilise the safe functions from the [`rgbd`](src/rgbd.rs) module.
+To interface with both BufferMeta and TagsMeta, it is recommended to utilise the safe functions from the [`rgbd`](src/rgbd/rgbd.rs) module.
 
-Furthermore, this project repository contains [`camera_meta`](src/camera_meta.rs) module that provides list of all [`intrinsics`](src/intrinsics.rs) and [`extrinsics`](src/transformation.rs) for a calibrated camera setup, alongside (de)serialisation with *Cap'n Proto*.
+This project also contains [`rgbd_timestamps`](src/rgbd_timestamps/rgbd_timestamps.rs) module that provide standard way of timestamping `video/rgbd` buffers.
+
+Furthermore, this project repository contains [`camera_meta`](src/camera_meta/camera_meta.rs) module that provides list of all [`intrinsics`](src/camera_meta/intrinsics.rs) and [`extrinsics`](src/camera_meta/transformation.rs) for a calibrated camera setup, alongside (de)serialisation with *Cap'n Proto*.
 
 ## Use
 
@@ -62,7 +64,7 @@ let frame_meta_mut = frame_meta_buffer
 TagsMeta::add(frame_meta_mut, &mut tags);
 ```
 
-Using the `BufferMeta` is very similar. Please see [src/buffer.rs](src/buffer.rs) for examples.
+Using the `BufferMeta` is very similar. Please see [src/rgbd/buffer.rs](src/buffer.rs) for examples.
 
 ### Read a Tag from a buffer
 

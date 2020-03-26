@@ -245,10 +245,8 @@ impl CameraMeta {
     /// * Deserialised RotationMatrix.
     pub fn deserialise(buffer: &[u8]) -> Result<Self, capnp::Error> {
         // Read the serialised message from the byte array
-        let serialised_message = capnp::serialize::read_message(
-            &mut buffer.as_ref(),
-            capnp::message::ReaderOptions::new(),
-        )?;
+        let serialised_message =
+            capnp::serialize::read_message(buffer, capnp::message::ReaderOptions::new())?;
 
         // Get reader for the serialised message
         let camera_meta = serialised_message.get_root::<camera_meta::Reader>()?;
@@ -459,8 +457,8 @@ mod tests {
         );
 
         CameraMeta {
-            intrinsics: intrinsics,
-            extrinsics: extrinsics,
+            intrinsics,
+            extrinsics,
             depth_scale: random(),
         }
     }
