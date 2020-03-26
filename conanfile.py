@@ -8,7 +8,6 @@ class ImagemagickConan(ConanFile):
     version = tools.get_env("GIT_TAG", "7.0.10.0")
     tar_version = "%s-%s" % (version[:version.rfind(".")], version[version.rfind(".") + 1:])
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL2"
     description = "An image viewing/manipulation program"
 
