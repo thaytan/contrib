@@ -9,7 +9,6 @@ class OpensslConan(ConanFile):
     name = "openssl"
     version = tools.get_env("GIT_TAG", "1.1.1b")
     description = "TLS/SSL and crypto library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
 
