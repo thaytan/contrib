@@ -6,7 +6,6 @@ from conans import ConanFile, tools
 class PythonMakoConan(ConanFile):
     name = "python-mako"
     version = tools.get_env("GIT_TAG", "1.1.0")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "Apache"
     description = "A super-fast templating language that borrows the best ideas from the existing templating languages"
     settings = "os", "compiler", "build_type", "arch"
