@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 class XorgProtoConan(ConanFile):
     name = "xorgproto"
     version = tools.get_env("GIT_TAG", "2019.1")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "combined X.Org X11 Protocol headers"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
