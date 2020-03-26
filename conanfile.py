@@ -6,7 +6,6 @@ class GraphvizConan(ConanFile):
     version = tools.get_env("GIT_TAG", "2.42.1")
     license = "EPL"
     description = "Graph Visualization Tools"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):
