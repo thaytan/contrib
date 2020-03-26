@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class FlexConan(ConanFile):
     name = "flex"
     version = tools.get_env("GIT_TAG", "2.6.4")
-    url = "https://gitlab.com/aivero/public/conan/conan-flex"
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD 2-Clause"
     settings = "os", "arch", "compiler", "build_type"
