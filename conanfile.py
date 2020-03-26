@@ -7,7 +7,6 @@ class MpcConan(ConanFile):
     name = "mpc"
     version = tools.get_env("GIT_TAG", "1.1.0")
     settings = "os", "compiler", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL"
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
 
