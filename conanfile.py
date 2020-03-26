@@ -7,7 +7,6 @@ class Gtk3Conan(ConanFile):
     name = "gtk3"
     version = tools.get_env("GIT_TAG", "3.24.11")
     description = "GObject-based multi-platform GUI toolkit"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"
     options = {
