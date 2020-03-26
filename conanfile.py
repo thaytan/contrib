@@ -8,7 +8,6 @@ class LibRealsenseConan(ConanFile):
     version = tools.get_env("GIT_TAG", "2.33.1")
     license = "Apache"
     description = "Intel RealSense SDK"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     options = {"cuda": [True, False], "python": [True, False]}
