@@ -5,7 +5,6 @@ class DbusConan(ConanFile):
     name = "dbus"
     version = tools.get_env("GIT_TAG", "1.12.16")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "Freedesktop.org message bus system"
 
