@@ -7,7 +7,6 @@ class MpfrConan(ConanFile):
     name = "mpfr"
     version = tools.get_env("GIT_TAG", "4.0.2")
     settings = "os", "compiler", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL"
     description = "Multiple-precision floating-point library"
 
