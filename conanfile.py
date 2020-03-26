@@ -5,7 +5,6 @@ class LibtiffConan(ConanFile):
     name = "libtiff"
     version = tools.get_env("GIT_TAG", "4.1.0")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "Library for manipulation of TIFF images"
 
