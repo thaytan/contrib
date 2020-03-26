@@ -7,7 +7,6 @@ class CurlConan(ConanFile):
     name = "curl"
     version = tools.get_env("GIT_TAG", "7.66.0")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "An URL retrieval utility and library"
 
