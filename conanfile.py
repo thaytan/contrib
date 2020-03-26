@@ -8,7 +8,6 @@ class OpenalConan(ConanFile):
     version = tools.get_env("GIT_TAG", "1.20.1")
     license = "custom"
     description = "Cross-platform 3D audio library, software implementation"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "arch", "build_type"
 
     def build_requirements(self):
