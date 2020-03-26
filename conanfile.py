@@ -7,7 +7,6 @@ class TclConan(ConanFile):
     name = "tcl"
     version = tools.get_env("GIT_TAG", "8.6.10")
     description = "The Tcl scripting language"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
 
