@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class YasmConan(ConanFile):
     name = "yasm"
     version = tools.get_env("GIT_TAG", "1.3.0")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Yasm is a complete rewrite of the NASM assembler under the “new” BSD License"
     license = "BSD"
     settings = "os_build", "arch_build", "compiler"
