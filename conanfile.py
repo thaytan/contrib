@@ -8,7 +8,6 @@ class RustConan(ConanFile):
     name = "rust"
     version = tools.get_env("GIT_TAG", "nightly")
     settings = "os", "compiler", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT", "Apache"
     description = "Systems programming language focused on safety, speed and concurrency"
 
