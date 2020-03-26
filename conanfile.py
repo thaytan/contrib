@@ -7,7 +7,6 @@ class LibjpegTurboConan(ConanFile):
     name = "libjpeg-turbo"
     version = tools.get_env("GIT_TAG", "2.0.4")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"
 
