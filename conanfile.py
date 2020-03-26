@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class ReadlineConan(ConanFile):
     name = "readline"
     version = tools.get_env("GIT_TAG", "8.0")
-    url = "https://gitlab.com/aivero/public/conan/conan" + name
     description = "GNU readline library"
     license = "GPL-3.0-or-later"
     settings = "os", "arch", "compiler", "build_type"
