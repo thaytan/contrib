@@ -6,7 +6,6 @@ from conans import ConanFile, tools
 class PythonPipConan(ConanFile):
     name = "python-pip"
     version = tools.get_env("GIT_TAG", "19.2.3")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "High productivity build system"
     settings = "os", "compiler", "build_type", "arch"
