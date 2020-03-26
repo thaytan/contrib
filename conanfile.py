@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class XzConan(ConanFile):
     name = "xz"
     version = tools.get_env("GIT_TAG", "5.2.4")
-    url = "https://gitlab.com/aivero/public/conan/conan" + name
     description = "Library and command line tools for XZ and LZMA compressed files"
     license = "custom", "GPL", "LGPL"
     settings = "os", "arch", "compiler", "build_type"
