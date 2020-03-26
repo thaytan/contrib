@@ -9,7 +9,6 @@ class HarfbuzzConan(ConanFile):
     version = tools.get_env("GIT_TAG", "2.6.1")
     license = "Old MIT"
     description = "HarfBuzz text shaping engine"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):
