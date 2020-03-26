@@ -9,7 +9,6 @@ class LibNiceConan(ConanFile):
     gst_version_dep = "1.16.0"
     gst_version, gst_channel = ("master", "testing") if version == "master" else ("[~%s]" % gst_version_dep, "stable")
 
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
