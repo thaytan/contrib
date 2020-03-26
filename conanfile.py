@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools
 class GStreamerPythonConan(ConanFile):
     name = "gstreamer-python"
     version = tools.get_env("GIT_TAG", "1.16.0")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Gstreamer Python bindings"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "os", "arch", "compiler", "build_type"
