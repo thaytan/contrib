@@ -5,7 +5,6 @@ class GLibConan(ConanFile):
     name = "glib"
     version = tools.get_env("GIT_TAG", "2.62.0")
     description = "GLib provides the core application building blocks for libraries and applications written in C"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"
 
