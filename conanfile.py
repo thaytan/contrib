@@ -9,7 +9,6 @@ class CudaConan(ConanFile):
     name = "cuda"
     version = tools.get_env("GIT_TAG", "10.1.243")
     description = "NVIDIA's GPU programming toolkit"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
     exports_sources = ("cuda-10.1.pc", "cudart-10.1.pc")
