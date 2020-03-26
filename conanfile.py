@@ -52,6 +52,27 @@ class direnv(Generator):
         return content
 
 
+class gdb(Generator):
+    def __init__(self, conanfile):
+        super().__init__(conanfile)
+
+    @property
+    def filename(self):
+        pass
+
+    @property
+    def content(self):
+        content = {".gdbinit": ""}
+        if not "SOURCE_MAP" in self.conanfile.env:
+            return {}
+        for map in self.conanfile.env["SOURCE_MAP"]:
+            if not "|" in map:
+                continue
+            content[".gdbinit"] += "set substitute-path %s %s\n" % tuple(map.split("|"))
+
+        return content
+
+
 class tools(Generator):
     def __init__(self, conanfile):
         super().__init__(conanfile)
