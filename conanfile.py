@@ -7,7 +7,6 @@ class AtSpi2AtkConan(ConanFile):
     name = "at-spi2-atk"
     version = tools.get_env("GIT_TAG", "2.34.0")
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
 
