@@ -21,7 +21,6 @@ fn main() {
         .unwrap();
     println!("cargo:rustc-flags=-l dylib=stdc++");
     println!("cargo:rustc-link-lib=realsense-file");
-    println!("cargo:rustc-link-lib=tm");
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
         .rustified_enum("rs2_log_severity")
