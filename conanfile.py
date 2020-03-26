@@ -7,7 +7,6 @@ class AtSpi2CoreConan(ConanFile):
     name = "at-spi2-core"
     version = tools.get_env("GIT_TAG", "2.34.0")
     description = "Protocol definitions and daemon for D-Bus at-spi"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL2"
     settings = "os", "arch", "compiler", "build_type"
 
