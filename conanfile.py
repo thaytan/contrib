@@ -5,7 +5,6 @@ class LibzmqConan(ConanFile):
     name = "libzmq"
     version = tools.get_env("GIT_TAG", "4.3.1")
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL"
     settings = "os", "compiler", "build_type", "arch"
 
