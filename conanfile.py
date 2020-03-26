@@ -6,7 +6,6 @@ from conans import ConanFile, tools
 class RlsConan(ConanFile):
     name = "rls"
     version = tools.get_env("GIT_TAG", "master")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler"
