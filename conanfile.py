@@ -5,7 +5,6 @@ class GitConan(ConanFile):
     name = "git"
     version = tools.get_env("GIT_TAG", "2.23.0")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL2"
     description = "The fast distributed version control system"
 
