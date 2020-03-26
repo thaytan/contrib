@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 class PixmanConan(ConanFile):
     name = "pixman"
     version = tools.get_env("GIT_TAG", "0.38.4")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Image processing and manipulation library"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
