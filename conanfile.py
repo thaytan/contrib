@@ -8,7 +8,6 @@ class LLVMConan(ConanFile):
     version = tools.get_env("GIT_TAG", "9.0.0")
     license = "custom", "Apache"
     description = "Collection of modular and reusable compiler and toolchain technologies"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "arch"
 
     def build_requirements(self):
