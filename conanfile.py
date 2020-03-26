@@ -7,7 +7,6 @@ class BinutilsConan(ConanFile):
     name = "binutils"
     version = tools.get_env("GIT_TAG", "2.33.1")
     settings = "os", "compiler", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A set of programs to assemble and manipulate binary and object files"
 
