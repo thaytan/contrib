@@ -5,7 +5,6 @@ class LibxshmfenceConan(ConanFile):
     name = "libxshmfence"
     version = tools.get_env("GIT_TAG", "1.3")
     description = "Library that exposes a event API on top of Linux futexes"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
 
