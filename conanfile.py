@@ -5,7 +5,6 @@ class LibxauConan(ConanFile):
     name = "libxau"
     version = tools.get_env("GIT_TAG", "1.0.9")
     description = "X11 authorisation library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
