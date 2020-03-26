@@ -5,7 +5,6 @@ class SharedMimeInfoConan(ConanFile):
     name = "shared-mime-info"
     version = tools.get_env("GIT_TAG", "1.14")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL2"
     description = "Freedesktop.org Shared MIME Info"
 
