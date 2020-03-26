@@ -6,7 +6,6 @@ class CclsConan(ConanFile):
     version = tools.get_env("GIT_TAG", "0.20190823.3")
     license = "Apache"
     description = "C/C++ language server supporting cross references, hierarchies, completion and semantic highlighting"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):
