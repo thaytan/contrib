@@ -6,7 +6,6 @@ class ClangConan(ConanFile):
     version = tools.get_env("GIT_TAG", "9.0.0")
     license = "Apache"
     description = "C language family frontend for LLVM"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "arch"
 
     def build_requirements(self):
