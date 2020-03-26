@@ -18,7 +18,6 @@ class NvJetsonDrivers(ConanFile):
     version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
     exports_sources = ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
