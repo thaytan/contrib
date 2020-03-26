@@ -7,7 +7,6 @@ class ItstoolConan(ConanFile):
     name = "itstool"
     version = tools.get_env("GIT_TAG", "2.0.6")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL3"
     description = "XML to PO and back again"
 
