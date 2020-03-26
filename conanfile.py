@@ -5,7 +5,6 @@ class GTestConan(ConanFile):
     name = "gtest"
     version = tools.get_env("GIT_TAG", "1.8.1")
     description = "Google's C++ test framework"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD-3-Clause"
     settings = "os", "arch", "compiler", "build_type"
 
