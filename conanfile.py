@@ -5,7 +5,6 @@ class LibdrmConan(ConanFile):
     name = "libdrm"
     version = tools.get_env("GIT_TAG", "2.4.99")
     license = "MIT"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Direct Rendering Manager headers and kernel modules"
     settings = "os", "arch", "compiler", "build_type"
 
