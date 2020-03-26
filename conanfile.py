@@ -7,7 +7,6 @@ class Libxml2Conan(ConanFile):
     name = "libxml2"
     version = tools.get_env("GIT_TAG", "2.9.10")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "XML parsing library, version 2"
 
