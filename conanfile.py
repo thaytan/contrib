@@ -7,7 +7,6 @@ class AutoconfConan(ConanFile):
     name = "autoconf"
     version = tools.get_env("GIT_TAG", "2.69")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL3"
     description = "A GNU tool for automatically configuring source code"
     exports = "m4-include.patch"
