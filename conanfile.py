@@ -7,7 +7,6 @@ class LibepoxyConan(ConanFile):
     name = "libepoxy"
     version = tools.get_env("GIT_TAG", "1.5.3")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "Library handling OpenGL function pointer management"
 
