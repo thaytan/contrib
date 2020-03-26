@@ -5,7 +5,6 @@ class AutotoolsConan(ConanFile):
     name = "autotools"
     version = tools.get_env("GIT_TAG", "1.0.0")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A suite of programming tools 'designed' to assist in making source code"
     
