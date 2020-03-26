@@ -6,7 +6,6 @@ from conans import CMake, ConanFile, tools
 class X265Conan(ConanFile):
     name = "x265"
     version = tools.get_env("GIT_TAG", "2.7")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "x265 is the leading H.265 / HEVC encoder software library"
     license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
