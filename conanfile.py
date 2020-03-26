@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class FFMpegConan(ConanFile):
     name = "ffmpeg"
     version = tools.get_env("GIT_TAG", "4.1")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "GPL3"
     settings = "os", "arch", "compiler", "build_type"
