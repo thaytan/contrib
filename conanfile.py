@@ -5,7 +5,6 @@ class LibglvndConan(ConanFile):
     name = "libglvnd"
     version = tools.get_env("GIT_TAG", "1.2.0")
     description = "The GL Vendor-Neutral Dispatch library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
     options = {
