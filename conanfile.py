@@ -6,7 +6,6 @@ class LibvncserverConan(ConanFile):
     version = tools.get_env("GIT_TAG", "0.9.12")
     license = "Apache"
     description = "Cross-platform C libraries that allow you to easily implement VNC server or client functionality"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "arch"
 
     def build_requirements(self):
