@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class Bzip2Conan(ConanFile):
     name = "bzip2"
     version = tools.get_env("GIT_TAG", "1.0.8")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A high-quality data compression program"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
