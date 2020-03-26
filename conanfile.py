@@ -5,7 +5,6 @@ class GperfConan(ConanFile):
     name = "gperf"
     version = tools.get_env("GIT_TAG", "3.1")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://github.com/prozum/conan-libffi"
     license = "GPL3"
     description = "A portable, high level programming interface to various calling conventions"
 
