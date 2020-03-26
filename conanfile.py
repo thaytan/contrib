@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools
 class PythonGobjectConan(ConanFile):
     name = "python-gobject"
     version = tools.get_env("GIT_TAG", "3.33.1")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Python GObject bindings"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
