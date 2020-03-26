@@ -5,7 +5,6 @@ class XtransConan(ConanFile):
     name = "xtrans"
     version = tools.get_env("GIT_TAG", "1.4.0")
     description = "X transport library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
