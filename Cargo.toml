@@ -24,9 +24,7 @@ lazy_static = { version = "1.4" }
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-branch = "rgbd-timestamps"
-# TODO: update tag once  merged
-# tag = "0.4.0"
+tag = "0.4.0"
 
 [dependencies.k4a]
 git = "https://gitlab.com/aivero/hardware/k4a-rs"

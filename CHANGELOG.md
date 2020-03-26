@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.6.0] - 2020-03-25
+## [1.0.0] - 2020-03-26
 
 ### Changed
 
-- Use implementation of standard `RgbdTimestamps` trait instead of custom timestamping.
+- Use implementation of standard `RgbdTimestamps` trait instead of custom timestamping. This includes renaming of variants `k4a_common` to `camera_common` and `k4a_individual` to `camera_individual`.
 
 ## [0.5.0] - 2020-03-04
 
