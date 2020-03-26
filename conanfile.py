@@ -6,7 +6,6 @@ from conans import ConanFile, tools
 class ClippyConan(ConanFile):
     name = "clippy"
     version = tools.get_env("GIT_TAG", "master")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A bunch of lints to catch common mistakes and improve your Rust code"
     license = "Apache2"
     settings = "os", "arch", "compiler"
