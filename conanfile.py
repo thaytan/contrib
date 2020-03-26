@@ -6,7 +6,6 @@ class Deepstream(ConanFile):
     version = tools.get_env("GIT_TAG", "4.0.1")
     license = "proprietary"
     description = "Complete streaming analytics toolkit for AI-based video"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2", )
