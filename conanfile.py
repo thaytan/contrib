@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 class GStreamerVaapiConan(ConanFile):
     name = "gstreamer-vaapi"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
