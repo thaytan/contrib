@@ -7,7 +7,6 @@ class PerlConan(ConanFile):
     name = "perl"
     version = tools.get_env("GIT_TAG", "5.30.0")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A highly capable, feature-rich programming language"
     exports = "link-m-pthread.patch"
