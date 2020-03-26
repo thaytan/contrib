@@ -7,7 +7,6 @@ class AutomakeConan(ConanFile):
     name = "automake"
     version = tools.get_env("GIT_TAG", "1.16.1")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A GNU tool for automatically creating Makefiles"
     exports = "automake-include-fix.patch"
