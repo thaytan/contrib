@@ -8,7 +8,6 @@ class NinjaConan(ConanFile):
     version = tools.get_env("GIT_TAG", "1.9.0")
     license = "Apache"
     description = "Small build system with a focus on speed"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):
