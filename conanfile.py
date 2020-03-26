@@ -5,7 +5,6 @@ class LibxiConan(ConanFile):
     name = "libxi"
     version = tools.get_env("GIT_TAG", "1.7.10")
     description = "X11 Input extension library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
 
