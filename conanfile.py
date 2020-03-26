@@ -6,7 +6,6 @@ class KinectAzureSensorSDKConan(ConanFile):
     version = tools.get_env("GIT_TAG", "1.4.0")
     license = "MIT"
     description = "Azure Kinect SDK"
-    url = "https://gitlab.com/aivero/public/conan/conan-k4a"
     settings = "os", "compiler", "build_type", "arch"
     exports = "k4a.pc"
 
