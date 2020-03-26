@@ -217,23 +217,7 @@ impl From<[f32; 8]> for K4aCoefficients {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    /// Return true if `a` and `b` are nearly equal.
-    /// Adapted from https://floating-point-gui.de/errors/comparison
-    fn nearly_equal_f32(a: f32, b: f32) -> bool {
-        let diff = (a - b).abs();
-
-        #[allow(clippy::float_cmp)]
-        let are_equal = a == b;
-
-        if are_equal {
-            true
-        } else if a == 0.0 || b == 0.0 || diff < std::f32::MIN_POSITIVE {
-            diff < (std::f32::EPSILON * std::f32::MIN_POSITIVE)
-        } else {
-            (diff / (a.abs() + b.abs()).min(std::f32::MAX)) < std::f32::EPSILON
-        }
-    }
+    use crate::common::tests::nearly_equal_f32;
 
     #[test]
     fn rs_coefficients_from_slice() {
