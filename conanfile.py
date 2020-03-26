@@ -9,7 +9,6 @@ class FontconfigConan(ConanFile):
     version = tools.get_env("GIT_TAG", "2.13.92")
     license = "Old MIT"
     description = "A library for configuring and customizing font access"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):
