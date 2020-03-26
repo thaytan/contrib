@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class LibeditConan(ConanFile):
     name = "libedit"
     version = tools.get_env("GIT_TAG", "20190324-3.1")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "Zlib"
     description = "System V Release 4.0 curses emulation library"
     settings = "os", "arch", "compiler", "build_type"
