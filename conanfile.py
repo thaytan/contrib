@@ -5,7 +5,6 @@ class LibxtstConan(ConanFile):
     name = "libxtst"
     version = tools.get_env("GIT_TAG", "1.2.3")
     description = "X11 Testing Resource extension library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
 
