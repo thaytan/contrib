@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools
 class GObjectIntrospectionConan(ConanFile):
     name = "gobject-introspection"
     version = tools.get_env("GIT_TAG", "1.59.3")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = ("Middleware layer between C libraries (using GObject) and language bindings")
     license = "GPL, LGPL"
     settings = "os", "arch", "compiler", "build_type"
