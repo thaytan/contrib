@@ -8,7 +8,6 @@ class SvtHevcConan(ConanFile):
     version = tools.get_env("GIT_TAG", "1.4.3")
     license = "BSD"
     description = "The Scalable Video Technology for HEVC Encoder"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):
