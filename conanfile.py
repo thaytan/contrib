@@ -7,7 +7,6 @@ class AtkConan(ConanFile):
     name = "atk"
     version = tools.get_env("GIT_TAG", "2.35.1")
     description = "GObject-based multi-platform GUI toolkit"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"
     options = {
