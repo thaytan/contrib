@@ -7,7 +7,6 @@ class PythonConan(ConanFile):
     name = "python"
     version = tools.get_env("GIT_TAG", "3.7.4")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "Next generation of the python high-level scripting language"
 
