@@ -7,7 +7,6 @@ class IntelVaapiDriverConan(ConanFile):
     name = "intel-vaapi-driver"
     version = tools.get_env("GIT_TAG", "2.3.0")
     license = "MIT"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
     options = {"x11": [True, False], "wayland": [True, False]}
