@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 class GStreamerConan(ConanFile):
     name = "gstreamer"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "A framework for streaming media"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
