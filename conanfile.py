@@ -8,7 +8,6 @@ class GettextConan(ConanFile):
     name = "gettext"
     version = tools.get_env("GIT_TAG", "0.20.1")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://github.com/prozum/conan-" + name
     description = "GNU internationalization library"
     license = "GPL"
 
