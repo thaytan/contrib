@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools
 class GStreamerSvtHevcConan(ConanFile):
     name = "gstreamer-svt-hevc"
     version = tools.get_env("GIT_TAG", "1.4.3")
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     description = "The Scalable Video Technology for HEVC Encoder GStreamer plugin"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
