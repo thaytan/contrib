@@ -7,7 +7,6 @@ class LibtoolConan(ConanFile):
     name = "libtool"
     version = tools.get_env("GIT_TAG", "2.4.6")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "GPL"
     description = "A generic library support script"
     exports = "libtool-prefix-fix.patch"
