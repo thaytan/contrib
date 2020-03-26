@@ -5,7 +5,6 @@ class ExpatConan(ConanFile):
     name = "expat"
     version = tools.get_env("GIT_TAG", "2.2.7")
     description = "An XML parser library"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
 
