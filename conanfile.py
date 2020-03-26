@@ -189,6 +189,5 @@ class pkgconf(Generator):
 class GeneratorsPackage(ConanFile):
     name = "generators"
     version = "1.0.0"
-    url = "https://gitlab.com/aivero/public/conan-" + name
     license = "MIT"
     description = "Conan generators"
