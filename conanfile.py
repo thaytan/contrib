@@ -5,7 +5,6 @@ class LibVaConan(ConanFile):
     name = "libva"
     version = tools.get_env("GIT_TAG", "2.3.0")
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"
     options = {"x11": [True, False], "wayland": [True, False]}
