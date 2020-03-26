@@ -6,7 +6,6 @@ class AmqpCppConan(ConanFile):
     name = "amqp-cpp"
     version = tools.get_env("GIT_TAG", "4.1.5")
     settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"
     exports = "openssl.patch"
