@@ -23,7 +23,7 @@ class GstreamerNvJetsonV4l2(ConanFile):
         self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("nv-jetson-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
         self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user))
-        self.requires("gstreamer-nv-jetson-egl/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("libglvnd/[>=1.2.0]@%s/stable" % (self.user))
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
