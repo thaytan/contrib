@@ -1,5 +1,5 @@
+import os
 import re
-from os import listdir, path, symlink
 
 from conans import ConanFile, tools
 
@@ -13,9 +13,10 @@ download_tx1_url = {
     "32.3.1": "https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_release_aarch64/Tegra210_Linux_R32.3.1_aarch64.tbz2"
 }
 
+
 class NvJetsonDrivers(ConanFile):
     name = "nv-jetson-drivers"
-    version = tools.get_env("GIT_TAG", "32.2.1")
+    version = tools.get_env("GIT_TAG", "32.3.1")
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     settings = "os", "compiler", "build_type", "arch"
@@ -37,7 +38,7 @@ class NvJetsonDrivers(ConanFile):
         tools.rmdir("Linux_for_Tegra")
 
     def package(self):
-        lib_folder = path.join(self.package_folder, "lib")
+        lib_folder = os.path.join(self.package_folder, "lib")
 
         if self.version in ("32.2.1"):
             self.copy("*.so*", dst="lib", keep_path=False, symlinks=False)
@@ -45,22 +46,22 @@ class NvJetsonDrivers(ConanFile):
         elif self.version in ("32.3.1"):
             self.copy("*.so*", src="usr/lib/aarch64-linux-gnu/tegra", dst="lib", keep_path=False, symlinks=True)
             # with tools.chdir(lib_folder):
-                # symlink("/usr/lib/aarch64-linux-gnu/tegra/libcuda.so", "libcuda.so" )
+            # symlink("/usr/lib/aarch64-linux-gnu/tegra/libcuda.so", "libcuda.so" )
             self.copy("*.so*", src="usr/lib/aarch64-linux-gnu/tegra-egl", dst="lib", keep_path=False, symlinks=False)
             self.copy("*.so*", src="usr/lib/xorg", dst="lib", keep_path=False, symlinks=False)
         else:
             raise KeyError("Unknown version: " + self.version)
 
         with tools.chdir(lib_folder):
-            for dl in listdir(lib_folder):
+            for dl in os.listdir(lib_folder):
                 old = re.search(r".*\.so((\.[0-9]+)+)$", dl)
                 new = re.search(r".*\.so", dl)
-                if old:
-                    try:
-                        symlink(old.group(0), new.group(0))
-                        print("Created symlink from " + old.group(0) + " to " + new.group(0))
-                    except:
-                        print("Symlink exists " + old.group(0) + " to " + new.group(0))
+                if not old:
+                    continue
+                if new and os.path.islink(new.group(0)):
+                    os.remove(new.group(0))
+                os.symlink(old.group(0), new.group(0))
+                print("Created symlink from " + old.group(0) + " to " + new.group(0))
 
     def package_info(self):
-        self.env_info.JETSON_DRIVER_PATH = path.join(self.package_folder, "lib")
+        self.env_info.JETSON_DRIVER_PATH = os.path.join(self.package_folder, "lib")
