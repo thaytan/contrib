@@ -2,10 +2,16 @@ import os
 
 from conans import ConanFile, tools
 
+mapper = {
+    "TX2": "T186",
+    "Xaviar": "T186",
+    "Nano": "T210",
+}
+
 
 class GstreamerNvJetsonV4l2(ConanFile):
     name = "gstreamer-nv-jetson-v4l2"
-    version = tools.get_env("GIT_TAG", "32.2.1")
+    version = tools.get_env("GIT_TAG", "32.3.1")
     license = "LGPL"
     description = "NVIDIA jetson v4l2 element"
     settings = "os", "compiler", "build_type", "arch"
@@ -26,16 +32,11 @@ class GstreamerNvJetsonV4l2(ConanFile):
         self.requires("libglvnd/[>=1.2.0]@%s/stable" % (self.user))
 
     def source(self):
-        if self.options.jetson in ("TX2", "Xavier"):
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
-        elif self.options.jetson == "Nano":
-            tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
-        else:
-            raise KeyError("Unknown option: " + self.options.jetson)
-        tools.untargz("public_sources/gst-nvvideo4linux2_src.tbz2", self.source_folder)
+        tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/%s/public_sources.tbz2" % (self.version.replace(".", "-"), mapper[str(self.options.jetson)]))
+        tools.untargz("Linux_for_Tegra/source/public/gst-nvvideo4linux2_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
+        tools.patch(patch_file="patches/Makefile.patch")
         tools.patch(patch_file="patches/gstv4l2.c.patch")
-        tools.patch(patch_file="patches/gstv4l2videoenc.c.patch")
 
     def build(self):
         env = {"LIB_INSTALL_DIR": os.path.join(self.deps_cpp_info["nv-jetson-drivers"].rootpath, "lib")}
