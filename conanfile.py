@@ -76,7 +76,7 @@ class NvJetsonV4l2(ConanFile):
             pc.write(pc_v4lconvert % (self.package_folder, self.version))
 
         # Make looks for libs in DEST_DIR
-        env = {"CONAN_BUILD_DIR": path.join(self.build_folder, "libv4lconvert")}
+        env = {"DEST_DIR": path.join(self.build_folder, "libv4lconvert")}
         with tools.chdir("libv4l2"), tools.environment_append(env):
             self.run("make")
             symlink("libnvv4l2.so", "libv4l2.so")
