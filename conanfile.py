@@ -1,4 +1,4 @@
-from os import path, symlink
+from os import path, symlink, listdir
 
 from conans import ConanFile, tools
 
@@ -39,42 +39,33 @@ class NvJetsonV4l2(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2", )
+    exports_sources = {"patches/*"}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
-    def requirements(self):
-        if self.version == "32.3.1":
-            self.requires("nv-jetson-drivers/%s@%s/stable" %
-                          (self.version, self.user))
-
     def source(self):
         if self.version == "32.3.1":
             if self.options.jetson in ("TX2", "Xavier"):
-                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/T186/public_sources.tbz2" %
-                          self.version.replace(".", "-"))
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/T186/public_sources.tbz2" % self.version.replace(".", "-"))
             elif self.options.jetson == "Nano":
-                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/T210/public_sources.tbz2" %
-                          self.version.replace(".", "-"))
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/T210/public_sources.tbz2" % self.version.replace(".", "-"))
             else:
                 raise KeyError("Unknown option: " + self.options.jetson)
-
-            tools.untargz(
-                "Linux_for_Tegra/source/public/v4l2_libs_src.tbz2", self.source_folder)
+            tools.untargz("Linux_for_Tegra/source/public/v4l2_libs_src.tbz2", self.source_folder)
             tools.rmdir("public_sources")
+            print(listdir())
+            tools.patch(patch_file="patches/Makefile.patch")
         else:
             if self.options.jetson in ("TX2", "Xavier"):
-                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" %
-                          self.version.replace(".", "-"))
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/TX2-AGX/sources/public_sources.tbz2" % self.version.replace(".", "-"))
             elif self.options.jetson == "Nano":
-                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" %
-                          self.version.replace(".", "-"))
+                tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Nano-TX1/sources/public_sources.tbz2" % self.version.replace(".", "-"))
             else:
                 raise KeyError("Unknown option: " + self.options.jetson)
 
-            tools.untargz("public_sources/v4l2_libs_src.tbz2",
-                          self.source_folder)
+            tools.untargz("public_sources/v4l2_libs_src.tbz2", self.source_folder)
             tools.rmdir("public_sources")
 
     def build(self):
@@ -85,7 +76,7 @@ class NvJetsonV4l2(ConanFile):
             pc.write(pc_v4lconvert % (self.package_folder, self.version))
 
         # Make looks for libs in DEST_DIR
-        env = {"DEST_DIR": path.join(self.source_folder, "libv4lconvert")}
+        env = {"CONAN_BUILD_DIR": path.join(self.build_folder, "libv4lconvert")}
         with tools.chdir("libv4l2"), tools.environment_append(env):
             self.run("make")
             symlink("libnvv4l2.so", "libv4l2.so")
