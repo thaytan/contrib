@@ -53,7 +53,7 @@ class NvJetsonV4l2(ConanFile):
             else:
                 raise KeyError("Unknown option: " + self.options.jetson)
 
-            tools.untargz("public_sources/Linux_for_Tegra/source/public/v4l2_libs_src.tbz2", self.source_folder)
+            tools.untargz("Linux_for_Tegra/source/public/v4l2_libs_src.tbz2", self.source_folder)
             tools.rmdir("public_sources")
         else:
             if self.options.jetson in ("TX2", "Xavier"):
