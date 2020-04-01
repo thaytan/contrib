@@ -1,0 +1,33 @@
+= Aivero RGB-D Toolkit
+
+Pack of main open source GStreamer elements we offer
+
+== Install
+
+Download the tarball, then run installation as shown below.
+
+.Install from tarball
+[source,bash]
+----
+
+# Create an installation directory and set permissions
+sudo mkdir -p /opt/aivero
+sudo chown $USER:$USER /opt/aivero
+
+# And extract the files into that directory
+tar -C / -xvf aivero_rgbd_toolkit_master.tar.bz2
+source /opt/aivero/rgbd_toolkit/aivero_environment.sh
+----
+
+In order to use the components, the `aivero_environment.sh` must be sourced. Only one environment
+may be sourced in a single shell session, if necessary please
+make sure to use multiple terminals (or terminal tabs).
+
+=== Test installation
+
+[source,bash]
+----
+source /opt/aivero/rgbd_toolkit/aivero_environment.sh
+gst-inspect-1.0 realsensesrc
+# Should show the man page for the realsensesrc
+----
