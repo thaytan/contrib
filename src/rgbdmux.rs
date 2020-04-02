@@ -309,8 +309,11 @@ impl ElementImpl for RgbdMux {
             .expect("Could not lock sink pads")
             .retain(|x| *x != pad_name);
 
-        // TODO: We should check whether we're in the process of shutting down before calling this
-        self.renegotiate_downstream_caps(element);
+        // Renegotiate only if the element is not shutting down due to EOS
+        let (state_result, _state_current, state_pending) = element.get_state(gst::CLOCK_TIME_NONE);
+        if state_result.is_ok() && state_pending != gst::State::VoidPending {
+            self.renegotiate_downstream_caps(element);
+        }
     }
 }
 
@@ -526,6 +529,25 @@ impl AggregatorImpl for RgbdMux {
 
         // Let parent handle all queries
         self.parent_src_query(aggregator, query)
+    }
+
+    fn sink_event(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        aggregator_pad: &gst_base::AggregatorPad,
+        event: gst::Event,
+    ) -> bool {
+        match event.view() {
+            gst::EventView::Eos(_) => {
+                // Simply forward the EOS event to the src pad
+                let src_pad = aggregator
+                    .get_static_pad("src")
+                    .expect("Aggregator element must have a src pad");
+                src_pad.push_event(event)
+            }
+            // Let parent handle all other events
+            _ => self.parent_sink_event(aggregator, aggregator_pad, event),
+        }
     }
 }
 
