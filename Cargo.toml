@@ -16,15 +16,17 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-glib = { version = "0.8" }
-gstreamer = { version = "0.14", features = ["subclassing"] }
-gstreamer-base = { version = "0.14", features = ["subclassing"] }
-gstreamer-video = { version = "0.14", features = ["subclassing"] }
-lazy_static = { version = "1.4" }
+glib = "0.9"
+gstreamer = "0.15"
+gstreamer-base = "0.15"
+gstreamer-video = "0.15"
+lazy_static = "1.4"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "0.4.0"
+branch = "update-glib-and-gst"
+# TODO: Remember to change once MR has been merged
+# tag = "1.0.0"
 
 [dependencies.k4a]
 git = "https://gitlab.com/aivero/hardware/k4a-rs"

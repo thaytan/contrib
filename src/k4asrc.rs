@@ -1212,7 +1212,15 @@ impl ObjectImpl for K4aSrc {
         let property = &PROPERTIES[id];
         match *property {
             subclass::Property("serial", ..) => {
-                let serial = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `serial`. Expected a `string`, but got: {:?}", value));
+                let serial = value
+                    .get()
+                    .unwrap_or_else(|err| {
+                        panic!(
+                            "k4asrc: Failed to set property `serial` due to incorrect type: {:?}",
+                            err
+                        )
+                    })
+                    .unwrap_or_default();
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1227,9 +1235,13 @@ impl ObjectImpl for K4aSrc {
                     .set_live(true);
             }
             subclass::Property("recording-location", ..) => {
-                let recording_location = value
+                let mut recording_location = value
                     .get()
-                    .unwrap_or_else(|| panic!("k4asrc: Failed to set property `recording-location`. Expected a `string`, but got: {:?}", value));
+                    .unwrap_or_else(|err| {
+                        panic!("k4asrc: Failed to set property `recording-location` due to incorrect type: {:?}", err)
+                    })
+                    .unwrap_or_default();
+                expand_tilde_as_home_dir(&mut recording_location);
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1246,7 +1258,12 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("enable-depth", ..) => {
-                let enable_depth = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-depth`. Expected a `bool`, but got: {:?}", value));
+                let enable_depth = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `enable-depth` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1257,7 +1274,12 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.depth = enable_depth;
             }
             subclass::Property("enable-ir", ..) => {
-                let enable_ir = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-ir`. Expected a `bool`, but got: {:?}", value));
+                let enable_ir = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `enable-ir` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1268,7 +1290,12 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.ir = enable_ir;
             }
             subclass::Property("enable-color", ..) => {
-                let enable_color = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-color`. Expected a `bool`, but got: {:?}", value));
+                let enable_color = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `enable-color` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1279,7 +1306,12 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.color = enable_color;
             }
             subclass::Property("enable-imu", ..) => {
-                let enable_imu = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `enable-imu`. Expected a `bool`, but got: {:?}", value));
+                let enable_imu = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `enable-imu` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1290,40 +1322,55 @@ impl ObjectImpl for K4aSrc {
                 settings.desired_streams.imu = enable_imu;
             }
             subclass::Property("color-format", ..) => {
-                let value = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `color-format`. Expected `K4aColorFormat` or `i32`, but got: {:?}", value));
+                let color_format = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `color-format` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
                     obj: element,
                     "Changing property `color-format` from {:?} to {:?}",
                     settings.device_settings.color_format,
-                    value
+                    color_format
                 );
-                settings.device_settings.color_format = value;
+                settings.device_settings.color_format = color_format;
             }
             subclass::Property("color-resolution", ..) => {
-                let value = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `color-resolution`. Expected `K4aColorResolution` or `i32`, but got: {:?}", value));
+                let color_resolution = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `color-resolution` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
                     "Changing property `color-resolution` from {:?} to {:?}",
                     settings.device_settings.color_resolution,
-                    value
+                    color_resolution
                 );
-                settings.device_settings.color_resolution = value;
+                settings.device_settings.color_resolution = color_resolution;
             }
             subclass::Property("depth-mode", ..) => {
-                let value = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `depth-mode`. Expected `K4aDepthMode` or `i32`, but got: {:?}", value));
+                let depth_mode = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `depth-mode` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
                     obj: element,
                     "Changing property `depth-mode` from {:?} to {:?}",
                     settings.device_settings.depth_mode,
-                    value
+                    depth_mode
                 );
-                settings.device_settings.depth_mode = value;
+                settings.device_settings.depth_mode = depth_mode;
             }
             subclass::Property("framerate", ..) => {
-                let framerate = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `framerate`. Expected `K4aFramerate` or `i32`, but got: {:?}", value));
+                let framerate = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `framerate` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1334,7 +1381,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.framerate = framerate;
             }
             subclass::Property("get-capture-timeout", ..) => {
-                let get_capture_timeout = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `get-capture-timeout`. Expected a `i32`, but got: {:?}", value));
+                let get_capture_timeout = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `get-capture-timeout` due to incorrect type: {:?}", err)   );
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1345,7 +1392,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.get_capture_timeout = get_capture_timeout;
             }
             subclass::Property("loop-recording", ..) => {
-                let loop_recording = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `loop-recording`. Expected a `bool`, but got: {:?}", value));
+                let loop_recording = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `loop-recording` due to incorrect type: {:?}", err) );
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1356,7 +1403,7 @@ impl ObjectImpl for K4aSrc {
                 settings.playback_settings.loop_recording = loop_recording;
             }
             subclass::Property("real-time-playback", ..) => {
-                let real_time_playback = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `real-time-playback`. Expected a `bool`, but got: {:?}", value));
+                let real_time_playback = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `real-time-playback` due to incorrect type: {:?}", err) );
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1373,7 +1420,7 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("rectify-depth", ..) => {
-                let rectify_depth = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `rectify-depth`. Expected a `bool`, but got: {:?}", value));
+                let rectify_depth = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `rectify-depth` due to incorrect type: {:?}", err) );
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1384,7 +1431,7 @@ impl ObjectImpl for K4aSrc {
                 settings.rectify_depth = rectify_depth;
             }
             subclass::Property("attach-camera-meta", ..) => {
-                let attach_camera_meta = value.get().unwrap_or_else(|| panic!("k4asrc: Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}", value));
+                let attach_camera_meta = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `attach-camera-meta` due to incorrect type: {:?}", err)                );
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1395,8 +1442,8 @@ impl ObjectImpl for K4aSrc {
                 settings.attach_camera_meta = attach_camera_meta;
             }
             subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode = value.get::<TimestampMode>()
-                    .unwrap_or_else(|| panic!("k4asrc: Failed to set property `timestamp-mode`. Expected `TimestampMode` or `i32`, but got: {:?}", value));
+                let timestamp_mode = value.get_some()
+                    .unwrap_or_else(|err| panic!("k4asrc: Failed to set property `timestamp-mode` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1407,6 +1454,16 @@ impl ObjectImpl for K4aSrc {
             }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         };
+    }
+}
+
+/// Helper function that replaces "~/" at the beginning of `path` with "$HOME/",
+/// while `path` remains unchanged if it does not start with "~/".
+fn expand_tilde_as_home_dir(path: &mut String) {
+    if path.starts_with("~/") {
+        let home_path = std::env::var("HOME")
+        .expect("k4asrc: $HOME must be specified if a path for property is specified with \"~\" (tilde).");
+        path.replace_range(..1, &home_path);
     }
 }
 
