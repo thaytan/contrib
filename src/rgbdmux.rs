@@ -534,15 +534,20 @@ impl AggregatorImpl for RgbdMux {
     fn sink_event(
         &self,
         aggregator: &gst_base::Aggregator,
-        _aggregator_pad: &gst_base::AggregatorPad,
+        aggregator_pad: &gst_base::AggregatorPad,
         event: gst::Event,
     ) -> bool {
-        let src_pad = aggregator
-            .get_static_pad("src")
-            .expect("Aggregator element must have a src pad");
-
-        // Simply forward all events to the src pad
-        src_pad.push_event(event)
+        match event.view() {
+            gst::EventView::Eos(_) => {
+                // Simply forward the EOS event to the src pad
+                let src_pad = aggregator
+                    .get_static_pad("src")
+                    .expect("Aggregator element must have a src pad");
+                src_pad.push_event(event)
+            }
+            // Let parent handle all other events
+            _ => self.parent_sink_event(aggregator, aggregator_pad, event),
+        }
     }
 }
 
