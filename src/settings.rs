@@ -51,9 +51,9 @@ pub(crate) const DEFAULT_COLOR_HEIGHT: i32 = 720;
 
 /// A struct containing properties of `realsensesrc`
 pub(crate) struct Settings {
-    pub(crate) serial: Option<String>,
-    pub(crate) rosbag_location: Option<String>,
-    pub(crate) json_location: Option<String>,
+    pub(crate) serial: String,
+    pub(crate) rosbag_location: String,
+    pub(crate) json_location: String,
     pub(crate) streams: Streams,
     pub(crate) loop_rosbag: bool,
     pub(crate) wait_for_frames_timeout: u32,
@@ -73,9 +73,9 @@ pub(crate) struct Streams {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            rosbag_location: None,
-            serial: None,
-            json_location: None,
+            rosbag_location: String::default(),
+            serial: String::default(),
+            json_location: String::default(),
             streams: Streams {
                 enabled_streams: EnabledStreams {
                     depth: DEFAULT_ENABLE_DEPTH,
