@@ -24,7 +24,7 @@ tag = "0.4.0"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
-tag = "1.1.0"
+tag = "2.0.0"
 
 [build-dependencies]
 capnpc = "0.12"

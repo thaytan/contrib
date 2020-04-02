@@ -4,12 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2020-03-26
+
+## [2.0.0] - 2020-04-02
 
 ### Changed
 
 - Use implementation of standard `RgbdTimestamps` trait instead of custom timestamping. This introduces different variants for `timestamp-mode` property.
 - Default value for `loop-rosbag` is now *false*.
+
+
+## [1.2.1] - 2020-03-27
+
+### Fixed
+
+- Updated librealsense-rs to newest version (2.0.0) in cargo.toml.
+
 
 ## [1.2.0] - 2020-03-04
 
