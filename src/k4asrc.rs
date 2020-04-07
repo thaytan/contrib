@@ -55,7 +55,7 @@ lazy_static! {
         "k4asrc",
         gst::DebugColorFlags::empty(),
         Some("K4A Source"),
-    );
+);
 }
 
 /// Internals of the element that are under a mutex.
@@ -480,7 +480,7 @@ impl K4aSrc {
         if !Streams::are_streams_available(settings.desired_streams, available_streams) {
             return Err(K4aSrcError::Failure(
                 "k4asrc: Some of the desired stream(s) are not available in the recording for playback",
-            ));
+          ));
         }
 
         // Make sure that Playback contains color stream if depth rectification is enabled
@@ -488,7 +488,7 @@ impl K4aSrc {
             return Err(K4aSrcError::Failure(
                 "k4asrc: Depth frames cannot be rectified if the recording does NOT contain `color` stream. \
                 Please set the property `rectify-depth` to false or use a different recording.",
-            ));
+          ));
         }
 
         // Get Calibration from the Playback
@@ -829,11 +829,11 @@ impl K4aSrc {
         rgbd::attach_aux_buffer_and_tag(
             output_buffer.get_mut().ok_or(gst_error_msg!(
             gst::ResourceError::Failed,
-            [
-                "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
-                STREAM_ID_IMU
-            ]
-        ))?,
+                [
+                    "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
+                    STREAM_ID_IMU
+                ]
+            ))?,
             &mut buffer,
             STREAM_ID_IMU,
         )?;
@@ -891,12 +891,12 @@ impl K4aSrc {
         // Attach the camera_meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
             output_buffer.get_mut().ok_or(gst_error_msg!(
-            gst::ResourceError::Failed,
-            [
-                "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
-                STREAM_ID_CAMERAMETA
-            ]
-        ))?,
+                gst::ResourceError::Failed,
+                [
+                    "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
+                    STREAM_ID_CAMERAMETA
+                ]
+            ))?,
             &mut buffer,
             STREAM_ID_CAMERAMETA,
         )?;
@@ -1381,7 +1381,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.framerate = framerate;
             }
             subclass::Property("get-capture-timeout", ..) => {
-                let get_capture_timeout = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `get-capture-timeout` due to incorrect type: {:?}", err)   );
+                let get_capture_timeout = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `get-capture-timeout` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1392,7 +1392,7 @@ impl ObjectImpl for K4aSrc {
                 settings.device_settings.get_capture_timeout = get_capture_timeout;
             }
             subclass::Property("loop-recording", ..) => {
-                let loop_recording = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `loop-recording` due to incorrect type: {:?}", err) );
+                let loop_recording = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `loop-recording` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1403,7 +1403,7 @@ impl ObjectImpl for K4aSrc {
                 settings.playback_settings.loop_recording = loop_recording;
             }
             subclass::Property("real-time-playback", ..) => {
-                let real_time_playback = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `real-time-playback` due to incorrect type: {:?}", err) );
+                let real_time_playback = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `real-time-playback` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1420,7 +1420,7 @@ impl ObjectImpl for K4aSrc {
                 }
             }
             subclass::Property("rectify-depth", ..) => {
-                let rectify_depth = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `rectify-depth` due to incorrect type: {:?}", err) );
+                let rectify_depth = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `rectify-depth` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1431,7 +1431,7 @@ impl ObjectImpl for K4aSrc {
                 settings.rectify_depth = rectify_depth;
             }
             subclass::Property("attach-camera-meta", ..) => {
-                let attach_camera_meta = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `attach-camera-meta` due to incorrect type: {:?}", err)                );
+                let attach_camera_meta = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `attach-camera-meta` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
