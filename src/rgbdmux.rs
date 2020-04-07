@@ -220,7 +220,7 @@ impl ObjectImpl for RgbdMux {
         let property = &PROPERTIES[id];
         match *property {
             subclass::Property("drop-if-missing", ..) => {
-                let drop_if_missing = value.get().expect(&format!("Failed to set property `drop-if-missing` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
+                let drop_if_missing = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `drop_if_missing` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -231,7 +231,7 @@ impl ObjectImpl for RgbdMux {
                 settings.drop_if_missing = drop_if_missing;
             }
             subclass::Property("deadline-multiplier", ..) => {
-                let deadline_multiplier = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a float, but got: {:?}", value));
+                let deadline_multiplier = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `deadline-multiplier` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -242,7 +242,7 @@ impl ObjectImpl for RgbdMux {
                 settings.deadline_multiplier = deadline_multiplier;
             }
             subclass::Property("drop-to-synchronise", ..) => {
-                let drop_to_synchronise = value.get().expect(&format!("Failed to set property `drop-to-synchronise` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
+                let drop_to_synchronise = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `drop-to-synchronise` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -253,7 +253,7 @@ impl ObjectImpl for RgbdMux {
                 settings.drop_to_synchronise = drop_to_synchronise;
             }
             subclass::Property("send-gap-events", ..) => {
-                let send_gap_events = value.get().expect(&format!("Failed to set property `send-gap-events` on `rgbdmux`. Expected a boolean, but got: {:?}", value));
+                let send_gap_events = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `send-gap-events` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -294,12 +294,12 @@ impl ElementImpl for RgbdMux {
     fn release_pad(&self, element: &gst::Element, pad: &gst::Pad) {
         // De-activate the pad
         pad.set_active(false)
-            .expect(&format!("Could not deactivate a sink-pad: {:?}", pad));
+            .unwrap_or_else(|_| panic!("Could not deactivate a sink-pad: {:?}", pad));
 
         // Remove the pad from the element
         element
             .remove_pad(pad)
-            .expect(&format!("Could not remove a sink-pad: {:?}", pad));
+            .unwrap_or_else(|_| panic!("Could not remove a sink-pad: {:?}", pad));
 
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
@@ -386,16 +386,14 @@ impl AggregatorImpl for RgbdMux {
                 // Drop all buffers on already existing pads (if any)
                 for pad_name in sink_pads.iter() {
                     loop {
-                        if aggregator
+                        let pad = aggregator
                             .get_static_pad(pad_name)
-                            .expect(
-                                format!("Could not get static pad with name {}", pad_name).as_str(),
-                            )
+                            .unwrap_or_else(|| {
+                                panic!("Could not get static pad with name {}", pad_name)
+                            })
                             .downcast::<gst_base::AggregatorPad>()
-                            .expect("Could not downcast pad to AggregatorPad")
-                            .drop_buffer()
-                            == false
-                        {
+                            .expect("Could not downcast pad to AggregatorPad");
+                        if !pad.drop_buffer() {
                             break;
                         }
                     }
@@ -417,7 +415,7 @@ impl AggregatorImpl for RgbdMux {
                     obj: aggregator,
                     "Invalid request pad name. Only sink pads may be requested."
                 );
-                return None;
+                None
             }
         }
     }
@@ -490,6 +488,7 @@ impl AggregatorImpl for RgbdMux {
     /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
     /// * `query` - The query that should be handled.
     fn src_query(&self, aggregator: &gst_base::Aggregator, query: &mut gst::QueryRef) -> bool {
+        #[allow(clippy::single_match)]
         match query.view_mut() {
             // Wait until CAPS query is received on the src pad
             gst::QueryView::Caps(_query_caps) => {
@@ -563,7 +562,7 @@ impl RgbdMux {
     ) -> gst_base::AggregatorPad {
         aggregator
             .get_static_pad(pad_name)
-            .expect(format!("Could not get static pad with name {}", pad_name).as_str())
+            .unwrap_or_else(|| panic!("Could not get static pad with name {}", pad_name))
             .downcast::<gst_base::AggregatorPad>()
             .expect("Could not downcast pad to AggregatorPad")
     }
@@ -612,7 +611,7 @@ impl RgbdMux {
     fn drop_buffers_if_one_missing(
         &self,
         aggregator: &gst_base::Aggregator,
-        sink_pad_names: &Vec<String>,
+        sink_pad_names: &[String],
     ) -> Result<(), MuxingError> {
         // Iterate over all sink pads
         for sink_pad_name in sink_pad_names.iter() {
@@ -648,7 +647,7 @@ impl RgbdMux {
     fn drop_all_queued_buffers(
         &self,
         aggregator: &gst_base::Aggregator,
-        sink_pad_names: &Vec<String>,
+        sink_pad_names: &[String],
     ) {
         // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
         self.clock_internals
@@ -675,7 +674,7 @@ impl RgbdMux {
     fn check_synchronisation(
         &self,
         aggregator: &gst_base::Aggregator,
-        sink_pad_names: &Vec<String>,
+        sink_pad_names: &[String],
     ) -> Result<(), MuxingError> {
         // Get timestamps of buffers queued on the sink pads
         let timestamps: Vec<(String, gst::ClockTime)> =
@@ -726,7 +725,7 @@ impl RgbdMux {
     fn get_timestamps(
         &self,
         aggregator: &gst_base::Aggregator,
-        sink_pad_names: &Vec<String>,
+        sink_pad_names: &[String],
     ) -> Vec<(String, gst::ClockTime)> {
         sink_pad_names
             .iter()
@@ -754,7 +753,7 @@ impl RgbdMux {
     fn mux_buffers(
         &self,
         aggregator: &gst_base::Aggregator,
-        sink_pad_names: &Vec<String>,
+        sink_pad_names: &[String],
     ) -> gst::Buffer {
         // Place a buffer from the first pad into the main buffer
         // If there is no buffer, leave the main buffer empty
@@ -843,15 +842,18 @@ impl RgbdMux {
             match field {
                 "format" => {
                     let src_field_name = format!("{}_{}", stream_name, field);
-                    src_caps.set(&src_field_name, &value.get::<&str>().unwrap());
+                    src_caps.set(
+                        &src_field_name,
+                        &value.get::<&str>().unwrap().unwrap_or_default(),
+                    );
                 }
                 "width" => {
                     let src_field_name = format!("{}_{}", stream_name, field);
-                    src_caps.set(&src_field_name, &value.get::<i32>().unwrap());
+                    src_caps.set(&src_field_name, &value.get_some::<i32>().unwrap());
                 }
                 "height" => {
                     let src_field_name = format!("{}_{}", stream_name, field);
-                    src_caps.set(&src_field_name, &value.get::<i32>().unwrap());
+                    src_caps.set(&src_field_name, &value.get_some::<i32>().unwrap());
                 }
                 "framerate" => {
                     // Get locks on the internals
@@ -862,7 +864,7 @@ impl RgbdMux {
                     let settings = &self.settings.lock().expect("Could not lock settings");
 
                     // Update `framerate`
-                    clock_internals.framerate = value.get::<gst::Fraction>().unwrap();
+                    clock_internals.framerate = value.get_some::<gst::Fraction>().unwrap();
 
                     // If deadline based aggregation is selected, update the `frameset_duration`
                     clock_internals.frameset_duration = if settings.drop_if_missing {
@@ -929,14 +931,15 @@ impl RgbdMux {
             // First find the current CAPS of Pad we're currently dealing with
             let pad_caps = element
                 .get_static_pad(pad_name)
-                .expect(&format!(
-                    "Could not get static pad from aggregator with name `{}`",
-                    pad_name
-                ))
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Could not get static pad from aggregator with name `{}`",
+                        pad_name
+                    )
+                })
                 .get_current_caps();
-            match pad_caps {
-                Some(pc) => self.push_sink_caps_format(&pc, pad_name, mut_caps),
-                None => { /*ignore*/ }
+            if let Some(pc) = pad_caps {
+                self.push_sink_caps_format(&pc, pad_name, mut_caps)
             }
         }
 
@@ -980,7 +983,10 @@ impl RgbdMux {
                 if !field.contains("_format") {
                     None
                 } else {
-                    Some((field.replace("_format", ""), value.get::<String>().unwrap()))
+                    Some((
+                        field.replace("_format", ""),
+                        value.get::<String>().unwrap().unwrap_or_default(),
+                    ))
                 }
             })
             .collect::<HashMap<String, String>>()
@@ -1033,10 +1039,9 @@ impl RgbdMux {
                     &caps,
                     default_sink_pad_template.get_property_gtype(),
                 )
-                .expect(&format!(
-                    "Could not create a custom template for {} pad",
-                    pad_name
-                ));
+                .unwrap_or_else(|_| {
+                    panic!("Could not create a custom template for {} pad", pad_name)
+                });
             }
         }
 
