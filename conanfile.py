@@ -1,3 +1,5 @@
+import os
+
 from conans import ConanFile, Meson, tools
 
 
@@ -28,5 +30,5 @@ class LibVaConan(ConanFile):
         args = ["--auto-features=disabled"]
         args.append("-Dwith_x11=" + ("yes" if self.options.x11 else "no"))
         args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
-        meson.configure(source_folder="%s-%s" % (self.name, self.version))
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
