@@ -8,7 +8,6 @@ class GstreamerColorizerConan(ConanFile):
     url = "https://aivero.com"
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = ["CMakeLists.txt", "src/*"]
-    generators = "env"
 
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
@@ -16,7 +15,6 @@ class GstreamerColorizerConan(ConanFile):
         self.version = tag if tag and branch.startswith("HEAD") else branch
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=0.1]@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
@@ -35,11 +33,5 @@ class GstreamerColorizerConan(ConanFile):
             cmake.build()
             cmake.install()
 
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*gstcolorizer.c", "src")
-            self.copy("*gstcolorizer.h", "src")
-
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(
-            self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
