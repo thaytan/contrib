@@ -32,7 +32,6 @@ class RgbdConan(ConanFile):
         "Cargo.toml",
         "src/*",
     ]
-    generators = "env"
 
     def source(self):
         # Override the version supplied to GStreamer, as specified in lib.rs
@@ -44,7 +43,6 @@ class RgbdConan(ConanFile):
                     "[package]\nname = \"%s\"\nversion = \"%s\"" % (self.name, make_cargo_version(self.version))))
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
 
@@ -65,4 +63,3 @@ class RgbdConan(ConanFile):
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
-        self.cpp_info.srcdirs.append("src")
