@@ -9,7 +9,6 @@ class DepthMetaConan(ConanFile):
     url = "https://aivero.com"
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = ["CMakeLists.txt", "src/*"]
-    generators = "env"
 
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
@@ -33,12 +32,3 @@ class DepthMetaConan(ConanFile):
             cmake = CMake(self)
             cmake.configure()
             cmake.install()
-
-    def package(self):
-        if self.settings.build_type == "Debug":
-            self.copy("*-meta.c", "src")
-            self.copy("*-meta.h", "src")
-
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        self.cpp_info.srcdirs.append("src")
