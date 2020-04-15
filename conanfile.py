@@ -40,8 +40,8 @@ class GStreamerPluginsBaseConan(ConanFile):
         "orc=True",
         "opus=True",
         "pango=True",
-        "audioconvert=False",
-        "videoscale=False",
+        "audioconvert=True",
+        "videoscale=True",
         "audioresample=False"
     )
 
