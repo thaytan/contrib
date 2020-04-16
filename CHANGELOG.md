@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update dependencies
   - `glib` to 0.9
   - `gst` to 0.15
+### Fixed
+- Timestamps bug that caused pipeline to freeze if the camera clock was behind GStreamer clock.
 
 ## [0.4.0] - 2020-03-25
 ### Added
