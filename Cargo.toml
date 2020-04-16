@@ -32,6 +32,12 @@ branch = "update-glib-and-gst"
 git = "https://gitlab.com/aivero/hardware/k4a-rs"
 tag = "0.4.1"
 
+# Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
+
 [lib]
 name = "gstk4asrc"
 crate-type = ["cdylib"]
