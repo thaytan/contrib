@@ -251,8 +251,17 @@ pub trait RgbdTimestamps: BaseSrcImpl {
                 // Compute first frame timestamp, if not yet defined
                 if base_src.is_live() {
                     // For live mode, get the offset of the first frame based on the camera timestamp and current running time
-                    timestamp_internals.stream_start_offset =
-                        camera_timestamp - get_running_time(base_src);
+                    // Make sure the timestamp is positive as gst::ClockTime uses u64 internally
+                    // Furthermore, assign `is_camera_ahead_of_gstreamer` for future reference
+                    if camera_timestamp > get_running_time(base_src) {
+                        timestamp_internals.stream_start_offset =
+                            camera_timestamp - get_running_time(base_src);
+                        timestamp_internals.is_camera_ahead_of_gstreamer = true;
+                    } else {
+                        timestamp_internals.stream_start_offset =
+                            get_running_time(base_src) - camera_timestamp;
+                        timestamp_internals.is_camera_ahead_of_gstreamer = false;
+                    }
                 } else {
                     // For non-line mode, get the offset of the first frame based only on the camera timestamp, so that the first buffer has timestamp of 0
                     timestamp_internals.stream_start_offset = camera_timestamp;
@@ -260,9 +269,16 @@ pub trait RgbdTimestamps: BaseSrcImpl {
                 // Set the timestamp of the first frameset to 0
                 timestamp_internals.frameset_common_timestamp = gst::ClockTime::from_nseconds(0);
             } else {
-                // Once first frame offset is initialised, subtract from it the timestamp of the frame
-                timestamp_internals.frameset_common_timestamp =
-                    camera_timestamp - timestamp_internals.stream_start_offset;
+                // Once first frame offset is initialised, use the offset to provide adequate timestamp
+                if timestamp_internals.is_camera_ahead_of_gstreamer {
+                    // Subtract if camera clock domain is ahead of GStreamer
+                    timestamp_internals.frameset_common_timestamp =
+                        camera_timestamp - timestamp_internals.stream_start_offset;
+                } else {
+                    // Add otherwise
+                    timestamp_internals.frameset_common_timestamp =
+                        camera_timestamp + timestamp_internals.stream_start_offset;
+                }
             }
         }
 
@@ -309,8 +325,17 @@ pub trait RgbdTimestamps: BaseSrcImpl {
         if timestamp_internals.stream_start_offset == gst::CLOCK_TIME_NONE {
             if base_src.is_live() {
                 // For live mode, get the offset of the first frame based on the camera timestamp and current running time
-                timestamp_internals.stream_start_offset =
-                    camera_timestamp - get_running_time(base_src);
+                // Make sure the timestamp is positive as gst::ClockTime uses u64 internally
+                // Furthermore, assign `is_camera_ahead_of_gstreamer` for future reference
+                if camera_timestamp > get_running_time(base_src) {
+                    timestamp_internals.stream_start_offset =
+                        camera_timestamp - get_running_time(base_src);
+                    timestamp_internals.is_camera_ahead_of_gstreamer = true;
+                } else {
+                    timestamp_internals.stream_start_offset =
+                        get_running_time(base_src) - camera_timestamp;
+                    timestamp_internals.is_camera_ahead_of_gstreamer = false;
+                }
             } else {
                 // For non-line mode, get the offset of the first frame based only on the camera timestamp, so that the first buffer has timestamp of 0
                 timestamp_internals.stream_start_offset = camera_timestamp;
@@ -320,14 +345,27 @@ pub trait RgbdTimestamps: BaseSrcImpl {
         // Update the common timestamp when processing the main buffer
         // The common timestamp is used for meta streams that do not have camera timestamps
         if is_buffer_main {
-            // Use the timestamp of the corresponding buffer, subtracted by the first frame offset
-            timestamp_internals.frameset_common_timestamp =
-                camera_timestamp - timestamp_internals.stream_start_offset;
+            // Once first frame offset is initialised, use the offset to provide adequate timestamp
+            if timestamp_internals.is_camera_ahead_of_gstreamer {
+                // Subtract if camera clock domain is ahead of GStreamer
+                timestamp_internals.frameset_common_timestamp =
+                    camera_timestamp - timestamp_internals.stream_start_offset;
+            } else {
+                // Add otherwise
+                timestamp_internals.frameset_common_timestamp =
+                    camera_timestamp + timestamp_internals.stream_start_offset;
+            }
             return timestamp_internals.frameset_common_timestamp;
         }
 
-        // Use the timestamp of the corresponding buffer, subtracted by the first frame offset
-        camera_timestamp - timestamp_internals.stream_start_offset
+        // Once first frame offset is initialised, use the offset to provide adequate timestamp
+        if timestamp_internals.is_camera_ahead_of_gstreamer {
+            // Subtract if camera clock domain is ahead of GStreamer
+            camera_timestamp - timestamp_internals.stream_start_offset
+        } else {
+            // Add otherwise
+            camera_timestamp + timestamp_internals.stream_start_offset
+        }
     }
 }
 
