@@ -58,7 +58,7 @@ impl Streams {
     /// # Returns
     /// * `true` if at least one video stream is enabled.
     /// * `false` if no stream is enabled.
-    pub(crate) fn is_any_video_enabled(&self) -> bool {
+    pub(crate) fn is_any_video_enabled(self) -> bool {
         self.depth | self.ir | self.color
     }
 
@@ -72,12 +72,12 @@ impl Streams {
     /// # Returns
     /// * `Vec<&str>` of conflicting streams, which is empty if there is no conflict.
     pub(crate) fn are_streams_available(
-        enabled_streams: &Streams,
-        available_streams: &Streams,
+        enabled_streams: Streams,
+        available_streams: Streams,
     ) -> bool {
-        !((enabled_streams.depth && !available_streams.depth)
-            || (enabled_streams.ir && !available_streams.ir)
-            || (enabled_streams.color && !available_streams.color)
-            || (enabled_streams.imu && !available_streams.imu))
+        (available_streams.imu || !enabled_streams.imu)
+            && (available_streams.color || !enabled_streams.color)
+            && (available_streams.ir || !enabled_streams.ir)
+            && (available_streams.depth || !enabled_streams.depth)
     }
 }
