@@ -121,304 +121,6 @@ impl ObjectSubclass for RealsenseSrc {
     }
 }
 
-impl ObjectImpl for RealsenseSrc {
-    glib_object_impl!();
-
-    fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
-        let element = obj
-            .downcast_ref::<gst_base::BaseSrc>()
-            .expect("Could not cast realsensesrc to BaseSrc");
-        let settings = &mut self
-            .internals
-            .lock()
-            .expect("Could not obtain lock internals mutex")
-            .settings;
-
-        let property = &PROPERTIES[id];
-        match *property {
-            subclass::Property("serial", ..) => {
-                let serial = value.get::<String>();
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `serial` from {:?} to {:?}",
-                    settings.serial,
-                    serial
-                );
-                settings.serial = serial;
-                obj.downcast_ref::<gst_base::BaseSrc>()
-                    .unwrap()
-                    .set_live(true);
-            }
-            subclass::Property("rosbag-location", ..) => {
-                let rosbag_location = value.get::<String>();
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `rosbag-location` from {:?} to {:?}",
-                    settings.rosbag_location,
-                    rosbag_location
-                );
-                settings.rosbag_location = rosbag_location;
-                obj.downcast_ref::<gst_base::BaseSrc>()
-                    .unwrap()
-                    .set_live(settings.real_time_rosbag_playback);
-            }
-            subclass::Property("json-location", ..) => {
-                let json_location = value.get::<String>();
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `json-location` from {:?} to {:?}",
-                    settings.json_location,
-                    json_location
-                );
-                settings.json_location = json_location;
-            }
-            subclass::Property("enable-depth", ..) => {
-                let enable_depth = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-depth` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `enable-depth` from {} to {}",
-                    settings.streams.enabled_streams.depth,
-                    enable_depth
-                );
-                settings.streams.enabled_streams.depth = enable_depth;
-            }
-            subclass::Property("enable-infra1", ..) => {
-                let enable_infra1 = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-infra` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `enable-infra1` from {} to {}",
-                    settings.streams.enabled_streams.infra1,
-                    enable_infra1
-                );
-                settings.streams.enabled_streams.infra1 = enable_infra1;
-            }
-            subclass::Property("enable-infra2", ..) => {
-                let enable_infra2 = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-infra2` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `enable-infra2` from {} to {}",
-                    settings.streams.enabled_streams.infra2,
-                    enable_infra2
-                );
-                settings.streams.enabled_streams.infra2 = enable_infra2;
-            }
-            subclass::Property("enable-color", ..) => {
-                let enable_color = value.get().unwrap_or_else(|| panic!("Failed to set property `enable-color` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `enable-color` from {} to {}",
-                    settings.streams.enabled_streams.color,
-                    enable_color
-                );
-                settings.streams.enabled_streams.color = enable_color;
-            }
-            subclass::Property("depth-width", ..) => {
-                let depth_width = value.get().unwrap_or_else(|| panic!("Failed to set property `depth-width` on realsensesrc. Expected an int, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `depth-width` from {} to {}",
-                    settings.streams.depth_resolution.width,
-                    depth_width
-                );
-                settings.streams.depth_resolution.width = depth_width;
-            }
-            subclass::Property("depth-height", ..) => {
-                let depth_height = value.get().unwrap_or_else(|| panic!("Failed to set property `depth-height` on realsensesrc. Expected an int, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `depth-height` from {} to {}",
-                    settings.streams.depth_resolution.height,
-                    depth_height
-                );
-                settings.streams.depth_resolution.height = depth_height;
-            }
-            subclass::Property("color-width", ..) => {
-                let color_width = value.get().unwrap_or_else(|| panic!("Failed to set property `color-width` on realsensesrc. Expected an int, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `color-width` from {} to {}",
-                    settings.streams.color_resolution.width,
-                    color_width
-                );
-                settings.streams.color_resolution.width = color_width;
-            }
-            subclass::Property("color-height", ..) => {
-                let color_height = value.get().unwrap_or_else(|| panic!("Failed to set property `color-height` on realsensesrc. Expected an int, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `color-height` from {} to {}",
-                    settings.streams.color_resolution.height,
-                    color_height
-                );
-                settings.streams.color_resolution.height = color_height;
-            }
-            subclass::Property("framerate", ..) => {
-                let framerate = value.get().unwrap_or_else(|| panic!("Failed to set property `framerate` on realsensesrc. Expected an int, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `framerate` from {} to {}",
-                    settings.streams.framerate,
-                    framerate
-                );
-                settings.streams.framerate = framerate;
-                // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
-            }
-            subclass::Property("loop-rosbag", ..) => {
-                let loop_rosbag = value.get().unwrap_or_else(|| panic!("Failed to set property `loop-rosbag` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `loop-rosbag` from {} to {}",
-                    settings.loop_rosbag,
-                    loop_rosbag
-                );
-                settings.loop_rosbag = loop_rosbag;
-            }
-            subclass::Property("wait-for-frames-timeout", ..) => {
-                let wait_for_frames_timeout = value.get().unwrap_or_else(|| panic!("Failed to set property `wait-for-frames-timeout` on realsensesrc. Expected an int, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `wait-for-frames-timeout` from {} to {}",
-                    settings.wait_for_frames_timeout,
-                    wait_for_frames_timeout
-                );
-                settings.wait_for_frames_timeout = wait_for_frames_timeout;
-            }
-            subclass::Property("include-per-frame-metadata", ..) => {
-                let do_metadata = value.get().unwrap_or_else(|| panic!("Failed to set property `include-per-frame-metadata` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `include-per-frame-metadata` from {} to {}",
-                    settings.include_per_frame_metadata,
-                    do_metadata
-                );
-                settings.include_per_frame_metadata = do_metadata;
-            }
-            subclass::Property("real-time-rosbag-playback", ..) => {
-                let real_time_rosbag_playback = value.get().unwrap_or_else(|| panic!("Failed to set property `real-time-rosbag-playback` on realsensesrc. Expected a boolean, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `real-time-rosbag-playback` from {} to {}",
-                    settings.real_time_rosbag_playback,
-                    real_time_rosbag_playback
-                );
-                settings.real_time_rosbag_playback = real_time_rosbag_playback;
-                obj.downcast_ref::<gst_base::BaseSrc>()
-                    .unwrap()
-                    .set_live(settings.real_time_rosbag_playback);
-            }
-            subclass::Property("attach-camera-meta", ..) => {
-                let attach_camera_meta = value.get().unwrap_or_else(|| panic!("Failed to set property `attach-camera-meta`. Expected a `bool`, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `attach-camera-meta` from {} to {}",
-                    settings.attach_camera_meta,
-                    attach_camera_meta
-                );
-                settings.attach_camera_meta = attach_camera_meta;
-            }
-            subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode = value.get::<TimestampMode>()
-                    .unwrap_or_else(|| panic!("Failed to set property `timestamp-mode` on realsensesrc. Expected a i32 or TimestampMode variant, but got: {:?}", value));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `timestamp-mode`  to {:?}",
-                    timestamp_mode
-                );
-                self.set_timestamp_mode(element, timestamp_mode);
-            }
-            _ => unimplemented!("Property is not implemented"),
-        };
-    }
-
-    fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .settings;
-
-        let prop = &PROPERTIES[id];
-        match *prop {
-            subclass::Property("serial", ..) => Ok(settings.serial.to_value()),
-            subclass::Property("rosbag-location", ..) => Ok(settings.rosbag_location.to_value()),
-            subclass::Property("json-location", ..) => Ok(settings.json_location.to_value()),
-            subclass::Property("enable-depth", ..) => {
-                Ok(settings.streams.enabled_streams.depth.to_value())
-            }
-            subclass::Property("enable-infra1", ..) => {
-                Ok(settings.streams.enabled_streams.infra1.to_value())
-            }
-            subclass::Property("enable-infra2", ..) => {
-                Ok(settings.streams.enabled_streams.infra2.to_value())
-            }
-            subclass::Property("enable-color", ..) => {
-                Ok(settings.streams.enabled_streams.color.to_value())
-            }
-            subclass::Property("depth-width", ..) => {
-                Ok(settings.streams.depth_resolution.width.to_value())
-            }
-            subclass::Property("depth-height", ..) => {
-                Ok(settings.streams.depth_resolution.height.to_value())
-            }
-            subclass::Property("color-width", ..) => {
-                Ok(settings.streams.color_resolution.width.to_value())
-            }
-            subclass::Property("color-height", ..) => {
-                Ok(settings.streams.color_resolution.height.to_value())
-            }
-            subclass::Property("framerate", ..) => Ok(settings.streams.framerate.to_value()),
-            subclass::Property("loop-rosbag", ..) => Ok(settings.loop_rosbag.to_value()),
-            subclass::Property("wait-for-frames-timeout", ..) => {
-                Ok(settings.wait_for_frames_timeout.to_value())
-            }
-            subclass::Property("include-per-frame-metadata", ..) => {
-                Ok(settings.include_per_frame_metadata.to_value())
-            }
-            subclass::Property("real-time-rosbag-playback", ..) => {
-                Ok(settings.real_time_rosbag_playback.to_value())
-            }
-            subclass::Property("attach-camera-meta", ..) => {
-                Ok(settings.attach_camera_meta.to_value())
-            }
-            subclass::Property("timestamp-mode", ..) => Ok(self
-                .get_timestamp_internals()
-                .lock()
-                .unwrap()
-                .timestamp_mode
-                .to_value()),
-            _ => unimplemented!("Property is not implemented"),
-        }
-    }
-
-    fn constructed(&self, obj: &glib::Object) {
-        self.parent_constructed(obj);
-
-        let element = obj
-            .downcast_ref::<gst_base::BaseSrc>()
-            .expect("Could not cast realsensesrc to BaseSrc");
-
-        element.set_format(gst::Format::Time);
-    }
-}
-
 impl ElementImpl for RealsenseSrc {}
 
 impl BaseSrcImpl for RealsenseSrc {
@@ -450,41 +152,43 @@ impl BaseSrcImpl for RealsenseSrc {
         })?;
 
         // Based on properties, enable streaming, reading from or recording to a file (with the enabled streams)
-        match &settings.serial {
+        if !settings.serial.is_empty() {
             // A serial is specified. We attempt to open a live recording from the camera
-            Some(serial) => {
-                // Enable the selected streams
-                Self::enable_streams(&config, &settings).map_err(|e| {
-                    gst_error_msg!(
-                        gst::ResourceError::OpenRead,
-                        [&format!(
-                            "Failed to enable a stream on `realsensesrc`: {:?}",
-                            e
-                        )]
-                    )
-                })?;
+            // Enable the selected streams
+            Self::enable_streams(&config, &settings).map_err(|e| {
+                gst_error_msg!(
+                    gst::ResourceError::OpenRead,
+                    [&format!(
+                        "Failed to enable a stream on `realsensesrc`: {:?}",
+                        e
+                    )]
+                )
+            })?;
 
-                // Enable device with the given serial number and device configuration
-                config.enable_device(&serial).map_err(|_e| {
+            // Enable device with the given serial number and device configuration
+            config.enable_device(&settings.serial).map_err(|_e| {
+                gst_error_msg!(
+                    gst::ResourceError::Settings,
+                    ["No device with serial `{}` is connected!", settings.serial]
+                )
+            })?;
+        } else {
+            // A serial was not specified, but a ROSBAG was, attempt to load that instead
+            config
+                .enable_device_from_file_repeat_option(
+                    &settings.rosbag_location,
+                    settings.loop_rosbag,
+                )
+                .map_err(|e| {
                     gst_error_msg!(
                         gst::ResourceError::Settings,
-                        ["No device with serial `{}` is connected!", serial]
+                        [
+                            "Cannot read from \"{}\": {:?}!",
+                            settings.rosbag_location,
+                            e
+                        ]
                     )
                 })?;
-            }
-
-            // A serial was not specified, but a ROSBAG was, attempt to load that instead
-            None => {
-                let rosbag_location = settings.rosbag_location.as_ref().unwrap(); // we know this always works (see match condition)
-                config
-                    .enable_device_from_file_repeat_option(rosbag_location, settings.loop_rosbag)
-                    .map_err(|e| {
-                        gst_error_msg!(
-                            gst::ResourceError::Settings,
-                            ["Cannot read from \"{}\": {:?}!", rosbag_location, e]
-                        )
-                    })?;
-            }
         }
 
         let pipeline = self
@@ -731,12 +435,8 @@ impl RealsenseSrc {
         // Load JSON if `json-location` is defined
         let devices = context.query_devices()?;
 
-        if settings.json_location.is_some() && settings.serial.is_some() {
-            Self::load_json(
-                &devices,
-                &settings.serial.clone().unwrap(),
-                &settings.json_location.clone().unwrap(),
-            )?;
+        if !settings.json_location.is_empty() && !settings.serial.is_empty() {
+            Self::load_json(&devices, &settings.serial, &settings.json_location)?;
         }
 
         // Crate new RealSense pipeline
@@ -750,7 +450,7 @@ impl RealsenseSrc {
 
         // If playing from a rosbag recording, check whether the correct properties were selected
         // and update them
-        if settings.rosbag_location.is_some() {
+        if !settings.rosbag_location.is_empty() {
             self.configure_rosbag_settings(&mut *settings, &pipeline_profile)?;
         }
 
@@ -775,7 +475,7 @@ impl RealsenseSrc {
         }
 
         // Either `serial` or `rosbag-location` must be specified
-        if settings.serial.is_none() && settings.rosbag_location.is_none() {
+        if settings.serial.is_empty() && settings.rosbag_location.is_empty() {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!"]
@@ -783,7 +483,7 @@ impl RealsenseSrc {
         }
 
         // Make sure that only one stream source is selected
-        if settings.serial.is_some() && settings.rosbag_location.is_some() {
+        if !settings.serial.is_empty() && !settings.rosbag_location.is_empty() {
             return Err(gst_error_msg!(
                 gst::ResourceError::Settings,
                 ["Both `serial` and `rosbag-location` are defined. Only one of these can be defined!"]
@@ -957,6 +657,9 @@ impl RealsenseSrc {
     /// * `stream_id` - The id of the stream to extract.
     /// * `stream_type` - The type of the stream we should extract.
     /// * `previous_streams` - A list of booleans. If any is ticked, it means we should extract the next frame as secondary buffer.
+    /// # TODO
+    /// Refactor this function to have fewer arguments, as suggested by clippy.
+    #[allow(clippy::too_many_arguments)]
     fn attach_frame_to_buffer(
         &self,
         base_src: &gst_base::BaseSrc,
@@ -1346,7 +1049,7 @@ impl RealsenseSrc {
         // Iterate over all stream profile, extract intrinsics and assign them to the appropriate stream
         for stream_profile in stream_profiles.iter() {
             let stream_data = stream_profile.get_data()?;
-            let stream_id = Self::rs2_stream_to_id(stream_data.stream, stream_data.index);
+            let stream_id = StreamId::from_rs2_stream(stream_data.stream, stream_data.index);
 
             // Make sure that the stream is enabled for streaming
             if Self::is_stream_enabled(stream_id, desired_streams) {
@@ -1418,12 +1121,9 @@ impl RealsenseSrc {
         desired_streams: &EnabledStreams,
         stream_profiles: &[rs2::stream_profile::StreamProfile],
     ) -> Result<HashMap<(String, String), camera_meta::Transformation>, RealsenseError> {
-        let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
-
         // Determine the main stream from which all transformations are taken
         let main_stream_id = Self::determine_main_stream(desired_streams);
-        let (main_stream_rs2_stream, main_stream_rs2_index) =
-            Self::stream_id_to_rs2_stream(main_stream_id);
+        let (main_stream_rs2_stream, main_stream_rs2_index) = main_stream_id.to_rs2_stream();
 
         // Get the stream profile for the main stream
         let main_stream_profile = stream_profiles
@@ -1441,10 +1141,12 @@ impl RealsenseSrc {
             })
             .expect("There is no stream profile for the primary enabled stream");
 
+
         // Iterate over all stream profiles and find extrinsics to the other enabled streams
+        let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
         for stream_profile in stream_profiles.iter() {
             let stream_data = stream_profile.get_data()?;
-            let stream_id = Self::rs2_stream_to_id(stream_data.stream, stream_data.index);
+            let stream_id = StreamId::from_rs2_stream(stream_data.stream, stream_data.index);
 
             if stream_id == main_stream_id {
                 // Skip the main buffer
@@ -1556,53 +1258,15 @@ impl RealsenseSrc {
     ///
     /// # Returns
     /// * `&str` containing the ID of the main stream.
-    fn determine_main_stream(streams: &EnabledStreams) -> &str {
+    fn determine_main_stream(streams: &EnabledStreams) -> StreamId {
         if streams.depth {
-            "depth"
+            StreamId::Depth
         } else if streams.infra1 {
-            "infra1"
+            StreamId::Infra1
         } else if streams.infra2 {
-            "infra2"
+            StreamId::Infra2
         } else {
-            "color"
-        }
-    }
-
-    /// Convert RealSense stream type and index into its correspond GStreamer ID.
-    ///
-    /// # Arguments
-    /// * `stream` - Stream type.
-    /// * `index` - Index of the sream.
-    ///
-    /// # Returns
-    /// * `&str` containing the ID of the stream.
-    fn rs2_stream_to_id(stream: rs2::rs2_stream, index: i32) -> &'static str {
-        match stream {
-            rs2::rs2_stream::RS2_STREAM_DEPTH => "depth",
-            rs2::rs2_stream::RS2_STREAM_INFRARED => match index {
-                1 => "infra1",
-                2 => "infra2",
-                _ => unreachable!("Each RealSense device has only two infrared streams"),
-            },
-            rs2::rs2_stream::RS2_STREAM_COLOR => "color",
-            _ => unimplemented!("Other RealSense streams are not supported"),
-        }
-    }
-
-    /// Convert GStreamer ID of a stream into the corresponding RealSense stream type and index.
-    ///
-    /// # Arguments
-    /// * `id` - ID of the stream.
-    ///
-    /// # Returns
-    /// * `(stream type, index)` of the stream.
-    fn stream_id_to_rs2_stream(id: &str) -> (rs2::rs2_stream, i32) {
-        match id {
-            "depth" => (rs2::rs2_stream::RS2_STREAM_DEPTH, -1),
-            "infra1" => (rs2::rs2_stream::RS2_STREAM_INFRARED, 1),
-            "infra2" => (rs2::rs2_stream::RS2_STREAM_INFRARED, 2),
-            "color" => (rs2::rs2_stream::RS2_STREAM_COLOR, -1),
-            _ => unimplemented!("Other RealSense streams are not supported"),
+            StreamId::Color
         }
     }
 
@@ -1614,11 +1278,11 @@ impl RealsenseSrc {
     ///
     /// # Returns
     /// * `true` if a stream with the `stream_id` is enabled, `false` otherwise .
-    fn is_stream_enabled(stream_id: &str, streams: &EnabledStreams) -> bool {
-        (stream_id == "depth" && streams.depth)
-            || (stream_id == "infra1" && streams.infra1)
-            || (stream_id == "infra2" && streams.infra2)
-            || (stream_id == "color" && streams.color)
+    fn is_stream_enabled(stream_id: StreamId, streams: &EnabledStreams) -> bool {
+        (stream_id == StreamId::Depth && streams.depth)
+            || (stream_id == StreamId::Infra1 && streams.infra1)
+            || (stream_id == StreamId::Infra2 && streams.infra2)
+            || (stream_id == StreamId::Color && streams.color)
     }
 
     /// Attempt to find the frame for the given `stream_id` in the Vector of frames extracted from the
@@ -1652,6 +1316,399 @@ impl RealsenseSrc {
 impl RgbdTimestamps for RealsenseSrc {
     fn get_timestamp_internals(&self) -> Arc<Mutex<TimestampInternals>> {
         self.timestamp_internals.clone()
+    }
+}
+
+impl ObjectImpl for RealsenseSrc {
+    glib_object_impl!();
+
+    fn constructed(&self, obj: &glib::Object) {
+        self.parent_constructed(obj);
+
+        let element = obj
+            .downcast_ref::<gst_base::BaseSrc>()
+            .expect("Could not cast realsensesrc to BaseSrc");
+
+        element.set_format(gst::Format::Time);
+    }
+
+    fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
+        let element = obj
+            .downcast_ref::<gst_base::BaseSrc>()
+            .expect("Could not cast realsensesrc to BaseSrc");
+        let settings = &mut self
+            .internals
+            .lock()
+            .expect("Could not obtain lock internals mutex")
+            .settings;
+
+        let property = &PROPERTIES[id];
+        match *property {
+            subclass::Property("serial", ..) => {
+                let serial = value
+                    .get()
+                    .unwrap_or_else(|err| {
+                        panic!(
+                            "Failed to set property `serial` due to incorrect type: {:?}",
+                            err
+                        )
+                    })
+                    .unwrap_or_default();
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `serial` from {:?} to {:?}",
+                    settings.serial,
+                    serial
+                );
+                settings.serial = serial;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(true);
+            }
+            subclass::Property("rosbag-location", ..) => {
+                let mut rosbag_location = value
+                    .get()
+                    .unwrap_or_else(|err| {
+                        panic!(
+                            "Failed to set property `rosbag-location` due to incorrect type: {:?}",
+                            err
+                        )
+                    })
+                    .unwrap_or_default();
+                expand_tilde_as_home_dir(&mut rosbag_location);
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `rosbag-location` from {:?} to {:?}",
+                    settings.rosbag_location,
+                    rosbag_location
+                );
+                settings.rosbag_location = rosbag_location;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(settings.real_time_rosbag_playback);
+            }
+            subclass::Property("json-location", ..) => {
+                let mut json_location = value
+                    .get()
+                    .unwrap_or_else(|err| {
+                        panic!(
+                            "Failed to set property `json-location` due to incorrect type: {:?}",
+                            err
+                        )
+                    })
+                    .unwrap_or_default();
+                expand_tilde_as_home_dir(&mut json_location);
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `json-location` from {:?} to {:?}",
+                    settings.json_location,
+                    json_location
+                );
+                settings.json_location = json_location;
+            }
+            subclass::Property("enable-depth", ..) => {
+                let enable_depth = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `enable-depth` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `enable-depth` from {} to {}",
+                    settings.streams.enabled_streams.depth,
+                    enable_depth
+                );
+                settings.streams.enabled_streams.depth = enable_depth;
+            }
+            subclass::Property("enable-infra1", ..) => {
+                let enable_infra1 = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `enable-infra1` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `enable-infra1` from {} to {}",
+                    settings.streams.enabled_streams.infra1,
+                    enable_infra1
+                );
+                settings.streams.enabled_streams.infra1 = enable_infra1;
+            }
+            subclass::Property("enable-infra2", ..) => {
+                let enable_infra2 = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `enable-infra2` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `enable-infra2` from {} to {}",
+                    settings.streams.enabled_streams.infra2,
+                    enable_infra2
+                );
+                settings.streams.enabled_streams.infra2 = enable_infra2;
+            }
+            subclass::Property("enable-color", ..) => {
+                let enable_color = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `enable-color` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `enable-color` from {} to {}",
+                    settings.streams.enabled_streams.color,
+                    enable_color
+                );
+                settings.streams.enabled_streams.color = enable_color;
+            }
+            subclass::Property("depth-width", ..) => {
+                let depth_width = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `depth-width` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `depth-width` from {} to {}",
+                    settings.streams.depth_resolution.width,
+                    depth_width
+                );
+                settings.streams.depth_resolution.width = depth_width;
+            }
+            subclass::Property("depth-height", ..) => {
+                let depth_height = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `depth-height` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `depth-height` from {} to {}",
+                    settings.streams.depth_resolution.height,
+                    depth_height
+                );
+                settings.streams.depth_resolution.height = depth_height;
+            }
+            subclass::Property("color-width", ..) => {
+                let color_width = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `color-width` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `color-width` from {} to {}",
+                    settings.streams.color_resolution.width,
+                    color_width
+                );
+                settings.streams.color_resolution.width = color_width;
+            }
+            subclass::Property("color-height", ..) => {
+                let color_height = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `color-height` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `color-height` from {} to {}",
+                    settings.streams.color_resolution.height,
+                    color_height
+                );
+                settings.streams.color_resolution.height = color_height;
+            }
+            subclass::Property("framerate", ..) => {
+                let framerate = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `framerate` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `framerate` from {} to {}",
+                    settings.streams.framerate,
+                    framerate
+                );
+                settings.streams.framerate = framerate;
+                // let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
+            }
+            subclass::Property("loop-rosbag", ..) => {
+                let loop_rosbag = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `loop-rosbag` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `loop-rosbag` from {} to {}",
+                    settings.loop_rosbag,
+                    loop_rosbag
+                );
+                settings.loop_rosbag = loop_rosbag;
+            }
+            subclass::Property("wait-for-frames-timeout", ..) => {
+                let wait_for_frames_timeout = value.get_some().unwrap_or_else(|err| {panic!("Failed to set property `wait-for-frames-timeout` due to incorrect type: {:?}",err)});
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `wait-for-frames-timeout` from {} to {}",
+                    settings.wait_for_frames_timeout,
+                    wait_for_frames_timeout
+                );
+                settings.wait_for_frames_timeout = wait_for_frames_timeout;
+            }
+            subclass::Property("include-per-frame-metadata", ..) => {
+                let do_metadata = value.get_some().unwrap_or_else(|err| {panic!("Failed to set property `include-per-frame-metadata` due to incorrect type: {:?}",err)});
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `include-per-frame-metadata` from {} to {}",
+                    settings.include_per_frame_metadata,
+                    do_metadata
+                );
+                settings.include_per_frame_metadata = do_metadata;
+            }
+            subclass::Property("real-time-rosbag-playback", ..) => {
+                let real_time_rosbag_playback = value.get_some().unwrap_or_else(|err| {panic!("Failed to set property `real-time-rosbag-playback` due to incorrect type: {:?}",err)});
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `real-time-rosbag-playback` from {} to {}",
+                    settings.real_time_rosbag_playback,
+                    real_time_rosbag_playback
+                );
+                settings.real_time_rosbag_playback = real_time_rosbag_playback;
+                obj.downcast_ref::<gst_base::BaseSrc>()
+                    .unwrap()
+                    .set_live(settings.real_time_rosbag_playback);
+            }
+            subclass::Property("attach-camera-meta", ..) => {
+                let attach_camera_meta = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `attach-camera-meta` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `attach-camera-meta` from {} to {}",
+                    settings.attach_camera_meta,
+                    attach_camera_meta
+                );
+                settings.attach_camera_meta = attach_camera_meta;
+            }
+            subclass::Property("timestamp-mode", ..) => {
+                let timestamp_mode = value.get_some().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `timestamp-mode` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `timestamp-mode`  to {:?}",
+                    timestamp_mode
+                );
+                self.set_timestamp_mode(element, timestamp_mode);
+            }
+            _ => unimplemented!("Property is not implemented"),
+        };
+    }
+
+    fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
+        let settings = &self
+            .internals
+            .lock()
+            .expect("Could not lock internals")
+            .settings;
+
+        let prop = &PROPERTIES[id];
+        match *prop {
+            subclass::Property("serial", ..) => Ok(settings.serial.to_value()),
+            subclass::Property("rosbag-location", ..) => Ok(settings.rosbag_location.to_value()),
+            subclass::Property("json-location", ..) => Ok(settings.json_location.to_value()),
+            subclass::Property("enable-depth", ..) => {
+                Ok(settings.streams.enabled_streams.depth.to_value())
+            }
+            subclass::Property("enable-infra1", ..) => {
+                Ok(settings.streams.enabled_streams.infra1.to_value())
+            }
+            subclass::Property("enable-infra2", ..) => {
+                Ok(settings.streams.enabled_streams.infra2.to_value())
+            }
+            subclass::Property("enable-color", ..) => {
+                Ok(settings.streams.enabled_streams.color.to_value())
+            }
+            subclass::Property("depth-width", ..) => {
+                Ok(settings.streams.depth_resolution.width.to_value())
+            }
+            subclass::Property("depth-height", ..) => {
+                Ok(settings.streams.depth_resolution.height.to_value())
+            }
+            subclass::Property("color-width", ..) => {
+                Ok(settings.streams.color_resolution.width.to_value())
+            }
+            subclass::Property("color-height", ..) => {
+                Ok(settings.streams.color_resolution.height.to_value())
+            }
+            subclass::Property("framerate", ..) => Ok(settings.streams.framerate.to_value()),
+            subclass::Property("loop-rosbag", ..) => Ok(settings.loop_rosbag.to_value()),
+            subclass::Property("wait-for-frames-timeout", ..) => {
+                Ok(settings.wait_for_frames_timeout.to_value())
+            }
+            subclass::Property("include-per-frame-metadata", ..) => {
+                Ok(settings.include_per_frame_metadata.to_value())
+            }
+            subclass::Property("real-time-rosbag-playback", ..) => {
+                Ok(settings.real_time_rosbag_playback.to_value())
+            }
+            subclass::Property("attach-camera-meta", ..) => {
+                Ok(settings.attach_camera_meta.to_value())
+            }
+            subclass::Property("timestamp-mode", ..) => Ok(self
+                .get_timestamp_internals()
+                .lock()
+                .unwrap()
+                .timestamp_mode
+                .to_value()),
+            _ => unimplemented!("Property is not implemented"),
+        }
+    }
+}
+
+/// Helper function that replaces "~/" at the beginning of `path` with "$HOME/",
+/// while `path` remains unchanged if it does not start with "~/".
+fn expand_tilde_as_home_dir(path: &mut String) {
+    if path.starts_with("~/") {
+        let home_path = std::env::var("HOME")
+        .expect("k4asrc: $HOME must be specified if a path for property is specified with \"~\" (tilde).");
+        path.replace_range(..1, &home_path);
     }
 }
 

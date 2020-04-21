@@ -11,16 +11,16 @@ readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-glib = { version = "0.8" }
-gstreamer = { version = "0.14", features = ["subclassing"] }
-gstreamer-base = { version = "0.14", features = ["subclassing"] }
-gstreamer-video = "0.14"
+glib = "0.9"
+gstreamer = "0.15"
+gstreamer-base = "0.15"
+gstreamer-video = "0.15"
+lazy_static = "1.4"
 capnp = "0.12"
-lazy_static = "1.4.0"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "0.4.0"
+tag = "1.0.0"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
@@ -28,6 +28,12 @@ tag = "2.0.0"
 
 [build-dependencies]
 capnpc = "0.12"
+
+# Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
 
 [lib]
 name = "gstrealsensesrc"
