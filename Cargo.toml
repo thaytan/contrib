@@ -24,9 +24,7 @@ lazy_static = "1.4"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-branch = "update-glib-and-gst"
-# TODO: Remember to change once MR has been merged
-# tag = "1.0.0"
+tag = "1.0.0"
 
 [dependencies.k4a]
 git = "https://gitlab.com/aivero/hardware/k4a-rs"
