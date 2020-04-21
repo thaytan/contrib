@@ -32,12 +32,18 @@ pub struct _BufferMeta {
     pub buffer: *mut gst_sys::GstBuffer,
 }
 
+unsafe impl Sync for _BufferMeta {}
+unsafe impl Send for _BufferMeta {}
+
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _TagsMeta {
     pub meta: gst_sys::GstMeta,
     pub tags: *mut gst_sys::GstTagList,
 }
+
+unsafe impl Sync for _TagsMeta {}
+unsafe impl Send for _TagsMeta {}
 
 extern "C" {
     pub fn buffer_meta_api_get_type() -> glib_sys::GType;
