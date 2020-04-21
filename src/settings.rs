@@ -16,6 +16,7 @@
 pub(crate) use crate::d400_limits::*;
 pub(crate) use crate::enabled_streams::EnabledStreams;
 pub(crate) use rs2::stream_profile::StreamResolution;
+use std::fmt::{Display, Formatter};
 
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 pub(crate) const DEFAULT_LOOP_ROSBAG: bool = false;
@@ -98,6 +99,55 @@ impl Default for Settings {
             include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
             real_time_rosbag_playback: DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
             attach_camera_meta: DEFAULT_ATTACH_CAMERA_META,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub(crate) enum StreamId {
+    Depth,
+    Color,
+    Infra1,
+    Infra2
+}
+impl Display for StreamId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            StreamId::Color => "color",
+            StreamId::Depth => "depth",
+            StreamId::Infra1 => "infra1",
+            StreamId::Infra2 => "infra2",
+        })
+    }
+}
+impl StreamId {
+    /// Convert RealSense stream type and index into its correspond GStreamer ID.
+    ///
+    /// # Arguments
+    /// * `stream` - Stream type.
+    /// * `index` - Index of the sream.
+    ///
+    /// # Returns
+    /// * `&str` containing the ID of the stream.
+    pub(crate) fn from_rs2_stream(rs2_stream: rs2::rs2_stream, index: i32) -> Self {
+        match rs2_stream {
+            rs2::rs2_stream::RS2_STREAM_DEPTH => StreamId::Depth,
+            rs2::rs2_stream::RS2_STREAM_INFRARED => match index {
+                1 => StreamId::Infra1,
+                2 => StreamId::Infra2,
+                _ => unreachable!("Each RealSense device has only two infrared streams"),
+            },
+            rs2::rs2_stream::RS2_STREAM_COLOR => StreamId::Color,
+            _ => unimplemented!("Other RealSense streams are not supported"),
+        }
+    }
+
+    pub(crate) fn to_rs2_stream(self) -> (rs2::rs2_stream, i32) {
+        match self {
+            StreamId::Depth => (rs2::rs2_stream::RS2_STREAM_DEPTH, -1),
+            StreamId::Infra1 => (rs2::rs2_stream::RS2_STREAM_INFRARED, 1),
+            StreamId::Infra2 => (rs2::rs2_stream::RS2_STREAM_INFRARED, 2),
+            StreamId::Color => (rs2::rs2_stream::RS2_STREAM_COLOR, -1),
         }
     }
 }

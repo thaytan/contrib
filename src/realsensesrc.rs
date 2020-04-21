@@ -657,6 +657,9 @@ impl RealsenseSrc {
     /// * `stream_id` - The id of the stream to extract.
     /// * `stream_type` - The type of the stream we should extract.
     /// * `previous_streams` - A list of booleans. If any is ticked, it means we should extract the next frame as secondary buffer.
+    /// # TODO
+    /// Refactor this function to have fewer arguments, as suggested by clippy.
+    #[allow(clippy::too_many_arguments)]
     fn attach_frame_to_buffer(
         &self,
         base_src: &gst_base::BaseSrc,
@@ -1046,7 +1049,7 @@ impl RealsenseSrc {
         // Iterate over all stream profile, extract intrinsics and assign them to the appropriate stream
         for stream_profile in stream_profiles.iter() {
             let stream_data = stream_profile.get_data()?;
-            let stream_id = Self::rs2_stream_to_id(stream_data.stream, stream_data.index);
+            let stream_id = StreamId::from_rs2_stream(stream_data.stream, stream_data.index);
 
             // Make sure that the stream is enabled for streaming
             if Self::is_stream_enabled(stream_id, desired_streams) {
@@ -1118,12 +1121,9 @@ impl RealsenseSrc {
         desired_streams: &EnabledStreams,
         stream_profiles: &[rs2::stream_profile::StreamProfile],
     ) -> Result<HashMap<(String, String), camera_meta::Transformation>, RealsenseError> {
-        let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
-
         // Determine the main stream from which all transformations are taken
         let main_stream_id = Self::determine_main_stream(desired_streams);
-        let (main_stream_rs2_stream, main_stream_rs2_index) =
-            Self::stream_id_to_rs2_stream(main_stream_id);
+        let (main_stream_rs2_stream, main_stream_rs2_index) = main_stream_id.to_rs2_stream();
 
         // Get the stream profile for the main stream
         let main_stream_profile = stream_profiles
@@ -1141,10 +1141,12 @@ impl RealsenseSrc {
             })
             .expect("There is no stream profile for the primary enabled stream");
 
+
         // Iterate over all stream profiles and find extrinsics to the other enabled streams
+        let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
         for stream_profile in stream_profiles.iter() {
             let stream_data = stream_profile.get_data()?;
-            let stream_id = Self::rs2_stream_to_id(stream_data.stream, stream_data.index);
+            let stream_id = StreamId::from_rs2_stream(stream_data.stream, stream_data.index);
 
             if stream_id == main_stream_id {
                 // Skip the main buffer
@@ -1256,53 +1258,15 @@ impl RealsenseSrc {
     ///
     /// # Returns
     /// * `&str` containing the ID of the main stream.
-    fn determine_main_stream(streams: &EnabledStreams) -> &str {
+    fn determine_main_stream(streams: &EnabledStreams) -> StreamId {
         if streams.depth {
-            "depth"
+            StreamId::Depth
         } else if streams.infra1 {
-            "infra1"
+            StreamId::Infra1
         } else if streams.infra2 {
-            "infra2"
+            StreamId::Infra2
         } else {
-            "color"
-        }
-    }
-
-    /// Convert RealSense stream type and index into its correspond GStreamer ID.
-    ///
-    /// # Arguments
-    /// * `stream` - Stream type.
-    /// * `index` - Index of the sream.
-    ///
-    /// # Returns
-    /// * `&str` containing the ID of the stream.
-    fn rs2_stream_to_id(stream: rs2::rs2_stream, index: i32) -> &'static str {
-        match stream {
-            rs2::rs2_stream::RS2_STREAM_DEPTH => "depth",
-            rs2::rs2_stream::RS2_STREAM_INFRARED => match index {
-                1 => "infra1",
-                2 => "infra2",
-                _ => unreachable!("Each RealSense device has only two infrared streams"),
-            },
-            rs2::rs2_stream::RS2_STREAM_COLOR => "color",
-            _ => unimplemented!("Other RealSense streams are not supported"),
-        }
-    }
-
-    /// Convert GStreamer ID of a stream into the corresponding RealSense stream type and index.
-    ///
-    /// # Arguments
-    /// * `id` - ID of the stream.
-    ///
-    /// # Returns
-    /// * `(stream type, index)` of the stream.
-    fn stream_id_to_rs2_stream(id: &str) -> (rs2::rs2_stream, i32) {
-        match id {
-            "depth" => (rs2::rs2_stream::RS2_STREAM_DEPTH, -1),
-            "infra1" => (rs2::rs2_stream::RS2_STREAM_INFRARED, 1),
-            "infra2" => (rs2::rs2_stream::RS2_STREAM_INFRARED, 2),
-            "color" => (rs2::rs2_stream::RS2_STREAM_COLOR, -1),
-            _ => unimplemented!("Other RealSense streams are not supported"),
+            StreamId::Color
         }
     }
 
@@ -1314,11 +1278,11 @@ impl RealsenseSrc {
     ///
     /// # Returns
     /// * `true` if a stream with the `stream_id` is enabled, `false` otherwise .
-    fn is_stream_enabled(stream_id: &str, streams: &EnabledStreams) -> bool {
-        (stream_id == "depth" && streams.depth)
-            || (stream_id == "infra1" && streams.infra1)
-            || (stream_id == "infra2" && streams.infra2)
-            || (stream_id == "color" && streams.color)
+    fn is_stream_enabled(stream_id: StreamId, streams: &EnabledStreams) -> bool {
+        (stream_id == StreamId::Depth && streams.depth)
+            || (stream_id == StreamId::Infra1 && streams.infra1)
+            || (stream_id == StreamId::Infra2 && streams.infra2)
+            || (stream_id == StreamId::Color && streams.color)
     }
 
     /// Attempt to find the frame for the given `stream_id` in the Vector of frames extracted from the
