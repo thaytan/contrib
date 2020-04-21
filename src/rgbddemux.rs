@@ -160,7 +160,7 @@ impl RgbdDemux {
                     .lock()
                     .expect("Could not lock internals")
                     .src_pads;
-                if src_pads.len() == 0 {
+                if src_pads.is_empty() {
                     // Return false if there is no src pad yet since this element does not handle it
                     return false;
                 }
@@ -180,32 +180,39 @@ impl RgbdDemux {
         rgbd_caps: &gst::CapsRef,
     ) -> Result<(), RgbdDemuxingError> {
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = rgbd_caps.iter().next().ok_or(RgbdDemuxingError(
-            "Invalid `video/rgbd` caps for creation of additional src pads".to_owned(),
-        ))?;
+        let rgbd_caps = rgbd_caps.iter().next().ok_or_else(|| {
+            RgbdDemuxingError(
+                "Invalid `video/rgbd` caps for creation of additional src pads".to_string(),
+            )
+        })?;
 
         // Determine what streams are contained within the caps
         let streams = rgbd_caps
-            .get::<&str>("streams")
-            .ok_or(RgbdDemuxingError(
-                "No `streams` field detected in `video/rgbd` caps".to_owned(),
-            ))?
-            .split(',')
-            .collect::<Vec<&str>>();
+            .get::<String>("streams")
+            .or_else(|err| {
+                Err(RgbdDemuxingError(format!(
+                    "No `streams` field detected in `video/rgbd` caps: {:?}",
+                    err
+                )))
+            })?
+            .unwrap_or_default();
+        let streams = streams.split(',').collect::<Vec<&str>>();
 
-        if streams.len() == 0 {
+        if streams.is_empty() {
             return Err(RgbdDemuxingError(
-                "Cannot detect any streams in `video/rgbd` caps under field `streams`".to_owned(),
+                "Cannot detect any streams in `video/rgbd` caps under field `streams`".to_string(),
             ));
         }
 
         // Get a common framerate for all streams
-        let common_framerate =
-            rgbd_caps
-                .get::<gst::Fraction>("framerate")
-                .ok_or(RgbdDemuxingError(
-                    "Cannot detect any `framerate` in `video/rgbd` caps".to_owned(),
-                ))?;
+        let common_framerate = rgbd_caps
+            .get_some::<gst::Fraction>("framerate")
+            .or_else(|err| {
+                Err(RgbdDemuxingError(format!(
+                    "Cannot detect any `framerate` in `video/rgbd` caps: {:?}",
+                    err
+                )))
+            })?;
 
         // Iterate over all streams, find their caps and push a CAPS negotiation event
         for stream_name in streams.iter() {
@@ -216,17 +223,16 @@ impl RgbdDemux {
                 // Get `video/meta-klv` caps if the `meta` stream is enabled
                 gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)])
             } else {
-                self.extract_stream_caps(stream_name, &rgbd_caps, &common_framerate)?
+                self.extract_stream_caps(stream_name, &rgbd_caps, common_framerate)?
             };
 
             let pad = match src_pads.get(&format!("src_{}", stream_name)) {
                 Some(p) => p.clone(),
                 None => self
                     .create_new_src_pad(element, stream_name, None)
-                    .expect(&format!(
-                        "Could not create src pad for stream `{}`",
-                        stream_name
-                    )),
+                    .unwrap_or_else(|| {
+                        panic!("Could not create src pad for stream `{}`", stream_name)
+                    }),
             };
 
             // push a StreamStart event to tell downstream to expect output soon
@@ -250,15 +256,18 @@ impl RgbdDemux {
         &self,
         stream_name: &str,
         rgbd_caps: &gst::StructureRef,
-        common_framerate: &gst::Fraction,
+        common_framerate: gst::Fraction,
     ) -> Result<gst::Caps, RgbdDemuxingError> {
         // Get the format of a stream
         let stream_format = rgbd_caps
-            .get::<&str>(&format!("{}_format", stream_name))
-            .ok_or(RgbdDemuxingError(format!(
-                "Cannot detect any `format` in `video/rgbd` caps for `{}` stream",
-                stream_name
-            )))?;
+            .get::<String>(&format!("{}_format", stream_name))
+            .or_else(|err| {
+                Err(RgbdDemuxingError(format!(
+                    "Cannot detect any `format` in `video/rgbd` caps for `{}` stream: {:?}",
+                    stream_name, err
+                )))
+            })?
+            .unwrap_or_default();
 
         // Return "image/jpeg" CAPS if the format is MJPG
         if stream_format.contains("jpeg") {
@@ -267,19 +276,23 @@ impl RgbdDemux {
 
         // Get the width of a stream
         let stream_width = rgbd_caps
-            .get::<i32>(&format!("{}_width", stream_name))
-            .ok_or(RgbdDemuxingError(format!(
-                "Cannot detect any `width` in `video/rgbd` caps for `{}` stream",
-                stream_name
-            )))?;
+            .get_some::<i32>(&format!("{}_width", stream_name))
+            .or_else(|err| {
+                Err(RgbdDemuxingError(format!(
+                    "Cannot detect any `width` in `video/rgbd` caps for `{}` stream: {:?}",
+                    stream_name, err
+                )))
+            })?;
 
         // Get the height of a stream
         let stream_height = rgbd_caps
-            .get::<i32>(&format!("{}_height", stream_name))
-            .ok_or(RgbdDemuxingError(format!(
-                "Cannot detect any `height` in `video/rgbd` caps for `{}` stream",
-                stream_name
-            )))?;
+            .get_some::<i32>(&format!("{}_height", stream_name))
+            .or_else(|err| {
+                Err(RgbdDemuxingError(format!(
+                    "Cannot detect any `height` in `video/rgbd` caps for `{}` stream: {:?}",
+                    stream_name, err
+                )))
+            })?;
 
         // Create caps for the new src pad
         Ok(gst::Caps::new_simple(
@@ -288,7 +301,7 @@ impl RgbdDemux {
                 ("format", &stream_format),
                 ("width", &stream_width),
                 ("height", &stream_height),
-                ("framerate", common_framerate),
+                ("framerate", &common_framerate),
             ],
         ))
     }
@@ -330,11 +343,11 @@ impl RgbdDemux {
             None => {
                 // Create the src pad with these caps
                 let new_src_pad = gst::Pad::new_from_template(
-                    &template.unwrap_or(
+                    &template.unwrap_or_else(|| {
                         element
                             .get_pad_template("src_%s")
-                            .expect("No src pad template registered in rgbddemux"),
-                    ),
+                            .expect("No src pad template registered in rgbddemux")
+                    }),
                     Some(new_src_pad_name),
                 );
 
@@ -444,10 +457,12 @@ impl RgbdDemux {
         // Match the tag title with a corresponding src pad
         let src_pad = src_pads
             .get(&(format!("src_{}", tag_title)))
-            .ok_or(RgbdDemuxingError(format!(
-                "No corresponding pad for buffer with tag title `{}` exists",
-                tag_title
-            )))?;
+            .ok_or_else(|| {
+                RgbdDemuxingError(format!(
+                    "No corresponding pad for buffer with tag title `{}` exists",
+                    tag_title
+                ))
+            })?;
 
         // Check if there's a per-frame metadata buffer we need to push to the meta pad
         gst_debug!(CAT, "Pushing per-frame meta for {}", tag_title);
@@ -556,7 +571,7 @@ impl ObjectImpl for RgbdDemux {
         let property = &PROPERTIES[id];
         match *property {
             subclass::Property("distribute-timestamps", ..) => {
-                let distribute_timestamps = value.get().expect(&format!("Failed to set property `distribute-timestamps` on `rgbddemux`. Expected a boolean, but got: {:?}", value));
+                let distribute_timestamps = value.get_some().unwrap_or_else(|err| panic!("rgbddemux: Failed to set property `distribute-timestamps` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -606,7 +621,7 @@ impl ElementImpl for RgbdDemux {
     ) -> Option<gst::Pad> {
         gst_debug!(CAT, obj: element, "Requesting new pad with name {:?}", name);
         // Get the pads name and reject any requests that are not for src pads
-        let name = name.unwrap_or("src_%s".to_string());
+        let name = name.unwrap_or_else(|| "src_%s".to_string());
         if !name.starts_with("src_") {
             gst_error!(
                 CAT,
