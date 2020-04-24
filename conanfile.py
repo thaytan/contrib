@@ -26,6 +26,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "closedcaption": [True, False],
         "aiveropatchlatency": [True, False],
         "inter": [True, False],
+        "webp": [True, False],
     }
     default_options = (
         "introspection=True",
@@ -46,6 +47,7 @@ class GStreamerPluginsBadConan(ConanFile):
         "closedcaption=False",
         "aiveropatchlatency=False",
         "inter=False",
+        "webp=True",
     )
 
     def set_version(self):
@@ -105,6 +107,7 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dopencv=" + ("enabled" if self.options.opencv else "disabled"))
         args.append("-Dclosedcaption=" + ("enabled" if self.options.closedcaption else "disabled"))
         args.append("-Dinter=" + ("enabled" if self.options.inter else "disabled"))
+        args.append("-Dwebp=" + ("enabled" if self.options.webp else "disabled"))
         if self.settings.arch == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
