@@ -1,0 +1,185 @@
+= RealSense
+
+// tag::realsense[]
+
+This element outputs `video/rgbd` stream using librealsense2.
+
+* *Git:* https://gitlab.com/aivero/public/gstreamer/gst-realsense (Rust)
+* *Device:* Intel® RealSense™ D400 series (D415, D435 and D435i)
+* *Source:* Physical device or ROS bags
+* *Available video streams:*  depth, infra1, infra2, color
+* *Additional streams:* IMU (only D435i) _Currently not implemented_
+
+== Motivation
+
+This is a GStreamer element wrapped around the librealsense2 library.
+Naturally it will make use of plenty classes and methods of it.
+
+The `realsensesrc` element will produce GstBuffers containing:
+
+- Frame data from a single main stream (typically the Depth stream)
+- Frame data on `BufferMeta` from additional streams (i.e. Color/IR stream)
+- Optionally, RealSense-specific per-frame metadata attached on each frame buffer
+
+The `realsensesrc` supports two streaming modes:
+
+* *Live*, in which one specifies the serial number of the RealSense
+Camera or sets the `real-time-rosbag-playback` property to `true`.
+* *Playback*, in which one specifies the filepath to a ROSBAG, which is
+opened and played.
+
+If the mode is set to LIVE, the pipeline will be configured to drop
+frames to maintain a close-to-realtime feed from the camera. If set
+to non-LIVE the pipeline will work as slow as needed to ensure that
+all frames get through.
+
+The `realsensesrc` will also register all options and properties of the
+respective RealSense camera as GStreamer properties. This will allow
+control of said parameters using the `g_object_set` interface.
+
+The RealSense camera supports a number of streams (i.e. D, RGB, IR1.
+IR2) and stream profiles (1280x720px30fps...). These will be used to
+CAPS negotiate the GstCaps of this element.
+
+== States
+
+The diagram below describes the `realsensesrc` states and which
+librealsense2 calls are executed when the `realsensesrc` changes
+to the given states.
+
+[plantuml, realsense-sequence, png]
+....
+include::ROOT:partial$realsensesrc-sequence.plantuml[]
+....
+
+== Functionality
+
+Internally, `realsensesrc` utilises our
+https://gitlab.com/aivero/public/librealsense-rs[librealsense rust bindings]. It
+is used to configure the connected RealSense device and capture the
+frames that are subsequently pushed downstream.
+
+== Pad and CAPS
+
+src, always, `video/rgbd`
+
+This element decides and fixates its src CAPS. No re-negotiation is
+allowed. Depending on the configuration of the `enable-*` properties,
+the `realsensesrc` will include `streams` in the `video/rgbd` CAPS.
+The `realsensesrc` uses the following formats for the different streams:
+
+- Depth: `gray16le`
+- Color: `rgb`
+- Infra (1 and 2): `gray8`
+
+One common `framerate` will be included in the `video/rgbd` CAPS, which
+is shared across all the streams. All included stream will have a
+`*_width`, `*_height` and `*_format` field in the CAPS. The resolutions
+of the stream are therefore not shared across the streams.
+
+[[realsense_metadata]]
+== Per-frame metadata
+
+The `realsensesrc` has the `include-per-frame-metadata` flag, which
+causes it to attach the librealsense-specific per-frame metadata to each
+of the frames. Currently the metadata is included for every frame, even
+though some of the metadata is duplicated for the frames.
+
+=== librealsense Bindings
+
+The per-frame metadata may be read from librealsense with the two
+functions `supports_frame_metadata` and `get_frame_metadata`, which both
+takes an `int` as argument, which uniquely defines the property to be
+read. In the Rust bindings for librealsense, we have added a method on
+the `frame` struct called `get_metadata`, which reads all the available
+metadata for the frame and returns that as a struct of the following
+format:
+
+[source,sourceCode,Rust]
+----
+pub struct Metadata {
+    pub frame_counter: Option<i64>,
+    pub frame_timestamp : Option<i64>,
+    pub sensor_timestamp : Option<i64>,
+    pub actual_exposure : Option<i64>,
+    pub gain_level : Option<i64>,
+    pub auto_exposure : Option<i64>,
+    pub white_balance : Option<i64>,
+    pub time_of_arrival : Option<i64>,
+    pub temperature : Option<i64>,
+    pub backend_timestamp : Option<i64>,
+    pub actual_fps : Option<i64>,
+    pub laser_power : Option<i64>,
+    pub laser_power_mode : Option<i64>,
+    pub exposure_priority : Option<i64>,
+    pub exposure_roi_left : Option<i64>,
+    pub exposure_roi_right : Option<i64>,
+    pub exposure_roi_top : Option<i64>,
+    pub exposure_roi_bottom : Option<i64>,
+    pub brightness : Option<i64>,
+    pub contrast : Option<i64>,
+    pub saturation : Option<i64>,
+    pub sharpness : Option<i64>,
+    pub auto_white_balance_temperature: Option<i64>,
+    pub backlight_compensation : Option<i64>,
+    pub hue : Option<i64>,
+    pub gamma : Option<i64>,
+    pub manual_white_balance : Option<i64>,
+    pub power_line_frequency : Option<i64>,
+    pub low_light_compensation : Option<i64>,
+}
+----
+
+The reason for this design choice is that this is more expressive than
+using an `int` as identifier. If only a single attribute from the
+metadata is desired, please use the `frame.supports_frame_metadata` and
+`frame.get_frame_metadata` functions, which accepts a
+`MetadataAttribute` enum.
+
+=== Serialisation
+
+We use Cap’n Proto for serialisation. This is also handled in the
+`realsensesrc` (rs_meta.rs). When the `include-per-frame-metadata`
+property is set to true, the `realsensesrc` attaches the Cap’n Proto
+serialized metadata buffers to the main buffer using the `BufferMeta`
+API. These buffers are tagged, using the `TagsMeta` API as `%smeta`,
+where `%s` is the tag of the stream (e.g. _depth_ or _infra1_). Similar
+to the other streams, the per-frame metadata streams are also included
+in the `streams` section of the `video/rgbd` CAPS, but does not need a
+`*_format`, `*_width` and `*_height` field.
+
+[[example]]
+[source,sourceCode,json]
+----
+{
+    "TagsMeta": [{ "Title": "depth" }],
+    "BufferMeta": [{
+            "TagsMeta": [{ "Title": "infra1" }],
+        },
+        {
+            "TagsMeta": [{ "Title": "depthmeta" }]
+        },
+        {
+            "TagsMeta": [{ "Title": "infra1meta" }]
+        }
+    ]
+}
+----
+
+And the resulting CAPS would be:
+
+[source,sourceCode,bash]
+----
+video/rgbd,streams="depth,infra1,depthmeta,infra1meta",
+    depth_format=GRAY16,depth_width=1080,depth_height=720,
+    infra1_format=GRAY8,infra1_width=1080,infra1_height=720,
+    framerate=30
+----
+
+As all values in the `Metadata` struct are `Option` s, which are not
+available in Cap’n Proto, we need to translate from the Cap’n Proto
+representation to the rust representation and vice-versa. This is done
+by treating `None` values as `0` when translating from rust to Cap’n
+Proto and `0` as `None` when translating the other way.
+
+// end::realsense[]
