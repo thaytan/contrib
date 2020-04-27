@@ -1,0 +1,5 @@
+name: depthmeta
+title: GStreamer Depth Meta
+version: 0.3.0
+nav:
+  - modules/ROOT/nav.adoc
