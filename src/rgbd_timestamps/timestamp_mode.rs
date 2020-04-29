@@ -84,7 +84,12 @@ impl TimestampMode {
 
             let name = ffi::CString::new("GstTimestampMode").unwrap();
             unsafe {
-                let type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
+                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
+                if type_ == 0 {
+                    // Register the type ONLY if not done before
+                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                }
                 TYPE = glib::translate::from_glib(type_);
             }
         });
