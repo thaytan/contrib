@@ -19,9 +19,11 @@ pub mod buffer;
 #[allow(clippy::module_inception)]
 pub mod rgbd;
 pub mod tags;
+pub mod error;
 
 pub use buffer::*;
 pub use rgbd::*;
 pub use tags::*;
+pub use error::*;
 
 pub use gst::meta::{Meta, MetaAPI, MetaRef, MetaRefMut};
