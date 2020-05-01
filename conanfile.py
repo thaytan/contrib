@@ -59,4 +59,3 @@ class MesaConan(ConanFile):
 
     def package_info(self):
         self.env_info.LIBGL_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))
-        self.env_info.__EGL_VENDOR_LIBRARY_DIRS = "/usr/share/glvnd/egl_vendor.d"
