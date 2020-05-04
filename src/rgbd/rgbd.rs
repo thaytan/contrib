@@ -1,5 +1,7 @@
 use crate::buffer::BufferMeta;
 use crate::tags::TagsMeta;
+use glib::value::FromValueOptional;
+use crate::RgbdError;
 
 /// Fill the `main_buffer` with `buffer` and mark it appropriately with `tag`.
 ///
@@ -239,6 +241,86 @@ pub fn remove_aux_buffers_with_tags(
     Ok(())
 }
 
+/// Gets the field with the given `name` of type `T` in the given CAPS `structure`.
+/// # Arguments
+/// * `structure` - The structure to read the field from.
+/// * `name` - The name of the field to get.
+/// * `type_` - The name of `T` in string format. Solely used for error formatting.
+/// # Returns
+/// * `Ok(T)` - If the field exists and is of type `T`.
+/// * `Err(RgbdError::MissingCapsField)` - If `structure` does not have a field called `name`.
+/// * `Err(RgbdError::WrongCapsFormat)` - If the field is not of type `T`.
+pub fn get_field<'structure, T: FromValueOptional<'structure>>(
+    structure: &'structure gst::StructureRef,
+    name: &str,
+    type_: &'static str,
+) -> Result<T, RgbdError> {
+    let value = structure
+        .get::<T>(name)
+        .map_err(|_| RgbdError::WrongCapsFormat { name: name.to_string(), type_ })?
+        .ok_or_else(|| RgbdError::MissingCapsField(name.to_string()))?;
+    Ok(value)
+}
+
+/// Converts the given `caps` and `framerate` into a `gst::VideoInfo` for the stream with the given
+/// name.
+/// # Arguments
+/// * `caps` - The caps to convert.
+/// * `framerate` - The framerate of the stream.
+/// # Returns
+/// * `Ok(VideoInfo)` - If the CAPS were successfully converted.
+/// * `Err(RgbdError::MissingCapsField)` - If any required fields on the CAPS do not exist.
+/// * `Err(RgbdError::WrongCapsFormat)` - If a field on the CAPS are not of correct type.
+/// * `Err(RgbdError::NoVideoInfo)` - If `caps` could not be converted into `VideoInfo`.
+pub fn get_video_info(
+    caps: &gst::StructureRef,
+    stream_name: &str
+) -> Result<gstreamer_video::VideoInfo, RgbdError> {
+    let framerate = get_field::<gst::Fraction>(caps, "framerate", "Fraction")?;
+    let stream_width = get_field::<i32>(caps, &format!("{}_width", stream_name), "i32")?;
+    let stream_height = get_field::<i32>(caps, &format!("{}_height", stream_name), "i32")?;
+    let stream_format = get_field::<&str>(caps, &format!("{}_format", stream_name), "str")?;
+
+    let caps = gst::Caps::new_simple(
+        "video/x-raw",
+        &[
+            ("format", &stream_format),
+            ("width", &stream_width),
+            ("height", &stream_height),
+            ("framerate", &framerate),
+        ],
+    );
+    gstreamer_video::VideoInfo::from_caps(&caps).map_err(|_| RgbdError::NoVideoInfo)
+}
+
+/// Aligns `buffer` to u16, such that it can be used to store depth video.
+/// # Arguments
+/// * `buffer` - The buffer to convert to depth.
+/// # Returns
+/// * `Ok` - If the buffer is properly aligned to u16.
+/// * `Err` - If not.
+pub fn to_depth_buffer(buffer: &[u8]) -> Result<&[u16], RgbdError> {
+    let (head, in_data_u16, tail) = unsafe { buffer.align_to::<u16>() };
+    // Ensure that the frame's byte was correctly aligned to a u16 slice. If head or tail is
+    // non-empty, it means that the buffer was not correctly aligned and we therefore return an
+    // error.
+    if !head.is_empty() || !tail.is_empty() {
+        return Err(RgbdError::BufferNotAligned);
+    }
+    Ok(in_data_u16)
+}
+
+pub fn to_depth_buffer_mut(buffer: &mut [u8]) -> Result<&mut [u16], RgbdError> {
+    let (head, in_data_u16, tail) = unsafe { buffer.align_to_mut::<u16>() };
+    // Ensure that the frame's byte was correctly aligned to a u16 slice. If head or tail is
+    // non-empty, it means that the buffer was not correctly aligned and we therefore return an
+    // error.
+    if !head.is_empty() || !tail.is_empty() {
+        return Err(RgbdError::BufferNotAligned);
+    }
+    Ok(in_data_u16)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -442,3 +524,4 @@ mod tests {
         assert_eq!(tag_infra, original_tag_infra);
     }
 }
+
