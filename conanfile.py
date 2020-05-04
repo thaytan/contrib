@@ -11,6 +11,7 @@ class ConanWebP(ConanFile):
     def build_requirements(self):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
         self.build_requires("make/[>=4.3]@%s/stable" % self.user)
+        self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/webmproject/libwebp/archive/v%s.tar.gz" % self.version)
