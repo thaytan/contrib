@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2020-05-04
+
+### Added
+
+- Convenience functions for working with `video/rgbd` CAPS:
+    - `get_video_info` function, which converts the `video/rgbd` caps to `VideoInfo` for a given stream.
+    - `get_field` function, which gets a field from a structure (CAPS) with a generic type.
+- Buffer conversion functions, which zero-copy converts a `[u8]` to `[u16]`.
+
 ## [1.0.2] - 2020-04-28
 ### Fixed
 - Make sure that `GstTimestampMode` gets registered only once.

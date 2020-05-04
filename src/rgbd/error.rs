@@ -17,6 +17,8 @@ pub enum RgbdError {
         /// The name of the type we expected.
         type_: &'static str,
     },
+    /// The input buffer is not properly aligned to contain depth video.
+    BufferNotAligned,
 }
 impl std::error::Error for RgbdError {}
 impl std::fmt::Display for RgbdError {
@@ -33,6 +35,7 @@ impl std::fmt::Display for RgbdError {
                 "RGBD: CAPS field `{}` has wrong format. Expected {}",
                 field, expected
             ),
+            RgbdError::BufferNotAligned => "Input buffer is not aligned to u16".to_string(),
         };
 
         write!(f, "{}", msg)
