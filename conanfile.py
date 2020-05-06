@@ -1,5 +1,4 @@
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
-
+from conans import AutoToolsBuildEnvironment, ConanFile, tools, CMake
 
 class ConanWebP(ConanFile):
     name = "webp"
@@ -9,17 +8,13 @@ class ConanWebP(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-        self.build_requires("make/[>=4.3]@%s/stable" % self.user)
-        self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
+        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/webmproject/libwebp/archive/v%s.tar.gz" % self.version)
 
     def build(self):
-        with tools.chdir("libwebp-%s" % self.version):
-            self.run("./autogen.sh")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
-            autotools.make()
-            autotools.install()
+        cmake = CMake(self, generator="Ninja")
+        cmake.configure(source_folder="libwebp-%s" % (self.version))
+        cmake.build()
+        cmake.install()
