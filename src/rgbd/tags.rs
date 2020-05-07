@@ -56,8 +56,15 @@ impl TagsMeta {
     /// Gets the first [TagsMeta](struct.TagsMeta.html) attached onto the given `buffer`.
     /// # Arguments
     /// * `buffer` - A reference to the buffer, from which the [TagsMeta](struct.TagsMeta.html) should be read.
-    pub fn get(buffer: &mut BufferRef) -> &TagsMeta {
+    pub fn get(buffer: &BufferRef) -> &Self {
         unsafe { &*sys::tags_meta_get(buffer.as_mut_ptr()) }
+    }
+
+    /// Get the `gst::TagList` associated with the TagsMeta.
+    /// # Returns
+    /// A list of tags on the buffer.
+    pub fn get_tag_list(&self) -> gst::TagList {
+        unsafe { gst::tags::TagList::from_glib_none(self.tags) }
     }
 }
 
