@@ -96,7 +96,7 @@ class GStreamerPluginsBadConan(ConanFile):
         if self.options.closedcaption:
             self.requires("pango/[>=1.4.3]@%s/stable" % self.user)
         if self.options.webp:
-            self.requires("webp/[>=1.1.0]@%s/stable" % self.user)
+            self.requires("libwebp/[>=1.1.0]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)
