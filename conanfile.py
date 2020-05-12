@@ -35,3 +35,6 @@ class LibglvndConan(ConanFile):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()
+
+    def package_info(self):
+        self.env_info.__EGL_VENDOR_LIBRARY_DIRS.append("/usr/share/glvnd/egl_vendor.d")
