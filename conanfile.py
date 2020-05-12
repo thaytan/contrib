@@ -19,6 +19,7 @@ class GccConan(ConanFile):
         self.requires("binutils/[>=2.33.1]@%s/stable" % self.user)
         self.requires("isl/[>=0.22.1]@%s/stable" % self.user)
         self.requires("mpfr/[>=4.0.2]@%s/stable" % self.user)
+        self.requires("mpc/[>=1.1.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))
@@ -50,6 +51,7 @@ class GccConan(ConanFile):
             "--enable-default-pie",
             "--enable-default-ssp",
             "--enable-cet=auto",
+            "--with-multilib-list=",
         ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
