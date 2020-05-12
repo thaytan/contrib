@@ -3,7 +3,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibffiConan(ConanFile):
     name = "libffi"
-    version = tools.get_env("GIT_TAG", "3.3-rc0")
+    version = tools.get_env("GIT_TAG", "3.3")
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "A portable, high level programming interface to various calling conventions"
@@ -30,3 +30,10 @@ class LibffiConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+            
+    def package(self):
+        # TODO: remove once the libs get installed into /lib instead of /lib64 by itself.
+        print(self.package_folder)
+        tools.mkdir("%s/lib" % self.package_folder)
+        self.run("mv %s/lib64/* %s/lib/" %(self.package_folder, self.package_folder))
+        tools.rmdir("%s/lib64" % self.package_folder)
