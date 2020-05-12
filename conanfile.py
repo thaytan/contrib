@@ -51,7 +51,6 @@ class GccConan(ConanFile):
             "--enable-default-pie",
             "--enable-default-ssp",
             "--enable-cet=auto",
-            "--with-multilib-list=",
         ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
