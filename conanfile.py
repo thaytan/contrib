@@ -5,7 +5,7 @@ from conans import CMake, ConanFile, tools
 
 class LLVMConan(ConanFile):
     name = "llvm"
-    version = tools.get_env("GIT_TAG", "9.0.0")
+    version = tools.get_env("GIT_TAG", "9.0.1")
     license = "custom", "Apache"
     description = "Collection of modular and reusable compiler and toolchain technologies"
     settings = "os", "compiler", "arch"
@@ -19,7 +19,7 @@ class LLVMConan(ConanFile):
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://releases.llvm.org/{0}/llvm-{0}.src.tar.xz".format(self.version))
+        tools.get("https://github.com/llvm/llvm-project/releases/download/llvmorg-{0}/llvm-{0}.src.tar.xz".format(self.version))
 
     def build(self):
         cmake = CMake(self, generator="Ninja", build_type="Release")
