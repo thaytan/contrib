@@ -16,7 +16,7 @@ class GLibConan(ConanFile):
 
     def requirements(self):
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
-        self.requires("libffi/3.3-rc0@%s/stable" % self.user)
+        self.requires("libffi/[>=3.3]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
