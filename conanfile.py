@@ -17,7 +17,7 @@ class PythonConan(ConanFile):
     def requirements(self):
         self.requires("expat/[>=2.2.7]@%s/stable" % self.user)
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
-        self.requires("libffi/3.3-rc0@%s/stable" % self.user)
+        self.requires("libffi/[>=3.3]@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
         self.requires("bzip2/[>=1.0.8]@%s/stable" % self.user)
         self.requires("sqlite/[>=3.30.1]@%s/stable" % self.user)
