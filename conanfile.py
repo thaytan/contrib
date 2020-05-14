@@ -10,27 +10,22 @@ class AiveroRgbDToolkit(ConanFile):
     url = "https://aivero.com"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"
-    generators = "env"
     exports_sources = [
         "*.adoc",
     ]
     
     def set_version(self):
-        # git = tools.Git(folder=self.recipe_folder)
-        # tag, branch = git.get_tag(), git.get_branch()
-        # self.version = tag if tag and branch.startswith("HEAD") else branch
         self.version =  tools.get_env("CI_COMMIT_REF_SLUG", "master")
 
     def requirements(self):
-        gst_version = "[>=1.16.0]"
-        self.requires("gst-rgbd/[>=0.3.0]@%s/stable" % self.user)
-        self.requires("gst-k4a/[>=0.5.0]@%s/stable" % self.user)
-        self.requires("gst-realsense/[>=1.2.1]@%s/stable" % self.user)
-        self.requires("gstreamer-colorizer/[>=0.1.1]@%s/stable" % self.user)
+        gst_version = "[>=1.16.2]"
+        self.requires("gst-rgbd/[>=0.4.0]@%s/stable" % self.user)
+        self.requires("gst-k4a/[>=1.1.1]@%s/stable" % self.user)
+        self.requires("gst-realsense/[>=2.1.1]@%s/stable" % self.user)
+        self.requires("gstreamer-colorizer/[>=0.1.2]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/%s@%s/stable" % (gst_version, self.user))
         self.requires("gstreamer-plugins-good/%s@%s/stable" % (gst_version, self.user))
         self.requires("gstreamer-plugins-bad/%s@%s/stable" % (gst_version, self.user))
-        
 
     def package(self):
         self.copy(pattern="*.adoc*", dst=os.path.join(self.package_folder), keep_path=False)
@@ -43,7 +38,6 @@ class AiveroRgbDToolkit(ConanFile):
         self.copy_deps("*gst-inspect-1.0", dst="bin", keep_path=False)
         self.copy_deps("*gst-launch-1.0", dst="bin", keep_path=False)
         self.copy_deps("*gst-plugin-scanner", dst="bin", keep_path=False)
-
 
         # Pkg-config files
         self.copy_deps("*.pc", dst="lib/pkgconfig", keep_path=False)
@@ -69,7 +63,7 @@ class AiveroRgbDToolkit(ConanFile):
             env_file.write("\nexport PYTHONPATH=$PYTHONPATH:" + os.path.join("$PREFIX", "lib"))
             env_file.write("\nexport LIBVA_DRIVERS_PATH=" + os.path.join("$PREFIX", "lib", "dri"))
 
-        # with tools.chdir(install_path):
-        #     tarball_filename = "3dq-server-%s.tar.bz2" % self.version
-        #     self.run("tar cvfj %s/%s %s" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
-        #     self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
+        with tools.chdir(install_path):
+            tarball_filename = "3dq-server-%s.tar.bz2" % self.version
+            self.run("tar cvfj %s/%s %s" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
+            self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))

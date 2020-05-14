@@ -6,10 +6,22 @@ Pack of main open source GStreamer elements we offer
 
 Download the tarball, then run installation as shown below.
 
-.Install from tarball
+
+
+In order to use the components, the `aivero_environment.sh` must be sourced. Only one environment
+may be sourced in a single shell session, if necessary please
+make sure to use multiple terminals (or terminal tabs).
+
+
+== Installation
+
+Download the latest release from:
+https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases[https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases]
+
+=== Install from tarball
+
 [source,bash]
 ----
-
 # Create an installation directory and set permissions
 sudo mkdir -p /opt/aivero
 sudo chown $USER:$USER /opt/aivero
@@ -19,10 +31,6 @@ tar -C / -xvf aivero_rgbd_toolkit_master.tar.bz2
 source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 ----
 
-In order to use the components, the `aivero_environment.sh` must be sourced. Only one environment
-may be sourced in a single shell session, if necessary please
-make sure to use multiple terminals (or terminal tabs).
-
 === Test installation
 
 [source,bash]
@@ -31,3 +39,96 @@ source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 gst-inspect-1.0 realsensesrc
 # Should show the man page for the realsensesrc
 ----
+
+
+== Quick Start:
+
+With that you should be able to run:
+
+[source, bash]
+....
+gst-launch-1.0 realsensesrc rosbag-location=/home/rapha/Documents/rosbags/mug.bag timestamp-mode=clock_all real-time-rosbag-playback=true  ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink
+....
+
+Which will display the colorized depth data from the rosbag. You can
+also look at infrared and colour. Look further down.
+
+
+[[gstreamer-gst-launch-10-syntax-crashcourse]]
+== GStreamer gst-launch-1.0 syntax crashcourse
+
+Besides applications and libraries that can be build with GStreamer, it
+also offers a development/testing command line tool called
+`gst-launch-1.0`. It creates a video processing pipeline based on a
+simple syntax.
+
+[source, bash]
+....
+source /opt/aivero/rgbd-toolkit/aivero_environment.sh
+GST_DEBUG=3 gst-launch-1.0 realsensesrc rosbag-location=/home/rapha/Documents/rosbags/mug.bag timestamp-mode=clock_all real-time-rosbag-playback=true  ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink
+....
+
+[start=1]
+
+. GST_DEBUG=3 - *Optional, ignore and do not add to the command for
+now.* It sets the debug level of the pipeline and can be specified for
+individual element types.
+
+. `gst-launch-1.0` - The start of a every command
+
+. `realsensesrc rosbag-location=/home/rapha/Documents/rosbags/mug.bag timestamp-mode=clock_all real-time-rosbag-playback=true`- A source element with three of it's parameters specified. You can access the man page of an element using i.e.
+`gst-inspect-1.0 realsensesrc`. The different timestamp modes and
+playback modes are explained below.
+
+. `!` - The exclamation mark (padded by space left and right) links
+two elements together, so that data can flow between them. This link
+will only succeed if both elements support each others capabilities
+(`caps`). `realsensesrc` has (simplified) caps: `video/rgbd` and
+so has `rgbddemux`
+
+. `rgbddemux name=demux` - The demuxing element that takes caps
+`video/rgbd` and spits out elementary streams. We have also overridden
+it's a unique name with our own *unique* name (this can be done on every
+element)
+
+. ` ` - Note the *lack* of an exclamation mark ( `!`) here. We do
+not link this element at this point further.
+
+. `demux.src_depth` - This is a reference to a src pad of the
+rgbddemux. For every stream that the `rgbddemux` finds upstream it
+will create a src pad that produces data. We can access the pad by a dot
+followed by the pad name (`. name_of _pad`). The caps of the video
+stream on that pad in the case of uncompressed depth video are
+`video/x-raw,format=GRAY16_LE`. 16bit Little endian.
+
+# Troubleshooting
+
+Check out the issues for
+
+* https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/issues[aivero-rgbd-toolkit]
+* https://gitlab.com/aivero/public/gstreamer/gst-realsense/-/issues[gst-realsense]
+* https://gitlab.com/aivero/public/gstreamer/gst-k4a/-/issues[gst-k4a]
+* https://gitlab.com/aivero/public/gstreamer/gst-rgbd/-/issues[gst-rgbd]
+
+
+## Pipeline displays only a single image and freezes
+
+Most likely you are not using the right combination of `timestamp_mode` and `real-time-rosbag-playback`:
+
+.Playback Modes `realsensesrc`
+|===
+| |Real Camera |Rosbag
+
+|**Live playback** |`gst-launch-1.0 realsensesrc serial=739112060855 timestamp-mode=clock_all   ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink` | `realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink`
+
+|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
+|===
+
+.Playback Modes `k4asrc`
+|===
+| |Real Camera |Rosbag
+
+|**Live playback** |`gst-launch-1.0 k4asrc serial=XXXXX timestamp-mode=clock_all   ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink` |`gst-launch-1.0 k4asrc recording-location=$k4bag timestamp_mode=clock_all real-time-playback=true ! queue ! rgbddemux name=demux demux.src_depth ! colorizer near-cut=300 far-cut=6000 ! queue ! videoconvert ! queue ! glimagesink`
+
+|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
+|===
