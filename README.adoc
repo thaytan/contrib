@@ -121,7 +121,7 @@ Most likely you are not using the right combination of `timestamp_mode` and `rea
 
 |**Live playback** |`gst-launch-1.0 realsensesrc serial=739112060855 timestamp-mode=clock_all   ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink` | `realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink`
 
-|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
+|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=camera_common ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
 |===
 
 .Playback Modes `k4asrc`
@@ -130,5 +130,5 @@ Most likely you are not using the right combination of `timestamp_mode` and `rea
 
 |**Live playback** |`gst-launch-1.0 k4asrc serial=XXXXX timestamp-mode=clock_all   ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink` |`gst-launch-1.0 k4asrc recording-location=$k4bag timestamp_mode=clock_all real-time-playback=true ! queue ! rgbddemux name=demux demux.src_depth ! colorizer near-cut=300 far-cut=6000 ! queue ! videoconvert ! queue ! glimagesink`
 
-|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
+|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=camera_common ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
 |===
