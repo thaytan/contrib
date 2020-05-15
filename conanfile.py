@@ -22,8 +22,6 @@ class PythonCairoConan(ConanFile):
 
     def build(self):
         with tools.chdir("pycairo-%s" % self.version):
-            self.run('echo $PATH')
-            self.run('echo $PKG_CONFIG_PATH')
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 
     def package_info(self):
