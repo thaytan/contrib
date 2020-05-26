@@ -23,7 +23,10 @@ class PythonCairoConan(ConanFile):
         tools.get("https://github.com/pygobject/pycairo/releases/download/v{0}/pycairo-{0}.tar.gz".format(self.version))
 
     def build(self):
-        env = {"LDSHARED": "%s -pthread -shared -m64 " % os.environ["CC"]}
+        ldshared = "%s -pthread -shared " % os.environ["CC"]
+        if self.settings.arch == "x86_64":
+            ldshared += "-m64 "
+        env = {"LDSHARED": ldshared}
         with tools.chdir("pycairo-%s" % self.version), tools.environment_append(env):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 
