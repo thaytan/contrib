@@ -1,14 +1,14 @@
 [package]
 name = "k4a"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
 description = "Rust FFI bindings for Azure Kinect SDK"
 keywords = ["Azure Kinect SDK", "Rust", "FFI", "idiomatic", "safe"]
-repository = "https://gitlab.com/aivero/hardware/k4a-rs"
+repository = "https://gitlab.com/aivero/public/k4a-rs"
 license = "MIT"
 edition = "2018"
 readme = "README.md"
 
 
 [dependencies]
-k4a-sys = { git = "https://gitlab.com/aivero/hardware/k4a-sys", tag = "0.1.3" }
+k4a-sys = { git = "https://gitlab.com/aivero/public/k4a-sys", tag = "0.1.4" }
