@@ -14,14 +14,14 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::{
-    K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate, K4aTimestampMode,
-};
+use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate};
 use crate::settings::*;
 use glib::subclass;
+use gst_depth_meta::rgbd_timestamps::TimestampMode;
 
+lazy_static! {
 /// All properties that `k4asrc` element supports.
-pub(crate) static PROPERTIES: [subclass::Property; 16] = [
+pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 16] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -143,7 +143,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 16] = [
             "Loop recording",
             "Enables looping of playing from recording recording specified by `recording-location` \
              property. This property applies only when streaming from Playback. This property cannot \
-             be enabled if `timestamp-mode=k4a_common` or `timestamp-mode=k4a_individual`.",
+             be enabled if `timestamp-mode=camera_common` or `timestamp-mode=camera_individual`.",
             DEFAULT_LOOP_RECORDING,
             glib::ParamFlags::READWRITE,
         )
@@ -158,16 +158,6 @@ pub(crate) static PROPERTIES: [subclass::Property; 16] = [
              sink element(s) are set to `async=true`, the streaming rate will be as fast as possible. \
              This property is applicable only when streaming from Playback.",
             DEFAULT_REAL_TIME_PLAYBACK,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("timestamp-mode", |name| {
-        glib::ParamSpec::enum_(
-            name,
-            "Timestamp Mode",
-            "Timestamp mode to use",
-            K4aTimestampMode::get_glib_type(),
-            DEFAULT_TIMESTAMP_MODE as i32,
             glib::ParamFlags::READWRITE,
         )
     }),
@@ -194,4 +184,7 @@ pub(crate) static PROPERTIES: [subclass::Property; 16] = [
             glib::ParamFlags::READWRITE,
         )
     }),
+    // Register "timestamp-mode" property
+    TimestampMode::get_property_type(),
 ];
+}

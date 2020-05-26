@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2020-05-26
+
+### Changed
+
+- Bump dependency k4a-rs to 0.4.2, which is also at a new location, the `public` subgroup.
+- Bump dependency gst-depth-meta-rs to 1.2.0
+
+## [1.1.1] - 2020-04-29
+
+### Fixed
+
+- Panic caused by double-registration of the GstTimestampMode enum.
+
+## [1.1.0] - 2020-04-02
+### Added
+- Accept "~/path/to/file", i.e. tilde as $HOME, while setting `recording-location`.
+### Changed
+- Update dependencies
+  - `glib` to 0.9
+  - `gst` to 0.15
+
+## [1.0.0] - 2020-03-26
+
+### Changed
+
+- Use implementation of standard `RgbdTimestamps` trait instead of custom timestamping. This includes renaming of variants `k4a_common` to `camera_common` and `k4a_individual` to `camera_individual`.
+
 ## [0.5.0] - 2020-03-04
 
 ### Added
