@@ -31,9 +31,11 @@ tar -C / -xvf aivero_rgbd_toolkit_master.tar.bz2
 source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 ----
 
+---
+
 === Build and install from conan
 
-You can use our artifactory instance at [https://conan.aa.aivero.dev](https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all) to install the newest release straight from our CICD.
+Alternatively, you can use our artifactory instance at [https://conan.aa.aivero.dev](https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all) to install the newest release straight from our CICD.
 
 First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
 that your default python version is 3.X and that pip installs packages for python 3. 
@@ -60,11 +62,11 @@ Now you can locally install all dependencies:
 ```bash
 sudo mkdir -p /opt/aivero/rgbd_toolkit
 sudo chown -R $USER:$USER /opt/aivero/rgbd_toolkit
-git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git -b 1.0.0
+git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git -b 1.0.1
 cd aivero-rgbd-toolkit
 conan create . aivero/stable
-# note the version. For tag `1.0.0` this should be:
-conan install aivero_rgbd_toolkit/1.0.0@aivero/stable -if /opt/aivero/rgbd_toolkit
+# note the version. For tag `1.0.1` this should be:
+conan install aivero_rgbd_toolkit/1.0.1@aivero/stable -if /opt/aivero/rgbd_toolkit
 ```
 
 Note: When installing for a second time, please clear /opt/aivero/rgbd_toolkit first.
@@ -79,7 +81,9 @@ Note: You might want to disable the zipping of the library by commenting out the
 
 ```
 
-=== Test installation
+---
+
+== Test installation
 
 [source,bash]
 ----
