@@ -2,6 +2,8 @@
 
 GStreamer plugin containing `video/rgbd` source for Azure Kinect DK (K4A) device.
 
+> Note: This repo builds and installs **only** the `k4asrc`. Additionally you require the `rgbddemux` element to display a `video/rgbd` stream. Please head to the [Aivero RGB-D Toolkit](https://gitlab.com/aivero/public/aivero-rgbd-toolkit) to install a complete set of elements for handling RGB-D cameras.
+
 > Note: Streaming from IMU is currently not implemented
 
 > Note: Streaming from the microphone array is currently not implemented
@@ -20,12 +22,21 @@ The `video/rgbd` caps always contain the following fields
 ## Setup
 
 First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
-that your default python version is 3.X and that pip installs packages for python 3. Then run:
+that your default python version is 3.X and that pip installs packages for python 3. 
+We build on conan with a non-standard profile, which you can keep updated using our [conan config](https://gitlab.com/aivero/public/conan/conan-config)
+Then run:
 
 ```bash
 pip install conan --user
 # You may need to source ~/.profile here, please see https://docs.conan.io/en/latest/installation.html#known-installation-issues-with-pip
-conan remote add aivero https://conan.aa.aivero.dev/artifactory/api/conan/aivero-public
+# Install the conan repositories, as well as conan profiles
+conan config install git@gitlab.com:aivero/public/conan/conan-config.git
+
+# Select one of the provided conan profiles as default:
+conan config set general.default_profile=linux_x86_64
+# conan config set general.default_profile=linux_armv8
+
+
 # And to ensure that the remote is configured properly:
 conan search -r aivero gst-k4a
 # You should now see a list of all the releases of gst-k4a
@@ -33,15 +44,15 @@ conan search -r aivero gst-k4a
 
 ## Install a tagged release
 
-You may use conan to install a pre-built release of the gst-k4a package:
+You may use conan to install a pre-built release of the gst-k4a package into your hidden `~/.conan/data` directory. This will **NOT** install the required `rgbddemux`. 
 
-**NOTE:** This does not work yet, as the `k4asrc` has not yet been released.
+> Unless you know your ways around conan and GStreamer we **highly recommend** installing the [Aivero RGB-D Toolkit](https://gitlab.com/aivero/public/aivero-rgbd-toolkit) instead! This contains the k4asrc, realsensesrc and all elements to support them.
+
+### Installing to hidden conan directory:
 
 ```bash
-conan install gst-k4a/0.3.0@aivero/stable -if installation
-export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$PWD/installation
-# And validate that the realsensesrc is properly installed
-gst-inspect-1.0 k4asrc
+conan install gst-k4a/1.4.0@aivero/stable
+# Find the .so in ~/.conan/data/k4a/1.4.0/aivero/stable/package/SOME_HASH/lib
 ```
 
 ## Build your own
