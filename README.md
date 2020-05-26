@@ -2,6 +2,9 @@
 
 GStreamer plugin containing `video/rgbd` source for a RealSense device.
 
+> Note: This repo builds and installs **only** the `realsensesrc`. Additionally you require the `rgbddemux` element to display a `video/rgbd` stream. Please head to the [Aivero RGB-D Toolkit](https://gitlab.com/aivero/public/aivero-rgbd-toolkit) to install a complete set of elements for handling RGB-D cameras.
+
+
 ## `video/rgbd`
 The `video/rgbd` caps always contain the following fields
 - **streams** - This field contains selected streams with priority `depth > infra1 > infra2 > color`. The first stream in this comma separated string, e.g. "depth,infra2,color", is considered to be the main stream and is therefore transported in the main buffer. There must always be at least one stream enabled. All additional buffers are attached as meta to the main buffer.
@@ -15,12 +18,22 @@ The `video/rgbd` caps always contain the following fields
 ## Setup
 
 First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
-that your default python version is 3.X and that pip installs packages for python 3. Then run:
+that your default python version is 3.X and that pip installs packages for python 3. 
+We build on conan with a non-standard profile, which you can keep updated using our [conan config](https://gitlab.com/aivero/public/conan/conan-config).
+Then run:
+
 
 ```bash
 pip install conan --user
 # You may need to source ~/.profile here, please see https://docs.conan.io/en/latest/installation.html#known-installation-issues-with-pip
-conan remote add aivero https://conan.aa.aivero.dev/artifactory/api/conan/aivero-public
+
+# Install the conan repositories, as well as conan profiles
+conan config install git@gitlab.com:aivero/public/conan/conan-config.git
+
+# Select one of the provided conan profiles as default:
+conan config set general.default_profile=linux_x86_64
+# conan config set general.default_profile=linux_armv8
+
 # And to ensure that the remote is configured properly:
 conan search -r aivero gst-realsense
 # You should now see a list of all the releases of gst-realsense
@@ -28,17 +41,18 @@ conan search -r aivero gst-realsense
 
 ## Install a tagged release
 
-You may use conan to install a pre-built release of the gst-realsense package:
+You may use conan to install a pre-built release of the gst-k4a package into your hidden `~/.conan/data` directory. This will **NOT** install the required `rgbddemux`. 
+	
+> Unless you know your ways around conan and GStreamer we **highly recommend** installing the [Aivero RGB-D Toolkit](https://gitlab.com/aivero/public/aivero-rgbd-toolkit) instead! This contains the k4asrc, realsensesrc and all elements to support them.
 
+### Installing to hidden conan directory:
 ```bash
 # List all releases:
 conan search -r aivero gst-realsense
 
 # Choose one of the releases and:
-conan install gst-realsense/*CHOSEN_RELEASE*@aivero/stable -if installation
-export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$PWD/installation
-# And validate that the realsensesrc is properly installed
-gst-inspect-1.0 realsensesrc
+conan install gst-realsense/*CHOSEN_RELEASE*@aivero/stable
+# Find the .so in ~/.conan/data/k4a/1.4.0/aivero/stable/package/SOME_HASH/lib
 ```
 
 ## Build your own
