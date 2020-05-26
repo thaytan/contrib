@@ -15,10 +15,10 @@ make sure to use multiple terminals (or terminal tabs).
 
 == Installation
 
+=== Install from tarball
+
 Download the latest release from:
 https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases[https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases]
-
-=== Install from tarball
 
 [source,bash]
 ----
@@ -30,6 +30,54 @@ sudo chown $USER:$USER /opt/aivero
 tar -C / -xvf aivero_rgbd_toolkit_master.tar.bz2
 source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 ----
+
+=== Build and install from conan
+
+You can use our artifactory instance at [https://conan.aa.aivero.dev](https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all) to install the newest release straight from our CICD.
+
+First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
+that your default python version is 3.X and that pip installs packages for python 3. 
+We build on conan with a non-standard profile, which you can keep updated using our [conan config](https://gitlab.com/aivero/public/conan/conan-config)
+Then run:
+
+```bash
+pip install conan --user
+# You may need to source ~/.profile here, please see https://docs.conan.io/en/latest/installation.html#known-installation-issues-with-pip
+# Install the conan repositories, as well as conan profiles
+conan config install git@gitlab.com:aivero/public/conan/conan-config.git
+
+# Select one of the provided conan profiles as default:
+conan config set general.default_profile=linux_x86_64
+# conan config set general.default_profile=linux_armv8
+
+
+# And to ensure that the remote is configured properly:
+conan search -r aivero-all gst-realsense
+# You should now see a list of all the releases of gst-realsense
+```
+
+Now you can locally install all dependencies:
+```bash
+sudo mkdir -p /opt/aivero/rgbd_toolkit
+sudo chown -R $USER:$USER /opt/aivero/rgbd_toolkit
+git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git -b 1.0.0
+cd aivero-rgbd-toolkit
+conan create . aivero/stable
+# note the version. For tag `1.0.0` this should be:
+conan install aivero_rgbd_toolkit/1.0.0@aivero/stable -if /opt/aivero/rgbd_toolkit
+```
+
+Note: When installing for a second time, please clear /opt/aivero/rgbd_toolkit first.
+
+Note: You might want to disable the zipping of the library by commenting out the last 4 lines in `conanfile.py`:
+```
+# comment the following out
+       with tools.chdir(install_path):
+            tarball_filename = "aivero_rgbd_toolkit_%s.tar.bz2" % self.version
+            self.run("tar cvfj %s/%s %s" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
+            self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
+
+```
 
 === Test installation
 
