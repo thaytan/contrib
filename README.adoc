@@ -18,7 +18,8 @@ make sure to use multiple terminals (or terminal tabs).
 === Install from tarball
 
 Download the latest release from:
-https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases[https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases]
+
+https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases
 
 [source,bash]
 ----
@@ -35,11 +36,11 @@ source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 
 === Build and install from conan
 
-Alternatively, you can use our artifactory instance at [https://conan.aa.aivero.dev](https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all) to install the newest release straight from our CICD.
+Alternatively, you can use our artifactory instance at https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all[https://conan.aa.aivero.dev] to install the newest release straight from our CICD.
 
 First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
 that your default python version is 3.X and that pip installs packages for python 3. 
-We build on conan with a non-standard profile, which you can keep updated using our [conan config](https://gitlab.com/aivero/public/conan/conan-config)
+We build on conan with a non-standard profile, which you can keep updated using our https://gitlab.com/aivero/public/conan/conan-config[conan config]
 Then run:
 
 ```bash
