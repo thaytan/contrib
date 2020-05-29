@@ -58,7 +58,7 @@ class GccConan(ConanFile):
             target = "aarch64-linux-gnu"
         args.append("--build=" + target)
         args.append("--host=" + target)
-        with tools.chdir("%s-%s" % (self.name, self.version)), tools.environment_append(env):
+        with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
