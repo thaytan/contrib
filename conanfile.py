@@ -61,3 +61,8 @@ class GccConan(ConanFile):
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++")
+        # Needed for building Python modules
+        ldshared = "%s -pthread -shared " % os.path.join(self.package_folder, "bin", "gcc")
+        if self.settings.arch == "x86_64":
+            ldshared += "-m64 "
+        self.env_info.LDSHARED = ldshared
