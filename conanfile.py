@@ -52,7 +52,13 @@ class GccConan(ConanFile):
             "--enable-default-ssp",
             "--enable-cet=auto",
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        if self.settings.arch == "x86_64":
+            target = "x86_64-linux-gnu"
+        elif self.settings.arch == "armv8":
+            target = "aarch64-linux-gnu"
+        args.append("--build=" + target)
+        args.append("--host=" + target)
+        with tools.chdir("%s-%s" % (self.name, self.version)), tools.environment_append(env):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
