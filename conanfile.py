@@ -7,7 +7,7 @@ class PythonCairoConan(ConanFile):
     name = "python-cairo"
     version = tools.get_env("GIT_TAG", "1.18.2")
     description = "Python bindings for the cairo graphics library"
-    license = "LGPL2.1"
+    license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
 
     def build_requirements(self):
