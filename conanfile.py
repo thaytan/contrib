@@ -5,12 +5,14 @@ from conans import ConanFile, Meson, tools
 class RequestsConan(ConanFile):
     name = "requests"
     version = tools.get_env("GIT_TAG", "2.7.0")
-    description = "conan builder for Python Requests module"
+    description = "conan package for Python Requests module"
     license = "Apache 2.0"
     settings = "os", "arch", "compiler", "build_type"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
+        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
         self.build_requires("python-setuptools/[>=41.2.0]@%s/stable" % self.user)
 
     def requirements(self):
