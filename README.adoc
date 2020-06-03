@@ -47,7 +47,7 @@ Then run:
 pip install conan --user
 # You may need to source ~/.profile here, please see https://docs.conan.io/en/latest/installation.html#known-installation-issues-with-pip
 # Install the conan repositories, as well as conan profiles
-conan config install git@gitlab.com:aivero/public/conan/conan-config.git
+conan config install https://gitlab.com/aivero/public/conan/conan-config.git
 
 # Select one of the provided conan profiles as default:
 conan config set general.default_profile=linux_x86_64
