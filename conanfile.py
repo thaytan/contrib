@@ -6,7 +6,7 @@ class PillowConan(ConanFile):
     name = "pillow"
     version = tools.get_env("GIT_TAG", "7.1.2")
     description = "conan package for Python Image Library"
-    license = "Python Imaging Library license"
+    license = "Python-Imaging-Library-License"
     settings = "os", "arch", "compiler", "build_type"
 
     def build_requirements(self):
