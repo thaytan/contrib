@@ -63,11 +63,11 @@ Now you can locally install all dependencies:
 ```bash
 sudo mkdir -p /opt/aivero/rgbd_toolkit
 sudo chown -R $USER:$USER /opt/aivero/rgbd_toolkit
-git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git -b 1.0.1
+git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git
 cd aivero-rgbd-toolkit
 conan create . aivero/stable
-# note the version. For tag `1.0.1` this should be:
-conan install aivero_rgbd_toolkit/1.0.1@aivero/stable -if /opt/aivero/rgbd_toolkit
+# note the version. Yours will be `master` in this case:
+conan install aivero_rgbd_toolkit/master@aivero/stable -if /opt/aivero/rgbd_toolkit
 ```
 
 Note: When installing for a second time, please clear /opt/aivero/rgbd_toolkit first.

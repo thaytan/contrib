@@ -20,7 +20,8 @@ class AiveroRgbDToolkit(ConanFile):
     def requirements(self):
         gst_version = "[>=1.16.2]"
         self.requires("gst-rgbd/[>=0.4.0]@%s/stable" % self.user)
-        self.requires("gst-k4a/[>=1.1.1]@%s/stable" % self.user)
+        if self.settings.arch == "x86_64":
+            self.requires("gst-k4a/[>=1.1.1]@%s/stable" % self.user)
         self.requires("gst-realsense/[>=2.1.1]@%s/stable" % self.user)
         self.requires("gstreamer-colorizer/[>=0.1.2]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/%s@%s/stable" % (gst_version, self.user))
