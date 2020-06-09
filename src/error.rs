@@ -25,16 +25,7 @@ pub enum K4aSrcError {
     /// `K4aError` that represents end of file.
     Eof,
 }
-
-impl error::Error for K4aSrcError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        None
-    }
-    fn description(&self) -> &str {
-        "K4A Source Error"
-    }
-}
-
+impl error::Error for K4aSrcError {}
 impl fmt::Display for K4aSrcError {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         use K4aSrcError::*;
