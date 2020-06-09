@@ -1,12 +1,11 @@
 = Aivero RGB-D Toolkit
 
-Pack of main open source GStreamer elements we offer
+Pack of main open source GStreamer `video/rgbd` elements offered by
+Aivero.
 
 == Install
 
 Download the tarball, then run installation as shown below.
-
-
 
 In order to use the components, the `aivero_environment.sh` must be sourced. Only one environment
 may be sourced in a single shell session, if necessary please
@@ -15,12 +14,17 @@ make sure to use multiple terminals (or terminal tabs).
 
 == Installation
 
+You have two options for installation; tarball and conan. In most cases the
+tarball installation will suffice, but special cases (such as using the
+element on ARM) will require a conan installation.
+
 === Install from tarball
 
 Download the latest release from:
 
 https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases
 
+.Install aivero-rgbd-toolkit from tarball.
 [source,bash]
 ----
 # Create an installation directory and set permissions
@@ -32,18 +36,19 @@ tar -C / -xvf aivero_rgbd_toolkit_master.tar.bz2
 source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 ----
 
----
-
 === Build and install from conan
 
-Alternatively, you can use our artifactory instance at https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all[https://conan.aa.aivero.dev] to install the newest release straight from our CICD.
+Alternatively, you can use Aivero's artifactory instance at https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all[https://conan.aa.aivero.dev] to install the newest release straight from our CICD.
 
 First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
 that your default python version is 3.X and that pip installs packages for python 3. 
 We build on conan with a non-standard profile, which you can keep updated using our https://gitlab.com/aivero/public/conan/conan-config[conan config]
-Then run:
 
-```bash
+Please install conan by running:
+
+.Install conan and add the aivero remote
+[source,bash]
+----
 pip install conan --user
 # You may need to source ~/.profile here, please see https://docs.conan.io/en/latest/installation.html#known-installation-issues-with-pip
 # Install the conan repositories, as well as conan profiles
@@ -57,10 +62,13 @@ conan config set general.default_profile=linux_x86_64
 # And to ensure that the remote is configured properly:
 conan search -r aivero-all gst-realsense
 # You should now see a list of all the releases of gst-realsense
-```
+----
 
-Now you can locally install all dependencies:
-```bash
+Now you can locally build and install the toolkit:
+
+.Build and install aivero-rgbd-toolkit using conan
+[source,bash]
+----
 sudo mkdir -p /opt/aivero/rgbd_toolkit
 sudo chown -R $USER:$USER /opt/aivero/rgbd_toolkit
 git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git
@@ -68,23 +76,25 @@ cd aivero-rgbd-toolkit
 conan create . aivero/stable
 # note the version. Yours will be `master` in this case:
 conan install aivero_rgbd_toolkit/master@aivero/stable -if /opt/aivero/rgbd_toolkit
-```
+----
 
-Note: When installing for a second time, please clear /opt/aivero/rgbd_toolkit first.
+NOTE: When installing for a second time, please clear /opt/aivero/rgbd_toolkit first.
 
-Note: You might want to disable the zipping of the library by commenting out the last 4 lines in `conanfile.py`:
-```
+NOTE: You might want to disable the zipping of the library by commenting out the last 4 lines in `conanfile.py`:
+
+.Disable the tarball'ing build step
+[source,python]
+----
 # comment the following out
-       with tools.chdir(install_path):
-            tarball_filename = "aivero_rgbd_toolkit_%s.tar.bz2" % self.version
-            self.run("tar cvfj %s/%s %s" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
-            self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
+with tools.chdir(install_path):
+    tarball_filename = "aivero_rgbd_toolkit_%s.tar.bz2" % self.version
+    self.run("tar cvfj %s/%s %s" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
+    self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
+----
 
-```
+== Verify installation
 
----
-
-== Test installation
+After installing from either tarball or conan, you may want to verify that the installation succeeded by running:
 
 [source,bash]
 ----
@@ -93,45 +103,91 @@ gst-inspect-1.0 realsensesrc
 # Should show the man page for the realsensesrc
 ----
 
+TIP: You will need to `source` the `aivero_environment.sh` every time you restart the terminal.
 
 == Quick Start:
 
-With that you should be able to run:
+The `realsensesrc` supports two different modes of operations:
+
+1. Playing a rosbag.
+2. Playing from a physical camera.
+
+=== Playing from rosbag
+
+This example shows how to play from a rosbag.
+
+Please obtain a rosbag, either by recording one with the `realsense-viewer`, or downloading
+https://drive.google.com/file/d/1ZMSPY1pF9orIp473jMhwev2ObiM-jtne/view?usp=sharing[mug.bag]. These examples assume
+you're using _mug.bag_.
 
 [source, bash]
 ....
-gst-launch-1.0 realsensesrc rosbag-location=/home/rapha/Documents/rosbags/mug.bag timestamp-mode=clock_all real-time-rosbag-playback=true  ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink
+# Replace with the path to your rosbag
+export ROSBAG=~/Downloads/mug.bag
+gst-launch-1.0 realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true  ! \
+rgbddemux name=demux \
+demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! videoconvert ! glimagesink
 ....
 
-Which will display the colorized depth data from the rosbag. You can
-also look at infrared and colour. Look further down.
+Which will display the colorized depth data from the rosbag. Depending on the video streams present in the ROSBAG, you
+may also look at infrared and colour streams:
 
+[source, bash]
+....
+# Replace with the path to your rosbag
+export ROSBAG=~/Downloads/mug.bag
+gst-launch-1.0 realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true enable-infra1=true  ! \
+rgbddemux name=demux \
+demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! videoconvert ! glimagesink \
+demux.src_infra1 ! queue ! videoconvert ! glimagesink
+....
+
+IMPORTANT: If you try to enable a stream which is not present in a rosbag, the `realsensesrc` will exit with an error.
+
+=== Playing from Camera
+
+This example shows how to play from a physical RealSense camera. The following example shows the colourised depth video
+and colour video recorded by a RealSense camera:
+
+[source, bash]
+....
+# Replace with the serial of your camera
+export SERIAL=XXXXXXXXXXXX
+gst-launch-1.0 realsensesrc serial=$SERIAL timestamp-mode=clock_all enable-color=true  ! \
+rgbddemux name=demux \
+demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! videoconvert ! glimagesink \
+demux.src_color ! queue ! videoconvert ! glimagesink
+....
 
 [[gstreamer-gst-launch-10-syntax-crashcourse]]
 == GStreamer gst-launch-1.0 syntax crashcourse
 
 Besides applications and libraries that can be build with GStreamer, it
 also offers a development/testing command line tool called
-`gst-launch-1.0`. It creates a video processing pipeline based on a
+`gst-launch-1.0`. `gst-launch-1.0` creates a video processing pipeline based on a
 simple syntax.
 
 [source, bash]
 ....
 source /opt/aivero/rgbd-toolkit/aivero_environment.sh
-GST_DEBUG=3 gst-launch-1.0 realsensesrc rosbag-location=/home/rapha/Documents/rosbags/mug.bag timestamp-mode=clock_all real-time-rosbag-playback=true  ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink
+# Replace this with your ROSBAG
+export ROSBAG=~/Downloads/mug.bag
+GST_DEBUG=3 gst-launch-1.0 realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true  ! \
+rgbddemux name=demux \
+demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! videoconvert ! glimagesink
 ....
 
 [start=1]
 
-. GST_DEBUG=3 - *Optional, ignore and do not add to the command for
-now.* It sets the debug level of the pipeline and can be specified for
-individual element types.
+. `GST_DEBUG=3` - _Optional_. It sets the debug level of the pipeline, where `3` means errors, warnings and fixmes.
+Setting a higher value will flood your console with output, so we recommend filtering the output if you need higher values,
+as such: `GST_DEBUG=3,realsensesrc:6`.
 
-. `gst-launch-1.0` - The start of a every command
+. `gst-launch-1.0` - The start of a every command.
 
-. `realsensesrc rosbag-location=/home/rapha/Documents/rosbags/mug.bag timestamp-mode=clock_all real-time-rosbag-playback=true`- A source element with three of it's parameters specified. You can access the man page of an element using i.e.
-`gst-inspect-1.0 realsensesrc`. The different timestamp modes and
-playback modes are explained below.
+. `realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true` - A source element with
+three of its parameters specified. You can access the man page of an element using i.e. `gst-inspect-1.0 realsensesrc`.
+The different timestamp modes and playback modes are explained below.
 
 . `!` - The exclamation mark (padded by space left and right) links
 two elements together, so that data can flow between them. This link
@@ -144,17 +200,17 @@ so has `rgbddemux`
 it's a unique name with our own *unique* name (this can be done on every
 element)
 
-. ` ` - Note the *lack* of an exclamation mark ( `!`) here. We do
+. ` ` - Note the *lack* of an exclamation mark (`!`) after `rgbddemux name=demux`. We do
 not link this element at this point further.
 
 . `demux.src_depth` - This is a reference to a src pad of the
-rgbddemux. For every stream that the `rgbddemux` finds upstream it
+`rgbddemux`. For every stream that the `rgbddemux` finds upstream it
 will create a src pad that produces data. We can access the pad by a dot
-followed by the pad name (`. name_of _pad`). The caps of the video
-stream on that pad in the case of uncompressed depth video are
-`video/x-raw,format=GRAY16_LE`. 16bit Little endian.
+followed by the pad name (`.src_*name_of_stream*`, where `*name_of_stream*` could be `color`, `depth`, etc.). The caps
+of the video stream on that pad in the case of uncompressed depth video are `video/x-raw,format=GRAY16_LE`, i.e. 16-bit
+Little Endian gray-scale video.
 
-# Troubleshooting
+== Troubleshooting
 
 Check out the issues for
 
@@ -164,24 +220,38 @@ Check out the issues for
 * https://gitlab.com/aivero/public/gstreamer/gst-rgbd/-/issues[gst-rgbd]
 
 
-## Pipeline displays only a single image and freezes
+== Pipeline displays only a single image and freezes
 
-Most likely you are not using the right combination of `timestamp_mode` and `real-time-rosbag-playback`:
+Most likely you are not using the right combination of `timestamp_mode` and `real-time-rosbag-playback`.
+`real-time-rosbag-playback` only applies when playing from ROSBAG, and determines whether the `realsensesrc` should
+try to play the rosbag at the speed it was recorded, or as fast as possible.
+
+For both the `realsensesrc` and the `k4asrc`, five timestamp-modes are supported:
+
+1. `ignore` - The source does not timestamp the buffers.
+2. `clock_main` - The source uses the GStreamer clock to timestamp the main (often depth) buffer.
+3. `clock_all` - The source uses the GStreamer clock to timestamp all the buffers.
+4. `camera_common` - The source timestamps all buffers, using the camera firmware, with the timestamp of the main buffer.
+5. `camera_individual` - The source timestamps all buffers, using the camera firmware, with their individual timestamp.
+
+For starters, the `clock_all` and `camera_common` modes should be your first choices, but there may be edge-cases,
+where the other mode are better. In the tables below, we provide a simple overview to get you started, but we recommend
+experimenting with different combinations of sources and sinks to get a feel of how the different modes operate.
 
 .Playback Modes `realsensesrc`
 |===
 | |Real Camera |Rosbag
 
-|**Live playback** |`gst-launch-1.0 realsensesrc serial=739112060855 timestamp-mode=clock_all   ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink` | `realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink`
+|**Live playback** |`realsensesrc serial=$SERIAL timestamp-mode=clock_all` | `realsensesrc rosbag-location=$ROSBAG timestamp-mode=clock_all real-time-rosbag-playback=true`
 
-|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=camera_common ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
+|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=camera_common`
 |===
 
 .Playback Modes `k4asrc`
 |===
 | |Real Camera |Rosbag
 
-|**Live playback** |`gst-launch-1.0 k4asrc serial=XXXXX timestamp-mode=clock_all   ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! glimagesink` |`gst-launch-1.0 k4asrc recording-location=$k4bag timestamp_mode=clock_all real-time-playback=true ! queue ! rgbddemux name=demux demux.src_depth ! colorizer near-cut=300 far-cut=6000 ! queue ! videoconvert ! queue ! glimagesink`
+|**Live playback** |`k4asrc serial=$SERIAL timestamp-mode=clock_all` |`k4asrc recording-location=$k4bag timestamp_mode=clock_all real-time-playback=true`
 
-|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=camera_common ! queue ! rgbddemux name=demux demux.src_depth ! queue ! colorizer near-cut=300 far-cut=700 ! queue ! videoconvert ! queue ! filesink location=my.file`
+|**non-live** i.e. transcoding | **N/A: a camera is always live** |`realsensesrc rosbag-location=$ROSBAG timestamp-mode=camera_common`
 |===
