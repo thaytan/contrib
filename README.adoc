@@ -15,8 +15,7 @@ make sure to use multiple terminals (or terminal tabs).
 == Installation
 
 You have two options for installation; tarball and conan. In most cases the
-tarball installation will suffice, but special cases (such as using the
-element on ARM) will require a conan installation.
+tarball installation will suffice, but special cases (such as developing on sub elements) will require a conan installation.
 
 === Install from tarball
 
