@@ -15,7 +15,7 @@
 // Boston, MA 02110-1301, USA.
 
 use k4a::error::K4aError;
-use std::{error, fmt};
+use std::{fmt};
 
 /// Enumeration representation of an `K4aError` that can be returned by the `K4aSrc` element.
 #[derive(Debug, Clone)]
@@ -24,19 +24,6 @@ pub enum K4aSrcError {
     Failure(&'static str),
     /// `K4aError` that represents end of file.
     Eof,
-}
-
-impl error::Error for K4aSrcError {
-    fn description(&self) -> &str {
-        "K4A Source Error"
-    }
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        use K4aSrcError::*;
-        match self {
-            Failure(_) => Some(self),
-            Eof => None,
-        }
-    }
 }
 
 impl fmt::Display for K4aSrcError {
