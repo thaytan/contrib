@@ -27,15 +27,11 @@ pub enum K4aSrcError {
 }
 
 impl error::Error for K4aSrcError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
     fn description(&self) -> &str {
         "K4A Source Error"
-    }
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        use K4aSrcError::*;
-        match self {
-            Failure(_) => Some(self),
-            Eof => None,
-        }
     }
 }
 
