@@ -15,10 +15,6 @@ class LibShadercConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
 
-    def requirements(self):
-        # Maybe something here
-        a = 0
-
     def source(self):
         shaderc_git_dir = "shaderc-%s" % self.version
         git = tools.Git(folder=shaderc_git_dir)
@@ -32,4 +28,4 @@ class LibShadercConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.env_info.SHADERC_LIB_DIR = os.path.join(self.package_folder, "libs")
+        self.env_info.SHADERC_LIB_DIR.append(os.path.join(self.package_folder, "lib"))
