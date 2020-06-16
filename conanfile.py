@@ -63,8 +63,3 @@ class AiveroRgbDToolkit(ConanFile):
 
             env_file.write("\nexport PYTHONPATH=$PYTHONPATH:" + os.path.join("$PREFIX", "lib"))
             env_file.write("\nexport LIBVA_DRIVERS_PATH=" + os.path.join("$PREFIX", "lib", "dri"))
-
-        with tools.chdir(install_path):
-            tarball_filename = "aivero_rgbd_toolkit_%s.tar.bz2" % self.version
-            self.run("tar cvfj %s/%s %s" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
-            self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
