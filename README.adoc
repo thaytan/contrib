@@ -72,7 +72,7 @@ sudo mkdir -p /opt/aivero/rgbd_toolkit
 sudo chown -R $USER:$USER /opt/aivero/rgbd_toolkit
 git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git
 cd aivero-rgbd-toolkit
-conan create . aivero/stable
+conan create . aivero/stable -s build_type=Release
 # note the version. Yours will be `master` in this case:
 conan install aivero_rgbd_toolkit/master@aivero/stable -if /opt/aivero/rgbd_toolkit
 ----
