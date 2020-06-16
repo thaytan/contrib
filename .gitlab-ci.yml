@@ -19,8 +19,8 @@ deploy_tarball_x86:
     - if [ -n "$APT_INSTALL" ]; then apt update && apt install --no-install-recommends -y $APT_INSTALL; fi
     - if [ -n "$APT_REMOVE" ]; then apt update && apt remove -y $APT_REMOVE; fi
     - conan create . aivero/stable --update
-    - conan install aivero_rgbd_toolkit/$CI_COMMIT_REF_SLUG@aivero/stable -if /opt/aivero/rgbd_toolkit_$CONAN_ARCH
-    - tar cvfj aivero_rgbd_toolkit_$CI_COMMIT_REF_SLUG_$CONAN_ARCH.tar.bz2 /opt/aivero/rgbd_toolkit_$CONAN_ARCH
+    - conan install aivero_rgbd_toolkit/${CI_COMMIT_REF_SLUG}@aivero/stable -if /opt/aivero/rgbd_toolkit_${CONAN_ARCH}
+    - tar cvfj aivero_rgbd_toolkit_${CI_COMMIT_REF_NAME}_${CONAN_ARCH}.tar.bz2 /opt/aivero/rgbd_toolkit_${CONAN_ARCH}
   artifacts:
     expire_in: 1 month
     paths:
@@ -40,8 +40,8 @@ deploy_tarball_arvm8:
     - if [ -n "$APT_INSTALL" ]; then apt update && apt install --no-install-recommends -y $APT_INSTALL; fi
     - if [ -n "$APT_REMOVE" ]; then apt update && apt remove -y $APT_REMOVE; fi
     - conan create . aivero/stable --update
-    - conan install aivero_rgbd_toolkit/$CI_COMMIT_REF_SLUG@aivero/stable -if /opt/aivero/rgbd_toolkit_$CONAN_ARCH
-    - tar cvfj aivero_rgbd_toolkit_$CI_COMMIT_REF_SLUG_$CONAN_ARCH.tar.bz2 /opt/aivero/rgbd_toolkit_$CONAN_ARCH
+    - conan install aivero_rgbd_toolkit/${CI_COMMIT_REF_SLUG}@aivero/stable -if /opt/aivero/rgbd_toolkit_${CONAN_ARCH}
+    - tar cvfj aivero_rgbd_toolkit_${CI_COMMIT_REF_NAME}_${CONAN_ARCH}.tar.bz2 /opt/aivero/rgbd_toolkit_${CONAN_ARCH}
   artifacts:
     expire_in: 1 month
     paths:
