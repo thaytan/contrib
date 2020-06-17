@@ -29,3 +29,6 @@ class RustupConan(ConanFile):
 
     def package(self):
         self.copy(pattern="*/rustup", dst="bin", keep_path=False)
+
+    def package_info(self):
+        self.env_info.PATH.append(os.path.join(os.getenv("HOME"), ".cargo", "bin"))
