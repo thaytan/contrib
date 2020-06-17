@@ -16,6 +16,7 @@ class ServoConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
         self.build_requires("python-virtualenv/[>=3.7.4]@%s/stable" % self.user)
+        self.build_requires("rustup/[>=1.21.1]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
