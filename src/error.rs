@@ -30,11 +30,7 @@ impl Default for Error {
 }
 
 /// Define the source of [`Error`](../error/struct.Error.html).
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        "RealSense Error"
-    }
-}
+impl error::Error for Error {}
 
 /// Formatting of [`Error`](../error/struct.Error.html).
 impl fmt::Display for Error {
