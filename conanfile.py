@@ -24,7 +24,7 @@ class RustupConan(ConanFile):
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run("cargo build --release")
+            self.run('cargo build --release --features "no-self-update"')
             shutil.copy2(os.path.join("target", "release", "rustup-init"), "rustup")
 
     def package(self):
