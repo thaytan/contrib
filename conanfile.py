@@ -25,7 +25,7 @@ class RustupConan(ConanFile):
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("cargo build --release")
-            shutil.copyfile(os.path.join("target", "release", "rustup-init"), "rustup")
+            shutil.copy2(os.path.join("target", "release", "rustup-init"), "rustup")
 
     def package(self):
         self.copy(pattern="*/rustup", dst="bin", keep_path=False)
