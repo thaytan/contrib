@@ -14,18 +14,7 @@ pub enum K4aError {
     Eof,
 }
 
-impl error::Error for K4aError {
-    fn description(&self) -> &str {
-        "K4A Error"
-    }
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        use K4aError::*;
-        match self {
-            Failure(_) => Some(self),
-            Timeout | Eof => None,
-        }
-    }
-}
+impl error::Error for K4aError {}
 
 impl fmt::Display for K4aError {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
