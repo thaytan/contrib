@@ -24,11 +24,14 @@ class RustupConan(ConanFile):
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run('cargo build --release --features "no-self-update"')
+            self.run('cargo build --release --features "no-self-update" --bin rustup-init')
             shutil.copy2(os.path.join("target", "release", "rustup-init"), "rustup")
 
     def package(self):
         self.copy(pattern="*/rustup", dst="bin", keep_path=False)
-
-    def package_info(self):
-        self.env_info.PATH.append(os.path.join(os.getenv("HOME"), ".cargo", "bin"))
+        bins = [
+            "cargo", "rustc", "rustdoc", "rust-gdb", "rust-lldb", "rls",
+            "rustfmt", "cargo-fmt", "cargo-clippy", "clippy-driver", "cargo-miri"
+        ]
+        for bin in bins:
+            os.symlink("rustup", os.path.join(self.package_folder, "bin", bin))
