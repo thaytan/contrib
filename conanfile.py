@@ -2,10 +2,10 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-class PillowConan(ConanFile):
-    name = "pillow"
+class PythonPillowConan(ConanFile):
+    name = "python-pillow"
     version = tools.get_env("GIT_TAG", "7.1.2")
-    description = "conan package for Python Image Library"
+    description = "Python Image Library"
     license = "Python-Imaging-Library-License"
     settings = "os", "arch", "compiler", "build_type"
 
@@ -26,10 +26,3 @@ class PillowConan(ConanFile):
     def build(self):
         with tools.chdir("Pillow-{0}".format(self.version)):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
-
-    def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))
-
-
-
-
