@@ -2,8 +2,8 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-class NumpyConan(ConanFile):
-    name = "numpy"
+class PythonNumpyConan(ConanFile):
+    name = "python-numpy"
     version = tools.get_env("GIT_TAG", "1.18.4")
     description = "conan package for Python Numpy module"
     license = "BSD"
@@ -25,9 +25,3 @@ class NumpyConan(ConanFile):
     def build(self):
         with tools.chdir("numpy-{0}".format(self.version)):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
-
-    def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))
-
-
-
