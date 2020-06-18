@@ -17,7 +17,6 @@ class NpmConan(ConanFile):
         self.build_requires("mozjpeg/[>=3.3.1]@%s/stable" % self.user)
         self.build_requires("libwebp/[>=1.1.0]@%s/stable" % self.user)
         self.build_requires("pngquant/[>=2.12.6]@%s/stable" % self.user)
-        self.build_requires("mesa/[>=20.0.0]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("generators/1.0.0@%s/stable" % self.user)
@@ -32,13 +31,7 @@ class NpmConan(ConanFile):
         os.makedirs(pngquant_dir)
         pngquant_dst = os.path.join(pngquant_dir, "pngquant")
         shutil.copy2(pngquant_src, pngquant_dst)
-        cwebp_src = os.path.join(self.deps_cpp_info["libwebp"].rootpath, "bin", "cwebp")
-        cwebp_dir = os.path.join("cli-%s" % self.version, "docs", "node_modules", "cwebp-bin", "vendor")
-        os.makedirs(cwebp_dir)
-        cwebp_dst = os.path.join(cwebp_dir, "cwebp")
-        shutil.copy2(cwebp_src, cwebp_dst)
         with tools.chdir("cli-%s" % self.version):
             autotools = AutoToolsBuildEnvironment(self)
-
             self.run("mkdir -p man/man1")
             autotools.install(['NPMOPTS=--prefix="%s"' % self.package_folder])
