@@ -2,10 +2,10 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-class RequestsConan(ConanFile):
-    name = "requests"
+class PythonRequestsConan(ConanFile):
+    name = "python-requests"
     version = tools.get_env("GIT_TAG", "2.7.0")
-    description = "conan package for Python Requests module"
+    description = "Python Requests module"
     license = "Apache 2.0"
     settings = "os", "arch", "compiler", "build_type"
 
@@ -24,10 +24,3 @@ class RequestsConan(ConanFile):
     def build(self):
         with tools.chdir("requests-{0}".format(self.version)):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
-
-    def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))
-
-
-
-
