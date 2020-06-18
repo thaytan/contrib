@@ -9,9 +9,10 @@ class LibpngConan(ConanFile):
     description = "A collection of routines used to create PNG format graphics files"
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
+        self.requires("generators/1.0.0@%s/stable" % self.user)
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
