@@ -91,6 +91,18 @@ with tools.chdir(install_path):
     self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
 ----
 
+=== Setup permission (udev rules)
+
+In order to use physical RealSense or K4A devices without being 'root', you will first need to setup udev rules. For this, you can execute script(s) corresponding to your device(s):
+
+[source,bash]
+----
+# RealSense
+./scripts/setup_udev_rules_rs.sh
+# K4A
+./scripts/setup_udev_rules_k4a.sh
+----
+
 == Verify installation
 
 After installing from either tarball or conan, you may want to verify that the installation succeeded by running:
