@@ -22,10 +22,7 @@ class PngquantConan(ConanFile):
         args = [
             "--with-openmp",
         ]
-        env = {
-            "DESTDIR": self.package_folder,
-        }
-        with tools.chdir(f"{self.name}-{self.version}"), tools.environment_append(env):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
