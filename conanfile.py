@@ -15,7 +15,6 @@ class NpmConan(ConanFile):
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
         self.build_requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         self.build_requires("mozjpeg/[>=3.3.1]@%s/stable" % self.user)
-        self.build_requires("libwebp/[>=1.1.0]@%s/stable" % self.user)
         self.build_requires("pngquant/[>=2.12.6]@%s/stable" % self.user)
 
     def requirements(self):
