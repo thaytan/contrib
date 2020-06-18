@@ -2,10 +2,10 @@ import os
 
 from conans import ConanFile, Meson, tools
 
-class CythonConan(ConanFile):
-    name = "cython"
+class PythonCythonConan(ConanFile):
+    name = "python-cython"
     version = tools.get_env("GIT_TAG", "0.29.19")
-    description = "conan package for Python to C compiler"
+    description = "Python to C compiler"
     license = "Apache"
     settings = "os", "arch", "compiler", "build_type"
 
@@ -24,7 +24,3 @@ class CythonConan(ConanFile):
     def build(self):
         with tools.chdir("cython-{0}".format(self.version)):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
-
-    def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))
-
