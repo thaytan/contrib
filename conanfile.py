@@ -13,6 +13,7 @@ class NpmConan(ConanFile):
     def build_requirements(self):
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
         self.build_requires("libpng/[>=1.6.37]@%s/stable" % self.user)
+        self.build_requires("mozjpeg/[>=3.3.1]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("generators/1.0.0@%s/stable" % self.user)
