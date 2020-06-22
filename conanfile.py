@@ -19,7 +19,7 @@ class DepthMetaConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
-        gst_version = "master" if self.version == "master" else "[~%s]" % "1.16.0"
+        gst_version = "master" if self.version == "master" else "[~%s]" % "1.17.1"
         gst_channel = "testing" if self.version == "master" else "stable"
 
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
