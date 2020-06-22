@@ -47,7 +47,7 @@ class RgbdConan(ConanFile):
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
+        self.requires("gstreamer-depth-meta/[>=0.3.0]@%s/stable" % self.user)
         self.requires("capnproto/[>=0.7.0]@%s/stable" % self.user)
 
     def build(self):
