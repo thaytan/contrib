@@ -6,8 +6,8 @@ from conans import ConanFile, Meson, tools
 class LibNiceConan(ConanFile):
     name = "libnice"
     version = tools.get_env("GIT_TAG", "master")
-    gst_version_dep = "1.16.0"
-    gst_version, gst_channel = ("master", "testing") if version == "master" else ("[~%s]" % gst_version_dep, "stable")
+    gst_version_dep = "1.17.1"
+    gst_version, gst_channel = ("master", "testing") if version == "master" else ("[>=%s]" % gst_version_dep, "stable")
 
     description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"
     license = "LGPL"
