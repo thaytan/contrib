@@ -83,7 +83,7 @@ class GStreamerPluginsBadConan(ConanFile):
         elif self.on_tag == False and self.version == "master":
             gst_version = "master"
         else:
-            gst_version = "[~1.16.2]"
+            gst_version = "[~1.17.1]"
         gst_channel = "testing" if self.version == "master" else "stable"
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
         if self.options.webrtc:
@@ -101,7 +101,7 @@ class GStreamerPluginsBadConan(ConanFile):
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)
         print("%s" % self.version)
-        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch="1.16.2", shallow=True)
+        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
         if self.options.aiveropatchlatency:
             tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"))
 
