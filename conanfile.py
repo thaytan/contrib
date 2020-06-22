@@ -36,7 +36,7 @@ class GStreamerVaapiConan(ConanFile):
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        gst_version = "master" if self.version == "master" else "[~%s]" % self.version
+        gst_version = "[>=1.17.1]"
         gst_channel = "testing" if self.version == "master" else "stable"
         self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
         self.requires("gstreamer-plugins-bad/%s@%s/%s" % (gst_version, self.user, gst_channel))
