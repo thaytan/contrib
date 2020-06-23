@@ -33,7 +33,7 @@ class GStreamerDevtoolsConan(ConanFile):
 
     def requirements(self):
         self.requires(
-            "gstreamer-plugins-base/[~%s]@%s/stable" % (self.gst_version, self.user)
+            "gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user)
         )
         self.requires("json-glib/[~1.4.4]@%s/stable" % self.user)
 
