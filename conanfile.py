@@ -7,6 +7,7 @@ class GStreamerPluginsGoodConan(ConanFile):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
+    version = tools.get_env("GIT_TAG", "1.16.2")
     options = {
         "autodetect": [True, False],
         "rtp": [True, False],
@@ -43,20 +44,13 @@ class GStreamerPluginsGoodConan(ConanFile):
         "jpeg=True"
     )
 
-    def set_version(self):
-        git = tools.Git(folder=self.recipe_folder)
-        tag, branch = git.get_tag(), git.get_branch()
-        self.version = tag if tag and branch.startswith("HEAD") else branch
-
     def build_requirements(self):
         self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        gst_version = "master" if self.version == "master" else "[~%s]" % self.version
-        gst_channel = "testing" if self.version == "master" else "stable"
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         if self.options.vpx:
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
@@ -65,8 +59,11 @@ class GStreamerPluginsGoodConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)
-        plugins_bad_branch = "master" if self.version == "master" else "splitmuxsink-muxerpad-map-1.16.0"
-        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", plugins_bad_branch)
+        # This needs to stay in place until we have ditched the 1.16 Gstreamer version.
+        if self.version == "1.16.2" or self.version == "1.16.0":
+            git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0")
+        else:
+            git.clone("https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git", self.version)
 
     def build(self):
         args = ["--auto-features=disabled"]
