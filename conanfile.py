@@ -8,6 +8,8 @@ class GStreamerPluginsBaseConan(ConanFile):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
+    version = tools.get_env("GIT_TAG", "1.16.2")
+
     options = {
         "introspection": [True, False],
         "gl": [True, False],
@@ -45,12 +47,6 @@ class GStreamerPluginsBaseConan(ConanFile):
         "audioresample=False"
     )
 
-    def set_version(self):
-        git = tools.Git(folder=self.recipe_folder)
-        tag, branch = git.get_tag(), git.get_branch()
-        self.version = tag if tag and branch.startswith("HEAD") else branch
-
-
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
@@ -59,9 +55,7 @@ class GStreamerPluginsBaseConan(ConanFile):
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        gst_version = "master" if self.version == "master" else "[~%s]" % self.version
-        gst_channel = "testing" if self.version == "master" else "stable"
-        self.requires("gstreamer/%s@%s/%s" % (gst_version, self.user, gst_channel))
+        self.requires("gstreamer/[~%s]@%s/stable" % (self.version, self.user))
         if self.options.orc:
             self.requires("orc/[>=0.4.29]@%s/stable" % self.user)
         if self.options.opus:
