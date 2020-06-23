@@ -7,6 +7,7 @@ class GStreamerConan(ConanFile):
     description = "A framework for streaming media"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
+    version = tools.get_env("GIT_TAG", "1.16.2")
     options = {
         "introspection": [True, False],
         "check": [True, False],
@@ -17,12 +18,6 @@ class GStreamerConan(ConanFile):
         "check=True",
         "tools=True",
     )
-
-    def set_version(self):
-        git = tools.Git(folder=self.recipe_folder)
-        tag, branch = git.get_tag(), git.get_branch()
-        self.version = tag if tag and branch.startswith("HEAD") else branch
-
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
