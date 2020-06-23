@@ -7,6 +7,7 @@ class GStreamerVaapiConan(ConanFile):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
+    version = tools.get_env("GIT_TAG", "1.16.2")
     options = {
         "introspection": [True, False],
         "encoders": [True, False],
@@ -24,11 +25,6 @@ class GStreamerVaapiConan(ConanFile):
             "glx=True",
             )
 
-    def set_version(self):
-        git = tools.Git(folder=self.recipe_folder)
-        tag, branch = git.get_tag(), git.get_branch()
-        self.version = tag if tag and branch.startswith("HEAD") else branch
-
     def build_requirements(self):
         self.requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
@@ -36,10 +32,8 @@ class GStreamerVaapiConan(ConanFile):
             self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        gst_version = "[>=1.17.1]"
-        gst_channel = "testing" if self.version == "master" else "stable"
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
-        self.requires("gstreamer-plugins-bad/%s@%s/%s" % (gst_version, self.user, gst_channel))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.version, self.user))
         self.requires("libva/[>=2.3.0]@%s/stable" % self.user)
 
     def source(self):
