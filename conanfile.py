@@ -7,8 +7,7 @@ class GStreamerPluginsBadConan(ConanFile):
     license = "LGPL"
     exports = "reduce_latency.patch"
     settings = "os", "arch", "compiler", "build_type"
-    on_tag = False
-    gst_version=""
+    version = tools.get_env("GIT_TAG", "1.16.2")
     options = {
         "introspection": [True, False],
         "videoparsers": [True, False],
@@ -52,15 +51,6 @@ class GStreamerPluginsBadConan(ConanFile):
         "webp=True",
     )
 
-    def set_version(self):
-        git = tools.Git(folder=self.recipe_folder)
-        tag, branch = git.get_tag(), git.get_branch()
-        if tag and branch.startswith("HEAD"):
-            self.version = tag
-            self.on_tag = True
-        else:
-            self.version = branch
-
     def configure(self):
         if self.settings.arch != "x86_64":
             self.options.remove("nvdec")
@@ -78,17 +68,10 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        if self.on_tag:
-            gst_version = "[~%s]" % self.version
-        elif self.on_tag == False and self.version == "master":
-            gst_version = "master"
-        else:
-            gst_version = "[~1.17.1]"
-        gst_channel = "testing" if self.version == "master" else "stable"
-        self.requires("gstreamer-plugins-base/%s@%s/%s" % (gst_version, self.user, gst_channel))
+        
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
         if self.options.webrtc:
-            libnice_version = "master" if self.version == "master" else "[>=%s]" % "0.1.15"
-            self.requires("libnice/%s@%s/%s" % (libnice_version, self.user, gst_channel))
+            self.requires("libnice/[~0.1]@%s/stable" % self.user)
         if self.options.srtp:
             self.requires("libsrtp/[>=2.2.0]@%s/stable" % self.user)
         if self.options.opencv:
@@ -100,7 +83,6 @@ class GStreamerPluginsBadConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)
-        print("%s" % self.version)
         git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
         if self.options.aiveropatchlatency:
             tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"))
