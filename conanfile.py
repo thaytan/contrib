@@ -27,8 +27,8 @@ class GStreamerRtspServerConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer/[~%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/%s/gst-rtsp-server-%s.tar.gz" % (self.version, self.version))
