@@ -5,9 +5,8 @@ from conans import ConanFile, Meson, tools
 
 class LibNiceConan(ConanFile):
     name = "libnice"
-    version = tools.get_env("GIT_TAG", "master")
-    gst_version_dep = "1.17.1"
-    gst_version, gst_channel = ("master", "testing") if version == "master" else ("[>=%s]" % gst_version_dep, "stable")
+    version = tools.get_env("GIT_TAG", "1.16.2")
+    gst_version = "master" if version == "master" else "[~1]"
 
     description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"
     license = "LGPL"
@@ -23,7 +22,7 @@ class LibNiceConan(ConanFile):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
         if self.options.gstreamer:
-            self.requires("gstreamer-plugins-base/%s@%s/%s" % (self.gst_version, self.user, self.gst_channel))
+            self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
 
     def source(self):
         tools.get("https://github.com/libnice/libnice/archive/%s.tar.gz" % self.version)
