@@ -9,9 +9,11 @@ variables:
 # https://stackoverflow.com/questions/56699829/how-to-trigger-a-specific-job-in-gitlab
 pipeline_tests:
   stage: test
-  image: byrnedo/alpine-curl
-  tags:
-    - x86_64
+  image: curlimages/curl
+  variables:
+    SPECIFICS: ''
+  extends:
+    - .x86_64
   script:
     - curl --request POST \
       --form token=${CI_JOB_TOKEN} \
