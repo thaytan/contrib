@@ -33,7 +33,7 @@ impl Calibration {
     /// * `Ok(Calibration)` on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn from_raw(
-        raw_calibration: &mut [i8],
+        raw_calibration: &mut [u8],
         depth_mode: DepthMode,
         color_resolution: ColorResolution,
     ) -> Result<Calibration> {
