@@ -16,11 +16,7 @@ pipeline_tests:
     - .x86_64
   before_script: []
   script:
-    - curl --request POST \
-      --form token=${CI_JOB_TOKEN} \
-      --form ref=master \
-      --form "variables[TRIGGERED_JOB]=PIPELINE_TEST" \
-      https://gitlab.com/api/v4/projects/14823826/trigger/pipeline
+    - curl --request POST --form token=${CI_JOB_TOKEN} --form ref=vaapih265enc-evaluation --form "variables[TRIGGERED_JOB]=PIPELINE_TEST" --form "variables[TRIGGERED_BY]=${CI_PROJECT_NAME}/${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/14823826/trigger/pipeline
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: on_success
