@@ -9,9 +9,15 @@ variables:
 # https://stackoverflow.com/questions/56699829/how-to-trigger-a-specific-job-in-gitlab
 pipeline_tests:
   stage: test
+  extends:
+    - .x86_64
   script:
     - curl --request POST \
       --form token=${CI_JOB_TOKEN} \
       --form ref=master \
       --form "variables[TRIGGERED_JOB]=PIPELINE_TEST" \
       https://gitlab.com/api/v4/projects/14823826/trigger/pipeline
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: on_success
+      allow_failure: false
