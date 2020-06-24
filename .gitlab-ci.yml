@@ -5,3 +5,13 @@ include:
     file: 'conan-ci-amd64.yml'
 variables:
   SPECIFICS: '/rust'
+
+# https://stackoverflow.com/questions/56699829/how-to-trigger-a-specific-job-in-gitlab
+pipeline_tests:
+  stage: test
+  script:
+    - curl --request POST \
+      --form token=${CI_JOB_TOKEN} \
+      --form ref=master \
+      --form "variables[TRIGGERED_JOB]=PIPELINE_TEST" \
+      https://gitlab.com/api/v4/projects/14823826/trigger/pipeline
