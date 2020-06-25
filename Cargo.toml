@@ -28,7 +28,7 @@ tag = "1.2.0"
 
 [dependencies.k4a]
 git = "https://gitlab.com/aivero/public/k4a-rs"
-branch = "armv8-support"
+tag = "0.4.4"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
