@@ -23,7 +23,7 @@ class AiveroRgbDToolkit(ConanFile):
         self.requires("gst-k4a/[>=1.1.1]@%s/stable" % self.user)
         self.requires("gst-realsense/[>=2.1.1]@%s/stable" % self.user)
         self.requires("gstreamer-colorizer/[>=0.1.2]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/[~%s]%s@%s/stable" % (self.gst_version, self.user))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.gst_version, self.user))
         self.requires("gstreamer-plugins-good/[~%s]@%s/stable" % (self.gst_version, self.user))
         self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.gst_version, self.user))
 
