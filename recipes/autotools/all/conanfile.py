@@ -2,11 +2,12 @@ from conans import ConanFile, tools
 
 
 class AutotoolsConan(ConanFile):
-    name = "autotools"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
-    description = "A suite of programming tools 'designed' to assist in making source code"
-    
+    description = (
+        "A suite of programming tools 'designed' to assist in making source code"
+    )
+
     def requirements(self):
         self.requires("cc/[>=1.0.0]@%s/stable" % self.user)
         self.requires("make/[>=3.4.0]@%s/stable" % self.user)

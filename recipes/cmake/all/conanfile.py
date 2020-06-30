@@ -2,7 +2,6 @@ from conans import ConanFile, tools
 
 
 class CMakeConan(ConanFile):
-    name = "cmake"
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "A cross-platform open-source make system"
@@ -16,7 +15,11 @@ class CMakeConan(ConanFile):
         self.requires("ninja/[>=1.9.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/Kitware/CMake/releases/download/v{0}/cmake-{0}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/Kitware/CMake/releases/download/v{0}/cmake-{0}.tar.gz".format(
+                self.version
+            )
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

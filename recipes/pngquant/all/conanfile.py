@@ -1,7 +1,7 @@
 from conans import *
 
+
 class PngquantConan(ConanFile):
-    name = "pngquant"
     description = "Command-line utility to quantize PNGs down to 8-bit paletted PNGs"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"
@@ -15,7 +15,9 @@ class PngquantConan(ConanFile):
         self.requires("libimagequant/[>=2.12.6]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(f"https://github.com/kornelski/pngquant/archive/{self.version}/pngquant-{self.version}.tar.gz")
+        tools.get(
+            f"https://github.com/kornelski/pngquant/archive/{self.version}/pngquant-{self.version}.tar.gz"
+        )
 
     def build(self):
         args = [

@@ -2,7 +2,6 @@ from conans import CMake, ConanFile, tools
 
 
 class LibzmqConan(ConanFile):
-    name = "libzmq"
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     license = "LGPL"
     settings = "os", "compiler", "build_type", "arch"

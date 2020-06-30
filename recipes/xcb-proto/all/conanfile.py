@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class XcbProtoConan(ConanFile):
-    name = "xcb-proto"
     description = "XML-XCB protocol descriptions"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
@@ -12,7 +11,9 @@ class XcbProtoConan(ConanFile):
         self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xcb.freedesktop.org/dist/xcb-proto-%s.tar.bz2" % self.version)
+        tools.get(
+            "https://xcb.freedesktop.org/dist/xcb-proto-%s.tar.bz2" % self.version
+        )
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)

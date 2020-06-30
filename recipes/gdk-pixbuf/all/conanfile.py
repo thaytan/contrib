@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 
 class GdkPixbufConan(ConanFile):
-    name = "gdk-pixbuf"
     description = "An image loading library"
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"
@@ -24,15 +23,38 @@ class GdkPixbufConan(ConanFile):
         self.requires("shared-mime-info/[>=1.14]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/GNOME/gdk-pixbuf/archive/%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/GNOME/gdk-pixbuf/archive/%s.tar.gz" % self.version
+        )
 
     def build(self):
-        args = ["--auto-features=disabled", "--wrap-mode=nofallback", "-Dinstalled_tests=false", "-Drelocatable=true"]
-        self.run('convert gdk-pixbuf-{0}/tests/icc-profile.png +profile "*" gdk-pixbuf-{0}/tests/icc-profile.png'.format(self.version))
-        with tools.environment_append({"PATH": environ["PATH"] + pathsep + path.join(self.build_folder, "gdk-pixbuf")}):
+        args = [
+            "--auto-features=disabled",
+            "--wrap-mode=nofallback",
+            "-Dinstalled_tests=false",
+            "-Drelocatable=true",
+        ]
+        self.run(
+            'convert gdk-pixbuf-{0}/tests/icc-profile.png +profile "*" gdk-pixbuf-{0}/tests/icc-profile.png'.format(
+                self.version
+            )
+        )
+        with tools.environment_append(
+            {
+                "PATH": environ["PATH"]
+                + pathsep
+                + path.join(self.build_folder, "gdk-pixbuf")
+            }
+        ):
             meson = Meson(self)
-            meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+            meson.configure(
+                source_folder="%s-%s" % (self.name, self.version),
+                args=args,
+                pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            )
             meson.install()
 
     def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
+        self.env_info.GI_TYPELIB_PATH.append(
+            os.path.join(self.package_folder, "lib", "girepository-1.0")
+        )

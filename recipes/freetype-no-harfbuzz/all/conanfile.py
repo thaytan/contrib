@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class FreetypeNoHarfbuzzConan(ConanFile):
-    name = "freetype-no-harfbuzz"
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
     settings = "os", "arch", "compiler", "build_type"
@@ -15,7 +14,10 @@ class FreetypeNoHarfbuzzConan(ConanFile):
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-%s.tar.gz" % self.version.replace(".", "-"))
+        tools.get(
+            "https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-%s.tar.gz"
+            % self.version.replace(".", "-")
+        )
 
     def build(self):
         args = ["--disable-static"]

@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibtiffConan(ConanFile):
-    name = "libtiff"
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "Library for manipulation of TIFF images"

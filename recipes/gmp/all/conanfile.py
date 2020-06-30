@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class GmpConan(ConanFile):
-    name = "gmp"
     settings = "os", "compiler", "arch"
     license = "GPL"
     description = "A free library for arbitrary precision arithmetic"

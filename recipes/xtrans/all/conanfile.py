@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class XtransConan(ConanFile):
-    name = "xtrans"
     description = "X transport library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
@@ -11,7 +10,10 @@ class XtransConan(ConanFile):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/xtrans-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/xtrans-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)

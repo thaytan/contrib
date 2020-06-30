@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 
 class LibdrmConan(ConanFile):
-    name = "libdrm"
     license = "MIT"
     description = "Direct Rendering Manager headers and kernel modules"
     settings = "os", "arch", "compiler", "build_type"
@@ -27,5 +26,9 @@ class LibdrmConan(ConanFile):
             "-Dnouveau=true",
         ]
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(
+            source_folder="%s-%s" % (self.name, self.version),
+            args=args,
+            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+        )
         meson.install()

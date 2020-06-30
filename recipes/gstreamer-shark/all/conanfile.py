@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class GstreamerSharkConan(ConanFile):
-    name = "gstreamer-shark"
     description = "GstShark is a front-end for GStreamer traces "
     license = "LGPL"
     settings = "os", "compiler", "build_type", "arch"
@@ -18,7 +17,9 @@ class GstreamerSharkConan(ConanFile):
         self.requires("graphviz/[>=2.42.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/RidgeRun/gst-shark/archive/v%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/RidgeRun/gst-shark/archive/v%s.tar.gz" % self.version
+        )
         git = tools.Git(folder=os.path.join("gst-shark-" + self.version, "common"))
         git.clone("git://anongit.freedesktop.org/gstreamer/common", "master")
 
@@ -30,4 +31,6 @@ class GstreamerSharkConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(
+            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
+        )

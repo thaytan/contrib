@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class SharedMimeInfoConan(ConanFile):
-    name = "shared-mime-info"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL2"
     description = "Freedesktop.org Shared MIME Info"
@@ -18,7 +17,11 @@ class SharedMimeInfoConan(ConanFile):
         self.requires("libxml2/[>=2.9.9]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/Release-{0}/shared-mime-info-Release-{0}.tar.bz2".format(self.version.replace(".", "-")))
+        tools.get(
+            "https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/Release-{0}/shared-mime-info-Release-{0}.tar.bz2".format(
+                self.version.replace(".", "-")
+            )
+        )
 
     def build(self):
         args = ["--disable-update-mimedb"]

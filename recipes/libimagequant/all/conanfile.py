@@ -1,7 +1,7 @@
 from conans import *
 
+
 class LibimagequantConan(ConanFile):
-    name = "libimagequant"
     description = "Library for high-quality conversion of RGBA images to 8-bit indexed-color (palette) images"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"
@@ -13,7 +13,9 @@ class LibimagequantConan(ConanFile):
         self.requires("generators/1.0.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get(f"https://github.com/ImageOptim/libimagequant/archive/{self.version}/libimagequant-{self.version}.tar.gz")
+        tools.get(
+            f"https://github.com/ImageOptim/libimagequant/archive/{self.version}/libimagequant-{self.version}.tar.gz"
+        )
 
     def build(self):
         args = [

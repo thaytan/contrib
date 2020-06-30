@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibxfixesConan(ConanFile):
-    name = "libxfixes"
     description = "X11 miscellaneous 'fixes' extension library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
@@ -16,7 +15,10 @@ class LibxfixesConan(ConanFile):
         self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXfixes-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libXfixes-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

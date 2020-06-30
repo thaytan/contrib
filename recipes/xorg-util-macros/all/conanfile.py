@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibXorgUtilMacrosConan(ConanFile):
-    name = "xorg-util-macros"
     license = "custom"
     description = "X.Org Autotools macros"
     settings = "os", "compiler", "build_type", "arch"
@@ -13,7 +12,10 @@ class LibXorgUtilMacrosConan(ConanFile):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/util/util-macros-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/util/util-macros-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
@@ -22,4 +24,6 @@ class LibXorgUtilMacrosConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
+        self.env_info.ACLOCAL_PATH.append(
+            os.path.join(self.package_folder, "share", "aclocal")
+        )

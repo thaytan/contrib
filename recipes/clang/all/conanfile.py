@@ -2,7 +2,6 @@ from conans import CMake, ConanFile, tools
 
 
 class ClangConan(ConanFile):
-    name = "clang"
     license = "Apache"
     description = "C language family frontend for LLVM"
     settings = "os", "compiler", "arch"
@@ -15,7 +14,9 @@ class ClangConan(ConanFile):
         self.requires("llvm/[>=9.0.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://releases.llvm.org/{0}/cfe-{0}.src.tar.xz".format(self.version))
+        tools.get(
+            "https://releases.llvm.org/{0}/cfe-{0}.src.tar.xz".format(self.version)
+        )
 
     def build(self):
         cmake = CMake(self, generator="Ninja", build_type="Release")

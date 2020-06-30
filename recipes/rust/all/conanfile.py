@@ -6,10 +6,11 @@ import shutil
 
 
 class RustConan(ConanFile):
-    name = "rust"
     settings = "os", "compiler", "arch"
     license = "MIT", "Apache"
-    description = "Systems programming language focused on safety, speed and concurrency"
+    description = (
+        "Systems programming language focused on safety, speed and concurrency"
+    )
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -35,15 +36,35 @@ class RustConan(ConanFile):
 
     def package(self):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
-        src = os.path.join("toolchains", "%s-%s-unknown-linux-gnu" % (self.version, arch))
+        src = os.path.join(
+            "toolchains", "%s-%s-unknown-linux-gnu" % (self.version, arch)
+        )
         self.copy("*", src=os.path.join(src, "bin"), dst="bin")
         self.copy("*.so*", src=os.path.join(src, "lib"), dst="lib")
-        self.copy("*", src=os.path.join(src, "etc", "bash_completion.d"), dst=os.path.join("share", "bash-completion", "completions"))
-        self.copy("*", src=os.path.join(src, "lib", "rustlib"), dst=os.path.join("lib", "rustlib"))
+        self.copy(
+            "*",
+            src=os.path.join(src, "etc", "bash_completion.d"),
+            dst=os.path.join("share", "bash-completion", "completions"),
+        )
+        self.copy(
+            "*",
+            src=os.path.join(src, "lib", "rustlib"),
+            dst=os.path.join("lib", "rustlib"),
+        )
 
     def package_info(self):
-        self.env_info.RUST_SRC_PATH = os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")
+        self.env_info.RUST_SRC_PATH = os.path.join(
+            self.package_folder, "lib", "rustlib", "src", "rust", "src"
+        )
         git_hash = StringIO()
         if shutil.which("rustc"):
             self.run("rustc -Vv | grep commit-hash | cut -b 14-", output=git_hash)
-            self.env_info.SOURCE_MAP.append("/rustc/%s/src|%s" % (git_hash.getvalue()[81:-1], os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")))
+            self.env_info.SOURCE_MAP.append(
+                "/rustc/%s/src|%s"
+                % (
+                    git_hash.getvalue()[81:-1],
+                    os.path.join(
+                        self.package_folder, "lib", "rustlib", "src", "rust", "src"
+                    ),
+                )
+            )

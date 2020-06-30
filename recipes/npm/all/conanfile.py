@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class NpmConan(ConanFile):
-    name = "npm"
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "os", "arch", "compiler"
@@ -24,8 +23,12 @@ class NpmConan(ConanFile):
         tools.get("https://github.com/npm/cli/archive/v%s.tar.gz" % self.version)
 
     def build(self):
-        pngquant_src = os.path.join(self.deps_cpp_info["pngquant"].rootpath, "bin", "pngquant")
-        pngquant_dir = os.path.join("cli-%s" % self.version, "docs", "node_modules", "pngquant-bin", "vendor")
+        pngquant_src = os.path.join(
+            self.deps_cpp_info["pngquant"].rootpath, "bin", "pngquant"
+        )
+        pngquant_dir = os.path.join(
+            "cli-%s" % self.version, "docs", "node_modules", "pngquant-bin", "vendor"
+        )
         os.makedirs(pngquant_dir)
         pngquant_dst = os.path.join(pngquant_dir, "pngquant")
         shutil.copy2(pngquant_src, pngquant_dst)

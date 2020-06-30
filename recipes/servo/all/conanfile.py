@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 
 class ServoConan(ConanFile):
-    name = "servo"
     settings = "os", "compiler", "arch"
     license = "MIT", "Apache"
     description = "The Servo Browser Engine"
@@ -28,7 +27,9 @@ class ServoConan(ConanFile):
         self.requires("gstreamer-plugins-bad/[>=1.16.2]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/noverby/servo/archive/{}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/noverby/servo/archive/{}.tar.gz".format(self.version)
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

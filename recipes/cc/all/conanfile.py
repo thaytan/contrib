@@ -2,7 +2,6 @@ from conans import ConanFile, tools
 
 
 class CcConan(ConanFile):
-    name = "cc"
     settings = "os", "compiler", "arch"
     license = "GPL"
     description = "Virtual C/C++ compiler package"

@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class XzConan(ConanFile):
-    name = "xz"
     description = "Library and command line tools for XZ and LZMA compressed files"
     license = "custom", "GPL", "LGPL"
     settings = "os", "arch", "compiler", "build_type"

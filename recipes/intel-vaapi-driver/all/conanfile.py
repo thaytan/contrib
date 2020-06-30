@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 
 class IntelVaapiDriverConan(ConanFile):
-    name = "intel-vaapi-driver"
     license = "MIT"
     description = "VA-API user mode driver for Intel GEN Graphics family"
     settings = "os", "arch", "compiler", "build_type"
@@ -20,7 +19,10 @@ class IntelVaapiDriverConan(ConanFile):
         self.requires("libva/[>=2.3.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/intel/intel-vaapi-driver/archive/%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/intel/intel-vaapi-driver/archive/%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -28,8 +30,14 @@ class IntelVaapiDriverConan(ConanFile):
         args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
         args.append("-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri"))
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(
+            source_folder="%s-%s" % (self.name, self.version),
+            args=args,
+            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+        )
         meson.install()
 
     def package_info(self):
-        self.env_info.LIBVA_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))
+        self.env_info.LIBVA_DRIVERS_PATH.append(
+            os.path.join(self.package_folder, "lib", "dri")
+        )

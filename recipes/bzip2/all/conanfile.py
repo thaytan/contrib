@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class Bzip2Conan(ConanFile):
-    name = "bzip2"
     description = "A high-quality data compression program"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
@@ -32,6 +31,11 @@ class Bzip2Conan(ConanFile):
             os.path.join(self.package_folder, "lib", "libbz2.so"),
         )
         with tools.chdir(os.path.join(self.package_folder, "bin")):
-            for source, link in (("bzdiff","bzcmp"), ("bzgrep","bzegrep"), ("bzgrep","bzfgrep"), ("bzmore","bzless")):
+            for source, link in (
+                ("bzdiff", "bzcmp"),
+                ("bzgrep", "bzegrep"),
+                ("bzgrep", "bzfgrep"),
+                ("bzmore", "bzless"),
+            ):
                 os.remove(link)
                 os.symlink(source, link)

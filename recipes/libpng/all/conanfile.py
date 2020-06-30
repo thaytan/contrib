@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibpngConan(ConanFile):
-    name = "libpng"
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "A collection of routines used to create PNG format graphics files"
@@ -15,7 +14,10 @@ class LibpngConan(ConanFile):
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://downloads.sourceforge.net/sourceforge/libpng/libpng-%s.tar.xz" % self.version)
+        tools.get(
+            "https://downloads.sourceforge.net/sourceforge/libpng/libpng-%s.tar.xz"
+            % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

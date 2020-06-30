@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibeditConan(ConanFile):
-    name = "libedit"
     license = "Zlib"
     description = "System V Release 4.0 curses emulation library"
     settings = "os", "arch", "compiler", "build_type"

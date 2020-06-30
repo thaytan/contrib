@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class Libxxf86vmConan(ConanFile):
-    name = "libxxf86vm"
     description = "X11 XFree86 video mode extension library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
@@ -17,7 +16,10 @@ class Libxxf86vmConan(ConanFile):
         self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXxf86vm-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libXxf86vm-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)

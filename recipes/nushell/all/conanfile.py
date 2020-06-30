@@ -4,13 +4,14 @@ from conans import ConanFile, tools
 
 
 class NushellConan(ConanFile):
-    name = "nushell"
     description = "Development and debugging tools for GStreamer"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"
 
     def source(self):
-        tools.get("https://github.com/nushell/nushell/archive/{}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/nushell/nushell/archive/{}.tar.gz".format(self.version)
+        )
 
     def build_requirements(self):
         self.build_requires("rust/[>=1.43.1]@%s/stable" % self.user)

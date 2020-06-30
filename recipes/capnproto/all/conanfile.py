@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class CapNProtoConan(ConanFile):
-    name = "capnproto"
     license = "MIT"
     description = "Cap'n Proto serialization/RPC system"
     settings = "os", "arch", "compiler", "build_type"

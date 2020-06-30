@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibxcbConan(ConanFile):
-    name = "libxcb"
     description = "X11 client-side library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

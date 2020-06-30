@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 
 class PangoConan(ConanFile):
-    name = "pango"
     description = "A library for layout and rendering of text"
     license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
@@ -27,8 +26,14 @@ class PangoConan(ConanFile):
         args.append("-Dgtk_doc=false")
         args.append("-Dinstall-tests=false")
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(
+            source_folder="%s-%s" % (self.name, self.version),
+            args=args,
+            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+        )
         meson.install()
 
     def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
+        self.env_info.GI_TYPELIB_PATH.append(
+            os.path.join(self.package_folder, "lib", "girepository-1.0")
+        )

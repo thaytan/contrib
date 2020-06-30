@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibVpxConan(ConanFile):
-    name = "libvpx"
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"
@@ -13,10 +12,17 @@ class LibVpxConan(ConanFile):
         self.build_requires("yasm/[>=1.3.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version
+        )
 
     def build(self):
-        args = ["--enable-shared", "--disable-static", "--disable-install-docs", "--disable-install-srcs"]
+        args = [
+            "--enable-shared",
+            "--disable-static",
+            "--disable-install-docs",
+            "--disable-install-srcs",
+        ]
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)

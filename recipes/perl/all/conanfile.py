@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class PerlConan(ConanFile):
-    name = "perl"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "A highly capable, feature-rich programming language"
@@ -42,5 +41,11 @@ class PerlConan(ConanFile):
         arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
         platform = "%s-linux" % arch_conv[str(self.settings.arch)]
         self.env_info.PERL = "perl"
-        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version))
-        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, "%s-thread-multi" % platform))
+        self.env_info.PERL5LIB.append(
+            os.path.join(self.package_folder, "lib", self.version)
+        )
+        self.env_info.PERL5LIB.append(
+            os.path.join(
+                self.package_folder, "lib", self.version, "%s-thread-multi" % platform
+            )
+        )

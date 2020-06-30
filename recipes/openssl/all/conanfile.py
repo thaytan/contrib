@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class OpensslConan(ConanFile):
-    name = "openssl"
     description = "TLS/SSL and crypto library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
@@ -16,7 +15,10 @@ class OpensslConan(ConanFile):
         self.build_requires("gcc/7.4.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/openssl/openssl/archive/OpenSSL_%s.tar.gz" % self.version.replace(".", "_"))
+        tools.get(
+            "https://github.com/openssl/openssl/archive/OpenSSL_%s.tar.gz"
+            % self.version.replace(".", "_")
+        )
 
     def build(self):
         args = ["shared", "no-ssl3-method"]

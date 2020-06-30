@@ -6,16 +6,15 @@ from conans import ConanFile, tools
 # These come from https://developer.nvidia.com/embedded/downloads
 download_tx2_url = {
     "32.2.1": "https://developer.nvidia.com/embedded/dlc/r32-2-1_Release_v1.0/TX2-AGX/Tegra186_Linux_R32.2.1_aarch64.tbz2",
-    "32.3.1": "https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t186ref_release_aarch64/Tegra186_Linux_R32.3.1_aarch64.tbz2"
+    "32.3.1": "https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t186ref_release_aarch64/Tegra186_Linux_R32.3.1_aarch64.tbz2",
 }
 download_tx1_url = {
     "32.2.1": "https://developer.nvidia.com/embedded/dlc/r32-2-1_Release_v1.0/Nano-TX1/Tegra210_Linux_R32.2.1_aarch64.tbz2",
-    "32.3.1": "https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_release_aarch64/Tegra210_Linux_R32.3.1_aarch64.tbz2"
+    "32.3.1": "https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_release_aarch64/Tegra210_Linux_R32.3.1_aarch64.tbz2",
 }
 
 
 class NvJetsonDrivers(ConanFile):
-    name = "nv-jetson-drivers"
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     settings = "os", "compiler", "build_type", "arch"
@@ -33,7 +32,9 @@ class NvJetsonDrivers(ConanFile):
             tools.get(download_tx2_url[self.version])
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
-        tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
+        tools.untargz(
+            "Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder
+        )
         tools.rmdir("Linux_for_Tegra")
 
     def package(self):
@@ -43,11 +44,25 @@ class NvJetsonDrivers(ConanFile):
             self.copy("*.so*", dst="lib", keep_path=False, symlinks=False)
 
         elif self.version in ("32.3.1"):
-            self.copy("*.so*", src="usr/lib/aarch64-linux-gnu/tegra", dst="lib", keep_path=False, symlinks=True)
+            self.copy(
+                "*.so*",
+                src="usr/lib/aarch64-linux-gnu/tegra",
+                dst="lib",
+                keep_path=False,
+                symlinks=True,
+            )
             # with tools.chdir(lib_folder):
             # symlink("/usr/lib/aarch64-linux-gnu/tegra/libcuda.so", "libcuda.so" )
-            self.copy("*.so*", src="usr/lib/aarch64-linux-gnu/tegra-egl", dst="lib", keep_path=False, symlinks=False)
-            self.copy("*.so*", src="usr/lib/xorg", dst="lib", keep_path=False, symlinks=False)
+            self.copy(
+                "*.so*",
+                src="usr/lib/aarch64-linux-gnu/tegra-egl",
+                dst="lib",
+                keep_path=False,
+                symlinks=False,
+            )
+            self.copy(
+                "*.so*", src="usr/lib/xorg", dst="lib", keep_path=False, symlinks=False
+            )
         else:
             raise KeyError("Unknown version: " + self.version)
 

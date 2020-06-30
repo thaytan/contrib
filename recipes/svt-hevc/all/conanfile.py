@@ -4,7 +4,6 @@ from conans import CMake, ConanFile, tools
 
 
 class SvtHevcConan(ConanFile):
-    name = "svt-hevc"
     license = "BSD"
     description = "The Scalable Video Technology for HEVC Encoder"
     settings = "os", "compiler", "build_type", "arch"
@@ -15,7 +14,10 @@ class SvtHevcConan(ConanFile):
         self.build_requires("yasm/[>=1.3.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/OpenVisualCloud/SVT-HEVC/archive/v%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/OpenVisualCloud/SVT-HEVC/archive/v%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

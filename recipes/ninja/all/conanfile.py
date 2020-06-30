@@ -4,7 +4,6 @@ from conans import ConanFile, tools
 
 
 class NinjaConan(ConanFile):
-    name = "ninja"
     license = "Apache"
     description = "Small build system with a focus on speed"
     settings = "os", "compiler", "build_type", "arch"
@@ -15,7 +14,9 @@ class NinjaConan(ConanFile):
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/ninja-build/ninja/archive/v%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/ninja-build/ninja/archive/v%s.tar.gz" % self.version
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

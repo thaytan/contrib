@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibxdamageConan(ConanFile):
-    name = "libxdamage"
     description = "X11 damaged region extension library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
@@ -15,7 +14,10 @@ class LibxdamageConan(ConanFile):
         self.requires("libxfixes/[>=5.0.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXdamage-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libXdamage-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)

@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class GraphvizConan(ConanFile):
-    name = "graphviz"
     license = "EPL"
     description = "Graph Visualization Tools"
     settings = "os", "compiler", "build_type", "arch"
@@ -14,7 +13,10 @@ class GraphvizConan(ConanFile):
         self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://www2.graphviz.org/Packages/stable/portable_source/graphviz-%s.tar.gz" % self.version)
+        tools.get(
+            "https://www2.graphviz.org/Packages/stable/portable_source/graphviz-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

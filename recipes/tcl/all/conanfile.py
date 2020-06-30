@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class TclConan(ConanFile):
-    name = "tcl"
     description = "The Tcl scripting language"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
@@ -19,11 +18,11 @@ class TclConan(ConanFile):
     def source(self):
         tools.get(
             "https://downloads.sourceforge.net/sourceforge/tcl/tcl%s-src.tar.gz"
-            % self.version)
+            % self.version
+        )
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(
-                os.path.join("%s%s" % (self.name, self.version), "unix")):
+        with tools.chdir(os.path.join("%s%s" % (self.name, self.version), "unix")):
             autotools.configure()
             autotools.install()

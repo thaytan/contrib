@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class Help2ManConan(ConanFile):
-    name = "help2man"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "Conversion tool to create man files"

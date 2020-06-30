@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 
 class PythonCairoConan(ConanFile):
-    name = "python-cairo"
     description = "Python bindings for the cairo graphics library"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
@@ -19,11 +18,20 @@ class PythonCairoConan(ConanFile):
         self.requires("cairo/[>=1.16.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/pygobject/pycairo/releases/download/v{0}/pycairo-{0}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/pygobject/pycairo/releases/download/v{0}/pycairo-{0}.tar.gz".format(
+                self.version
+            )
+        )
 
     def build(self):
         with tools.chdir("pycairo-%s" % self.version):
-            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
+            self.run(
+                'python setup.py install --optimize=1 --prefix= --root="%s"'
+                % self.package_folder
+            )
 
     def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))
+        self.env_info.PYTHONPATH.append(
+            os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
+        )

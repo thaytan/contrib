@@ -2,9 +2,11 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class ZlibConan(ConanFile):
-    name = "zlib"
     license = "Zlib"
-    description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " "(Also Free, Not to Mention Unencumbered by Patents)"
+    description = (
+        "A Massively Spiffy Yet Delicately Unobtrusive Compression Library "
+        "(Also Free, Not to Mention Unencumbered by Patents)"
+    )
     settings = "os", "arch", "compiler", "build_type"
 
     def build_requirements(self):

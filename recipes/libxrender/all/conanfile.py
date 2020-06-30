@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibxrenderConan(ConanFile):
-    name = "libxrender"
     description = "X Rendering Extension client library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
@@ -17,7 +16,10 @@ class LibxrenderConan(ConanFile):
         self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXrender-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libXrender-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

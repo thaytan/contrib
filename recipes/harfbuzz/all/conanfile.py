@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class HarfbuzzConan(ConanFile):
-    name = "harfbuzz"
     license = "Old MIT"
     description = "HarfBuzz text shaping engine"
     settings = "os", "compiler", "build_type", "arch"
@@ -19,7 +18,9 @@ class HarfbuzzConan(ConanFile):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/harfbuzz/harfbuzz/archive/%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/harfbuzz/harfbuzz/archive/%s.tar.gz" % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class AutomakeConan(ConanFile):
-    name = "automake"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "A GNU tool for automatically creating Makefiles"
@@ -32,8 +31,14 @@ class AutomakeConan(ConanFile):
     def package_info(self):
         self.env_info.AUTOMAKE = os.path.join(self.package_folder, "bin", "automake")
         self.env_info.AUTOMAKE_DIR = os.path.join(self.package_folder, "share")
-        self.env_info.AUTOMAKE_LIBDIR = os.path.join(self.package_folder, "share", "automake-1.16")
+        self.env_info.AUTOMAKE_LIBDIR = os.path.join(
+            self.package_folder, "share", "automake-1.16"
+        )
         self.env_info.ACLOCAL = os.path.join(self.package_folder, "bin", "aclocal")
         self.env_info.ACLOCAL_DIR = os.path.join(self.package_folder, "share")
-        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal-1.16"))
-        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "share", "automake-1.16"))
+        self.env_info.ACLOCAL_PATH.append(
+            os.path.join(self.package_folder, "share", "aclocal-1.16")
+        )
+        self.env_info.PERL5LIB.append(
+            os.path.join(self.package_folder, "share", "automake-1.16")
+        )

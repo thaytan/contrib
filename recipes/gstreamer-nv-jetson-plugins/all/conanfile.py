@@ -4,7 +4,6 @@ from conans import ConanFile, tools
 
 
 class GstreamerNvJetsonPluginsConan(ConanFile):
-    name = "gstreamer-nv-jetson-plugins"
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "Demo conan package"
@@ -21,4 +20,6 @@ class GstreamerNvJetsonPluginsConan(ConanFile):
         self.copy(pattern="*.so", excludes="*libgstnvvideo4linux2.so*")
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(
+            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
+        )

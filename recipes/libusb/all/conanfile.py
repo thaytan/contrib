@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibUSBConan(ConanFile):
-    name = "libusb"
     license = "LGPL-2.1"
     description = "A cross-platform library to access USB devices"
     settings = "os", "compiler", "build_type", "arch"
@@ -17,7 +16,11 @@ class LibUSBConan(ConanFile):
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/libusb/libusb/releases/download/v{0}/libusb-{0}.tar.bz2".format(self.version))
+        tools.get(
+            "https://github.com/libusb/libusb/releases/download/v{0}/libusb-{0}.tar.bz2".format(
+                self.version
+            )
+        )
 
     def build(self):
         args = ["--disable-static"]

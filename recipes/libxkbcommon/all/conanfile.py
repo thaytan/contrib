@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 
 class LibxcbConan(ConanFile):
-    name = "libxkbcommon"
     description = "Keymap handling library for toolkits and window systems"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
@@ -19,10 +18,21 @@ class LibxcbConan(ConanFile):
         self.requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
-        args = ["--auto-features=disabled", "-Denable-wayland=false", "-Denable-docs=false"]
+        args = [
+            "--auto-features=disabled",
+            "-Denable-wayland=false",
+            "-Denable-docs=false",
+        ]
         meson = Meson(self)
-        meson.configure(source_folder="libxkbcommon-xkbcommon-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(
+            source_folder="libxkbcommon-xkbcommon-" + self.version,
+            args=args,
+            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+        )
         meson.install()

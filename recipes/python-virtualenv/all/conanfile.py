@@ -4,7 +4,6 @@ from conans import ConanFile, tools
 
 
 class PythonVirtualenvConan(ConanFile):
-    name = "python-virtualenv"
     license = "MIT"
     description = "Virtual Python Environment builder"
     settings = "os", "compiler", "build_type", "arch"
@@ -29,4 +28,8 @@ class PythonVirtualenvConan(ConanFile):
             "SETUPTOOLS_SCM_PRETEND_VERSION": self.version,
         }
         with tools.chdir("virtualenv-%s" % self.version), tools.environment_append(env):
-            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
+            self.run(
+                'python setup.py install --optimize=1 --prefix= --root="%s"'
+                % self.package_folder
+            )
+

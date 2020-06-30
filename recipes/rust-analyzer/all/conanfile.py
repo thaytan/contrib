@@ -4,13 +4,16 @@ from conans import ConanFile, tools
 
 
 class RustAnalyzerConan(ConanFile):
-    name = "rust-analyzer"
     description = "An experimental Rust compiler front-end for IDEs."
     license = "MIT", "Apache2"
     settings = "os", "arch", "compiler"
 
     def source(self):
-        tools.get("https://github.com/rust-analyzer/rust-analyzer/archive/{}.tar.gz".format(self.version.replace(".", "-")))
+        tools.get(
+            "https://github.com/rust-analyzer/rust-analyzer/archive/{}.tar.gz".format(
+                self.version.replace(".", "-")
+            )
+        )
 
     def requirements(self):
         self.requires("rust/nightly@%s/stable" % self.user)

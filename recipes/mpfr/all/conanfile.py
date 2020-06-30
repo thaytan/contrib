@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class MpfrConan(ConanFile):
-    name = "mpfr"
     settings = "os", "compiler", "arch"
     license = "LGPL"
     description = "Multiple-precision floating-point library"

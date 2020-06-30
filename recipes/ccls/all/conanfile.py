@@ -2,7 +2,6 @@ from conans import CMake, ConanFile, tools
 
 
 class CclsConan(ConanFile):
-    name = "ccls"
     license = "Apache"
     description = "C/C++ language server supporting cross references, hierarchies, completion and semantic highlighting"
     settings = "os", "compiler", "build_type", "arch"

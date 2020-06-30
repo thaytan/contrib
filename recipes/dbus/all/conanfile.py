@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class DbusConan(ConanFile):
-    name = "dbus"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "Freedesktop.org message bus system"
@@ -16,7 +15,11 @@ class DbusConan(ConanFile):
         self.requires("expat/[>=2.2.7]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/dbus/dbus/-/archive/dbus-{0}/dbus-dbus-{0}.tar.bz2".format(self.version))
+        tools.get(
+            "https://gitlab.freedesktop.org/dbus/dbus/-/archive/dbus-{0}/dbus-dbus-{0}.tar.bz2".format(
+                self.version
+            )
+        )
 
     def build(self):
         args = ["--disable-static"]

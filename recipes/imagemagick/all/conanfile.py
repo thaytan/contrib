@@ -4,8 +4,10 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class ImagemagickConan(ConanFile):
-    name = "imagemagick"
-    tar_version = "%s-%s" % (version[:version.rfind(".")], version[version.rfind(".") + 1:])
+    tar_version = "%s-%s" % (
+        version[: version.rfind(".")],
+        version[version.rfind(".") + 1 :],
+    )
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL2"
     description = "An image viewing/manipulation program"
@@ -18,7 +20,10 @@ class ImagemagickConan(ConanFile):
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/ImageMagick/ImageMagick/archive/%s.tar.gz" % self.tar_version)
+        tools.get(
+            "https://github.com/ImageMagick/ImageMagick/archive/%s.tar.gz"
+            % self.tar_version
+        )
 
     def build(self):
         args = ["--disable-static", "--disable-dependency-tracking"]
@@ -29,4 +34,6 @@ class ImagemagickConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.MAGICK_CONFIGURE_PATH = os.path.join(self.package_folder, "etc", "ImageMagick-" + self.version.split(".")[0])
+        self.env_info.MAGICK_CONFIGURE_PATH = os.path.join(
+            self.package_folder, "etc", "ImageMagick-" + self.version.split(".")[0]
+        )

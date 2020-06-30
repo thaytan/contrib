@@ -2,7 +2,6 @@ from conans import CMake, ConanFile, tools
 
 
 class GTestConan(ConanFile):
-    name = "gtest"
     description = "Google's C++ test framework"
     license = "BSD-3-Clause"
     settings = "os", "arch", "compiler", "build_type"
@@ -12,7 +11,10 @@ class GTestConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/google/googletest/archive/release-%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/google/googletest/archive/release-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

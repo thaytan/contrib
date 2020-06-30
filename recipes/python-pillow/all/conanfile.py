@@ -2,8 +2,8 @@ import os
 
 from conans import ConanFile, Meson, tools
 
+
 class PythonPillowConan(ConanFile):
-    name = "python-pillow"
     description = "Python Image Library"
     license = "Python-Imaging-Library-License"
     settings = "os", "arch", "compiler", "build_type"
@@ -20,8 +20,16 @@ class PythonPillowConan(ConanFile):
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/python-pillow/Pillow/archive/{0}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/python-pillow/Pillow/archive/{0}.tar.gz".format(
+                self.version
+            )
+        )
 
     def build(self):
         with tools.chdir("Pillow-{0}".format(self.version)):
-            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
+            self.run(
+                'python setup.py install --optimize=1 --prefix= --root="%s"'
+                % self.package_folder
+            )
+

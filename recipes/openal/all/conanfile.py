@@ -4,7 +4,6 @@ from conans import CMake, ConanFile, tools
 
 
 class OpenalConan(ConanFile):
-    name = "openal"
     license = "custom"
     description = "Cross-platform 3D audio library, software implementation"
     settings = "os", "compiler", "arch", "build_type"
@@ -17,7 +16,10 @@ class OpenalConan(ConanFile):
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/kcat/openal-soft/archive/openal-soft-%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/kcat/openal-soft/archive/openal-soft-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

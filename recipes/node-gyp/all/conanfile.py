@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class NodeGypConan(ConanFile):
-    name = "node-gyp"
     description = "Node.js native addon build tool"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"

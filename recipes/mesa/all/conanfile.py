@@ -4,12 +4,11 @@ from conans import ConanFile, Meson, tools
 
 
 class MesaConan(ConanFile):
-    name = "mesa"
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "An open-source implementation of the OpenGL specification"
     options = {"x11": [True, False]}
-    default_options = ("x11=True", )
+    default_options = ("x11=True",)
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -53,8 +52,14 @@ class MesaConan(ConanFile):
         if self.settings.arch == "armv8":
             args.append("-Dgallium-drivers=nouveau,tegra")
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(
+            source_folder="%s-%s" % (self.name, self.version),
+            args=args,
+            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+        )
         meson.install()
 
     def package_info(self):
-        self.env_info.LIBGL_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))
+        self.env_info.LIBGL_DRIVERS_PATH.append(
+            os.path.join(self.package_folder, "lib", "dri")
+        )

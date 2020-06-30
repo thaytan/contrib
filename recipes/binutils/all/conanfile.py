@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class BinutilsConan(ConanFile):
-    name = "binutils"
     settings = "os", "compiler", "arch"
     license = "GPL"
     description = "A set of programs to assemble and manipulate binary and object files"
@@ -13,7 +12,9 @@ class BinutilsConan(ConanFile):
         self.build_requires("bootstrap-gcc/7.4.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/binutils/binutils-{0}.tar.xz".format(self.version))
+        tools.get(
+            "https://ftp.gnu.org/gnu/binutils/binutils-{0}.tar.xz".format(self.version)
+        )
 
     def build(self):
         args = [

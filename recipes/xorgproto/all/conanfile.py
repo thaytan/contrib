@@ -2,7 +2,6 @@ from conans import ConanFile, Meson, tools
 
 
 class XorgProtoConan(ConanFile):
-    name = "xorgproto"
     description = "combined X.Org X11 Protocol headers"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"
@@ -13,10 +12,17 @@ class XorgProtoConan(ConanFile):
         self.build_requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/archive/individual/proto/xorgproto-%s.tar.bz2" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/archive/individual/proto/xorgproto-%s.tar.bz2"
+            % self.version
+        )
 
     def build(self):
         args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(
+            source_folder="%s-%s" % (self.name, self.version),
+            args=args,
+            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+        )
         meson.install()

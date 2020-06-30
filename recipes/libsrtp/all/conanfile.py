@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibSrtpConan(ConanFile):
-    name = "libsrtp"
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD"
     description = "Library for SRTP (Secure Realtime Transport Protocol)"

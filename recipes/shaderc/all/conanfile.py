@@ -2,10 +2,12 @@ import os
 
 from conans import CMake, ConanFile, tools
 
+
 class LibShadercConan(ConanFile):
-    name = "shaderc"
     license = "Apache"
-    description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
+    description = (
+        "A collection of tools, libraries, and tests for Vulkan shader compilation."
+    )
     settings = "os", "compiler", "build_type", "arch"
 
     def build_requirements(self):

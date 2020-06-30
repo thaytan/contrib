@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibuuidConan(ConanFile):
-    name = "libuuid"
     settings = "os", "compiler", "build_type", "arch"
     license = "BSD-3-Clause"
     description = "Portable uuid C library"
@@ -14,7 +13,10 @@ class LibuuidConan(ConanFile):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://netix.dl.sourceforge.net/project/libuuid/libuuid-%s.tar.gz" % self.version)
+        tools.get(
+            "https://netix.dl.sourceforge.net/project/libuuid/libuuid-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = [

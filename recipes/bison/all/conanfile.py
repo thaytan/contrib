@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class BisonConan(ConanFile):
-    name = "bison"
     description = "Bison is a general-purpose parser generator"
     license = "GPL-3.0-or-later"
     settings = "os", "arch", "compiler", "build_type"
@@ -25,4 +24,6 @@ class BisonConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.BISON_PKGDATADIR = os.path.join(self.package_folder, "share", "bison")
+        self.env_info.BISON_PKGDATADIR = os.path.join(
+            self.package_folder, "share", "bison"
+        )

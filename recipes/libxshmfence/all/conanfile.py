@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibxshmfenceConan(ConanFile):
-    name = "libxshmfence"
     description = "Library that exposes a event API on top of Linux futexes"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
@@ -16,7 +15,10 @@ class LibxshmfenceConan(ConanFile):
         self.requires("xorgproto/[>=2019.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libxshmfence-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libxshmfence-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

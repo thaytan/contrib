@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class OpusConan(ConanFile):
-    name = "opus"
     description = "Modern audio compression for the internet"
     license = "BSD"
     settings = "os", "compiler", "build_type", "arch"

@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibunwindConan(ConanFile):
-    name = "libunwind"
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "Portable and efficient C programming interface (API) to determine the call-chain of a programs"
@@ -12,7 +11,10 @@ class LibunwindConan(ConanFile):
         self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://download.savannah.gnu.org/releases/libunwind/libunwind-%s.tar.gz" % self.version)
+        tools.get(
+            "https://download.savannah.gnu.org/releases/libunwind/libunwind-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = [

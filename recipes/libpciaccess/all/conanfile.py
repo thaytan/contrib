@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibPciAccessConan(ConanFile):
-    name = "libpciaccess"
     description = "Generic PCI access library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
@@ -12,7 +11,10 @@ class LibPciAccessConan(ConanFile):
         self.build_requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

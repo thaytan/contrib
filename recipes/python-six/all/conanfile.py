@@ -2,8 +2,8 @@ import os
 
 from conans import ConanFile, tools
 
+
 class PythonSixConan(ConanFile):
-    name = "python-six"
     description = "Python 2 and 3 compatibility utilities"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"
@@ -14,8 +14,13 @@ class PythonSixConan(ConanFile):
         self.build_requires("python-setuptools/[>=41.2.0]@{}/stable".format(self.user))
 
     def source(self):
-        tools.get("https://pypi.io/packages/source/s/six/six-{0}.tar.gz".format(self.version))
+        tools.get(
+            "https://pypi.io/packages/source/s/six/six-{0}.tar.gz".format(self.version)
+        )
 
     def build(self):
         with tools.chdir("six-{}".format(self.version)):
-            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
+            self.run(
+                'python setup.py install --optimize=1 --prefix= --root="%s"'
+                % self.package_folder
+            )

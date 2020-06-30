@@ -4,10 +4,11 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class MpcConan(ConanFile):
-    name = "mpc"
     settings = "os", "compiler", "arch"
     license = "LGPL"
-    description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
+    description = (
+        "Library for the arithmetic of complex numbers with arbitrarily high precision"
+    )
 
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)

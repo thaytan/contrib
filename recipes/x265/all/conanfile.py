@@ -4,7 +4,6 @@ from conans import CMake, ConanFile, tools
 
 
 class X265Conan(ConanFile):
-    name = "x265"
     description = "x265 is the leading H.265 / HEVC encoder software library"
     license = "GPL"
     settings = "os", "arch", "compiler", "build_type"
@@ -24,5 +23,7 @@ class X265Conan(ConanFile):
         cmake.definitions["HIGH_BIT_DEPTH"] = self.options.bit_depth != 8
         cmake.definitions["MAIN12"] = self.options.bit_depth == 12
         cmake.definitions["ENABLE_HDR10_PLUS"] = self.options.HDR10
-        cmake.configure(source_folder=os.path.join("%s-%s" % (self.name, self.version), "source"))
+        cmake.configure(
+            source_folder=os.path.join("%s-%s" % (self.name, self.version), "source")
+        )
         cmake.install()

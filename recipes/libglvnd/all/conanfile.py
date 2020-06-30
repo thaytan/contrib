@@ -2,14 +2,13 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibglvndConan(ConanFile):
-    name = "libglvnd"
     description = "The GL Vendor-Neutral Dispatch library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "x11": [True, False],
     }
-    default_options = ("x11=True", )
+    default_options = ("x11=True",)
     exports = "ignore-warnings.patch"
 
     def build_requirements(self):
@@ -24,8 +23,13 @@ class LibglvndConan(ConanFile):
             self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/NVIDIA/libglvnd/archive/v%s.tar.gz" % self.version)
-        tools.patch(patch_file="ignore-warnings.patch", base_path="%s-%s" % (self.name, self.version))
+        tools.get(
+            "https://github.com/NVIDIA/libglvnd/archive/v%s.tar.gz" % self.version
+        )
+        tools.patch(
+            patch_file="ignore-warnings.patch",
+            base_path="%s-%s" % (self.name, self.version),
+        )
 
     def build(self):
         args = ["--disable-static"]

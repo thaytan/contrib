@@ -2,6 +2,7 @@ import os
 
 from conans import ConanFile, Meson, tools
 
+
 def get_version():
     git = tools.Git()
     try:
@@ -12,7 +13,6 @@ def get_version():
 
 
 class GStreamerDevtoolsConan(ConanFile):
-    name = "gstreamer-devtools"
     version = get_version()
     gst_version = "[~1]"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
@@ -20,7 +20,12 @@ class GStreamerDevtoolsConan(ConanFile):
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
 
-    options = {"gtk_doc": [True, False], "introspection": [True, False], "tests": [True, False], "nls": [True, False]}
+    options = {
+        "gtk_doc": [True, False],
+        "introspection": [True, False],
+        "tests": [True, False],
+        "nls": [True, False],
+    }
     default_options = "gtk_doc=False", "introspection=False", "tests=True", "nls=False"
 
     def build_requirements(self):
@@ -29,7 +34,10 @@ class GStreamerDevtoolsConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-devtools")
-        git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "rebased-aivero_mse_compare_changes")
+        git.clone(
+            "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git",
+            "rebased-aivero_mse_compare_changes",
+        )
 
     def requirements(self):
         self.requires(
@@ -40,5 +48,9 @@ class GStreamerDevtoolsConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(source_folder="gst-devtools", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(
+            source_folder="gst-devtools",
+            args=args,
+            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+        )
         meson.install()

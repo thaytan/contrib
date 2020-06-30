@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class ReadlineConan(ConanFile):
-    name = "readline"
     description = "GNU readline library"
     license = "GPL-3.0-or-later"
     settings = "os", "arch", "compiler", "build_type"

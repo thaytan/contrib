@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibtoolConan(ConanFile):
-    name = "libtool"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "A generic library support script"
@@ -33,8 +32,14 @@ class LibtoolConan(ConanFile):
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("git submodule init")
-            self.run('git config --local submodule.gnulib.url "%s/gnulib"' % self.source_folder)
-            self.run('git config --local submodule.gl-mod/bootstrap.url "%s/gnulib-bootstrap"' % self.source_folder)
+            self.run(
+                'git config --local submodule.gnulib.url "%s/gnulib"'
+                % self.source_folder
+            )
+            self.run(
+                'git config --local submodule.gl-mod/bootstrap.url "%s/gnulib-bootstrap"'
+                % self.source_folder
+            )
             self.run("git submodule update")
             self.run("./bootstrap")
             autotools = AutoToolsBuildEnvironment(self)
@@ -45,5 +50,9 @@ class LibtoolConan(ConanFile):
     def package_info(self):
         self.env_info.LIBTOOL_PREFIX = self.package_folder
         self.env_info.LIBTOOL = os.path.join(self.package_folder, "bin", "libtool")
-        self.env_info.LIBTOOLIZE = os.path.join(self.package_folder, "bin", "libtoolize")
-        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
+        self.env_info.LIBTOOLIZE = os.path.join(
+            self.package_folder, "bin", "libtoolize"
+        )
+        self.env_info.ACLOCAL_PATH.append(
+            os.path.join(self.package_folder, "share", "aclocal")
+        )

@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class PythonConan(ConanFile):
-    name = "python"
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "Next generation of the python high-level scripting language"
@@ -22,7 +21,11 @@ class PythonConan(ConanFile):
         self.requires("sqlite/[>=3.30.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(self.version))
+        tools.get(
+            "https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(
+                self.version
+            )
+        )
 
     def build(self):
         args = [
@@ -47,7 +50,9 @@ class PythonConan(ConanFile):
     def package_info(self):
         self.env_info.PYTHON = os.path.join(self.package_folder, "bin", "python")
         self.env_info.PYTHONHOME = self.package_folder
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7"))
+        self.env_info.PYTHONPATH.append(
+            os.path.join(self.package_folder, "lib", "python3.7")
+        )
         if "CC" in os.environ:
             ldshared = "%s -pthread -shared " % os.environ["CC"]
             if self.settings.arch == "x86_64":

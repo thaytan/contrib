@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibxpmConan(ConanFile):
-    name = "libxpm"
     description = "X11 pixmap library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
@@ -17,7 +16,10 @@ class LibxpmConan(ConanFile):
         self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXpm-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libXpm-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

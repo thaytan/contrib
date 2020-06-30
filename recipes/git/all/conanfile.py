@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class GitConan(ConanFile):
-    name = "git"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL2"
     description = "The fast distributed version control system"
@@ -18,7 +17,9 @@ class GitConan(ConanFile):
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://www.kernel.org/pub/software/scm/git/git-%s.tar.xz" % self.version)
+        tools.get(
+            "https://www.kernel.org/pub/software/scm/git/git-%s.tar.xz" % self.version
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

@@ -4,13 +4,16 @@ from conans import ConanFile, tools
 
 
 class PythonSetuptoolsConan(ConanFile):
-    name = "python-setuptools"
     license = "Apache"
-    description = ("Easily download, build, install, upgrade, and uninstall Python packages")
+    description = (
+        "Easily download, build, install, upgrade, and uninstall Python packages"
+    )
     settings = "os", "compiler", "build_type", "arch"
 
     def source(self):
-        tools.get("https://github.com/pypa/setuptools/archive/v%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/pypa/setuptools/archive/v%s.tar.gz" % self.version
+        )
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -24,7 +27,12 @@ class PythonSetuptoolsConan(ConanFile):
         os.makedirs(py_path)
         with tools.chdir("setuptools-" + self.version), tools.environment_append(env):
             self.run("python bootstrap.py")
-            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
+            self.run(
+                'python setup.py install --optimize=1 --prefix= --root="%s"'
+                % self.package_folder
+            )
 
     def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))
+        self.env_info.PYTHONPATH.append(
+            os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
+        )

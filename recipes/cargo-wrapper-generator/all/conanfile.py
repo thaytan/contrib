@@ -9,14 +9,14 @@ class ConanCargoWrapper(Generator):
 
     @property
     def content(self):
-        template = '''
+        template = """
 fn main() {
 }
 
 pub const LIB_PATHS: &'static [ &'static str ] = &[%(lib_paths)s];
 pub const LIBS: &'static [ &'static str ] = &[%(libs)s];
 pub const INCLUDE_PATHS: &'static [ &'static str ] = &[%(include_paths)s];
-'''
+"""
 
         def append_to_template(line):
             return template.replace("}", "    %s\n}" % line)
@@ -39,13 +39,12 @@ pub const INCLUDE_PATHS: &'static [ &'static str ] = &[%(include_paths)s];
         template = template % {
             "lib_paths": comma_separate(self.deps_build_info.lib_paths),
             "libs": comma_separate(self.deps_build_info.libs),
-            "include_paths": comma_separate(self.deps_build_info.include_paths)
+            "include_paths": comma_separate(self.deps_build_info.include_paths),
         }
         return template
 
 
 class CargoGeneratorPackage(ConanFile):
-    name = "ConanCargoWrapper"
     description = "Cargo integration generator"
     license = "MIT"
     settings = None

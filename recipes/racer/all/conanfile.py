@@ -4,13 +4,14 @@ from conans import ConanFile, tools
 
 
 class RacerConan(ConanFile):
-    name = "racer"
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler"
 
     def source(self):
-        tools.get("https://github.com/racer-rust/racer/archive/{}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/racer-rust/racer/archive/{}.tar.gz".format(self.version)
+        )
 
     def requirements(self):
         self.requires("rust/nightly@%s/stable" % self.user)

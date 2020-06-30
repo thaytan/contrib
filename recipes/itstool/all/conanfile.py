@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class ItstoolConan(ConanFile):
-    name = "itstool"
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL3"
     description = "XML to PO and back again"

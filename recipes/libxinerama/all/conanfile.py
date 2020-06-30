@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibxineramaConan(ConanFile):
-    name = "libxinerama"
     description = "X11 Xinerama extension library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"
@@ -16,7 +15,10 @@ class LibxineramaConan(ConanFile):
         self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXinerama-%s.tar.gz" % self.version)
+        tools.get(
+            "https://xorg.freedesktop.org/releases/individual/lib/libXinerama-%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]

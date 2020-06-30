@@ -2,7 +2,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class FlexConan(ConanFile):
-    name = "flex"
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD 2-Clause"
     settings = "os", "arch", "compiler", "build_type"
@@ -13,7 +12,11 @@ class FlexConan(ConanFile):
         self.build_requires("bison/[>=3.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/westes/flex/releases/download/v{0}/flex-{0}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/westes/flex/releases/download/v{0}/flex-{0}.tar.gz".format(
+                self.version
+            )
+        )
 
     def build(self):
         args = ["--disable-nls", "ac_cv_func_reallocarray=no"]

@@ -4,7 +4,6 @@ from conans import CMake, ConanFile, tools
 
 
 class OpenCVConan(ConanFile):
-    name = "opencv"
     description = "OpenCV is an open source computer vision and machine learning software library."
     license = "BSD"
     settings = "os", "compiler", "build_type", "arch"
@@ -39,4 +38,6 @@ class OpenCVConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "python3.6", "dist-packages")
+        self.env_info.PYTHONPATH = os.path.join(
+            self.package_folder, "lib", "python3.6", "dist-packages"
+        )

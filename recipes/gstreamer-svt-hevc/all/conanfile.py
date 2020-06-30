@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 
 class GStreamerSvtHevcConan(ConanFile):
-    name = "gstreamer-svt-hevc"
     description = "The Scalable Video Technology for HEVC Encoder GStreamer plugin"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
@@ -18,7 +17,10 @@ class GStreamerSvtHevcConan(ConanFile):
         self.requires("svt-hevc/[>=1.4.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/OpenVisualCloud/SVT-HEVC/archive/v%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/OpenVisualCloud/SVT-HEVC/archive/v%s.tar.gz"
+            % self.version
+        )
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -27,4 +29,6 @@ class GStreamerSvtHevcConan(ConanFile):
         meson.install()
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+        self.env_info.GST_PLUGIN_PATH.append(
+            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
+        )

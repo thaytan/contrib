@@ -4,7 +4,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class M4Conan(ConanFile):
-    name = "m4"
     settings = "os", "compiler", "arch"
     license = "GPL3"
     description = "The GNU macro processor"

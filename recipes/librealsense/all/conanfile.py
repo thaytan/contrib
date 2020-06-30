@@ -4,7 +4,6 @@ from conans import CMake, ConanFile, tools
 
 
 class LibRealsenseConan(ConanFile):
-    name = "librealsense"
     license = "Apache"
     description = "Intel RealSense SDK"
     settings = "os", "compiler", "build_type", "arch"
@@ -25,12 +24,17 @@ class LibRealsenseConan(ConanFile):
             self.requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)
+        tools.get(
+            "https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz"
+            % self.version
+        )
         tools.patch(
             patch_file="pkgconfig-fix.patch",
             base_path="%s-%s" % (self.name, self.version),
         )
-        tools.patch(patch_file="libusb-fix.patch", base_path="%s-%s" % (self.name, self.version))
+        tools.patch(
+            patch_file="libusb-fix.patch", base_path="%s-%s" % (self.name, self.version)
+        )
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

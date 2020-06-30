@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class GettextConan(ConanFile):
-    name = "gettext"
     settings = "os", "compiler", "build_type", "arch"
     description = "GNU internationalization library"
     license = "GPL"
@@ -15,7 +14,9 @@ class GettextConan(ConanFile):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version)
+        tools.get(
+            "https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version
+        )
 
     def build(self):
         args = ["--disable-static"]
@@ -34,4 +35,6 @@ class GettextConan(ConanFile):
         )
 
     def package_info(self):
-        self.env_info.gettext_datadir.append(path.join(self.package_folder, "share", "gettext"))
+        self.env_info.gettext_datadir.append(
+            path.join(self.package_folder, "share", "gettext")
+        )

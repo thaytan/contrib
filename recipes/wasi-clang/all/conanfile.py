@@ -4,13 +4,16 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class WasiSdkConan(ConanFile):
-    name = "wasi-sdk"
     settings = "os", "compiler", "arch"
     license = "custom"
     description = "WASI-enabled C/C++ toolchain"
 
     def source(self):
-        tools.get("https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-{}/wasi-sdk-{}-linux.tar.gz".format(self.version.split(".")[0], self.version))
+        tools.get(
+            "https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-{}/wasi-sdk-{}-linux.tar.gz".format(
+                self.version.split(".")[0], self.version
+            )
+        )
 
     def package(self):
         self.copy("*", src="wasi-sdk-" + self.version)
@@ -28,4 +31,7 @@ class WasiSdkConan(ConanFile):
         self.env_info.SIZE = os.path.join(self.package_folder, "bin", "llvm-size")
         self.env_info.STRINGS = os.path.join(self.package_folder, "bin", "llvm-strings")
         self.env_info.STRIP = os.path.join(self.package_folder, "bin", "llvm-strip")
-        self.env_info.CFLAGS += ["--target=wasm32-wasi --sysroot=" + os.path.join(self.package_folder, "share", "wasi-sysroot")]
+        self.env_info.CFLAGS += [
+            "--target=wasm32-wasi --sysroot="
+            + os.path.join(self.package_folder, "share", "wasi-sysroot")
+        ]

@@ -5,10 +5,11 @@ from conans import ConanFile, tools
 
 
 class RustupConan(ConanFile):
-    name = "rustup"
     settings = "os", "compiler", "arch"
     license = "MIT", "Apache"
-    description = "Systems programming language focused on safety, speed and concurrency"
+    description = (
+        "Systems programming language focused on safety, speed and concurrency"
+    )
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -19,18 +20,31 @@ class RustupConan(ConanFile):
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
 
     def source(self):
-        tools.get("https://github.com/rust-lang/rustup/archive/{}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/rust-lang/rustup/archive/{}.tar.gz".format(self.version)
+        )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run('cargo build --release --features "no-self-update" --bin rustup-init')
+            self.run(
+                'cargo build --release --features "no-self-update" --bin rustup-init'
+            )
             shutil.copy2(os.path.join("target", "release", "rustup-init"), "rustup")
 
     def package(self):
         self.copy(pattern="*/rustup", dst="bin", keep_path=False)
         bins = [
-            "cargo", "rustc", "rustdoc", "rust-gdb", "rust-lldb", "rls",
-            "rustfmt", "cargo-fmt", "cargo-clippy", "clippy-driver", "cargo-miri"
+            "cargo",
+            "rustc",
+            "rustdoc",
+            "rust-gdb",
+            "rust-lldb",
+            "rls",
+            "rustfmt",
+            "cargo-fmt",
+            "cargo-clippy",
+            "clippy-driver",
+            "cargo-miri",
         ]
         for bin in bins:
             os.symlink("rustup", os.path.join(self.package_folder, "bin", bin))

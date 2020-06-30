@@ -4,13 +4,14 @@ from conans import ConanFile, tools
 
 
 class RlsConan(ConanFile):
-    name = "rls"
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler"
 
     def source(self):
-        tools.get("https://github.com/rust-lang/rls/archive/{}.tar.gz".format(self.version))
+        tools.get(
+            "https://github.com/rust-lang/rls/archive/{}.tar.gz".format(self.version)
+        )
 
     def requirements(self):
         self.requires("rust/nightly@%s/stable" % self.user)
