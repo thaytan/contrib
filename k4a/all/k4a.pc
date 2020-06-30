@@ -1,0 +1,10 @@
+prefix=/fix_me_conan
+includedir=${prefix}/include
+libdir=${prefix}/lib
+
+Name: k4a
+Description: Azure Kinect SDK
+Version: 1.3.0
+
+Libs: -L${libdir} -lk4a -lk4arecord
+Cflags: -I${includedir}
