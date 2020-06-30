@@ -1,0 +1,13 @@
+--- gst-v4l2/Makefile	2019-08-13 06:02:58.000000000 +0200
++++ Makefile	2020-03-31 12:36:26.382077187 +0200
+@@ -37,7 +37,9 @@
+ 	gstreamer-video-1.0 \
+ 	gstreamer-allocators-1.0 \
+ 	glib-2.0 \
+-	libv4l2
++	libv4l2 \
++	egl \
++	x11
+ 
+ OBJS := $(SRCS:.c=.o)
+ 
