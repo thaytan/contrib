@@ -1,0 +1,24 @@
+diff --git a/bin/aclocal.in b/bin/aclocal.in
+index b3715d9..b6f3748 100644
+--- a/bin/aclocal.in
++++ b/bin/aclocal.in
+@@ -68,8 +68,8 @@ $perl_threads = 0;
+ # ACLOCAL_PATH environment variable, and reset with the '--system-acdir'
+ # option.
+ my @user_includes = ();
+-my @automake_includes = ('@datadir@/aclocal-' . $APIVERSION);
+-my @system_includes = ('@datadir@/aclocal');
++my @automake_includes = split(':',$ENV{"ACLOCAL_PATH"});
++my @system_includes = ();
+ 
+ # Whether we should copy M4 file in $user_includes[0].
+ my $install = 0;
+@@ -784,7 +784,7 @@ sub trace_used_macros ()
+   # early.
+   # FIXME: To be removed in Automake 2.0, once we can assume autoconf
+   #        2.70 or later.
+-  $traces .= "$automake_includes[0]/internal/ac-config-macro-dirs.m4 ";
++  $traces .= "$ENV{ACLOCAL_DIR}/aclocal-1.16/internal/ac-config-macro-dirs.m4 ";
+ 
+   # All candidate files.
+   $traces .= join (' ',
