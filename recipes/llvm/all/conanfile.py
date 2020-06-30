@@ -9,12 +9,12 @@ class LLVMConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("cmake/[^3.15.3]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("cmake/[^3.15.3]")
 
     def requirements(self):
-        self.requires("libffi/[^3.3]@%s/stable" % self.user)
-        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
+        self.requires("libffi/[^3.3]")
+        self.requires("zlib/[^1.2.11]")
 
     def source(self):
         tools.get("https://github.com/llvm/llvm-project/releases/download/llvmorg-{0}/llvm-{0}.src.tar.xz".format(self.version))

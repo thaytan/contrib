@@ -9,12 +9,12 @@ class LibeventConan(ConanFile):
     exports = "uninstall.patch"
 
     def build_requirements(self):
-        self.build_requires("env-generator/1.0.0@%s/stable" % self.user)
-        self.build_requires("cmake/3.15.3@%s/stable" % self.user)
+        self.build_requires("env-generator/1.0.0")
+        self.build_requires("cmake/3.15.3")
 
     def requirements(self):
-        self.requires("openssl/1.1.1b@%s/stable" % self.user)
-        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
+        self.requires("openssl/1.1.1b")
+        self.requires("zlib/[^1.2.11]")
 
     def source(self):
         tools.get("https://github.com/libevent/libevent/releases/download/release-%s-stable/libevent-%s-stable.tar.gz" % (self.version, self.version))

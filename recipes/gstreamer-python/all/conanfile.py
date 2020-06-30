@@ -9,12 +9,12 @@ class GStreamerPythonConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
 
     def requirements(self):
-        self.requires("gstreamer/%s@%s/stable" % (self.version, self.user))
-        self.requires("gobject-introspection/1.59.3@%s/stable" % self.user)
-        self.requires("python-gobject/3.33.1@%s/stable" % self.user)
+        self.requires("gstreamer/%s" % (self.version))
+        self.requires("gobject-introspection/1.59.3")
+        self.requires("python-gobject/3.33.1")
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-python/archive/%s.tar.gz" % self.version)

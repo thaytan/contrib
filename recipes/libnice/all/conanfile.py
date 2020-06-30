@@ -11,14 +11,14 @@ class LibNiceConan(ConanFile):
     default_options = "gstreamer=True"
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("meson/[^0.51.2]")
 
     def requirements(self):
-        self.requires("glib/[^2.62.0]@%s/stable" % self.user)
-        self.requires("openssl/[^1.1.1b]@%s/stable" % self.user)
+        self.requires("glib/[^2.62.0]")
+        self.requires("openssl/[^1.1.1b]")
         if self.options.gstreamer:
-            self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
+            self.requires("gstreamer-plugins-base/%s" % (self.gst_version))
 
     def source(self):
         tools.get("https://github.com/libnice/libnice/archive/%s.tar.gz" % self.version)

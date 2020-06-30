@@ -9,16 +9,16 @@ class PythonConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("gcc/[^7.4.0]")
 
     def requirements(self):
-        self.requires("expat/[^2.2.7]@%s/stable" % self.user)
-        self.requires("openssl/[^1.1.1b]@%s/stable" % self.user)
-        self.requires("libffi/[^3.3]@%s/stable" % self.user)
-        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
-        self.requires("bzip2/[^1.0.8]@%s/stable" % self.user)
-        self.requires("sqlite/[^3.30.1]@%s/stable" % self.user)
+        self.requires("expat/[^2.2.7]")
+        self.requires("openssl/[^1.1.1b]")
+        self.requires("libffi/[^3.3]")
+        self.requires("zlib/[^1.2.11]")
+        self.requires("bzip2/[^1.0.8]")
+        self.requires("sqlite/[^3.30.1]")
 
     def source(self):
         tools.get("https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(self.version))

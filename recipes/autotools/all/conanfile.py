@@ -7,11 +7,11 @@ class AutotoolsConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def requirements(self):
-        self.requires("cc/[^1.0.0]@%s/stable" % self.user)
-        self.requires("make/[^3.4.0]@%s/stable" % self.user)
-        self.requires("autoconf/[^2.69]@%s/stable" % self.user)
-        self.requires("automake/[^1.16.1]@%s/stable" % self.user)
-        self.requires("libtool/[^2.4.6]@%s/stable" % self.user)
-        self.requires("pkgconf/[^1.6.3]@%s/stable" % self.user)
-        self.requires("gettext/[^0.20.1]@%s/stable" % self.user)
-        self.requires("texinfo/[^6.6]@%s/stable" % self.user)
+        self.requires("cc/[^1.0.0]")
+        self.requires("make/[^3.4.0]")
+        self.requires("autoconf/[^2.69]")
+        self.requires("automake/[^1.16.1]")
+        self.requires("libtool/[^2.4.6]")
+        self.requires("pkgconf/[^1.6.3]")
+        self.requires("gettext/[^0.20.1]")
+        self.requires("texinfo/[^6.6]")

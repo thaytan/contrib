@@ -9,7 +9,7 @@ class KinectAzureSensorSDKConan(ConanFile):
     exports = "k4a.pc"
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
 
     def source(self):
         version_short = self.version[:3]

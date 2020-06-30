@@ -9,12 +9,12 @@ class GLibConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("meson/[^0.51.2]")
 
     def requirements(self):
-        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
-        self.requires("libffi/[^3.3]@%s/stable" % self.user)
+        self.requires("zlib/[^1.2.11]")
+        self.requires("libffi/[^3.3]")
 
     def source(self):
         tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)

@@ -9,8 +9,8 @@ class MakeConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("bootstrap-gcc/7.4.0@%s/stable" % self.user)
-        self.build_requires("bootstrap-make/4.3@%s/stable" % self.user)
+        self.build_requires("bootstrap-gcc/7.4.0")
+        self.build_requires("bootstrap-make/4.3")
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/make/make-{}.tar.gz".format(self.version))

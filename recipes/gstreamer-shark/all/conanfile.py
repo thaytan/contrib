@@ -9,12 +9,12 @@ class GstreamerSharkConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("autotools/[^1.0.0]")
 
     def requirements(self):
-        self.requires("gstreamer/[^1.16.0]@%s/stable" % self.user)
-        self.requires("graphviz/[^2.42.1]@%s/stable" % self.user)
+        self.requires("gstreamer/[^1.16.0]")
+        self.requires("graphviz/[^2.42.1]")
 
     def source(self):
         tools.get("https://github.com/RidgeRun/gst-shark/archive/v%s.tar.gz" % self.version)

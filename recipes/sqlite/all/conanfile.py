@@ -12,13 +12,13 @@ class SqliteConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/[^1.0.0]@%s/stable" % self.user)
-        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
-        self.build_requires("tcl/[^8.6.10]@%s/stable" % self.user)
+        self.build_requires("generators/[^1.0.0]")
+        self.build_requires("autotools/[^1.0.0]")
+        self.build_requires("tcl/[^8.6.10]")
 
     def requirements(self):
-        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
-        self.requires("readline/[^8.0]@%s/stable" % self.user)
+        self.requires("zlib/[^1.2.11]")
+        self.requires("readline/[^8.0]")
 
     def source(self):
         tools.get("https://www.sqlite.org/2019/sqlite-src-%s.zip" % conv_version(self.version))

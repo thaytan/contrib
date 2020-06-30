@@ -7,4 +7,4 @@ class CcConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def requirements(self):
-        self.requires("gcc/[^7.4.0]@%s/stable" % self.user)
+        self.requires("gcc/[^7.4.0]")

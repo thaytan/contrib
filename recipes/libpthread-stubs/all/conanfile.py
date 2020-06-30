@@ -7,7 +7,7 @@ class LibpthreadStubsConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
 
     def source(self):
         tools.get("https://xcb.freedesktop.org/dist/libpthread-stubs-%s.tar.bz2" % self.version)

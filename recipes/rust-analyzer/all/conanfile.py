@@ -12,8 +12,8 @@ class RustAnalyzerConan(ConanFile):
         tools.get("https://github.com/rust-analyzer/rust-analyzer/archive/{}.tar.gz".format(self.version.replace(".", "-")))
 
     def requirements(self):
-        self.requires("rust/nightly@%s/stable" % self.user)
-        self.requires("generators/[^1.0.0]@%s/stable" % self.user)
+        self.requires("rust/nightly")
+        self.requires("generators/[^1.0.0]")
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

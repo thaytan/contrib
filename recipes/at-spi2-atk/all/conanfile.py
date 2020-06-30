@@ -9,13 +9,13 @@ class AtSpi2AtkConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("meson/[^0.51.2]")
 
     def requirements(self):
-        self.requires("atk/[^2.35.1]@%s/stable" % self.user)
-        self.requires("at-spi2-core/[^2.34.0]@%s/stable" % self.user)
-        self.requires("libxml2/[^2.9.9]@%s/stable" % self.user)
+        self.requires("atk/[^2.35.1]")
+        self.requires("at-spi2-core/[^2.34.0]")
+        self.requires("libxml2/[^2.9.9]")
 
     def source(self):
         tools.get("https://gitlab.gnome.org/GNOME/at-spi2-atk/-/archive/AT_SPI2_ATK_{0}/at-spi2-atk-AT_SPI2_ATK_{0}.tar.bz2".format(self.version.replace(".", "_")))

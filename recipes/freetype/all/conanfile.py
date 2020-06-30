@@ -10,11 +10,11 @@ class FreetypeConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("autotools/[^1.0.0]")
 
     def requirements(self):
-        self.requires("harfbuzz/2.6.1@%s/stable" % self.user)
+        self.requires("harfbuzz/2.6.1")
 
     def source(self):
         tools.get("https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-%s.tar.gz" % self.version.replace(".", "-"))

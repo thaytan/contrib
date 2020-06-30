@@ -12,16 +12,16 @@ class PythonVirtualenvConan(ConanFile):
         tools.get("https://github.com/pypa/virtualenv/archive/%s.tar.gz" % self.version)
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
 
     def requirements(self):
-        self.requires("python/[^3.7.4]@%s/stable" % self.user)
-        self.requires("python-setuptools/[^41.2.0]@%s/stable" % self.user)
-        self.requires("python-appdirs/[^1.4.4]@%s/stable" % self.user)
-        self.requires("python-distlib/[^0.3.0]@%s/stable" % self.user)
-        self.requires("python-filelock/[^3.0.12]@%s/stable" % self.user)
-        self.requires("python-six/[^1.15.0]@%s/stable" % self.user)
-        self.requires("python-importlib-metadata/[^1.6.0]@%s/stable" % self.user)
+        self.requires("python/[^3.7.4]")
+        self.requires("python-setuptools/[^41.2.0]")
+        self.requires("python-appdirs/[^1.4.4]")
+        self.requires("python-distlib/[^0.3.0]")
+        self.requires("python-filelock/[^3.0.12]")
+        self.requires("python-six/[^1.15.0]")
+        self.requires("python-importlib-metadata/[^1.6.0]")
 
     def build(self):
         env = {

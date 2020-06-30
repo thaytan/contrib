@@ -9,12 +9,12 @@ class MpcConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("bootstrap-gcc/[^7.4.0]@%s/stable" % self.user)
-        self.build_requires("make/[^4.3]@%s/stable" % self.user)
+        self.build_requires("bootstrap-gcc/[^7.4.0]")
+        self.build_requires("make/[^4.3]")
 
     def requirements(self):
-        self.requires("gmp/[^6.1.2]@%s/stable" % self.user)
-        self.requires("mpfr/[^4.0.2]@%s/stable" % self.user)
+        self.requires("gmp/[^6.1.2]")
+        self.requires("mpfr/[^4.0.2]")
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/mpc/mpc-%s.tar.gz" % self.version)

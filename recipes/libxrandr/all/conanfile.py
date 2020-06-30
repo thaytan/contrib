@@ -7,14 +7,14 @@ class LibxrandrConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("pkgconf/[^1.6.3]@%s/stable" % self.user)
-        self.build_requires("xorg-util-macros/[^1.19.1]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("pkgconf/[^1.6.3]")
+        self.build_requires("xorg-util-macros/[^1.19.1]")
 
     def requirements(self):
-        self.requires("libx11/[^1.6.8]@%s/stable" % self.user)
-        self.requires("libxrender/[^0.9.10]@%s/stable" % self.user)
-        self.requires("libxext/[^1.3.4]@%s/stable" % self.user)
+        self.requires("libx11/[^1.6.8]")
+        self.requires("libxrender/[^0.9.10]")
+        self.requires("libxext/[^1.3.4]")
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXrandr-%s.tar.gz" % self.version)

@@ -7,11 +7,11 @@ class LibpngConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0")
 
     def requirements(self):
-        self.requires("generators/1.0.0@%s/stable" % self.user)
-        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
+        self.requires("generators/1.0.0")
+        self.requires("zlib/[^1.2.11]")
 
     def source(self):
         tools.get("https://downloads.sourceforge.net/sourceforge/libpng/libpng-%s.tar.xz" % self.version)

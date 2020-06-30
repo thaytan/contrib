@@ -7,12 +7,12 @@ class PngquantConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("autotools/1.0.0@%s/stable" % self.user)
+        self.build_requires("autotools/1.0.0")
 
     def requirements(self):
-        self.requires("generators/1.0.0@%s/stable" % self.user)
-        self.requires("libpng/[^1.6.37]@%s/stable" % self.user)
-        self.requires("libimagequant/[^2.12.6]@%s/stable" % self.user)
+        self.requires("generators/1.0.0")
+        self.requires("libpng/[^1.6.37]")
+        self.requires("libimagequant/[^2.12.6]")
 
     def source(self):
         tools.get(f"https://github.com/kornelski/pngquant/archive/{self.version}/pngquant-{self.version}.tar.gz")

@@ -46,22 +46,22 @@ class GStreamerPluginsBaseConan(ConanFile):
     )
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
-        self.build_requires("mesa/[^19.2.0]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("meson/[^0.51.2]")
+        self.build_requires("mesa/[^19.2.0]")
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.59.3]@%s/stable" % self.user)
+            self.build_requires("gobject-introspection/[^1.59.3]")
 
     def requirements(self):
-        self.requires("gstreamer/[~%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer/[~%s]" % (self.version))
         if self.options.orc:
-            self.requires("orc/[^0.4.29]@%s/stable" % self.user)
+            self.requires("orc/[^0.4.29]")
         if self.options.opus:
-            self.requires("opus/[^1.3.1]@%s/stable" % self.user)
+            self.requires("opus/[^1.3.1]")
         if self.options.pango:
-            self.requires("pango/[^1.43.0, include_prerelease=True]@%s/stable" % self.user)
+            self.requires("pango/[^1.43.0, include_prerelease=True]")
         if self.options.x11:
-            self.requires("libx11/[^1.6.8]@%s/stable" % self.user)
+            self.requires("libx11/[^1.6.8]")
 
     def source(self):
         git = tools.Git(folder="gst-plugins-base-" + self.version)

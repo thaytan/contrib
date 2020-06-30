@@ -21,17 +21,17 @@ class GStreamerRtspServerConan(ConanFile):
     )
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
-        self.build_requires("bison/[^3.3]@%s/stable" % self.user)
-        self.build_requires("flex/[^2.6.4]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("meson/[^0.51.2]")
+        self.build_requires("bison/[^3.3]")
+        self.build_requires("flex/[^2.6.4]")
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.59.3]@%s/stable" % self.user)
+            self.build_requires("gobject-introspection/[^1.59.3]")
 
     def requirements(self):
-        self.requires("glib/[^2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer/[~%s]@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
+        self.requires("glib/[^2.62.0]")
+        self.requires("gstreamer/[~%s]" % (self.version))
+        self.requires("gstreamer-plugins-base/[~%s]" % (self.version))
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/%s/gst-rtsp-server-%s.tar.gz" % (self.version, self.version))

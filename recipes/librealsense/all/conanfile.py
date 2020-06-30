@@ -12,16 +12,16 @@ class LibRealsenseConan(ConanFile):
     default_options = ("cuda=False", "python=True")
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
-        self.build_requires("cmake/[^3.15.3]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("gcc/[^7.4.0]")
+        self.build_requires("cmake/[^3.15.3]")
         if self.options.cuda:
-            self.build_requires("cuda/[^10.1.243]@%s/stable" % self.user)
+            self.build_requires("cuda/[^10.1.243]")
 
     def requirements(self):
-        self.requires("libusb/[^1.0.23]@%s/stable" % self.user)
+        self.requires("libusb/[^1.0.23]")
         if self.options.python:
-            self.requires("python/[^3.7.4]@%s/stable" % self.user)
+            self.requires("python/[^3.7.4]")
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)

@@ -10,8 +10,8 @@ class GettextConan(ConanFile):
     license = "GPL"
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("gcc/[^7.4.0]")
 
     def source(self):
         tools.get("https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version)

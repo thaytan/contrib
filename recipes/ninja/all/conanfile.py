@@ -9,9 +9,9 @@ class NinjaConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
-        self.build_requires("python/[^3.7.4]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("gcc/[^7.4.0]")
+        self.build_requires("python/[^3.7.4]")
 
     def source(self):
         tools.get("https://github.com/ninja-build/ninja/archive/v%s.tar.gz" % self.version)

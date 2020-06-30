@@ -17,16 +17,16 @@ class GStreamerDevtoolsConan(ConanFile):
     gst_version = "[~1]"
 
     def build_requirements(self):
-        self.build_requires("generators/[^1.0.0]@%s/stable" % self.user)
-        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
+        self.build_requires("generators/[^1.0.0]")
+        self.build_requires("meson/[^0.51.2]")
 
     def source(self):
         git = tools.Git(folder="gst-devtools")
         git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "rebased-aivero_mse_compare_changes")
 
     def requirements(self):
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))
-        self.requires("json-glib/[~1.4.4]@%s/stable" % self.user)
+        self.requires("gstreamer-plugins-base/%s" % (self.gst_version))
+        self.requires("json-glib/[~1.4.4]")
 
     def build(self):
         args = ["--auto-features=disabled"]

@@ -9,8 +9,8 @@ class AutoconfArchiveConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autoconf/[^2.69]@%s/stable" % self.user)
+        self.build_requires("generators/1.0.0")
+        self.build_requires("autoconf/[^2.69]")
 
     def source(self):
         tools.get("https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-%s.tar.xz" % self.version)
