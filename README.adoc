@@ -1,3 +1,0 @@
-# conan-webp
-
-Builds webp from: https://github.com/webmproject/libwebp
