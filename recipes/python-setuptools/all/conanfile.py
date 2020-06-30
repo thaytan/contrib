@@ -15,7 +15,7 @@ class PythonSetuptoolsConan(ConanFile):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("python/[>=3.7.4]@%s/stable" % self.user)
+        self.requires("python/[^3.7.4]@%s/stable" % self.user)
 
     def build(self):
         py_path = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")

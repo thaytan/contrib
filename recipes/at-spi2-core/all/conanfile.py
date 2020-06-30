@@ -10,11 +10,11 @@ class AtSpi2CoreConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("dbus/[>=1.12.16]@%s/stable" % self.user)
+        self.requires("glib/[^2.62.0]@%s/stable" % self.user)
+        self.requires("dbus/[^1.12.16]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gitlab.gnome.org/GNOME/at-spi2-core/-/archive/AT_SPI2_CORE_{0}/at-spi2-core-AT_SPI2_CORE_{0}.tar.gz".format(self.version.replace(".", "_")))

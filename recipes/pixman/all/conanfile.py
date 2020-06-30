@@ -8,7 +8,7 @@ class PixmanConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/pixman-%s.tar.bz2" % self.version)

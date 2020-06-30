@@ -10,12 +10,12 @@ class PythonCairoConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-        self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
+        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
+        self.build_requires("pkgconf/[^1.6.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("python/[>=3.7.4]@%s/stable" % self.user)
-        self.requires("cairo/[>=1.16.0]@%s/stable" % self.user)
+        self.requires("python/[^3.7.4]@%s/stable" % self.user)
+        self.requires("cairo/[^1.16.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/pygobject/pycairo/releases/download/v{0}/pycairo-{0}.tar.gz".format(self.version))

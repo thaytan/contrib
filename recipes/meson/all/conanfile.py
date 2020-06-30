@@ -15,11 +15,11 @@ class MesonConan(ConanFile):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("python/[>=3.7.4]@%s/stable" % self.user)
-        self.requires("python-setuptools/[>=41.2.0]@%s/stable" % self.user)
-        self.requires("ninja/[>=1.9.0]@%s/stable" % self.user)
-        self.requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
-        self.requires("cc/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("python/[^3.7.4]@%s/stable" % self.user)
+        self.requires("python-setuptools/[^41.2.0]@%s/stable" % self.user)
+        self.requires("ninja/[^1.9.0]@%s/stable" % self.user)
+        self.requires("pkgconf/[^1.6.3]@%s/stable" % self.user)
+        self.requires("cc/[^1.0.0]@%s/stable" % self.user)
 
     def build(self):
         py_path = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")

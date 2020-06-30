@@ -10,7 +10,7 @@ class PythonDistlibConan(ConanFile):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("python/[>=3.7.4]@%s/stable" % self.user)
+        self.requires("python/[^3.7.4]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://files.pythonhosted.org/packages/source/d/distlib/distlib-{0}.zip".format(self.version))

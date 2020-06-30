@@ -8,7 +8,7 @@ class XcbProtoConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
+        self.build_requires("pkgconf/[^1.6.3]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xcb.freedesktop.org/dist/xcb-proto-%s.tar.bz2" % self.version)

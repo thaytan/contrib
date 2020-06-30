@@ -13,7 +13,7 @@ class RustAnalyzerConan(ConanFile):
 
     def requirements(self):
         self.requires("rust/nightly@%s/stable" % self.user)
-        self.requires("generators/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("generators/[^1.0.0]@%s/stable" % self.user)
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

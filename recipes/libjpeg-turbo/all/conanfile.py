@@ -14,7 +14,7 @@ class LibjpegTurboConan(ConanFile):
         self.build_requires("cmake/3.15.3@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://downloads.sourceforge.net/project/libjpeg-turbo/{0}/libjpeg-turbo-{0}.tar.gz".format(self.version))

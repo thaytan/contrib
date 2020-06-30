@@ -15,7 +15,7 @@ class ClippyConan(ConanFile):
         self.build_requires("rust/nightly@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("generators/[>=1.0.0]@%s/stable" % self.user)
+        self.requires("generators/[^1.0.0]@%s/stable" % self.user)
 
     def build(self):
         with tools.chdir("rust-clippy-%s" % self.version):

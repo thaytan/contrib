@@ -11,8 +11,8 @@ class MozjpegConan(ConanFile):
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("autotools/1.0.0@%s/stable" % self.user)
-        self.build_requires("yasm/[>=1.3.0]@%s/stable" % self.user)
-        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
+        self.build_requires("yasm/[^1.3.0]@%s/stable" % self.user)
+        self.build_requires("cmake/[^3.15.3]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/mozilla/mozjpeg/archive/v{0}.tar.gz".format(self.version))

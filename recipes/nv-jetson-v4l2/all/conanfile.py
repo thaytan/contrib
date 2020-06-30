@@ -41,7 +41,7 @@ class NvJetsonV4l2(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
 
     def source(self):
         if self.version == "32.3.1":

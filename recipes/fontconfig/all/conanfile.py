@@ -11,13 +11,13 @@ class FontconfigConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("gperf/[>=3.1]@%s/stable" % self.user)
+        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("gperf/[^3.1]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("freetype/[>=2.10.1]@%s/stable" % self.user)
-        self.requires("libuuid/[>=1.0.3]@%s/stable" % self.user)
-        self.requires("expat/[>=2.2.7]@%s/stable" % self.user)
+        self.requires("freetype/[^2.10.1]@%s/stable" % self.user)
+        self.requires("libuuid/[^1.0.3]@%s/stable" % self.user)
+        self.requires("expat/[^2.2.7]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{0}/fontconfig-{0}.tar.gz".format(self.version))

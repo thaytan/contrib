@@ -11,8 +11,8 @@ class LibtiffConan(ConanFile):
         self.build_requires("mesa/20.0.0@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
-        self.requires("libjpeg-turbo/[>=2.0.4]@%s/stable" % self.user)
+        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
+        self.requires("libjpeg-turbo/[^2.0.4]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://download.osgeo.org/libtiff/tiff-%s.tar.gz" % self.version)

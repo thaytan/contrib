@@ -11,7 +11,7 @@ class LibpngConan(ConanFile):
 
     def requirements(self):
         self.requires("generators/1.0.0@%s/stable" % self.user)
-        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://downloads.sourceforge.net/sourceforge/libpng/libpng-%s.tar.xz" % self.version)

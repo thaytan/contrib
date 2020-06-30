@@ -10,14 +10,14 @@ class NpmConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("autotools/1.0.0@%s/stable" % self.user)
-        self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
-        self.build_requires("libpng/[>=1.6.37]@%s/stable" % self.user)
-        self.build_requires("mozjpeg/[>=3.3.1]@%s/stable" % self.user)
-        self.build_requires("pngquant/[>=2.12.6]@%s/stable" % self.user)
+        self.build_requires("python/[^3.7.4]@%s/stable" % self.user)
+        self.build_requires("libpng/[^1.6.37]@%s/stable" % self.user)
+        self.build_requires("mozjpeg/[^3.3.1]@%s/stable" % self.user)
+        self.build_requires("pngquant/[^2.12.6]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("generators/1.0.0@%s/stable" % self.user)
-        self.requires("nodejs/[>=13.0.1]@%s/stable" % self.user)
+        self.requires("nodejs/[^13.0.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/npm/cli/archive/v%s.tar.gz" % self.version)

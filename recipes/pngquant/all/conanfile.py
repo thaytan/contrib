@@ -11,8 +11,8 @@ class PngquantConan(ConanFile):
 
     def requirements(self):
         self.requires("generators/1.0.0@%s/stable" % self.user)
-        self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
-        self.requires("libimagequant/[>=2.12.6]@%s/stable" % self.user)
+        self.requires("libpng/[^1.6.37]@%s/stable" % self.user)
+        self.requires("libimagequant/[^2.12.6]@%s/stable" % self.user)
 
     def source(self):
         tools.get(f"https://github.com/kornelski/pngquant/archive/{self.version}/pngquant-{self.version}.tar.gz")

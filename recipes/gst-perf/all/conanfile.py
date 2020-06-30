@@ -10,14 +10,14 @@ class GStreamerPerfConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def requirements(self):
-        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("gstreamer/[>=%s]@%s/stable" % (self.version, self.user))
+        self.requires("glib/[^2.62.0]@%s/stable" % self.user)
+        self.requires("gstreamer/[^%s]@%s/stable" % (self.version, self.user))
 
     def build_requirements(self):
-        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("automake/[>=1.16.1]@%s/stable" % self.user)
-        self.build_requires("autoconf/[>=2.69]@%s/stable" % self.user)
+        self.build_requires("generators/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("automake/[^1.16.1]@%s/stable" % self.user)
+        self.build_requires("autoconf/[^2.69]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git()

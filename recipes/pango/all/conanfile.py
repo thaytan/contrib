@@ -10,13 +10,13 @@ class PangoConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
-        self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
+        self.build_requires("gobject-introspection/[^1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("fribidi/[>=1.0.5]@%s/stable" % self.user)
-        self.requires("cairo/[>=1.16.0]@%s/stable" % self.user)
-        self.requires("harfbuzz/[>=2.6.1]@%s/stable" % self.user)
+        self.requires("fribidi/[^1.0.5]@%s/stable" % self.user)
+        self.requires("cairo/[^1.16.0]@%s/stable" % self.user)
+        self.requires("harfbuzz/[^2.6.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GNOME/pango/archive/%s.tar.gz" % self.version)

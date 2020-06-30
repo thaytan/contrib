@@ -8,11 +8,11 @@ class LibvncserverConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
+        self.build_requires("cmake/[^3.15.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
-        self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
+        self.requires("libpng/[^1.6.37]@%s/stable" % self.user)
+        self.requires("openssl/[^1.1.1b]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/LibVNC/libvncserver/archive/LibVNCServer-%s.tar.gz" % self.version)

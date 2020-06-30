@@ -10,7 +10,7 @@ class Bzip2Conan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://sourceware.org/pub/bzip2/bzip2-%s.tar.gz" % self.version)

@@ -20,14 +20,14 @@ class GstreamerNvJetsonV4l2(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
-        self.build_requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
+        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
+        self.build_requires("pkgconf/[^1.6.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("nv-jetson-drivers/[>=%s]@%s/stable" % (self.version, self.user))
-        self.requires("nv-jetson-v4l2/[>=%s]@%s/stable" % (self.version, self.user))
-        self.requires("gstreamer-plugins-base/[>=%s]@%s/stable" % (self.gst_version, self.user))
-        self.requires("libglvnd/[>=1.2.0]@%s/stable" % (self.user))
+        self.requires("nv-jetson-drivers/[^%s]@%s/stable" % (self.version, self.user))
+        self.requires("nv-jetson-v4l2/[^%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-base/[^%s]@%s/stable" % (self.gst_version, self.user))
+        self.requires("libglvnd/[^1.2.0]@%s/stable" % (self.user))
 
     def source(self):
         tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/%s/public_sources.tbz2" % (self.version.replace(".", "-"), mapper[str(self.options.jetson)]))

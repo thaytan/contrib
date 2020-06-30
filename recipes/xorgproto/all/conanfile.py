@@ -8,8 +8,8 @@ class XorgProtoConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
-        self.build_requires("xorg-util-macros/[>=1.19.1]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
+        self.build_requires("xorg-util-macros/[^1.19.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/archive/individual/proto/xorgproto-%s.tar.bz2" % self.version)

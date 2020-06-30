@@ -13,14 +13,14 @@ class LibglvndConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
         if self.options.x11:
-            self.build_requires("xorgproto/[>=2019.1]@%s/stable" % self.user)
+            self.build_requires("xorgproto/[^2019.1]@%s/stable" % self.user)
 
     def requirements(self):
         if self.options.x11:
-            self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
-            self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
+            self.requires("libx11/[^1.6.8]@%s/stable" % self.user)
+            self.requires("libxext/[^1.3.4]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/NVIDIA/libglvnd/archive/v%s.tar.gz" % self.version)

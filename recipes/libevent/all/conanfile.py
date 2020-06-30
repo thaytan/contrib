@@ -14,7 +14,7 @@ class LibeventConan(ConanFile):
 
     def requirements(self):
         self.requires("openssl/1.1.1b@%s/stable" % self.user)
-        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/libevent/libevent/releases/download/release-%s-stable/libevent-%s-stable.tar.gz" % (self.version, self.version))

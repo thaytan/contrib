@@ -10,7 +10,7 @@ class NodeGypConan(ConanFile):
 
     def requirements(self):
         self.requires("generators/1.0.0@%s/stable" % self.user)
-        self.requires("nodejs/[>=13.0.1]@%s/stable" % self.user)
+        self.requires("nodejs/[^13.0.1]@%s/stable" % self.user)
 
     def source(self):
         tools.download(f"https://registry.npmjs.org/node-gyp/-/node-gyp-{self.version}.tgz", f"{self.name}-{self.version}.tgz")

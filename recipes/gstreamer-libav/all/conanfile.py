@@ -10,12 +10,12 @@ class GStreamerLibavConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("glib/[>=2.58.1]@%s/stable" % self.user)
+        self.requires("glib/[^2.58.1]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
-        self.requires("ffmpeg/[>=4.1]@%s/stable" % self.user)
+        self.requires("ffmpeg/[^4.1]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-libav/archive/%s.tar.gz" % self.version)

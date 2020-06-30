@@ -11,7 +11,7 @@ class FreetypeNoHarfbuzzConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-%s.tar.gz" % self.version.replace(".", "-"))

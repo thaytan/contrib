@@ -24,21 +24,21 @@ class CairoConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
+            self.build_requires("gobject-introspection/[^1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires("pixman/[>=0.38.4]@%s/stable" % self.user)
-        self.requires("libxrender/[>=0.9.10]@%s/stable" % self.user)
-        self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
+        self.requires("glib/[^2.62.0]@%s/stable" % self.user)
+        self.requires("pixman/[^0.38.4]@%s/stable" % self.user)
+        self.requires("libxrender/[^0.9.10]@%s/stable" % self.user)
+        self.requires("libxext/[^1.3.4]@%s/stable" % self.user)
         if self.options.fontconfig:
-            self.requires("fontconfig/[>=2.13.1]@%s/stable" % self.user)
+            self.requires("fontconfig/[^2.13.1]@%s/stable" % self.user)
         if self.options.zlib:
-            self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+            self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
         if self.options.png:
-            self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
+            self.requires("libpng/[^1.6.37]@%s/stable" % self.user)
 
     def build(self):
         meson = Meson(self)

@@ -11,11 +11,11 @@ class RustupConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
+        self.build_requires("rust/[^1.3.8]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("curl/7.66.0@%s/stable" % self.user)
-        self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
+        self.requires("openssl/[^1.1.1b]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://github.com/rust-lang/rustup/archive/{}.tar.gz".format(self.version))

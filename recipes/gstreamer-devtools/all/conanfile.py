@@ -17,8 +17,8 @@ class GStreamerDevtoolsConan(ConanFile):
     gst_version = "[~1]"
 
     def build_requirements(self):
-        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.build_requires("generators/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="gst-devtools")

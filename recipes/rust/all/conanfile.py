@@ -12,12 +12,12 @@ class RustConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("curl/[>=7.66.0]@%s/stable" % self.user)
+        self.build_requires("curl/[^7.66.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("pkgconf/[>=1.6.3]@%s/stable" % self.user)
-        self.requires("clang/[>=9.0.0]@%s/stable" % self.user)
-        self.requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.requires("pkgconf/[^1.6.3]@%s/stable" % self.user)
+        self.requires("clang/[^9.0.0]@%s/stable" % self.user)
+        self.requires("gcc/[^7.4.0]@%s/stable" % self.user)
 
     def source(self):
         tools.download("https://sh.rustup.rs", "rustup.sh")

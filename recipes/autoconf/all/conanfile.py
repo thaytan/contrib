@@ -11,10 +11,10 @@ class AutoconfConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
+        self.build_requires("gcc/[^7.4.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("m4/[>=1.4.18]@%s/stable" % self.user)
+        self.requires("m4/[^1.4.18]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/autoconf/autoconf-%s.tar.gz" % self.version)

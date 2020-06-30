@@ -12,8 +12,8 @@ class Sdl2Conan(ConanFile):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
-        self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
+        self.requires("libxcb/[^1.13.1]@%s/stable" % self.user)
+        self.requires("libxext/[^1.3.4]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://www.libsdl.org/release/SDL2-%s.tar.gz" % self.version)

@@ -11,7 +11,7 @@ class FreetypeConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("harfbuzz/2.6.1@%s/stable" % self.user)

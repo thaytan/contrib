@@ -9,14 +9,14 @@ class GccConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
-        self.build_requires("make/[>=4.3]@%s/stable" % self.user)
+        self.build_requires("bootstrap-gcc/[^7.4.0]@%s/stable" % self.user)
+        self.build_requires("make/[^4.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("binutils/[>=2.33.1]@%s/stable" % self.user)
-        self.requires("isl/[>=0.22.1]@%s/stable" % self.user)
-        self.requires("mpfr/[>=4.0.2]@%s/stable" % self.user)
-        self.requires("mpc/[>=1.1.0]@%s/stable" % self.user)
+        self.requires("binutils/[^2.33.1]@%s/stable" % self.user)
+        self.requires("isl/[^0.22.1]@%s/stable" % self.user)
+        self.requires("mpfr/[^4.0.2]@%s/stable" % self.user)
+        self.requires("mpc/[^1.1.0]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))

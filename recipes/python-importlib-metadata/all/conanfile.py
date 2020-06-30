@@ -10,10 +10,10 @@ class PythonImportlibMetadataConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@{}/stable".format(self.user))
-        self.build_requires("python-setuptools/[>=41.2.0]@%s/stable" % self.user)
+        self.build_requires("python-setuptools/[^41.2.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("python-zipp/[>=3.1.0]@{}/stable".format(self.user))
+        self.requires("python-zipp/[^3.1.0]@{}/stable".format(self.user))
 
     def source(self):
         tools.get("https://gitlab.com/python-devs/importlib_metadata/-/archive/v{0}/importlib_metadata-v{0}.tar.bz2".format(self.version))

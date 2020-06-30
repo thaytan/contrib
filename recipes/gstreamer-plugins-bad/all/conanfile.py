@@ -57,28 +57,28 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvcodec")
 
     def build_requirements(self):
-        self.requires("generators/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
+        self.requires("generators/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("meson/[^0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
+            self.build_requires("gobject-introspection/[^1.59.3]@%s/stable" % self.user)
         if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
-            self.build_requires("cuda/[>=10.1 <10.2]@%s/stable" % self.user)
-            self.build_requires("orc/[>=0.4.31]@%s/stable" % self.user)
+            self.build_requires("cuda/[^10.1 <10.2]@%s/stable" % self.user)
+            self.build_requires("orc/[^0.4.31]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
+        self.requires("glib/[^2.62.0]@%s/stable" % self.user)
 
         self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
         if self.options.webrtc:
             self.requires("libnice/[~0.1]@%s/stable" % self.user)
         if self.options.srtp:
-            self.requires("libsrtp/[>=2.2.0]@%s/stable" % self.user)
+            self.requires("libsrtp/[^2.2.0]@%s/stable" % self.user)
         if self.options.opencv:
-            self.requires("opencv/[>=3.4.8]@%s/stable" % self.user)
+            self.requires("opencv/[^3.4.8]@%s/stable" % self.user)
         if self.options.closedcaption:
-            self.requires("pango/[>=1.4.3]@%s/stable" % self.user)
+            self.requires("pango/[^1.4.3]@%s/stable" % self.user)
         if self.options.webp:
-            self.requires("libwebp/[>=1.1.0]@%s/stable" % self.user)
+            self.requires("libwebp/[^1.1.0]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)

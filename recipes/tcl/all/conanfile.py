@@ -9,11 +9,11 @@ class TclConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
-        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("generators/[^1.0.0]@%s/stable" % self.user)
+        self.build_requires("autotools/[^1.0.0]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
+        self.requires("zlib/[^1.2.11]@%s/stable" % self.user)
 
     def source(self):
         tools.get("https://downloads.sourceforge.net/sourceforge/tcl/tcl%s-src.tar.gz" % self.version)
