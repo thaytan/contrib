@@ -3,18 +3,16 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class BinutilsConan(ConanFile):
-    settings = "os", "compiler", "arch"
-    license = "GPL"
+class BinutilsConan\(ConanFile\):
     description = "A set of programs to assemble and manipulate binary and object files"
+    license = "GPL"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/7.4.0@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://ftp.gnu.org/gnu/binutils/binutils-{0}.tar.xz".format(self.version)
-        )
+        tools.get("https://ftp.gnu.org/gnu/binutils/binutils-{0}.tar.xz".format(self.version))
 
     def build(self):
         args = [

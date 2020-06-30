@@ -1,10 +1,10 @@
 from conans import ConanFile, Meson, tools
 
 
-class OrcConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "LGPL-2.1"
+class OrcConan\(ConanFile\):
     description = "Optimized Inner Loop Runtime Compiler"
+    license = "LGPL-2.1"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -19,8 +19,6 @@ class OrcConan(ConanFile):
         args.append("-Dexamples=disabled")
         meson = Meson(self)
         meson.configure(
-            source_folder="orc-" + self.version,
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="orc-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()

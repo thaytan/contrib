@@ -3,10 +3,10 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class OpenalConan(ConanFile):
-    license = "custom"
+class OpenalConan\(ConanFile\):
     description = "Cross-platform 3D audio library, software implementation"
-    settings = "os", "compiler", "arch", "build_type"
+    license = "custom"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -16,10 +16,7 @@ class OpenalConan(ConanFile):
         self.requires("libffi/3.3-rc0@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/kcat/openal-soft/archive/openal-soft-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://github.com/kcat/openal-soft/archive/openal-soft-%s.tar.gz" % self.version)
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

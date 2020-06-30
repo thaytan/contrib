@@ -3,10 +3,10 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-class LibdrmConan(ConanFile):
-    license = "MIT"
+class LibdrmConan\(ConanFile\):
     description = "Direct Rendering Manager headers and kernel modules"
-    settings = "os", "arch", "compiler", "build_type"
+    license = "MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -27,8 +27,6 @@ class LibdrmConan(ConanFile):
         ]
         meson = Meson(self)
         meson.configure(
-            source_folder="%s-%s" % (self.name, self.version),
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()

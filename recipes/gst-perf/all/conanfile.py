@@ -7,7 +7,7 @@ from conans import ConanFile, Meson, tools, CMake, AutoToolsBuildEnvironment
 class GStreamerPerfConan(ConanFile):
     description = "Performance Evaluation tool for Gstreamer"
     license = "LGPL"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
@@ -32,12 +32,8 @@ class GStreamerPerfConan(ConanFile):
 
     def package(self):
         self.copy(
-            pattern="*.so",
-            dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"),
-            keep_path=False,
+            pattern="*.so", dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"), keep_path=False,
         )
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(
-            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
-        )
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))

@@ -3,12 +3,10 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class LibShadercConan(ConanFile):
+class LibShadercConan\(ConanFile\):
+    description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
     license = "Apache"
-    description = (
-        "A collection of tools, libraries, and tests for Vulkan shader compilation."
-    )
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

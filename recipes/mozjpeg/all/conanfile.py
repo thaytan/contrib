@@ -3,12 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class MozjpegConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
+class MozjpegConan\(ConanFile\):
+    description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
-    description = (
-        "JPEG image codec with accelerated baseline compression and decompression"
-    )
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -17,11 +15,7 @@ class MozjpegConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/mozilla/mozjpeg/archive/v{0}.tar.gz".format(
-                self.version
-            )
-        )
+        tools.get("https://github.com/mozilla/mozjpeg/archive/v{0}.tar.gz".format(self.version))
 
     def build(self):
         args = [

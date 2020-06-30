@@ -1,10 +1,10 @@
 from conans import CMake, ConanFile, tools
 
 
-class CclsConan(ConanFile):
-    license = "Apache"
+class CclsConan\(ConanFile\):
     description = "C/C++ language server supporting cross references, hierarchies, completion and semantic highlighting"
-    settings = "os", "compiler", "build_type", "arch"
+    license = "Apache"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

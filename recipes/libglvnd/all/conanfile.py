@@ -4,7 +4,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class LibglvndConan(ConanFile):
     description = "The GL Vendor-Neutral Dispatch library"
     license = "custom"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {
         "x11": [True, False],
     }
@@ -23,12 +23,9 @@ class LibglvndConan(ConanFile):
             self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/NVIDIA/libglvnd/archive/v%s.tar.gz" % self.version
-        )
+        tools.get("https://github.com/NVIDIA/libglvnd/archive/v%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="ignore-warnings.patch",
-            base_path="%s-%s" % (self.name, self.version),
+            patch_file="ignore-warnings.patch", base_path="%s-%s" % (self.name, self.version),
         )
 
     def build(self):

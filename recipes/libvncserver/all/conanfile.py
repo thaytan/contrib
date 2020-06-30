@@ -1,10 +1,10 @@
 from conans import CMake, ConanFile, tools
 
 
-class LibvncserverConan(ConanFile):
-    license = "Apache"
+class LibvncserverConan\(ConanFile\):
     description = "Cross-platform C libraries that allow you to easily implement VNC server or client functionality"
-    settings = "os", "compiler", "arch"
+    license = "Apache"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -15,10 +15,7 @@ class LibvncserverConan(ConanFile):
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/LibVNC/libvncserver/archive/LibVNCServer-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://github.com/LibVNC/libvncserver/archive/LibVNCServer-%s.tar.gz" % self.version)
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

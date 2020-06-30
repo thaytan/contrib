@@ -3,10 +3,10 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-class MesaConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "custom"
+class MesaConan\(ConanFile\):
     description = "An open-source implementation of the OpenGL specification"
+    license = "custom"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
 
@@ -53,13 +53,9 @@ class MesaConan(ConanFile):
             args.append("-Dgallium-drivers=nouveau,tegra")
         meson = Meson(self)
         meson.configure(
-            source_folder="%s-%s" % (self.name, self.version),
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()
 
     def package_info(self):
-        self.env_info.LIBGL_DRIVERS_PATH.append(
-            os.path.join(self.package_folder, "lib", "dri")
-        )
+        self.env_info.LIBGL_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))

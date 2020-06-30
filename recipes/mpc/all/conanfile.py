@@ -3,12 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class MpcConan(ConanFile):
-    settings = "os", "compiler", "arch"
+class MpcConan\(ConanFile\):
+    description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
     license = "LGPL"
-    description = (
-        "Library for the arithmetic of complex numbers with arbitrarily high precision"
-    )
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)

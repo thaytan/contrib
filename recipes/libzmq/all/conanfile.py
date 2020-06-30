@@ -4,7 +4,7 @@ from conans import CMake, ConanFile, tools
 class LibzmqConan(ConanFile):
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     license = "LGPL"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

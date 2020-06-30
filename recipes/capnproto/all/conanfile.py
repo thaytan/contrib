@@ -1,10 +1,10 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class CapNProtoConan(ConanFile):
-    license = "MIT"
+class CapNProtoConan\(ConanFile\):
     description = "Cap'n Proto serialization/RPC system"
-    settings = "os", "arch", "compiler", "build_type"
+    license = "MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

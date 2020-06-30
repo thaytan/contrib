@@ -4,7 +4,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class LibxcursorConan(ConanFile):
     description = "X cursor management library"
     license = "custom"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -16,10 +16,7 @@ class LibxcursorConan(ConanFile):
         self.requires("libxfixes/[>=5.0.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://xorg.freedesktop.org/releases/individual/lib/libXcursor-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXcursor-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]

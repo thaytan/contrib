@@ -4,7 +4,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class FFMpegConan(ConanFile):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "GPL3"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -22,12 +22,7 @@ class FFMpegConan(ConanFile):
         ]
         if self.settings.build_type == "Debug":
             args.extend(
-                [
-                    "--disable-optimizations",
-                    "--disable-mmx",
-                    "--disable-stripping",
-                    "--enable-debug",
-                ]
+                ["--disable-optimizations", "--disable-mmx", "--disable-stripping", "--enable-debug",]
             )
         with tools.chdir("%s-%s" % (self.name, self.version)):
             autotools = AutoToolsBuildEnvironment(self)

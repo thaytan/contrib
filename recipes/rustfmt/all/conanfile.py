@@ -6,14 +6,10 @@ from conans import ConanFile, tools
 class RustfmtConan(ConanFile):
     description = "A tool for formatting Rust code according to style guidelines"
     license = "MIT"
-    settings = "os", "arch", "compiler"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get(
-            "https://github.com/rust-lang/rustfmt/archive/{}.tar.gz".format(
-                self.version
-            )
-        )
+        tools.get("https://github.com/rust-lang/rustfmt/archive/{}.tar.gz".format(self.version))
 
     def requirements(self):
         self.requires("rust/nightly@%s/stable" % self.user)

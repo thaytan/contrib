@@ -4,12 +4,10 @@ import shutil
 from conans import ConanFile, tools
 
 
-class RustupConan(ConanFile):
-    settings = "os", "compiler", "arch"
+class RustupConan\(ConanFile\):
+    description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
-    description = (
-        "Systems programming language focused on safety, speed and concurrency"
-    )
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -20,15 +18,11 @@ class RustupConan(ConanFile):
         self.requires("openssl/[>=1.1.1b]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/rust-lang/rustup/archive/{}.tar.gz".format(self.version)
-        )
+        tools.get("https://github.com/rust-lang/rustup/archive/{}.tar.gz".format(self.version))
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
-            self.run(
-                'cargo build --release --features "no-self-update" --bin rustup-init'
-            )
+            self.run('cargo build --release --features "no-self-update" --bin rustup-init')
             shutil.copy2(os.path.join("target", "release", "rustup-init"), "rustup")
 
     def package(self):

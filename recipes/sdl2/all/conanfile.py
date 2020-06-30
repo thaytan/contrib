@@ -6,7 +6,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class Sdl2Conan(ConanFile):
     description = "A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
     license = "MIT"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

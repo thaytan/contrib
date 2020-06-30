@@ -4,7 +4,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class LibxextConan(ConanFile):
     description = "X11 miscellaneous extensions library"
     license = "custom"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -15,10 +15,7 @@ class LibxextConan(ConanFile):
         self.requires("libx11/[>=1.6.8]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://xorg.freedesktop.org/releases/individual/lib/libXext-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXext-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]

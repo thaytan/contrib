@@ -6,7 +6,7 @@ from conans import ConanFile, Meson, tools
 class PythonGobjectConan(ConanFile):
     description = "Python GObject bindings"
     license = "LGPL"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -17,23 +17,15 @@ class PythonGobjectConan(ConanFile):
         self.requires("python-cairo/[>=1.18.2]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://gitlab.gnome.org/GNOME/pygobject/-/archive/{0}/pygobject-{0}.tar.gz".format(
-                self.version
-            )
-        )
+        tools.get("https://gitlab.gnome.org/GNOME/pygobject/-/archive/{0}/pygobject-{0}.tar.gz".format(self.version))
 
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]
         meson = Meson(self)
         meson.configure(
-            source_folder="pygobject-" + self.version,
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="pygobject-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()
 
     def package_info(self):
-        self.env_info.PYTHONPATH.append(
-            os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
-        )
+        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))

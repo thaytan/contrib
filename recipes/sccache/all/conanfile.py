@@ -6,12 +6,10 @@ from conans import ConanFile, tools
 class SccacheConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get(
-            "https://github.com/mozilla/sccache/archive/{}.tar.gz".format(self.version)
-        )
+        tools.get("https://github.com/mozilla/sccache/archive/{}.tar.gz".format(self.version))
 
     def build_requirements(self):
         self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)

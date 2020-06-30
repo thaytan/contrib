@@ -3,10 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibtoolConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "GPL"
+class LibtoolConan\(ConanFile\):
     description = "A generic library support script"
+    license = "GPL"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "libtool-prefix-fix.patch"
 
     def build_requirements(self):
@@ -25,21 +25,14 @@ class LibtoolConan(ConanFile):
         git = tools.Git(folder="gnulib-bootstrap")
         git.clone("https://github.com/gnulib-modules/bootstrap.git")
         tools.patch(
-            patch_file="libtool-prefix-fix.patch",
-            base_path="%s-%s" % (self.name, self.version),
+            patch_file="libtool-prefix-fix.patch", base_path="%s-%s" % (self.name, self.version),
         )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             self.run("git submodule init")
-            self.run(
-                'git config --local submodule.gnulib.url "%s/gnulib"'
-                % self.source_folder
-            )
-            self.run(
-                'git config --local submodule.gl-mod/bootstrap.url "%s/gnulib-bootstrap"'
-                % self.source_folder
-            )
+            self.run('git config --local submodule.gnulib.url "%s/gnulib"' % self.source_folder)
+            self.run('git config --local submodule.gl-mod/bootstrap.url "%s/gnulib-bootstrap"' % self.source_folder)
             self.run("git submodule update")
             self.run("./bootstrap")
             autotools = AutoToolsBuildEnvironment(self)
@@ -50,9 +43,5 @@ class LibtoolConan(ConanFile):
     def package_info(self):
         self.env_info.LIBTOOL_PREFIX = self.package_folder
         self.env_info.LIBTOOL = os.path.join(self.package_folder, "bin", "libtool")
-        self.env_info.LIBTOOLIZE = os.path.join(
-            self.package_folder, "bin", "libtoolize"
-        )
-        self.env_info.ACLOCAL_PATH.append(
-            os.path.join(self.package_folder, "share", "aclocal")
-        )
+        self.env_info.LIBTOOLIZE = os.path.join(self.package_folder, "bin", "libtoolize")
+        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))

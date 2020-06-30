@@ -3,10 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LuajitConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "MIT"
+class LuajitConan\(ConanFile\):
     description = "Just-in-time compiler and drop-in replacement for Lua 5.1"
+    license = "MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

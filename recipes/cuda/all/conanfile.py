@@ -8,7 +8,7 @@ driver_map = {"10.1.243": "418.87.00"}
 class CudaConan(ConanFile):
     description = "NVIDIA's GPU programming toolkit"
     license = "custom"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports_sources = ("cuda-10.1.pc", "cudart-10.1.pc")
 
     def build_requirements(self):
@@ -18,20 +18,13 @@ class CudaConan(ConanFile):
 
     def source(self):
         tools.download(
-            "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_%s_%s_linux.run"
-            % (self.version, driver_map[self.version]),
-            filename="cuda_%s_linux.run" % self.version,
+            "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_%s_%s_linux.run" % (self.version, driver_map[self.version]), filename="cuda_%s_linux.run" % self.version,
         )
 
     def build(self):
-        self.run(
-            'sh cuda_%s_linux.run --silent --override-driver-check --extract="%s"'
-            % (self.version, self.build_folder)
-        )
+        self.run('sh cuda_%s_linux.run --silent --override-driver-check --extract="%s"' % (self.version, self.build_folder))
         os.remove("cuda_%s_linux.run" % self.version)
-        self.run(
-            "sh NVIDIA-Linux-x86_64-%s.run --extract-only" % driver_map[self.version]
-        )
+        self.run("sh NVIDIA-Linux-x86_64-%s.run --extract-only" % driver_map[self.version])
         os.remove("NVIDIA-Linux-x86_64-%s.run" % driver_map[self.version])
         tools.rmdir("cublas")
         tools.rmdir("cuba-samples")

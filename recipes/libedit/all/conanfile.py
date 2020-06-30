@@ -3,10 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibeditConan(ConanFile):
-    license = "Zlib"
+class LibeditConan\(ConanFile\):
     description = "System V Release 4.0 curses emulation library"
-    settings = "os", "arch", "compiler", "build_type"
+    license = "Zlib"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

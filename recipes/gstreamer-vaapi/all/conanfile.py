@@ -6,7 +6,7 @@ from conans import ConanFile, Meson, tools
 class GStreamerVaapiConan(ConanFile):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {
         "introspection": [True, False],
         "encoders": [True, False],
@@ -28,25 +28,17 @@ class GStreamerVaapiConan(ConanFile):
         self.requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         if self.options.introspection:
-            self.build_requires(
-                "gobject-introspection/[>=1.59.3]@%s/stable" % self.user
-            )
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires(
-            "gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user)
-        )
-        self.requires(
-            "gstreamer-plugins-bad/[~%s]@%s/stable" % (self.version, self.user)
-        )
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
+        self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.version, self.user))
         self.requires("libva/[>=2.3.0]@%s/stable" % self.user)
 
     def source(self):
         git = tools.Git(folder="gstreamer-vaapi-" + self.version)
         git.clone(
-            url="https://gitlab.freedesktop.org/gstreamer/gstreamer-vaapi.git",
-            branch=self.version,
-            shallow=True,
+            url="https://gitlab.freedesktop.org/gstreamer/gstreamer-vaapi.git", branch=self.version, shallow=True,
         )
 
     def build(self):
@@ -54,13 +46,9 @@ class GStreamerVaapiConan(ConanFile):
         args.append("-Dwith_encoders=" + ("yes" if self.options.encoders else "no"))
         meson = Meson(self)
         meson.configure(
-            source_folder="gstreamer-vaapi-" + self.version,
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="gstreamer-vaapi-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(
-            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
-        )
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))

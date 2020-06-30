@@ -4,7 +4,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class LibVpxConan(ConanFile):
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -12,9 +12,7 @@ class LibVpxConan(ConanFile):
         self.build_requires("yasm/[>=1.3.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version
-        )
+        tools.get("https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version)
 
     def build(self):
         args = [

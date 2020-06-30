@@ -3,10 +3,10 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-class LibepoxyConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "MIT"
+class LibepoxyConan\(ConanFile\):
     description = "Library handling OpenGL function pointer management"
+    license = "MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -23,8 +23,6 @@ class LibepoxyConan(ConanFile):
         args = ["--auto-features=disabled", "-Dglx=yes", "-Dx11=true", "-Dtests=false"]
         meson = Meson(self)
         meson.configure(
-            source_folder="%s-%s" % (self.name, self.version),
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()

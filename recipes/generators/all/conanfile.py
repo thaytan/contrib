@@ -200,6 +200,6 @@ class pkgconf(Generator):
         return files
 
 
-class GeneratorsPackage(ConanFile):
-    license = "MIT"
+class GeneratorsPackage\(ConanFile\):
     description = "Conan generators"
+    license = "MIT"

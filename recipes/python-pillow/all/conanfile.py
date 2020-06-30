@@ -6,7 +6,7 @@ from conans import ConanFile, Meson, tools
 class PythonPillowConan(ConanFile):
     description = "Python Image Library"
     license = "Python-Imaging-Library-License"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -20,16 +20,9 @@ class PythonPillowConan(ConanFile):
         self.requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/python-pillow/Pillow/archive/{0}.tar.gz".format(
-                self.version
-            )
-        )
+        tools.get("https://github.com/python-pillow/Pillow/archive/{0}.tar.gz".format(self.version))
 
     def build(self):
         with tools.chdir("Pillow-{0}".format(self.version)):
-            self.run(
-                'python setup.py install --optimize=1 --prefix= --root="%s"'
-                % self.package_folder
-            )
+            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 

@@ -6,7 +6,7 @@ from conans import ConanFile, Meson, tools
 class LibxcbConan(ConanFile):
     description = "Keymap handling library for toolkits and window systems"
     license = "MIT"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -18,10 +18,7 @@ class LibxcbConan(ConanFile):
         self.requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-%s.tar.gz" % self.version)
 
     def build(self):
         args = [
@@ -31,8 +28,6 @@ class LibxcbConan(ConanFile):
         ]
         meson = Meson(self)
         meson.configure(
-            source_folder="libxkbcommon-xkbcommon-" + self.version,
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="libxkbcommon-xkbcommon-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()

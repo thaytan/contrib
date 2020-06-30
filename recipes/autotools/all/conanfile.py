@@ -1,12 +1,10 @@
 from conans import ConanFile, tools
 
 
-class AutotoolsConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
+class AutotoolsConan\(ConanFile\):
+    description = "A suite of programming tools 'designed' to assist in making source code"
     license = "GPL"
-    description = (
-        "A suite of programming tools 'designed' to assist in making source code"
-    )
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def requirements(self):
         self.requires("cc/[>=1.0.0]@%s/stable" % self.user)

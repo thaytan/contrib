@@ -1,10 +1,10 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class SharedMimeInfoConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "GPL2"
+class SharedMimeInfoConan\(ConanFile\):
     description = "Freedesktop.org Shared MIME Info"
+    license = "GPL2"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -17,11 +17,7 @@ class SharedMimeInfoConan(ConanFile):
         self.requires("libxml2/[>=2.9.9]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/Release-{0}/shared-mime-info-Release-{0}.tar.bz2".format(
-                self.version.replace(".", "-")
-            )
-        )
+        tools.get("https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/Release-{0}/shared-mime-info-Release-{0}.tar.bz2".format(self.version.replace(".", "-")))
 
     def build(self):
         args = ["--disable-update-mimedb"]

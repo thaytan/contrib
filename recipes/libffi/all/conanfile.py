@@ -1,12 +1,10 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibffiConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
+class LibffiConan\(ConanFile\):
+    description = "A portable, high level programming interface to various calling conventions"
     license = "MIT"
-    description = (
-        "A portable, high level programming interface to various calling conventions"
-    )
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

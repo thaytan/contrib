@@ -4,10 +4,10 @@ from glob import glob
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class FontconfigConan(ConanFile):
-    license = "Old MIT"
+class FontconfigConan\(ConanFile\):
     description = "A library for configuring and customizing font access"
-    settings = "os", "compiler", "build_type", "arch"
+    license = "Old MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -20,11 +20,7 @@ class FontconfigConan(ConanFile):
         self.requires("expat/[>=2.2.7]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{0}/fontconfig-{0}.tar.gz".format(
-                self.version
-            )
-        )
+        tools.get("https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{0}/fontconfig-{0}.tar.gz".format(self.version))
 
     def build(self):
         args = ["--disable-static"]
@@ -41,15 +37,9 @@ class FontconfigConan(ConanFile):
                     os.remove(filename)
 
         with tools.chdir(self.package_folder + "/etc/fonts/conf.d"):
-            for root, dirs, files in os.walk(
-                self.package_folder + "/share/fontconfig/conf.avail"
-            ):
+            for root, dirs, files in os.walk(self.package_folder + "/share/fontconfig/conf.avail"):
                 for filename in files:
-                    os.symlink(
-                        "../../../share/fontconfig/conf.avail/" + filename, filename
-                    )
+                    os.symlink("../../../share/fontconfig/conf.avail/" + filename, filename)
 
     def package_info(self):
-        self.env_info.FONTCONFIG_PATH.append(
-            os.path.join(self.package_folder, "etc", "fonts")
-        )
+        self.env_info.FONTCONFIG_PATH.append(os.path.join(self.package_folder, "etc", "fonts"))

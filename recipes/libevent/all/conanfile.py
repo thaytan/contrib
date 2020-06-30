@@ -3,11 +3,9 @@ import os
 
 
 class LibeventConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    license = "BSD-3-Clause"
     description = "Event notification library https://libevent.org"
-    generators = "env"
+    license = "BSD-3-Clause"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "uninstall.patch"
 
     def build_requirements(self):
@@ -19,16 +17,8 @@ class LibeventConan(ConanFile):
         self.requires("zlib/[>=1.2.11]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/libevent/libevent/releases/download/release-%s-stable/libevent-%s-stable.tar.gz"
-            % (self.version, self.version)
-        )
-        tools.patch(
-            patch_file="uninstall.patch",
-            base_path=os.path.join(
-                self.source_folder, "libevent-%s-stable" % self.version
-            ),
-        )
+        tools.get("https://github.com/libevent/libevent/releases/download/release-%s-stable/libevent-%s-stable.tar.gz" % (self.version, self.version))
+        tools.patch(patch_file="uninstall.patch", base_path=os.path.join(self.source_folder, "libevent-%s-stable" % self.version))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

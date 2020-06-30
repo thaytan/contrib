@@ -6,12 +6,10 @@ from conans import ConanFile, tools
 class RacerConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
-    settings = "os", "arch", "compiler"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get(
-            "https://github.com/racer-rust/racer/archive/{}.tar.gz".format(self.version)
-        )
+        tools.get("https://github.com/racer-rust/racer/archive/{}.tar.gz".format(self.version))
 
     def requirements(self):
         self.requires("rust/nightly@%s/stable" % self.user)

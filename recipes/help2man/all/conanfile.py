@@ -1,10 +1,10 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class Help2ManConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "GPL"
+class Help2ManConan\(ConanFile\):
     description = "Conversion tool to create man files"
+    license = "GPL"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

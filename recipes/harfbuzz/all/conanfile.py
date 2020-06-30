@@ -4,10 +4,10 @@ from os import path, remove
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class HarfbuzzConan(ConanFile):
-    license = "Old MIT"
+class HarfbuzzConan\(ConanFile\):
     description = "HarfBuzz text shaping engine"
-    settings = "os", "compiler", "build_type", "arch"
+    license = "Old MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -18,9 +18,7 @@ class HarfbuzzConan(ConanFile):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/harfbuzz/harfbuzz/archive/%s.tar.gz" % self.version
-        )
+        tools.get("https://github.com/harfbuzz/harfbuzz/archive/%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]

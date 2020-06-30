@@ -6,12 +6,10 @@ from conans import ConanFile, tools
 class ClippyConan(ConanFile):
     description = "A bunch of lints to catch common mistakes and improve your Rust code"
     license = "Apache2"
-    settings = "os", "arch", "compiler"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get(
-            "https://github.com/rust-lang/rust-clippy/archive/%s.tar.gz" % self.version
-        )
+        tools.get("https://github.com/rust-lang/rust-clippy/archive/%s.tar.gz" % self.version)
 
     def build_requirements(self):
         self.build_requires("rust/nightly@%s/stable" % self.user)

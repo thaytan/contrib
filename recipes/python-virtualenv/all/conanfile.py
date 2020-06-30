@@ -3,10 +3,10 @@ import os
 from conans import ConanFile, tools
 
 
-class PythonVirtualenvConan(ConanFile):
-    license = "MIT"
+class PythonVirtualenvConan\(ConanFile\):
     description = "Virtual Python Environment builder"
-    settings = "os", "compiler", "build_type", "arch"
+    license = "MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get("https://github.com/pypa/virtualenv/archive/%s.tar.gz" % self.version)
@@ -28,8 +28,5 @@ class PythonVirtualenvConan(ConanFile):
             "SETUPTOOLS_SCM_PRETEND_VERSION": self.version,
         }
         with tools.chdir("virtualenv-%s" % self.version), tools.environment_append(env):
-            self.run(
-                'python setup.py install --optimize=1 --prefix= --root="%s"'
-                % self.package_folder
-            )
+            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 

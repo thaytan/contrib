@@ -6,7 +6,7 @@ from conans import ConanFile, Meson, tools
 class LibVaConan(ConanFile):
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
     license = "MIT"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
 
@@ -29,7 +29,6 @@ class LibVaConan(ConanFile):
         args.append("-Dwith_x11=" + ("yes" if self.options.x11 else "no"))
         args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
         meson.configure(
-            source_folder="%s-%s" % (self.name, self.version),
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="%s-%s" % (self.name, self.version), pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()

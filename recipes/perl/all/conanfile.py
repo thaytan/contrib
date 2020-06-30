@@ -3,10 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class PerlConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
-    license = "GPL"
+class PerlConan\(ConanFile\):
     description = "A highly capable, feature-rich programming language"
+    license = "GPL"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "link-m-pthread.patch"
 
     def build_requirements(self):
@@ -16,8 +16,7 @@ class PerlConan(ConanFile):
     def source(self):
         tools.get("https://github.com/Perl/perl5/archive/v%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="link-m-pthread.patch",
-            base_path="%s5-%s" % (self.name, self.version),
+            patch_file="link-m-pthread.patch", base_path="%s5-%s" % (self.name, self.version),
         )
 
     def build(self):
@@ -41,11 +40,5 @@ class PerlConan(ConanFile):
         arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
         platform = "%s-linux" % arch_conv[str(self.settings.arch)]
         self.env_info.PERL = "perl"
-        self.env_info.PERL5LIB.append(
-            os.path.join(self.package_folder, "lib", self.version)
-        )
-        self.env_info.PERL5LIB.append(
-            os.path.join(
-                self.package_folder, "lib", self.version, "%s-thread-multi" % platform
-            )
-        )
+        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version))
+        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, "%s-thread-multi" % platform))

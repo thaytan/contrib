@@ -3,10 +3,10 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class LibRealsenseConan(ConanFile):
-    license = "Apache"
+class LibRealsenseConan\(ConanFile\):
     description = "Intel RealSense SDK"
-    settings = "os", "compiler", "build_type", "arch"
+    license = "Apache"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     options = {"cuda": [True, False], "python": [True, False]}
     default_options = ("cuda=False", "python=True")
@@ -24,17 +24,11 @@ class LibRealsenseConan(ConanFile):
             self.requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="pkgconfig-fix.patch",
-            base_path="%s-%s" % (self.name, self.version),
+            patch_file="pkgconfig-fix.patch", base_path="%s-%s" % (self.name, self.version),
         )
-        tools.patch(
-            patch_file="libusb-fix.patch", base_path="%s-%s" % (self.name, self.version)
-        )
+        tools.patch(patch_file="libusb-fix.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

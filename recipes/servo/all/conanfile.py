@@ -4,10 +4,10 @@ import shutil
 from conans import ConanFile, tools
 
 
-class ServoConan(ConanFile):
-    settings = "os", "compiler", "arch"
-    license = "MIT", "Apache"
+class ServoConan\(ConanFile\):
     description = "The Servo Browser Engine"
+    license = "MIT", "Apache"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -27,9 +27,7 @@ class ServoConan(ConanFile):
         self.requires("gstreamer-plugins-bad/[>=1.16.2]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/noverby/servo/archive/{}.tar.gz".format(self.version)
-        )
+        tools.get("https://github.com/noverby/servo/archive/{}.tar.gz".format(self.version))
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 class PythonZippConan(ConanFile):
     description = "Pathlib-compatible object wrapper for zip files"
     license = "MIT"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@{}/stable".format(self.user))
@@ -16,14 +16,8 @@ class PythonZippConan(ConanFile):
         self.requires("python/[>=3.7.4]@{}/stable".format(self.user))
 
     def source(self):
-        tools.get(
-            "https://github.com/jaraco/zipp/archive/v{0}.tar.gz".format(self.version)
-        )
+        tools.get("https://github.com/jaraco/zipp/archive/v{0}.tar.gz".format(self.version))
 
     def build(self):
         with tools.chdir("zipp-{}".format(self.version)):
-            self.run(
-                'python setup.py install --optimize=1 --prefix= --root="{}"'.format(
-                    self.package_folder
-                )
-            )
+            self.run('python setup.py install --optimize=1 --prefix= --root="{}"'.format(self.package_folder))

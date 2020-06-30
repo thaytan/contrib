@@ -2,12 +2,10 @@ from conans import CMake, ConanFile, tools
 import os
 
 
-class AmqpCppConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
+class AmqpCppConan\(ConanFile\):
+    description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
-    description = (
-        "JPEG image codec with accelerated baseline compression and decompression"
-    )
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "openssl.patch"
 
     def build_requirements(self):
@@ -18,13 +16,9 @@ class AmqpCppConan(ConanFile):
         self.requires("openssl/1.1.1b@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="openssl.patch",
-            base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version),
+            patch_file="openssl.patch", base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version),
         )
 
     def build(self):

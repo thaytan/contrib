@@ -6,7 +6,7 @@ from conans import ConanFile, Meson, tools
 class Gtk3Conan(ConanFile):
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL-2.1"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {
         "introspection": [True, False],
         "x11": [True, False],
@@ -21,9 +21,7 @@ class Gtk3Conan(ConanFile):
         self.build_requires("meson/[>=0.51.2]@%s/stable" % self.user)
         self.build_requires("gettext/[>=0.20.1]@%s/stable" % self.user)
         if self.options.introspection:
-            self.build_requires(
-                "gobject-introspection/[>=1.59.3]@%s/stable" % self.user,
-            )
+            self.build_requires("gobject-introspection/[>=1.59.3]@%s/stable" % self.user,)
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
@@ -50,13 +48,9 @@ class Gtk3Conan(ConanFile):
         ]
         meson = Meson(self)
         meson.configure(
-            source_folder="gtk-" + self.version,
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="gtk-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()
 
     def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(
-            os.path.join(self.package_folder, "lib", "girepository-1.0")
-        )
+        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))

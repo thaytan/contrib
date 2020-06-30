@@ -14,10 +14,10 @@ download_tx1_url = {
 }
 
 
-class NvJetsonDrivers(ConanFile):
-    license = "LGPL"
+class NvJetsonDrivers\(ConanFile\):
     description = "NVIDIA built Accelerated GStreamer Plugins"
-    settings = "os", "compiler", "build_type", "arch"
+    license = "LGPL"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports_sources = ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = "jetson=TX2"
@@ -32,9 +32,7 @@ class NvJetsonDrivers(ConanFile):
             tools.get(download_tx2_url[self.version])
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
-        tools.untargz(
-            "Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder
-        )
+        tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
         tools.rmdir("Linux_for_Tegra")
 
     def package(self):
@@ -45,24 +43,14 @@ class NvJetsonDrivers(ConanFile):
 
         elif self.version in ("32.3.1"):
             self.copy(
-                "*.so*",
-                src="usr/lib/aarch64-linux-gnu/tegra",
-                dst="lib",
-                keep_path=False,
-                symlinks=True,
+                "*.so*", src="usr/lib/aarch64-linux-gnu/tegra", dst="lib", keep_path=False, symlinks=True,
             )
             # with tools.chdir(lib_folder):
             # symlink("/usr/lib/aarch64-linux-gnu/tegra/libcuda.so", "libcuda.so" )
             self.copy(
-                "*.so*",
-                src="usr/lib/aarch64-linux-gnu/tegra-egl",
-                dst="lib",
-                keep_path=False,
-                symlinks=False,
+                "*.so*", src="usr/lib/aarch64-linux-gnu/tegra-egl", dst="lib", keep_path=False, symlinks=False,
             )
-            self.copy(
-                "*.so*", src="usr/lib/xorg", dst="lib", keep_path=False, symlinks=False
-            )
+            self.copy("*.so*", src="usr/lib/xorg", dst="lib", keep_path=False, symlinks=False)
         else:
             raise KeyError("Unknown version: " + self.version)
 

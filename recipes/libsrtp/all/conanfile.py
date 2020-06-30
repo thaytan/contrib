@@ -2,10 +2,9 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class LibSrtpConan(ConanFile):
-    url = "http://gitlab.com/aivero/public/conan/conan-" + name
-    license = "BSD"
     description = "Library for SRTP (Secure Realtime Transport Protocol)"
-    settings = "os", "arch", "compiler", "build_type"
+    license = "BSD"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)

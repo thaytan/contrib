@@ -4,7 +4,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class LibxauConan(ConanFile):
     description = "X11 authorisation library"
     license = "MIT"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -15,10 +15,7 @@ class LibxauConan(ConanFile):
         self.requires("xorgproto/[>=2019.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://xorg.freedesktop.org/releases/individual/lib/libXau-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXau-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]

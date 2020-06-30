@@ -4,9 +4,9 @@ from os import path, remove, symlink
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class GettextConan(ConanFile):
-    settings = "os", "compiler", "build_type", "arch"
+class GettextConan\(ConanFile\):
     description = "GNU internationalization library"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     license = "GPL"
 
     def build_requirements(self):
@@ -14,9 +14,7 @@ class GettextConan(ConanFile):
         self.build_requires("gcc/[>=7.4.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version
-        )
+        tools.get("https://ftp.gnu.org/pub/gnu/gettext/gettext-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]
@@ -26,15 +24,11 @@ class GettextConan(ConanFile):
             autotools.make()
             autotools.install()
         symlink(
-            "preloadable_libintl.so",
-            path.join(self.package_folder, "lib", "libpreloadable_libintl.so"),
+            "preloadable_libintl.so", path.join(self.package_folder, "lib", "libpreloadable_libintl.so"),
         )
         symlink(
-            "preloadable_libintl.so",
-            path.join(self.package_folder, "lib", "libgnuintl.so.8"),
+            "preloadable_libintl.so", path.join(self.package_folder, "lib", "libgnuintl.so.8"),
         )
 
     def package_info(self):
-        self.env_info.gettext_datadir.append(
-            path.join(self.package_folder, "share", "gettext")
-        )
+        self.env_info.gettext_datadir.append(path.join(self.package_folder, "share", "gettext"))

@@ -4,7 +4,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class LibxrandrConan(ConanFile):
     description = "X11 RandR extension library"
     license = "MIT"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -17,10 +17,7 @@ class LibxrandrConan(ConanFile):
         self.requires("libxext/[>=1.3.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://xorg.freedesktop.org/releases/individual/lib/libXrandr-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXrandr-%s.tar.gz" % self.version)
 
     def build(self):
         args = ["--disable-static"]

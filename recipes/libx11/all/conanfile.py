@@ -5,7 +5,7 @@ import os
 class Libx11Conan(ConanFile):
     description = "X11 client-side library"
     license = "MIT"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -18,11 +18,7 @@ class Libx11Conan(ConanFile):
         self.requires("libxcb/[>=1.13.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://xorg.freedesktop.org/releases/individual/lib/libX11-{}.tar.gz".format(
-                self.version
-            )
-        )
+        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libX11-{}.tar.gz".format(self.version))
 
     def build(self):
         args = ["--disable-static"]
@@ -32,6 +28,4 @@ class Libx11Conan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.XLOCALEDIR = os.path.join(
-            self.package_folder, "share", "X11", "locale"
-        )
+        self.env_info.XLOCALEDIR = os.path.join(self.package_folder, "share", "X11", "locale")

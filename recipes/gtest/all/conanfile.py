@@ -4,17 +4,14 @@ from conans import CMake, ConanFile, tools
 class GTestConan(ConanFile):
     description = "Google's C++ test framework"
     license = "BSD-3-Clause"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/google/googletest/archive/release-%s.tar.gz"
-            % self.version
-        )
+        tools.get("https://github.com/google/googletest/archive/release-%s.tar.gz" % self.version)
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

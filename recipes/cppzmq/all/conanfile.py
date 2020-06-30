@@ -6,7 +6,7 @@ from conans import CMake, ConanFile, tools
 class CppzmqConan(ConanFile):
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     license = "MIT"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -25,9 +25,7 @@ class CppzmqConan(ConanFile):
 
     def package(self):
         os.makedirs(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        with open(
-            os.path.join(self.package_folder, "lib", "pkgconfig", "cppzmq.pc"), "w+"
-        ) as pc_file:
+        with open(os.path.join(self.package_folder, "lib", "pkgconfig", "cppzmq.pc"), "w+") as pc_file:
             pc_file.write("prefix=%s\n" % self.package_folder)
             pc_file.write("includedir=${prefix}/include\n")
             pc_file.write("Name: cppzmq\n")

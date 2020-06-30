@@ -3,10 +3,10 @@ import os
 from conans import ConanFile, tools
 
 
-class NinjaConan(ConanFile):
-    license = "Apache"
+class NinjaConan\(ConanFile\):
     description = "Small build system with a focus on speed"
-    settings = "os", "compiler", "build_type", "arch"
+    license = "Apache"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -14,9 +14,7 @@ class NinjaConan(ConanFile):
         self.build_requires("python/[>=3.7.4]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://github.com/ninja-build/ninja/archive/v%s.tar.gz" % self.version
-        )
+        tools.get("https://github.com/ninja-build/ninja/archive/v%s.tar.gz" % self.version)
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):
@@ -24,7 +22,5 @@ class NinjaConan(ConanFile):
 
     def package(self):
         self.copy(
-            os.path.join("%s-%s" % (self.name, self.version), "ninja"),
-            "bin",
-            keep_path=False,
+            os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin", keep_path=False,
         )

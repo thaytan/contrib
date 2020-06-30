@@ -4,10 +4,9 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class GccConan(ConanFile):
-    settings = "os", "compiler", "arch"
-    url = "https://gitlab.com/aivero/public/conan/conan-" + name
-    license = "custom", "FDL", "GPL", "LGPL"
     description = "The GNU Compiler Collection - C and C++ frontends"
+    license = "custom", "FDL", "GPL", "LGPL"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
@@ -20,9 +19,7 @@ class GccConan(ConanFile):
         self.requires("mpc/[>=1.1.0]@%s/stable" % self.user)
 
     def source(self):
-        tools.get(
-            "https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version)
-        )
+        tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))
 
     def build(self):
         args = [
@@ -68,9 +65,7 @@ class GccConan(ConanFile):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++")
         # Needed for building Python modules
-        ldshared = "%s -pthread -shared " % os.path.join(
-            self.package_folder, "bin", "gcc"
-        )
+        ldshared = "%s -pthread -shared " % os.path.join(self.package_folder, "bin", "gcc")
         if self.settings.arch == "x86_64":
             ldshared += "-m64 "
         self.env_info.LDSHARED = ldshared

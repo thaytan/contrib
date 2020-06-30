@@ -6,7 +6,7 @@ from conans import ConanFile, Meson, tools
 class GStreamerPluginsGoodConan(ConanFile):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {
         "autodetect": [True, False],
         "rtp": [True, False],
@@ -48,9 +48,7 @@ class GStreamerPluginsGoodConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/[>=2.62.0]@%s/stable" % self.user)
-        self.requires(
-            "gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user)
-        )
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.version, self.user))
         self.requires("libpng/[>=1.6.37]@%s/stable" % self.user)
         if self.options.vpx:
             self.requires("libvpx/[>=1.8.0]@%s/stable" % self.user)
@@ -62,60 +60,37 @@ class GStreamerPluginsGoodConan(ConanFile):
         # This needs to stay in place until we have ditched the 1.16 Gstreamer version.
         if self.version == "1.16.2" or self.version == "1.16.0":
             git.clone(
-                "https://gitlab.freedesktop.org/thaytan/gst-plugins-good",
-                "splitmuxsink-muxerpad-map-1.16.0",
+                "https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0",
             )
         else:
             git.clone(
-                "https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git",
-                self.version,
+                "https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git", self.version,
             )
 
     def build(self):
         args = ["--auto-features=disabled"]
-        args.append(
-            "-Dautodetect=" + ("enabled" if self.options.autodetect else "disabled")
-        )
+        args.append("-Dautodetect=" + ("enabled" if self.options.autodetect else "disabled"))
         args.append("-Drtp=" + ("enabled" if self.options.rtp else "disabled"))
         args.append("-Drtsp=" + ("enabled" if self.options.rtsp else "disabled"))
         args.append("-Drtpmanager=" + ("enabled" if self.options.rtp else "disabled"))
         args.append("-Dudp=" + ("enabled" if self.options.udp else "disabled"))
         args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
         args.append("-Disomp4=" + ("enabled" if self.options.isomp4 else "disabled"))
-        args.append(
-            "-Dvideofilter=" + ("enabled" if self.options.videofilter else "disabled")
-        )
+        args.append("-Dvideofilter=" + ("enabled" if self.options.videofilter else "disabled"))
         args.append("-Dvpx=" + ("enabled" if self.options.vpx else "disabled"))
-        args.append(
-            "-Dmultifile=" + ("enabled" if self.options.multifile else "disabled")
-        )
-        args.append(
-            "-Dmatroska=" + ("enabled" if self.options.matroska else "disabled")
-        )
-        args.append(
-            "-Dvideomixer=" + ("enabled" if self.options.videomixer else "disabled")
-        )
-        args.append(
-            "-Dximagesrc=" + ("enabled" if self.options.ximagesrc else "disabled")
-        )
-        args.append(
-            "-Dximagesrc-xdamage="
-            + ("enabled" if self.options.ximagesrc_xdamage else "disabled")
-        )
-        args.append(
-            "-Dxshm=" + ("enabled" if self.options.ximagesrc_xshm else "disabled")
-        )
+        args.append("-Dmultifile=" + ("enabled" if self.options.multifile else "disabled"))
+        args.append("-Dmatroska=" + ("enabled" if self.options.matroska else "disabled"))
+        args.append("-Dvideomixer=" + ("enabled" if self.options.videomixer else "disabled"))
+        args.append("-Dximagesrc=" + ("enabled" if self.options.ximagesrc else "disabled"))
+        args.append("-Dximagesrc-xdamage=" + ("enabled" if self.options.ximagesrc_xdamage else "disabled"))
+        args.append("-Dxshm=" + ("enabled" if self.options.ximagesrc_xshm else "disabled"))
         args.append("-Djpeg=" + ("enabled" if self.options.jpeg else "disabled"))
 
         meson = Meson(self)
         meson.configure(
-            source_folder="gst-plugins-good-%s" % self.version,
-            args=args,
-            pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="gst-plugins-good-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(
-            os.path.join(self.package_folder, "lib", "gstreamer-1.0")
-        )
+        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))

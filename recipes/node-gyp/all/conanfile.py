@@ -6,7 +6,7 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 class NodeGypConan(ConanFile):
     description = "Node.js native addon build tool"
     license = "MIT"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def requirements(self):
         self.requires("generators/1.0.0@%s/stable" % self.user)
@@ -14,11 +14,8 @@ class NodeGypConan(ConanFile):
 
     def source(self):
         tools.download(
-            f"https://registry.npmjs.org/node-gyp/-/node-gyp-{self.version}.tgz",
-            f"{self.name}-{self.version}.tgz",
+            f"https://registry.npmjs.org/node-gyp/-/node-gyp-{self.version}.tgz", f"{self.name}-{self.version}.tgz",
         )
 
     def build(self):
-        self.run(
-            f'npm install -g --user root --prefix "{self.package_folder}" "{self.name}-{self.version}.tgz"'
-        )
+        self.run(f'npm install -g --user root --prefix "{self.package_folder}" "{self.name}-{self.version}.tgz"')

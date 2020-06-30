@@ -6,14 +6,10 @@ from conans import ConanFile, tools
 class RustAnalyzerConan(ConanFile):
     description = "An experimental Rust compiler front-end for IDEs."
     license = "MIT", "Apache2"
-    settings = "os", "arch", "compiler"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get(
-            "https://github.com/rust-analyzer/rust-analyzer/archive/{}.tar.gz".format(
-                self.version.replace(".", "-")
-            )
-        )
+        tools.get("https://github.com/rust-analyzer/rust-analyzer/archive/{}.tar.gz".format(self.version.replace(".", "-")))
 
     def requirements(self):
         self.requires("rust/nightly@%s/stable" % self.user)

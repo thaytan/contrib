@@ -3,10 +3,10 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class IslConan(ConanFile):
-    settings = "os", "compiler", "arch"
-    license = "MIT"
+class IslConan\(ConanFile\):
     description = "Library for manipulating sets and relations of integer points bounded by linear constraints"
+    license = "MIT"
+    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def build_requirements(self):
         self.build_requires("bootstrap-gcc/[>=7.4.0]@%s/stable" % self.user)
