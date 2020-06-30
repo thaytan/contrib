@@ -10,13 +10,11 @@ class GStreamerRtspServerConan(ConanFile):
     options = {
         "examples": [True, False],
         "tests": [True, False],
-        "introspection": [True, False],
         "rtspclientsink": [True, False],
     }
     default_options = (
         "examples=False",
         "tests=False",
-        "introspection=True",
         "rtspclientsink=True",
     )
     build_requires = (
@@ -24,16 +22,16 @@ class GStreamerRtspServerConan(ConanFile):
         "meson/[^0.51.2]",
         "bison/[^3.3]",
         "flex/[^2.6.4]",
-        if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.59.3]")
+        "gobject-introspection/[^1.59.3]",
     )
     requires = (
         "glib/[^2.62.0]",
-        "gstreamer/[~%s]" % (self.version),
-        "gstreamer-plugins-base/[~%s]" % (self.version),
+        "gstreamer/[~1.16]",
+        "gstreamer-plugins-base/[~1.16]",
+    )
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/%s/gst-rtsp-server-%s.tar.gz" % (self.version, self.version))
+        tools.get(f"https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/{self.version}/gst-rtsp-server-{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -42,7 +40,7 @@ class GStreamerRtspServerConan(ConanFile):
         args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
         args.append("-Drtspclientsink=" + ("enabled" if self.options.rtspclientsink else "disabled"))
         meson = Meson(self)
-        meson.configure(source_folder="gst-rtsp-server-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=f"gst-rtsp-server-{self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):

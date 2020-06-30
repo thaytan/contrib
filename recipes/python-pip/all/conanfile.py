@@ -9,7 +9,7 @@ class PythonPipConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/pypa/pip/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/pypa/pip/archive/{self.version}.tar.gz")
 
     build_requires = (
         "generators/1.0.0",

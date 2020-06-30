@@ -16,11 +16,11 @@ class LibxcursorConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXcursor-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXcursor-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("libXcursor-%s" % self.version):
+        with tools.chdir(f"libXcursor-{self.version}"):
             autotools.configure(args=args)
             autotools.install()

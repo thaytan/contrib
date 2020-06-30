@@ -15,10 +15,10 @@ class LibeditConan(ConanFile):
     requires = ("ncurses/[^6.1]",)
 
     def source(self):
-        tools.get("https://thrysoee.dk/editline/libedit-%s.tar.gz" % self.version)
+        tools.get(f"https://thrysoee.dk/editline/libedit-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

@@ -13,12 +13,12 @@ class GStreamerLibavConan(ConanFile):
     )
     requires = (
         "glib/[^2.58.1]",
-        "gstreamer-plugins-base/[~%s]" % (self.version),
+        "gstreamer-plugins-base/[~1.16]",
         "ffmpeg/[^4.1]",
     )
 
     def source(self):
-        tools.get("https://github.com/GStreamer/gst-libav/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/GStreamer/gst-libav/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled"]

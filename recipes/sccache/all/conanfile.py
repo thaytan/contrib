@@ -9,7 +9,7 @@ class SccacheConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/mozilla/sccache/archive/{}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/mozilla/sccache/archive/{self.version}.tar.gz")
 
     build_requires = (
         "generators/[^1.0.0]",
@@ -18,7 +18,7 @@ class SccacheConan(ConanFile):
     )
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("cargo build --release")
 
     def package(self):

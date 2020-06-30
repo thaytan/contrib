@@ -9,7 +9,7 @@ class PythonVirtualenvConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/pypa/virtualenv/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/pypa/virtualenv/archive/{self.version}.tar.gz")
 
     build_requires = ("generators/1.0.0",)
     requires = (
@@ -26,6 +26,6 @@ class PythonVirtualenvConan(ConanFile):
         env = {
             "SETUPTOOLS_SCM_PRETEND_VERSION": self.version,
         }
-        with tools.chdir("virtualenv-%s" % self.version), tools.environment_append(env):
+        with tools.chdir(f"virtualenv-{self.version}"), tools.environment_append(env):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 

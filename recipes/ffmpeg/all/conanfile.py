@@ -11,7 +11,7 @@ class FFMpegConan(ConanFile):
     )
 
     def source(self):
-        tools.get("http://ffmpeg.org/releases/ffmpeg-%s.tar.bz2" % self.version)
+        tools.get(f"http://ffmpeg.org/releases/ffmpeg-{self.version}.tar.bz2")
 
     def build(self):
         args = [
@@ -24,7 +24,7 @@ class FFMpegConan(ConanFile):
             args.extend(
                 ["--disable-optimizations", "--disable-mmx", "--disable-stripping", "--enable-debug",]
             )
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

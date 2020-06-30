@@ -15,10 +15,10 @@ class LibvncserverConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/LibVNC/libvncserver/archive/LibVNCServer-%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/LibVNC/libvncserver/archive/LibVNCServer-{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.configure(source_folder="libvncserver-LibVNCServer-%s" % self.version)
+        cmake.configure(source_folder=f"libvncserver-LibVNCServer-{self.version}")
         cmake.build()
         cmake.install()

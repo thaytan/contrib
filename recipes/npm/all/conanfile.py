@@ -20,15 +20,15 @@ class NpmConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/npm/cli/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/npm/cli/archive/v{self.version}.tar.gz")
 
     def build(self):
         pngquant_src = os.path.join(self.deps_cpp_info["pngquant"].rootpath, "bin", "pngquant")
-        pngquant_dir = os.path.join("cli-%s" % self.version, "docs", "node_modules", "pngquant-bin", "vendor")
+        pngquant_dir = os.path.join(f"cli-{self.version}", "docs", "node_modules", "pngquant-bin", "vendor")
         os.makedirs(pngquant_dir)
         pngquant_dst = os.path.join(pngquant_dir, "pngquant")
         shutil.copy2(pngquant_src, pngquant_dst)
-        with tools.chdir("cli-%s" % self.version):
+        with tools.chdir(f"cli-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             self.run("mkdir -p man/man1")
             autotools.install(['NPMOPTS=--prefix="%s"' % self.package_folder])

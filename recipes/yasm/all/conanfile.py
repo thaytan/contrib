@@ -11,10 +11,10 @@ class YasmConan(ConanFile):
     )
 
     def source(self):
-        tools.get("http://www.tortall.net/projects/yasm/releases/yasm-%s.tar.gz" % self.version)
+        tools.get(f"http://www.tortall.net/projects/yasm/releases/yasm-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.install()

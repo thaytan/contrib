@@ -10,10 +10,10 @@ class XzConan(ConanFile):
     build_requires = ("generators/1.0.0",)
 
     def source(self):
-        tools.get("https://tukaani.org/xz/xz-%s.tar.gz" % self.version)
+        tools.get(f"https://tukaani.org/xz/xz-{self.version}.tar.gz")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure()
             autotools.install()

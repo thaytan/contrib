@@ -16,12 +16,12 @@ class LibUSBConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/libusb/libusb/releases/download/v{0}/libusb-{0}.tar.bz2".format(self.version))
+        tools.get(f"https://github.com/libusb/libusb/releases/download/v{self.version}/libusb-{self.version}.tar.bz2")
 
     def build(self):
         args = ["--disable-static"]
         args.append("--enable-udev" if self.options.udev else "--disable-udev")
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()

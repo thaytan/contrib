@@ -15,11 +15,11 @@ class CurlConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://curl.haxx.se/download/curl-%s.tar.gz" % self.version)
+        tools.get(f"https://curl.haxx.se/download/curl-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

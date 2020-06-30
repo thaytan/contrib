@@ -16,11 +16,11 @@ class HarfbuzzConan(ConanFile):
     requires = ("glib/[^2.62.0]",)
 
     def source(self):
-        tools.get("https://github.com/harfbuzz/harfbuzz/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)

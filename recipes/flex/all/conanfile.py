@@ -12,11 +12,11 @@ class FlexConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/westes/flex/releases/download/v{0}/flex-{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/westes/flex/releases/download/v{self.version}/flex-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-nls", "ac_cv_func_reallocarray=no"]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)

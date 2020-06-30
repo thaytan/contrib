@@ -10,11 +10,11 @@ class LibXorgUtilMacrosConan(ConanFile):
     build_requires = ("generators/1.0.0",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/util/util-macros-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/util/util-macros-{self.version}.tar.gz")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("util-macros-%s" % self.version):
+        with tools.chdir(f"util-macros-{self.version}"):
             autotools.configure()
             autotools.install()
 

@@ -38,7 +38,7 @@ class Gtk3Conan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/GNOME/gtk/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/GNOME/gtk/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [

@@ -14,7 +14,7 @@ class Sdl2Conan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://www.libsdl.org/release/SDL2-%s.tar.gz" % self.version)
+        tools.get(f"https://www.libsdl.org/release/SDL2-{self.version}.tar.gz")
 
     def build(self):
         with tools.chdir("SDL2-" + self.version):

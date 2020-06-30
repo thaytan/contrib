@@ -9,8 +9,8 @@ class PythonDistlibConan(ConanFile):
     requires = ("python/[^3.7.4]",)
 
     def source(self):
-        tools.get("https://files.pythonhosted.org/packages/source/d/distlib/distlib-{0}.zip".format(self.version))
+        tools.get(f"https://files.pythonhosted.org/packages/source/d/distlib/distlib-{self.version}.zip")
 
     def build(self):
-        with tools.chdir("distlib-{}".format(self.version)):
-            self.run('python setup.py install --optimize=1 --prefix= --root="{}"'.format(self.package_folder))
+        with tools.chdir(f"distlib-{self.version}"):
+            self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"')

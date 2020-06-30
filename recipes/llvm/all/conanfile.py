@@ -17,7 +17,7 @@ class LLVMConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/llvm/llvm-project/releases/download/llvmorg-{0}/llvm-{0}.src.tar.xz".format(self.version))
+        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja", build_type="Release")
@@ -26,6 +26,6 @@ class LLVMConan(ConanFile):
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_ENABLE_FFI"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
-        cmake.configure(source_folder="%s-%s.src" % (self.name, self.version))
+        cmake.configure(source_folder=f"{self.name}-{self.version}.src")
         cmake.build()
         cmake.install()

@@ -14,10 +14,10 @@ class M4Conan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/m4/m4-%s.tar.gz" % self.version)
+        tools.get(f"https://ftp.gnu.org/gnu/m4/m4-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

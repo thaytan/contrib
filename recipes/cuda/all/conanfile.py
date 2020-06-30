@@ -17,21 +17,21 @@ class CudaConan(ConanFile):
     )
 
     def source(self):
-        tools.download("http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_%s_%s_linux.run" % (self.version, driver_map[self.version]), filename="cuda_%s_linux.run" % self.version)
+        tools.download(f"http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_{self.version}_{driver_map[self.version]}_linux.run", filename=f"cuda_{self.version}_linux.run")
 
     def build(self):
-        self.run('sh cuda_%s_linux.run --silent --override-driver-check --extract="%s"' % (self.version, self.build_folder))
-        os.remove("cuda_%s_linux.run" % self.version)
-        self.run("sh NVIDIA-Linux-x86_64-%s.run --extract-only" % driver_map[self.version])
-        os.remove("NVIDIA-Linux-x86_64-%s.run" % driver_map[self.version])
+        self.run(f'sh cuda_{self.version}_linux.run --silent --override-driver-check --extract="{self.build_folder}"')
+        os.remove(f"cuda_{self.version}_linux.run")
+        self.run(f"sh NVIDIA-Linux-x86_64-{driver_map[self.version]}.run --extract-only")
+        os.remove(f"NVIDIA-Linux-x86_64-{driver_map[self.version]}.run")
         tools.rmdir("cublas")
         tools.rmdir("cuba-samples")
 
     def package(self):
         for toolkit in ("cuda-toolkit", "cuda-toolkit/nvvm"):
-            self.copy("*", dst="bin", src="%s/bin" % toolkit)
-            self.copy("*", dst="lib", src="%s/lib64" % toolkit)
-            self.copy("*", dst="include", src="%s/include" % toolkit)
+            self.copy("*", dst="bin", src=f"{toolkit}/bin")
+            self.copy("*", dst="lib", src=f"{toolkit}/lib64")
+            self.copy("*", dst="include", src=f"{toolkit}/include")
         self.copy("*.bc", src="cuda-toolkit")
         self.copy("*libcuda.so*", dst="lib", keep_path=False, symlinks=True)
         self.copy("*libnvcuvid.so*", dst="lib", keep_path=False, symlinks=True)

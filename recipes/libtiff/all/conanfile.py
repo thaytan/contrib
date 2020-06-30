@@ -15,11 +15,11 @@ class LibtiffConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://download.osgeo.org/libtiff/tiff-%s.tar.gz" % self.version)
+        tools.get(f"https://download.osgeo.org/libtiff/tiff-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
-        with tools.chdir("tiff-%s" % self.version):
+        with tools.chdir(f"tiff-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

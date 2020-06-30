@@ -14,10 +14,10 @@ class SvtHevcConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/OpenVisualCloud/SVT-HEVC/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/OpenVisualCloud/SVT-HEVC/archive/v{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.configure(source_folder="SVT-HEVC-%s" % self.version)
+        cmake.configure(source_folder=f"SVT-HEVC-{self.version}")
         cmake.build()
         cmake.install()

@@ -8,10 +8,10 @@ class CapNProtoConan(ConanFile):
     build_requires = ("generators/1.0.0",)
 
     def source(self):
-        tools.get("https://capnproto.org/capnproto-c++-%s.tar.gz" % self.version)
+        tools.get(f"https://capnproto.org/capnproto-c++-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("capnproto-c++-%s" % self.version):
+        with tools.chdir(f"capnproto-c++-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

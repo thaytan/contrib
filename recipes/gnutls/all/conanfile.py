@@ -14,11 +14,11 @@ class GnutlsConan(ConanFile):
     requires = ("zlib/[^1.2.11]",)
 
     def source(self):
-        tools.get("https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-{}.tar.xz".format(self.version))
+        tools.get(f"https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-{self.version}.tar.xz")
 
     def build(self):
         args = ["--with-zlib", "--disable-static", "--with-included-unistring"]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

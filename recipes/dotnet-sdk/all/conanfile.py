@@ -16,7 +16,7 @@ class DotnetSdkConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://download.visualstudio.microsoft.com/download/pr/%s/dotnet-sdk-%s-linux-x64.tar.gz" % (id[self.version], self.version))
+        tools.get(f"https://download.visualstudio.microsoft.com/download/pr/{id[self.version]}/dotnet-sdk-{self.version}-linux-x64.tar.gz")
 
     def package(self):
         self.copy("packs/*", dst="share")

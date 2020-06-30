@@ -17,10 +17,10 @@ class GLibConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/GNOME/glib/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/GNOME/glib/archive/{self.version}.tar.gz")
         # Disable broken gio tests until fixed by upstream (https://gitlab.gnome.org/GNOME/glib/issues/1897)
         # Use tools.replace_in_file()
-        self.run("sed %s-%s/gio/meson.build -i -e 's/build_tests = .*/build_tests = false/'" % (self.name, self.version))
+        self.run(f"sed {self.name}-{self.version}/gio/meson.build -i -e 's/build_tests = .*/build_tests = false/'")
 
     def build(self):
         args = [
@@ -31,5 +31,5 @@ class GLibConan(ConanFile):
             "-Dinternal_pcre=False",
         ]
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
         meson.install()

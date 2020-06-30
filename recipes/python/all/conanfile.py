@@ -21,12 +21,12 @@ class PythonConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(self.version))
+        tools.get(f"https://www.python.org/ftp/python/{self.version}/Python-{self.version}.tar.xz")
 
     def build(self):
         args = [
             "--enable-shared",
-            "--with-openssl=%s" % self.deps_cpp_info["openssl"].rootpath,
+            "--with-openssl=" + self.deps_cpp_info["openssl"].rootpath,
             "--with-computed-gotos",
             "--enable-optimizations",
             "--with-lto",
@@ -48,7 +48,7 @@ class PythonConan(ConanFile):
         self.env_info.PYTHONHOME = self.package_folder
         self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7"))
         if "CC" in os.environ:
-            ldshared = "%s -pthread -shared " % os.environ["CC"]
+            ldshared = os.environ["CC"] + " -pthread -shared "
             if self.settings.arch == "x86_64":
                 ldshared += "-m64 "
             self.env_info.LDSHARED = ldshared

@@ -17,7 +17,7 @@ class OpenCVConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/opencv/opencv/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/opencv/opencv/archive/{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
@@ -33,7 +33,7 @@ class OpenCVConan(ConanFile):
         cmake.definitions["BUILD_IPP_IW"] = False
         cmake.definitions["BUILD_ITT"] = False
         cmake.definitions["BUILD_JPEG_TURBO_DISABLE"] = True
-        cmake.configure(source_folder="%s-%s" % (self.name, self.version))
+        cmake.configure(source_folder=f"{self.name}-{self.version}")
         cmake.build()
         cmake.install()
 

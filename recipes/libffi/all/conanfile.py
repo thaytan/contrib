@@ -11,7 +11,7 @@ class LibffiConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/libffi/libffi/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/libffi/libffi/archive/v{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -22,7 +22,7 @@ class LibffiConan(ConanFile):
             "--disable-static",
             "--enable-shared",
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
@@ -32,6 +32,6 @@ class LibffiConan(ConanFile):
     def package(self):
         # TODO: remove once the libs get installed into /lib instead of /lib64 by itself.
         print(self.package_folder)
-        tools.mkdir("%s/lib" % self.package_folder)
-        self.run("mv %s/lib64/* %s/lib/" % (self.package_folder, self.package_folder))
-        tools.rmdir("%s/lib64" % self.package_folder)
+        tools.mkdir(f"{self.package_folder}/lib")
+        self.run(f"mv {self.package_folder}/lib64/* {self.package_folder}/lib/")
+        tools.rmdir(f"{self.package_folder}/lib64")

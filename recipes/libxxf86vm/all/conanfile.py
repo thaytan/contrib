@@ -14,7 +14,7 @@ class Libxxf86vmConan(ConanFile):
     requires = ("libxext/[^1.3.4]",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXxf86vm-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXxf86vm-{self.version}.tar.gz")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)

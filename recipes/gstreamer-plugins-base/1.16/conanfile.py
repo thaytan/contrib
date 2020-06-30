@@ -48,20 +48,19 @@ class GStreamerPluginsBaseConan(ConanFile):
         "generators/1.0.0",
         "meson/[^0.51.2]",
         "mesa/[^19.2.0]",
-        if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.59.3]")
+        "gobject-introspection/[^1.59.3]",
     )
-    requires = (
-        "gstreamer/[~%s]" % (self.version),
+    requires = ("gstreamer/[~1.16]",)
+
+    def requirements(self):
         if self.options.orc:
-            "orc/[^0.4.29]",
+            self.requires("orc/[^0.4.29]")
         if self.options.opus:
-            "opus/[^1.3.1]",
+            self.requires("opus/[^1.3.1]")
         if self.options.pango:
-            "pango/[^1.43.0, include_prerelease=True]",
+            self.requires("pango/[^1.43.0, include_prerelease=True]")
         if self.options.x11:
-            "libx11/[^1.6.8]",
-    )
+            self.requires("libx11/[^1.6.8]")
 
     def source(self):
         git = tools.Git(folder="gst-plugins-base-" + self.version)

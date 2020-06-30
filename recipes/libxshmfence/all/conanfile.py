@@ -13,11 +13,11 @@ class LibxshmfenceConan(ConanFile):
     requires = ("xorgproto/[^2019.1]",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libxshmfence-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libxshmfence-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure(args=args)
             autotools.install()

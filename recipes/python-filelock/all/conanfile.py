@@ -14,8 +14,8 @@ class PythonFilelockConan(ConanFile):
     requires = ("python/[^3.7.4]",)
 
     def source(self):
-        tools.get("https://github.com/benediktschmitt/py-filelock/archive/v{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/benediktschmitt/py-filelock/archive/v{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("py-filelock-{}".format(self.version)):
-            self.run('python setup.py install --optimize=1 --prefix= --root="{}"'.format(self.package_folder))
+        with tools.chdir(f"py-filelock-{self.version}"):
+            self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"')

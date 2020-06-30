@@ -15,14 +15,14 @@ class MozjpegConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/mozilla/mozjpeg/archive/v{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/mozilla/mozjpeg/archive/v{self.version}.tar.gz")
 
     def build(self):
         args = [
             "--disable-static",
         ]
 
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("autoreconf -i")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)

@@ -20,17 +20,17 @@ class KinectAzureSensorSDKConan(ConanFile):
             arch = "arm64"
             debian_repo_url = "https://packages.microsoft.com/ubuntu/18.04/multiarch/prod/pool/main/libk/"
 
-        libk4a = "libk4a%s_%s_%s.deb" % (version_short, self.version, arch)
-        libk4a_dev = "libk4a%s-dev_%s_%s.deb" % (version_short, self.version, arch)
+        libk4a = f"libk4a{version_short}_{self.version}_{arch}.deb"
+        libk4a_dev = f"libk4a{version_short}-dev_{self.version}_{arch}.deb"
 
         # Download `libk4a` and `libk4a-dev` for headers and shared objects
-        tools.download("%s/libk4a%s/%s" % (debian_repo_url, version_short, libk4a), filename=libk4a)
-        tools.download("%s/libk4a%s-dev/%s" % (debian_repo_url, version_short, libk4a_dev), filename=libk4a_dev)
+        tools.download(f"{debian_repo_url}/libk4a{version_short}/{libk4a}", filename=libk4a)
+        tools.download(f"{debian_repo_url}/libk4a{version_short}-dev/{libk4a_dev}", filename=libk4a_dev)
 
         # Extract shared objects, including the closed-source `libdepthengine.so*`
-        self.run("dpkg -x %s libk4a" % libk4a)
+        self.run(f"dpkg -x {libk4a} libk4a")
         # Extract headers
-        self.run("dpkg -x %s libk4a" % libk4a_dev)
+        self.run(f"dpkg -x {libk4a_dev} libk4a")
 
     def package(self):
         # Architecture dependent lib dir
@@ -39,6 +39,3 @@ class KinectAzureSensorSDKConan(ConanFile):
         self.copy("*", src="libk4a/usr/include", dst="include")
         self.copy("*", src="libk4a/usr/lib/" + lib_dir_arch[0], dst="lib", symlinks=True)
         self.copy("k4a.pc", dst="lib/pkgconfig")
-
-    def package_info(self):
-        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib")

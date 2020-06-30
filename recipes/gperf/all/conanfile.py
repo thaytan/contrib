@@ -8,10 +8,10 @@ class GperfConan(ConanFile):
     build_requires = ("generators/1.0.0",)
 
     def source(self):
-        git = tools.Git("%s-%s" % (self.name, self.version))
+        git = tools.Git(f"{self.name}-{self.version}")
         git.clone("https://gitlab.com/aivero/public/gperf.git", "meson")
 
     def build(self):
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version))
+        meson.configure(source_folder=f"{self.name}-{self.version}")
         meson.install()

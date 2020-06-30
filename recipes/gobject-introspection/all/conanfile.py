@@ -19,12 +19,12 @@ class GObjectIntrospectionConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/GNOME/gobject-introspection/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/GNOME/gobject-introspection/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
         meson.install()
 
     def package_info(self):

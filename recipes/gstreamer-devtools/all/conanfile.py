@@ -13,21 +13,24 @@ class GStreamerDevtoolsConan(ConanFile):
         "tests": [True, False],
         "nls": [True, False],
     }
-    default_options = "gtk_doc=False", "introspection=False", "tests=True", "nls=False"
-    gst_version = "[~1]"
+    default_options = (
+        "gtk_doc=False",
+        "introspection=False",
+        "tests=True",
+        "nls=False",
+    )
     build_requires = (
         "generators/[^1.0.0]",
         "meson/[^0.51.2]",
+    )
+    requires = (
+        "gstreamer-plugins-base/[^1.16]",
+        "json-glib/[~1.4.4]",
     )
 
     def source(self):
         git = tools.Git(folder="gst-devtools")
         git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "rebased-aivero_mse_compare_changes")
-    )
-    requires = (
-        "gstreamer-plugins-base/%s" % (self.gst_version),
-        "json-glib/[~1.4.4]",
-    )
 
     def build(self):
         args = ["--auto-features=disabled"]

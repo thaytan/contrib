@@ -17,11 +17,11 @@ class SharedMimeInfoConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/Release-{0}/shared-mime-info-Release-{0}.tar.bz2".format(self.version.replace(".", "-")))
+        tools.get(f"https://github.com/freedesktop/xdg-shared-mime-info/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-update-mimedb"]
-        with tools.chdir("%s-Release-%s" % (self.name, self.version.replace(".", "-"))):
+        with tools.chdir(f"{self.name}-${self.version}"):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)

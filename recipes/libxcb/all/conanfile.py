@@ -16,11 +16,11 @@ class LibxcbConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://xcb.freedesktop.org/dist/libxcb-%s.tar.bz2" % self.version)
+        tools.get(f"https://xcb.freedesktop.org/dist/libxcb-{self.version}.tar.bz2")
 
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure(args=args)
             autotools.install()

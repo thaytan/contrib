@@ -9,7 +9,7 @@ class NushellConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/nushell/nushell/archive/{}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/nushell/nushell/archive/{self.version}.tar.gz")
 
     build_requires = ("rust/[^1.43.1]",)
     requires = (
@@ -18,7 +18,7 @@ class NushellConan(ConanFile):
     )
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("cargo build --release")
 
     def package(self):

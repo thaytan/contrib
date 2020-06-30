@@ -13,10 +13,10 @@ class FribidiConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/fribidi/fribidi/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/fribidi/fribidi/archive/v{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled", "-Ddocs=false"]
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
         meson.install()

@@ -9,13 +9,13 @@ class GStreamerPythonConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("generators/1.0.0",)
     requires = (
-        "gstreamer/%s" % (self.version),
+        "gstreamer/[~1.16]",
         "gobject-introspection/1.59.3",
         "python-gobject/3.33.1",
     )
 
     def source(self):
-        tools.get("https://github.com/GStreamer/gst-python/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/GStreamer/gst-python/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled"]

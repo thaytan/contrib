@@ -13,11 +13,11 @@ class AutoconfArchiveConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-%s.tar.xz" % self.version)
+        tools.get(f"https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-{self.version}.tar.xz")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure()
             autotools.install()
 

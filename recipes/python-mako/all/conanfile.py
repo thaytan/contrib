@@ -9,7 +9,7 @@ class PythonMakoConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/sqlalchemy/mako/archive/rel_%s.tar.gz" % self.version.replace(".", "_"))
+        tools.get(f"https://github.com/sqlalchemy/mako/archive/rel_{self.version}.tar.gz".replace(".", "_"))
 
     build_requires = (
         "generators/1.0.0",

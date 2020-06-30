@@ -17,7 +17,7 @@ class AtSpi2CoreConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://gitlab.gnome.org/GNOME/at-spi2-core/-/archive/AT_SPI2_CORE_{0}/at-spi2-core-AT_SPI2_CORE_{0}.tar.gz".format(self.version.replace(".", "_")))
+        tools.get(f"https://gitlab.gnome.org/GNOME/at-spi2-core/-/archive/AT_SPI2_CORE_{self.version}/at-spi2-core-AT_SPI2_CORE_{self.version.replace(".", "_")}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]

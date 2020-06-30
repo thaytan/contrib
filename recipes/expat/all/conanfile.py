@@ -11,11 +11,11 @@ class ExpatConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/libexpat/libexpat/releases/download/R_{0}/expat-{1}.tar.bz2".format(self.version.replace(".", "_"), self.version))
+        tools.get(f"https://github.com/libexpat/libexpat/releases/download/R_{self.version.replace('.', '_')}/expat-{self.version}.tar.bz2")
 
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure(args=args)
             autotools.install()

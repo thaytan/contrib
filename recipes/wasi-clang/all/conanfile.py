@@ -9,7 +9,7 @@ class WasiSdkConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-{}/wasi-sdk-{}-linux.tar.gz".format(self.version.split(".")[0], self.version))
+        tools.get(f"https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-{self.version.split('.')[0]}/wasi-sdk-{self.version}-linux.tar.gz")
 
     def package(self):
         self.copy("*", src="wasi-sdk-" + self.version)

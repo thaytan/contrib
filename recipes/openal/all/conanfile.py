@@ -14,10 +14,10 @@ class OpenalConan(ConanFile):
     requires = ("libffi/3.3-rc0",)
 
     def source(self):
-        tools.get("https://github.com/kcat/openal-soft/archive/openal-soft-%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/kcat/openal-soft/archive/openal-soft-{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.configure(source_folder="openal-soft-openal-soft-%s" % self.version)
+        cmake.configure(source_folder=f"openal-soft-openal-soft-{self.version}")
         cmake.build()
         cmake.install()

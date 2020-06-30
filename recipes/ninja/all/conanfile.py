@@ -14,11 +14,11 @@ class NinjaConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/ninja-build/ninja/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/ninja-build/ninja/archive/v{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("python configure.py --bootstrap")
 
     def package(self):
-        self.copy(os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin", keep_path=False)
+        self.copy(os.path.join(f"{self.name}-{self.version}", "ninja"), "bin", keep_path=False)

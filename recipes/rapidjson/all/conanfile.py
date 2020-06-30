@@ -13,13 +13,13 @@ class RapidJsonConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/Tencent/rapidjson/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/Tencent/rapidjson/archive/{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["RAPIDJSON_HAS_STDSTRING"] = True
         cmake.definitions["RAPIDJSON_BUILD_CXX11"] = True
         cmake.definitions["RAPIDJSON_ENABLE_INSTRUMENTATION_OPT"] = True
-        cmake.configure(source_folder="%s-%s" % (self.name, self.version))
+        cmake.configure(source_folder=f"{self.name}-{self.version}")
         cmake.build()
         cmake.install()

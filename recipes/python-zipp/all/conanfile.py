@@ -14,8 +14,8 @@ class PythonZippConan(ConanFile):
     requires = ("python/[^3.7.4]",)
 
     def source(self):
-        tools.get("https://github.com/jaraco/zipp/archive/v{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/jaraco/zipp/archive/v{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("zipp-{}".format(self.version)):
-            self.run('python setup.py install --optimize=1 --prefix= --root="{}"'.format(self.package_folder))
+        with tools.chdir(f"zipp-{self.version}"):
+            self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"')

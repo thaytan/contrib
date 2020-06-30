@@ -21,11 +21,11 @@ class SqliteConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://www.sqlite.org/2019/sqlite-src-%s.zip" % conv_version(self.version))
+        tools.get(f"https://www.sqlite.org/2019/sqlite-src-{conv_version(self.version)}.zip")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-src-%s" % (self.name, conv_version(self.version))):
+        with tools.chdir(f"{self.name}-src-{conv_version(self.version)}"):
             self.run("chmod +x configure")
             autotools.configure()
             autotools.install()

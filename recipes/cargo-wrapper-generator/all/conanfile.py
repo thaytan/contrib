@@ -19,7 +19,7 @@ pub const INCLUDE_PATHS: &'static [ &'static str ] = &[%(include_paths)s];
 """
 
         def append_to_template(line):
-            return template.replace("}", "    %s\n}" % line)
+            return template.replace(f"}", "    {line}\n}")
 
         def comma_separate(l):
             return ", ".join(['r#"%s"#' % x for x in l])

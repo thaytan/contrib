@@ -14,8 +14,8 @@ class PythonSixConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://pypi.io/packages/source/s/six/six-{0}.tar.gz".format(self.version))
+        tools.get(f"https://pypi.io/packages/source/s/six/six-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("six-{}".format(self.version)):
+        with tools.chdir(f"six-{self.version}"):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)

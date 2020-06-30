@@ -7,37 +7,27 @@ class CairoConan(ConanFile):
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    options = {
-        "introspection": [True, False],
-        "zlib": [True, False],
-        "png": [True, False],
-        "fontconfig": [True, False],
-    }
     default_options = ("introspection=True", "zlib=True", "png=True", "fontconfig=True")
     scm = {
         "type": "git",
         "url": "https://github.com/centricular/cairo.git",
-        "revision": "meson-%s" % version,
+        "revision": "meson-" + version,
         "recursive": True,
-        "subfolder": ("cairo-%s" % version),
+        "subfolder": f"cairo-{version}",
     }
     build_requires = (
         "generators/1.0.0",
         "meson/[^0.51.2]",
-        if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.59.3]")
+        "gobject-introspection/[^1.59.3]",
     )
     requires = (
         "glib/[^2.62.0]",
         "pixman/[^0.38.4]",
         "libxrender/[^0.9.10]",
         "libxext/[^1.3.4]",
-        if self.options.fontconfig:
-            "fontconfig/[^2.13.1]",
-        if self.options.zlib:
-            "zlib/[^1.2.11]",
-        if self.options.png:
-            "libpng/[^1.6.37]",
+        "fontconfig/[^2.13.1]",
+        "zlib/[^1.2.11]",
+        "libpng/[^1.6.37]",
     )
 
     def build(self):
@@ -46,10 +36,7 @@ class CairoConan(ConanFile):
         args.append("-Dfontconfig=" + ("enabled" if self.options.fontconfig else "disabled"))
         args.append("-Dzlib=" + ("enabled" if self.options.zlib else "disabled"))
         args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
-
-        meson.configure(
-            source_folder="cairo-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder=f"{self.name}-${self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):

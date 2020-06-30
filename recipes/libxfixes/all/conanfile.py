@@ -13,7 +13,7 @@ class LibxfixesConan(ConanFile):
     requires = ("libx11/[^1.6.8]",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXfixes-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXfixes-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]

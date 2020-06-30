@@ -15,13 +15,13 @@ class GmpConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://gmplib.org/download/gmp/gmp-%s.tar.xz" % self.version)
+        tools.get(f"https://gmplib.org/download/gmp/gmp-{self.version}.tar.xz")
 
     def build(self):
         args = [
             "--disable-static",
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

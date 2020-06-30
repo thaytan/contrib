@@ -14,13 +14,13 @@ class IslConan(ConanFile):
     requires = ("gmp/[^6.1.2]",)
 
     def source(self):
-        tools.get("http://isl.gforge.inria.fr/isl-%s.tar.xz" % self.version)
+        tools.get(f"http://isl.gforge.inria.fr/isl-{self.version}.tar.xz")
 
     def build(self):
         args = [
             "--disable-static",
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

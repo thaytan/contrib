@@ -17,7 +17,7 @@ class LibvaMesaDriverConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/intel/intel-vaapi-driver/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/intel/intel-vaapi-driver/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri")]

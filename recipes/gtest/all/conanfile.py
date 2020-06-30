@@ -11,7 +11,7 @@ class GTestConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/google/googletest/archive/release-%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/google/googletest/archive/release-{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

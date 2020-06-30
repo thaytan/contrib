@@ -17,10 +17,10 @@ class GitConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://www.kernel.org/pub/software/scm/git/git-%s.tar.xz" % self.version)
+        tools.get(f"https://www.kernel.org/pub/software/scm/git/git-{self.version}.tar.xz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

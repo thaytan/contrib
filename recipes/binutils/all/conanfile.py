@@ -10,7 +10,7 @@ class BinutilsConan(ConanFile):
     build_requires = ("bootstrap-gcc/7.4.0",)
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/binutils/binutils-{0}.tar.xz".format(self.version))
+        tools.get(f"https://ftp.gnu.org/gnu/binutils/binutils-{self.version}.tar.xz")
 
     def build(self):
         args = [
@@ -27,7 +27,7 @@ class BinutilsConan(ConanFile):
             "--with-pic",
             "--with-system-zlib",
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make(target="configure-host")

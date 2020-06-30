@@ -17,11 +17,11 @@ class LibeventConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/libevent/libevent/releases/download/release-%s-stable/libevent-%s-stable.tar.gz" % (self.version, self.version))
-        tools.patch(patch_file="uninstall.patch", base_path=os.path.join(self.source_folder, "libevent-%s-stable" % self.version))
+        tools.get(f"https://github.com/libevent/libevent/releases/download/release-{self.version}-stable/libevent-{self.version}-stable.tar.gz")
+        tools.patch(patch_file=f"uninstall.patch", base_path=os.path.join(self.source_folder, "libevent-{self.version}-stable"))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.configure(source_folder="libevent-%s-stable" % self.version)
+        cmake.configure(source_folder=f"libevent-{self.version}-stable")
         cmake.build()
         cmake.install()

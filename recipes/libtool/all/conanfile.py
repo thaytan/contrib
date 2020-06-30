@@ -18,18 +18,18 @@ class LibtoolConan(ConanFile):
     )
 
     def source(self):
-        git = tools.Git(folder="%s-%s" % (self.name, self.version))
+        git = tools.Git(folder=f"{self.name}-{self.version}")
         git.clone("https://git.savannah.gnu.org/git/libtool.git", "v" + self.version)
         git = tools.Git(folder="gnulib")
         git.clone("https://git.savannah.gnu.org/git/gnulib.git")
         git = tools.Git(folder="gnulib-bootstrap")
         git.clone("https://github.com/gnulib-modules/bootstrap.git")
         tools.patch(
-            patch_file="libtool-prefix-fix.patch", base_path="%s-%s" % (self.name, self.version),
+            patch_file="libtool-prefix-fix.patch", base_path=f"{self.name}-{self.version}",
         )
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("git submodule init")
             self.run('git config --local submodule.gnulib.url "%s/gnulib"' % self.source_folder)
             self.run('git config --local submodule.gl-mod/bootstrap.url "%s/gnulib-bootstrap"' % self.source_folder)

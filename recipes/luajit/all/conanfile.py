@@ -13,10 +13,10 @@ class LuajitConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://luajit.org/download/LuaJIT-%s.tar.gz" % self.version)
+        tools.get(f"https://luajit.org/download/LuaJIT-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("LuaJIT-%s" % self.version):
+        with tools.chdir(f"LuaJIT-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.make()
-            autotools.install(["PREFIX=%s" % self.package_folder])
+            autotools.install(["PREFIX=" + self.package_folder])

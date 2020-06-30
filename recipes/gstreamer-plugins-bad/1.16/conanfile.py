@@ -49,47 +49,44 @@ class GStreamerPluginsBadConan(ConanFile):
         "inter=False",
         "webp=True",
     )
+    build_requires = (
+        "generators/[^1.0.0]",
+        "meson/[^0.51.2]",
+        "gobject-introspection/[^1.59.3]",
+    )
+    requires = (
+        "glib/[^2.62.0]",
+        "gstreamer-plugins-base/[~1.16]",
+    )
 
     def configure(self):
         if self.settings.arch != "x86_64":
             self.options.remove("nvdec")
             self.options.remove("nvenc")
             self.options.remove("nvcodec")
-    build_requires = (
-        "generators/[^1.0.0]",
-        "meson/[^0.51.2]",
-        if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.59.3]")
-        if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
-            self.build_requires("cuda/[^10.1 <10.2]")
-            self.build_requires("orc/[^0.4.31]")
-    )
-    requires = (
-        "glib/[^2.62.0]",
-    )
 
-        "gstreamer-plugins-base/[~%s]" % (self.version),
+    def build_requirements(self):
+        if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
+            self.build_requires("cuda/[~10.1]")
+            self.build_requires("orc/[^0.4.31]")
+
+    def requirements(self):
         if self.options.webrtc:
-            "libnice/[~0.1]",
+            self.requires("libnice/[^0.1]")
         if self.options.srtp:
-            "libsrtp/[^2.2.0]",
+            self.requires("libsrtp/[^2.2.0]")
         if self.options.opencv:
-            "opencv/[^3.4.8]",
+            self.requires("opencv/[^3.4.8]")
         if self.options.closedcaption:
-            "pango/[^1.4.3]",
+            self.requires("pango/[^1.4.3]")
         if self.options.webp:
-            "libwebp/[^1.1.0]",
-    )
+            self.requires("libwebp/[^1.1.0]")
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)
-        git.clone(
-            url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch=self.version, shallow=True,
-        )
+        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
         if self.options.aiveropatchlatency:
-            tools.patch(
-                patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"),
-            )
+            tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"))
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -114,6 +111,6 @@ class GStreamerPluginsBadConan(ConanFile):
                 args.append("-Dnvcodec=" + ("enabled" if self.options.nvcodec else "disabled"))
 
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-bad-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=f"gst-plugins-bad-{self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()

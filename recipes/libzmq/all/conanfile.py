@@ -11,11 +11,11 @@ class LibzmqConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/zeromq/libzmq/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/zeromq/libzmq/archive/v{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["ZMQ_BUILD_TESTS"] = False
         cmake.definitions["WITH_PERF_TOOL"] = False
-        cmake.configure(source_folder="%s-%s" % (self.name, self.version))
+        cmake.configure(source_folder=f"{self.name}-{self.version}")
         cmake.install()

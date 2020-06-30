@@ -13,7 +13,7 @@ class NcursesConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-%s.tar.gz" % self.version)
+        tools.get(f"https://ftp.gnu.org/pub/gnu/ncurses/ncurses-{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -22,9 +22,9 @@ class NcursesConan(ConanFile):
             "--with-cxx-shared",
             "--with-cxx-binding",
             "--enable-pc-files",
-            "--with-pkg-config-libdir=%s" % os.path.join(self.package_folder, "lib", "pkgconfig"),
+            "--with-pkg-config-libdir=" + os.path.join(self.package_folder, "lib", "pkgconfig"),
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

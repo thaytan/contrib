@@ -12,7 +12,7 @@ class LibxdamageConan(ConanFile):
     requires = ("libxfixes/[^5.0.3]",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXdamage-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXdamage-{self.version}.tar.gz")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)

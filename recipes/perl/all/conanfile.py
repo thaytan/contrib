@@ -14,9 +14,9 @@ class PerlConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/Perl/perl5/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/Perl/perl5/archive/v{self.version}.tar.gz")
         tools.patch(
-            patch_file="link-m-pthread.patch", base_path="%s5-%s" % (self.name, self.version),
+            patch_file="link-m-pthread.patch", base_path=f"{self.name}5-{self.version}",
         )
 
     def build(self):
@@ -30,7 +30,7 @@ class PerlConan(ConanFile):
             "-Dlddlflags='-shared'",
             "-Dldflags=''",
         ]
-        with tools.chdir("%s5-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}5-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             self.run("./Configure " + " ".join(args))
             autotools.make()
@@ -38,7 +38,7 @@ class PerlConan(ConanFile):
 
     def package_info(self):
         arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
-        platform = "%s-linux" % arch_conv[str(self.settings.arch)]
+        platform = arch_conv[str(self.settings.arch)] + "-linux"
         self.env_info.PERL = "perl"
         self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version))
-        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, "%s-thread-multi" % platform))
+        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, platform + "-thread-multi"))

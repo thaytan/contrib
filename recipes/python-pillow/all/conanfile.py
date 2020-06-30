@@ -18,9 +18,9 @@ class PythonPillowConan(ConanFile):
     requires = ("python/[^3.7.4]",)
 
     def source(self):
-        tools.get("https://github.com/python-pillow/Pillow/archive/{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/python-pillow/Pillow/archive/{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("Pillow-{0}".format(self.version)):
+        with tools.chdir(f"Pillow-{self.version}"):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 

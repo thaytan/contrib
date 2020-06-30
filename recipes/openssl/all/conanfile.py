@@ -15,7 +15,7 @@ class OpensslConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/openssl/openssl/archive/OpenSSL_%s.tar.gz" % self.version.replace(".", "_"))
+        tools.get(f"https://github.com/openssl/openssl/archive/OpenSSL_{self.version}.tar.gz".replace(".", "_"))
 
     def build(self):
         args = ["shared", "no-ssl3-method"]

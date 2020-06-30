@@ -17,7 +17,7 @@ class PythonGobjectConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://gitlab.gnome.org/GNOME/pygobject/-/archive/{0}/pygobject-{0}.tar.gz".format(self.version))
+        tools.get(f"https://gitlab.gnome.org/GNOME/pygobject/-/archive/{self.version}/pygobject-{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]

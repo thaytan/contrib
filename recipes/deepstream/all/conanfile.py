@@ -11,12 +11,12 @@ class Deepstream(ConanFile):
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get("https://developer.download.nvidia.com/assets/Deepstream/Deepstream_{0}/deepstream_sdk_v{0}_jetson.tbz2".format(self.version))
+            tools.get(f"https://developer.download.nvidia.com/assets/Deepstream/Deepstream_{self.version}/deepstream_sdk_v{self.version}_jetson.tbz2")
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
 
-        tools.untargz("deepstream_sdk_v%s_jetson/binaries.tbz2" % self.version, self.source_folder)
+        tools.untargz(f"deepstream_sdk_v{self.version}_jetson/binaries.tbz2", self.source_folder)
 
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
-        self.copy("*", dst="include", src="deepstream_sdk_v%s_jetson/sources/includes" % self.version, keep_path=False)
+        self.copy(f"*", dst="include", src="deepstream_sdk_v{self.version}_jetson/sources/includes", keep_path=False)

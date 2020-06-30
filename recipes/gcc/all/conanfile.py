@@ -19,11 +19,11 @@ class GccConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))
+        tools.get(f"https://ftp.gnu.org/gnu/gcc/gcc-{self.version}/gcc-{self.version}.tar.xz")
 
     def build(self):
         args = [
-            "--libexecdir=%s" % os.path.join(self.package_folder, "lib"),
+            "--libexecdir=" + os.path.join(self.package_folder, "lib"),
             "--disable-bootstrap",
             "--enable-languages=c,c++,objc,obj-c++",
             "--enable-shared",
@@ -55,7 +55,7 @@ class GccConan(ConanFile):
             target = "aarch64-linux-gnu"
         args.append("--build=" + target)
         args.append("--host=" + target)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
@@ -65,7 +65,7 @@ class GccConan(ConanFile):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "gcc")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++")
         # Needed for building Python modules
-        ldshared = "%s -pthread -shared " % os.path.join(self.package_folder, "bin", "gcc")
+        ldshared = os.path.join(self.package_folder, "bin", "gcc") + " -pthread -shared "
         if self.settings.arch == "x86_64":
             ldshared += "-m64 "
         self.env_info.LDSHARED = ldshared

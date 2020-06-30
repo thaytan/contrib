@@ -17,7 +17,7 @@ class GstreamerSharkConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/RidgeRun/gst-shark/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/RidgeRun/gst-shark/archive/v{self.version}.tar.gz")
         git = tools.Git(folder=os.path.join("gst-shark-" + self.version, "common"))
         git.clone("git://anongit.freedesktop.org/gstreamer/common", "master")
 

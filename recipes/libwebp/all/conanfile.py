@@ -8,11 +8,11 @@ class ConanLibwebp(ConanFile):
     build_requires = ("cmake/[^3.15.3]",)
 
     def source(self):
-        tools.get("https://github.com/webmproject/libwebp/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/webmproject/libwebp/archive/v{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["BUILD_SHARED_LIBS"] = True
-        cmake.configure(source_folder="%s-%s" % (self.name, self.version))
+        cmake.configure(source_folder=f"{self.name}-{self.version}")
         cmake.build()
         cmake.install()

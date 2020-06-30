@@ -8,10 +8,10 @@ class LibpthreadStubsConan(ConanFile):
     build_requires = ("generators/1.0.0",)
 
     def source(self):
-        tools.get("https://xcb.freedesktop.org/dist/libpthread-stubs-%s.tar.bz2" % self.version)
+        tools.get(f"https://xcb.freedesktop.org/dist/libpthread-stubs-{self.version}.tar.bz2")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure()
             autotools.install()

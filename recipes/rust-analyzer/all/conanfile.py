@@ -9,15 +9,15 @@ class RustAnalyzerConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/rust-analyzer/rust-analyzer/archive/{}.tar.gz".format(self.version.replace(".", "-")))
-    )
+        tools.get(f"https://github.com/rust-analyzer/rust-analyzer/archive/{self.version.replace('.', '-')}.tar.gz")
+
     requires = (
         "rust/nightly",
         "generators/[^1.0.0]",
     )
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("cargo build --release")
 
     def package(self):

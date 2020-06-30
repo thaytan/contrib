@@ -18,10 +18,10 @@ class RustupConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/rust-lang/rustup/archive/{}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/rust-lang/rustup/archive/{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run('cargo build --release --features "no-self-update" --bin rustup-init')
             shutil.copy2(os.path.join("target", "release", "rustup-init"), "rustup")
 

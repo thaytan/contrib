@@ -17,11 +17,11 @@ class PkgconfConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/pkgconf/pkgconf/archive/pkgconf-%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/pkgconf/pkgconf/archive/pkgconf-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
-        with tools.chdir("pkgconf-pkgconf-%s" % self.version):
+        with tools.chdir(f"pkgconf-pkgconf-{self.version}"):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)

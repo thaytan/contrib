@@ -13,10 +13,10 @@ class MakeConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/make/make-{}.tar.gz".format(self.version))
+        tools.get(f"https://ftp.gnu.org/gnu/make/make-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

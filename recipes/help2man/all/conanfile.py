@@ -11,10 +11,10 @@ class Help2ManConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/help2man/help2man-%s.tar.xz" % self.version)
+        tools.get(f"https://ftp.gnu.org/gnu/help2man/help2man-{self.version}.tar.xz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

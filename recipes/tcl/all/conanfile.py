@@ -14,10 +14,10 @@ class TclConan(ConanFile):
     requires = ("zlib/[^1.2.11]",)
 
     def source(self):
-        tools.get("https://downloads.sourceforge.net/sourceforge/tcl/tcl%s-src.tar.gz" % self.version)
+        tools.get(f"https://downloads.sourceforge.net/sourceforge/tcl/tcl{self.version}-src.tar.gz")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(os.path.join("%s%s" % (self.name, self.version), "unix")):
+        with tools.chdir(os.path.join(f"{self.name, self.version)}{"unix"}"):
             autotools.configure()
             autotools.install()

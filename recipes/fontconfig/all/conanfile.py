@@ -20,11 +20,11 @@ class FontconfigConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{0}/fontconfig-{0}.tar.gz".format(self.version))
+        tools.get(f"https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{self.version}/fontconfig-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)

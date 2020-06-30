@@ -14,7 +14,7 @@ class LibdrmConan(ConanFile):
     requires = ("libpciaccess/[^0.14]",)
 
     def source(self):
-        tools.get("http://dri.freedesktop.org/libdrm/libdrm-%s.tar.gz" % self.version)
+        tools.get(f"http://dri.freedesktop.org/libdrm/libdrm-{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -24,5 +24,5 @@ class LibdrmConan(ConanFile):
             "-Dnouveau=true",
         ]
         meson = Meson(self)
-        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
         meson.install()

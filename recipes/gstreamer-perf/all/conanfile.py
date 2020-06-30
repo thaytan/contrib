@@ -8,10 +8,7 @@ class GStreamerPerfConan(ConanFile):
     description = "Performance Evaluation tool for Gstreamer"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    )
-    requires = (
-        "glib/[^2.62.0]",
-        "gstreamer/[^%s]" % (self.version),
+    gst_version = "1.16"
     build_requires = (
         "generators/[^1.0.0]",
         "autotools/[^1.0.0]",
@@ -19,9 +16,13 @@ class GStreamerPerfConan(ConanFile):
         "autoconf/[^2.69]",
     )
 
+    def requirements(self):
+        self.requires("glib/[^2.62.0]")
+        self.requires(f"gstreamer/[^{self.gst_version}]")
+
     def source(self):
         git = tools.Git()
-        git.clone("https://github.com/RidgeRun/gst-perf.git", "v%s" % self.version)
+        git.clone("https://github.com/RidgeRun/gst-perf.git", f"v{self.version}")
 
     def build(self):
         self.run("sh autogen.sh")

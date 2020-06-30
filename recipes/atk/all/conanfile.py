@@ -7,23 +7,18 @@ class AtkConan(ConanFile):
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL-2.1"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    options = {
-        "introspection": [True, False],
-    }
-    default_options = ("introspection=True",)
     build_requires = (
         "generators/1.0.0",
         "meson/[^0.51.2]",
         "gettext/[^0.20.1]",
-        if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.59.3]",)
+        "gobject-introspection/[^1.59.3]",
     )
     requires = (
         "glib/[^2.62.0]",
     )
 
     def source(self):
-        tools.get("https://gitlab.gnome.org/GNOME/atk/-/archive/ATK_{0}/atk-ATK_{0}.tar.bz2".format(self.version.replace(".", "_")))
+        tools.get(f"https://gitlab.gnome.org/GNOME/atk/-/archive/ATK_{self.version}/atk-ATK_{self.version.replace(".", "_")}.tar.bz2")
 
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]

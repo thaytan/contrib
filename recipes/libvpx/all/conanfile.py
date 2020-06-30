@@ -12,7 +12,7 @@ class LibVpxConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/webmproject/libvpx/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/webmproject/libvpx/archive/v{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -21,7 +21,7 @@ class LibVpxConan(ConanFile):
             "--disable-install-docs",
             "--disable-install-srcs",
         ]
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()

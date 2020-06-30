@@ -10,8 +10,8 @@ class RenderprotoConan(ConanFile):
     build_requires = ("generators/1.0.0",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/proto/renderproto-%s.tar.gz" % self.version)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/proto/renderproto-{self.version}.tar.gz")
+        with tools.chdir(f"{self.name}-{self.version}"):
             os.remove("config.guess")
             os.remove("config.sub")
             tools.download("http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD", "config.guess")
@@ -19,6 +19,6 @@ class RenderprotoConan(ConanFile):
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure()
             autotools.install()

@@ -11,11 +11,11 @@ class LibPciAccessConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools.configure(args=args)
             autotools.install()

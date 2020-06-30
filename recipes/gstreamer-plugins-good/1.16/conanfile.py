@@ -47,23 +47,16 @@ class GStreamerPluginsGoodConan(ConanFile):
     )
     requires = (
         "glib/[^2.62.0]",
-        "gstreamer-plugins-base/[~%s]" % (self.version),
+        "gstreamer-plugins-base/[~1.16]",
         "libpng/[^1.6.37]",
-        if self.options.vpx:
-            "libvpx/[^1.8.0]",
-        if self.options.jpeg:
-            "libjpeg-turbo/[^2.0.3]",
+        "libvpx/[^1.8.0]",
+        "libjpeg-turbo/[^2.0.3]",
     )
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)
         # This needs to stay in place until we have ditched the 1.16 Gstreamer version.
-        if self.version == "1.16.2" or self.version == "1.16.0":
-            git.clone(
-                "https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0",
-            )
-        else:
-            git.clone("https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git", self.version)
+        git.clone("https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0")
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -85,5 +78,5 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Djpeg=" + ("enabled" if self.options.jpeg else "disabled"))
 
         meson = Meson(self)
-        meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(source_folder=f"gst-plugins-good-{self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()

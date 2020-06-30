@@ -21,7 +21,7 @@ class LibVaConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/intel/libva/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/intel/libva/archive/{self.version}.tar.gz")
 
     def build(self):
         meson = Meson(self)
@@ -29,6 +29,6 @@ class LibVaConan(ConanFile):
         args.append("-Dwith_x11=" + ("yes" if self.options.x11 else "no"))
         args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
         meson.configure(
-            source_folder="%s-%s" % (self.name, self.version), pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder=f"{self.name}-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
         )
         meson.install()

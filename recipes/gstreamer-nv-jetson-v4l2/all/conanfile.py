@@ -22,18 +22,16 @@ class GstreamerNvJetsonV4l2(ConanFile):
         "gcc/[^7.4.0]",
         "pkgconf/[^1.6.3]",
     )
-    requires = (
-        "nv-jetson-drivers/[^%s]" % (self.version),
-        "nv-jetson-v4l2/[^%s]" % (self.version),
-        "gstreamer-plugins-base/[^%s]" % (self.gst_version),
-        "libglvnd/[^1.2.0]",
-    )
+
+    def requirements(self):
+        self.requires(f"nv-jetson-drivers/[^{self.version}]")
+        self.requires(f"nv-jetson-v4l2/[^{self.version}]")
+        self.requires(f"gstreamer-plugins-base/[^{self.gst_version}]")
+        self.requires("libglvnd/[^1.2.0]")
 
     def source(self):
-        tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/%s/public_sources.tbz2" % (self.version.replace(".", "-"), mapper[str(self.options.jetson)]))
-        tools.untargz(
-            "Linux_for_Tegra/source/public/gst-nvvideo4linux2_src.tbz2", self.source_folder,
-        )
+        tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version.replace('.', '-')}_Release_v1.0/Sources/{mapper[str(self.options.jetson)]}/public_sources.tbz2")
+        tools.untargz("Linux_for_Tegra/source/public/gst-nvvideo4linux2_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
         tools.patch(patch_file="patches/Makefile.patch")
         tools.patch(patch_file="patches/gstv4l2.c.patch")

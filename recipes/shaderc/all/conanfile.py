@@ -15,14 +15,14 @@ class LibShadercConan(ConanFile):
     )
 
     def source(self):
-        shaderc_git_dir = "shaderc-%s" % self.version
+        shaderc_git_dir = f"shaderc-{self.version}"
         git = tools.Git(folder=shaderc_git_dir)
-        git.clone("https://github.com/google/shaderc", "v%s" % self.version)
-        self.run("cd %s && ./utils/git-sync-deps" % shaderc_git_dir)
+        git.clone("https://github.com/google/shaderc", f"v{self.version}")
+        self.run(f"cd {shaderc_git_dir} && ./utils/git-sync-deps")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.configure(source_folder="%s-%s" % (self.name, self.version))
+        cmake.configure(source_folder=f"{self.name}-{self.version}")
         cmake.build()
         cmake.install()
 

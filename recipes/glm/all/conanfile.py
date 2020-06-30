@@ -9,7 +9,7 @@ class GlmConan(ConanFile):
     exports_sources = ["glm.pc"]
 
     def source(self):
-        tools.get("https://github.com/g-truc/glm/releases/download/%s/glm-%s.zip" % (self.version, self.version))
+        tools.get(f"https://github.com/g-truc/glm/releases/download/{self.version}/glm-{self.version}.zip")
 
     def package(self):
         self.copy(pattern="*", src="glm/glm", dst=os.path.join(self.package_folder, "include", "glm"), keep_path=True)

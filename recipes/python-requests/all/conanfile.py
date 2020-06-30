@@ -16,9 +16,9 @@ class PythonRequestsConan(ConanFile):
     requires = ("python/[^3.7.4]",)
 
     def source(self):
-        tools.get("https://github.com/psf/requests/archive/v{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/psf/requests/archive/v{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("requests-{0}".format(self.version)):
+        with tools.chdir(f"requests-{self.version}"):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 

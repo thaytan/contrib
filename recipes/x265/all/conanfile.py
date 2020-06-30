@@ -16,12 +16,12 @@ class X265Conan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/videolan/x265/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/videolan/x265/archive/{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["HIGH_BIT_DEPTH"] = self.options.bit_depth != 8
         cmake.definitions["MAIN12"] = self.options.bit_depth == 12
         cmake.definitions["ENABLE_HDR10_PLUS"] = self.options.HDR10
-        cmake.configure(source_folder=os.path.join("%s-%s" % (self.name, self.version), "source"))
+        cmake.configure(source_folder=os.path.join(f"{self.name, self.version)}-{"source"}")
         cmake.install()

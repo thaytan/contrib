@@ -9,13 +9,13 @@ class ClippyConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/rust-lang/rust-clippy/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/rust-lang/rust-clippy/archive/{self.version}.tar.gz")
 
     build_requires = ("rust/nightly",)
     requires = ("generators/[^1.0.0]",)
 
     def build(self):
-        with tools.chdir("rust-clippy-%s" % self.version):
+        with tools.chdir(f"rust-clippy-{self.version}"):
             self.run("cargo build --release")
 
     def package(self):

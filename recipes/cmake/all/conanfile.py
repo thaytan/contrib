@@ -13,9 +13,9 @@ class CMakeConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/Kitware/CMake/releases/download/v{0}/cmake-{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("./bootstrap --prefix=" + self.package_folder)
             self.run("make install")

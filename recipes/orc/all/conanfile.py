@@ -11,7 +11,7 @@ class OrcConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/GStreamer/orc/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/GStreamer/orc/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["-Dgtk_doc=disabled"]

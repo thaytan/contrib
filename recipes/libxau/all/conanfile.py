@@ -13,7 +13,7 @@ class LibxauConan(ConanFile):
     requires = ("xorgproto/[^2019.1]",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXau-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXau-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]

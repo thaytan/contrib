@@ -23,7 +23,7 @@ class GdkPixbufConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/GNOME/gdk-pixbuf/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/GNOME/gdk-pixbuf/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -32,12 +32,10 @@ class GdkPixbufConan(ConanFile):
             "-Dinstalled_tests=false",
             "-Drelocatable=true",
         ]
-        self.run('convert gdk-pixbuf-{0}/tests/icc-profile.png +profile "*" gdk-pixbuf-{0}/tests/icc-profile.png'.format(self.version))
+        self.run(f'convert gdk-pixbuf-{self.version}/tests/icc-profile.png +profile "*" gdk-pixbuf-{self.version}/tests/icc-profile.png')
         with tools.environment_append({"PATH": environ["PATH"] + pathsep + path.join(self.build_folder, "gdk-pixbuf")}):
             meson = Meson(self)
-            meson.configure(
-                source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-            )
+            meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
             meson.install()
 
     def package_info(self):

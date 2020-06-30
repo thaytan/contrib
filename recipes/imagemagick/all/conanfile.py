@@ -14,12 +14,12 @@ class ImagemagickConan(ConanFile):
     requires = ("libpng/[^1.6.37]",)
 
     def source(self):
-        tar_version = "%s-%s" % (self.version[: self.version.rfind(".")], self.version[self.version.rfind(".") + 1 :],)
-        tools.get("https://github.com/ImageMagick/ImageMagick/archive/%s.tar.gz" % tar_version)
+        tar_version = "-".join([self.version[: self.version.rfind(".")], self.version[self.version.rfind(".") + 1 :]])
+        tools.get(f"https://github.com/ImageMagick/ImageMagick/archive/{tar_version}.tar.gz")
 
     def build(self):
         args = ["--disable-static", "--disable-dependency-tracking"]
-        with tools.chdir("ImageMagick-%s" % self.tar_version):
+        with tools.chdir(f"ImageMagick-{self.tar_version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()

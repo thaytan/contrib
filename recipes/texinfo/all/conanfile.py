@@ -10,10 +10,10 @@ class TexinfoConan(ConanFile):
     build_requires = ("generators/1.0.0",)
 
     def source(self):
-        tools.get("https://ftp.gnu.org/pub/gnu/texinfo/texinfo-%s.tar.xz" % self.version)
+        tools.get(f"https://ftp.gnu.org/pub/gnu/texinfo/texinfo-{self.version}.tar.xz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

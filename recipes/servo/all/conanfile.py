@@ -27,9 +27,9 @@ class ServoConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/noverby/servo/archive/{}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/noverby/servo/archive/{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("echo $PATH")
             self.run("./mach build -r")

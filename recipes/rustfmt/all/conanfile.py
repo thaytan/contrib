@@ -9,7 +9,7 @@ class RustfmtConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/rust-lang/rustfmt/archive/{}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/rust-lang/rustfmt/archive/{self.version}.tar.gz")
     )
     requires = (
         "rust/nightly",
@@ -17,7 +17,7 @@ class RustfmtConan(ConanFile):
     )
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run("cargo build --release")
 
     def package(self):

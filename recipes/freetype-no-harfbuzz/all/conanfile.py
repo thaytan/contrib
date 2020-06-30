@@ -14,7 +14,7 @@ class FreetypeNoHarfbuzzConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-%s.tar.gz" % self.version.replace(".", "-"))
+        tools.get(f"https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-{self.version}.tar.gz".replace(".", "-"))
 
     def build(self):
         args = ["--disable-static"]

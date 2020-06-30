@@ -18,11 +18,11 @@ class NodejsConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/nodejs/node/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/nodejs/node/archive/v{self.version}.tar.gz")
 
     def build(self):
         args = ["--without-npm", "--shared-openssl", "--shared-zlib"]
-        with tools.chdir("node-%s" % self.version):
+        with tools.chdir(f"node-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.install()

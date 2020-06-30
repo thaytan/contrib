@@ -14,8 +14,8 @@ class PythonAppdirsConan(ConanFile):
     requires = ("python/[^3.7.4]",)
 
     def source(self):
-        tools.get("https://pypi.io/packages/source/a/appdirs/appdirs-{0}.tar.gz".format(self.version))
+        tools.get(f"https://pypi.io/packages/source/a/appdirs/appdirs-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("appdirs-%s" % self.version):
+        with tools.chdir(f"appdirs-{self.version}"):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)

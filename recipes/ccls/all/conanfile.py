@@ -15,10 +15,10 @@ class CclsConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://github.com/MaskRay/ccls/archive/%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/MaskRay/ccls/archive/{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.configure(source_folder="%s-%s" % (self.name, self.version))
+        cmake.configure(source_folder=f"{self.name}-{self.version}")
         cmake.build()
         cmake.install()

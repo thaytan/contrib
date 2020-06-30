@@ -15,11 +15,11 @@ class AutomakeConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/automake/automake-%s.tar.gz" % self.version)
-        tools.patch(patch_file="automake-include-fix.patch", base_path="%s-%s" % (self.name, self.version))
+        tools.get(f"https://ftp.gnu.org/gnu/automake/automake-{self.version}.tar.gz")
+        tools.patch(patch_file="automake-include-fix.patch", base_path=f"{self.name}-{self.version}")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

@@ -16,7 +16,7 @@ class LibxcbConan(ConanFile):
     requires = ("libxcb/[^1.13.1]",)
 
     def source(self):
-        tools.get("https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-{self.version}.tar.gz")
 
     def build(self):
         args = [

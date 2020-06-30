@@ -13,7 +13,7 @@ class LibxineramaConan(ConanFile):
     requires = ("libxext/[^1.3.4]",)
 
     def source(self):
-        tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXinerama-%s.tar.gz" % self.version)
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXinerama-{self.version}.tar.gz")
 
     def build(self):
         args = ["--disable-static"]

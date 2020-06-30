@@ -12,7 +12,7 @@ class ClangConan(ConanFile):
     requires = ("llvm/[^9.0.0]",)
 
     def source(self):
-        tools.get("https://releases.llvm.org/{0}/cfe-{0}.src.tar.xz".format(self.version))
+        tools.get(f"https://releases.llvm.org/{self.version}/cfe-{self.version}.src.tar.xz")
 
     def build(self):
         cmake = CMake(self, generator="Ninja", build_type="Release")
@@ -20,6 +20,6 @@ class ClangConan(ConanFile):
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
-        cmake.configure(source_folder="cfe-%s.src" % self.version)
+        cmake.configure(source_folder=f"cfe-{self.version}.src")
         cmake.build()
         cmake.install()

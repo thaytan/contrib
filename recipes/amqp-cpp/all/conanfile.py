@@ -11,18 +11,16 @@ class AmqpCppConan(ConanFile):
         "generators/1.0.0",
         "cmake/3.15.3",
     )
-    requires = (
-        "openssl/1.1.1b",
-    )
+    requires = ("openssl/1.1.1b",)
 
     def source(self):
-        tools.get("https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v%s.tar.gz" % self.version)
-        tools.patch(patch_file="openssl.patch", base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version))
+        tools.get(f"https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v{self.version}.tar.gz")
+        tools.patch(patch_file="openssl.patch", base_path=os.path.join(self.source_folder, f"AMQP-CPP-{self.version}"))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["AMQP-CPP_BUILD_SHARED"] = "ON"
         cmake.definitions["AMQP-CPP_LINUX_TCP"] = "ON"
-        cmake.configure(source_folder="AMQP-CPP-%s" % self.version)
+        cmake.configure(source_folder=f"AMQP-CPP-{self.version}")
         cmake.build()
         cmake.install()

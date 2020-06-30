@@ -34,7 +34,7 @@ class RustConan(ConanFile):
 
     def package(self):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
-        src = os.path.join("toolchains", "%s-%s-unknown-linux-gnu" % (self.version, arch))
+        src = os.path.join(f"toolchains", "{self.version}-{arch}-unknown-linux-gnu")
         self.copy("*", src=os.path.join(src, "bin"), dst="bin")
         self.copy("*.so*", src=os.path.join(src, "lib"), dst="lib")
         self.copy(
@@ -47,4 +47,6 @@ class RustConan(ConanFile):
         git_hash = StringIO()
         if shutil.which("rustc"):
             self.run("rustc -Vv | grep commit-hash | cut -b 14-", output=git_hash)
-            self.env_info.SOURCE_MAP.append("/rustc/%s/src|%s" % (git_hash.getvalue()[81:-1], os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src"),))
+            git_hash = git_hash.getvalue()[81:-1]
+            path = os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")
+            self.env_info.SOURCE_MAP.append(f"/rustc/${git_hash}/src|{path}"

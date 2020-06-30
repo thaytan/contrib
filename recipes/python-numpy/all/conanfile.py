@@ -17,9 +17,9 @@ class PythonNumpyConan(ConanFile):
     requires = ("python/[^3.7.4]",)
 
     def source(self):
-        tools.get("https://github.com/numpy/numpy/releases/download/v{0}/numpy-{0}.tar.gz".format(self.version))
+        tools.get(f"https://github.com/numpy/numpy/releases/download/v{self.version}/numpy-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir("numpy-{0}".format(self.version)):
+        with tools.chdir(f"numpy-{self.version}"):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
 

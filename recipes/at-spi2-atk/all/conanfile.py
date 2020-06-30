@@ -18,7 +18,7 @@ class AtSpi2AtkConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://gitlab.gnome.org/GNOME/at-spi2-atk/-/archive/AT_SPI2_ATK_{0}/at-spi2-atk-AT_SPI2_ATK_{0}.tar.bz2".format(self.version.replace(".", "_")))
+        tools.get(f"https://gitlab.gnome.org/GNOME/at-spi2-atk/-/archive/AT_SPI2_ATK_{self.version}/at-spi2-atk-AT_SPI2_ATK_{self.version.replace(".", "_")}.tar.bz2")
 
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]

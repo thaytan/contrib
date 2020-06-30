@@ -13,7 +13,7 @@ class DbusConan(ConanFile):
     requires = ("expat/[^2.2.7]",)
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/dbus/dbus/-/archive/dbus-{0}/dbus-dbus-{0}.tar.bz2".format(self.version))
+        tools.get(f"https://gitlab.freedesktop.org/dbus/dbus/-/archive/dbus-{self.version}/dbus-dbus-{self.version}.tar.bz2")
 
     def build(self):
         args = ["--disable-static"]

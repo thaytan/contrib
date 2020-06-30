@@ -15,11 +15,11 @@ class AutoconfConan(ConanFile):
     requires = ("m4/[^1.4.18]",)
 
     def source(self):
-        tools.get("https://ftp.gnu.org/gnu/autoconf/autoconf-%s.tar.gz" % self.version)
-        tools.patch(patch_file="m4-include.patch", base_path="%s-%s" % (self.name, self.version))
+        tools.get(f"https://ftp.gnu.org/gnu/autoconf/autoconf-{self.version}.tar.gz")
+        tools.patch(patch_file="m4-include.patch", base_path=f"{self.name}-{self.version}")
 
     def build(self):
-        with tools.chdir("%s-%s" % (self.name, self.version)):
+        with tools.chdir(f"{self.name}-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()

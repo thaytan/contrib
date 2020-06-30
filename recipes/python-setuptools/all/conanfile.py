@@ -9,7 +9,7 @@ class PythonSetuptoolsConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
 
     def source(self):
-        tools.get("https://github.com/pypa/setuptools/archive/v%s.tar.gz" % self.version)
+        tools.get(f"https://github.com/pypa/setuptools/archive/v{self.version}.tar.gz")
 
     build_requires = ("generators/1.0.0",)
     requires = ("python/[^3.7.4]",)

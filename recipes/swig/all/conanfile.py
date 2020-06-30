@@ -14,11 +14,11 @@ class SwigConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://downloads.sourceforge.net/swig/swig-%s.tar.gz" % self.version)
+        tools.get(f"https://downloads.sourceforge.net/swig/swig-{self.version}.tar.gz")
 
     def build(self):
         env = {"PATH": tools.get_env("PATH") + os.path.pathsep + os.path.join(self.package_folder, "bin")}
-        with tools.chdir("%s-%s" % (self.name, self.version)), tools.environment_append(env):
+        with tools.chdir(f"{self.name}-{self.version}"), tools.environment_append(env):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.install()
