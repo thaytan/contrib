@@ -118,6 +118,3 @@ class GStreamerPluginsBadConan(ConanFile):
         )
         meson.build()
         meson.install()
-
-    def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))

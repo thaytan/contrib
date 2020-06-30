@@ -17,6 +17,3 @@ class GstreamerNvJetsonPluginsConan(ConanFile):
 
     def package(self):
         self.copy(pattern="*.so", excludes="*libgstnvvideo4linux2.so*")
-
-    def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))

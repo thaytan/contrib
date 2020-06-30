@@ -45,10 +45,5 @@ class GStreamerVaapiConan(ConanFile):
         args = ["--auto-features=disabled"]
         args.append("-Dwith_encoders=" + ("yes" if self.options.encoders else "no"))
         meson = Meson(self)
-        meson.configure(
-            source_folder="gstreamer-vaapi-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="gstreamer-vaapi-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
-
-    def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
