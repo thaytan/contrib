@@ -17,17 +17,17 @@ class GStreamerConan(ConanFile):
         "check=True",
         "tools=True",
     )
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("meson/[^0.51.2]")
-        self.build_requires("bison/[^3.3]")
-        self.build_requires("flex/[^2.6.4]")
+    build_requires = (
+        "generators/1.0.0",
+        "meson/[^0.51.2]",
+        "bison/[^3.3]",
+        "flex/[^2.6.4]",
         if self.options.introspection:
             self.build_requires("gobject-introspection/[^1.59.3]",)
-
-    def requirements(self):
-        self.requires("glib/[^2.62.0]")
+    )
+    requires = (
+        "glib/[^2.62.0]",
+    )
 
     def source(self):
         git = tools.Git(folder="%s-%s" % (self.name, self.version))

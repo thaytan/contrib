@@ -9,11 +9,11 @@ class X265Conan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {"bit_depth": [8, 10, 12], "HDR10": [True, False]}
     default_options = "bit_depth=8", "HDR10=False"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("cmake/[^3.15.3]")
-        self.build_requires("yasm/[^1.3.0]")
+    build_requires = (
+        "generators/1.0.0",
+        "cmake/[^3.15.3]",
+        "yasm/[^1.3.0]",
+    )
 
     def source(self):
         tools.get("https://github.com/videolan/x265/archive/%s.tar.gz" % self.version)

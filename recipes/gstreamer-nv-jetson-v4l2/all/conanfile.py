@@ -17,17 +17,17 @@ class GstreamerNvJetsonV4l2(ConanFile):
     default_options = ("jetson=TX2",)
     gst_version = "1.16.0"
     exports_sources = {"patches/*"}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
-        self.build_requires("pkgconf/[^1.6.3]")
-
-    def requirements(self):
-        self.requires("nv-jetson-drivers/[^%s]" % (self.version))
-        self.requires("nv-jetson-v4l2/[^%s]" % (self.version))
-        self.requires("gstreamer-plugins-base/[^%s]" % (self.gst_version))
-        self.requires("libglvnd/[^1.2.0]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+        "pkgconf/[^1.6.3]",
+    )
+    requires = (
+        "nv-jetson-drivers/[^%s]" % (self.version),
+        "nv-jetson-v4l2/[^%s]" % (self.version),
+        "gstreamer-plugins-base/[^%s]" % (self.gst_version),
+        "libglvnd/[^1.2.0]",
+    )
 
     def source(self):
         tools.get("https://developer.nvidia.com/embedded/dlc/r%s_Release_v1.0/Sources/%s/public_sources.tbz2" % (self.version.replace(".", "-"), mapper[str(self.options.jetson)]))

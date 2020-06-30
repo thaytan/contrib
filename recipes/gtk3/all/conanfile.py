@@ -15,27 +15,27 @@ class Gtk3Conan(ConanFile):
         "introspection=True",
         "x11=True",
     )
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("meson/[^0.51.2]")
-        self.build_requires("gettext/[^0.20.1]")
+    build_requires = (
+        "generators/1.0.0",
+        "meson/[^0.51.2]",
+        "gettext/[^0.20.1]",
         if self.options.introspection:
             self.build_requires("gobject-introspection/[^1.59.3]",)
-
-    def requirements(self):
-        self.requires("glib/[^2.62.0]")
-        self.requires("cairo/[^1.16.0]")
-        self.requires("libepoxy/[^1.5.3]")
-        self.requires("atk/[^2.35.1]")
-        self.requires("at-spi2-atk/[^2.34.0]")
-        self.requires("gdk-pixbuf/[^2.38.2]")
-        self.requires("pango/[^1.43.0]")
+    )
+    requires = (
+        "glib/[^2.62.0]",
+        "cairo/[^1.16.0]",
+        "libepoxy/[^1.5.3]",
+        "atk/[^2.35.1]",
+        "at-spi2-atk/[^2.34.0]",
+        "gdk-pixbuf/[^2.38.2]",
+        "pango/[^1.43.0]",
         if self.options.x11:
-            self.requires("libx11/[^1.6.8]")
-            self.requires("libxkbcommon/[^0.8.4]")
-            self.requires("libxrandr/[^1.5.2]")
-            self.requires("libxi/[^1.7.1]")
+            "libx11/[^1.6.8]",
+            "libxkbcommon/[^0.8.4]",
+            "libxrandr/[^1.5.2]",
+            "libxi/[^1.7.1]",
+    )
 
     def source(self):
         tools.get("https://github.com/GNOME/gtk/archive/%s.tar.gz" % self.version)

@@ -5,14 +5,14 @@ class LibtiffConan(ConanFile):
     description = "Library for manipulation of TIFF images"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("mesa/20.0.0")
-
-    def requirements(self):
-        self.requires("zlib/[^1.2.11]")
-        self.requires("libjpeg-turbo/[^2.0.4]")
+    build_requires = (
+        "generators/1.0.0",
+        "mesa/20.0.0",
+    )
+    requires = (
+        "zlib/[^1.2.11]",
+        "libjpeg-turbo/[^2.0.4]",
+    )
 
     def source(self):
         tools.get("https://download.osgeo.org/libtiff/tiff-%s.tar.gz" % self.version)

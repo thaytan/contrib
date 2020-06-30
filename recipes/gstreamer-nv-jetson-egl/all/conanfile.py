@@ -10,17 +10,16 @@ class GstreamerNvJetsonEgl(ConanFile):
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     gst_version = "1.16.0"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
-        self.build_requires("pkgconf/[^1.6.3]")
-
-    def requirements(self):
-        self.requires("mesa/[^19.2.0]")
-        self.requires("nv-jetson-drivers/[^%s]" % (self.version))
-        self.requires("nv-jetson-v4l2/[^%s]" % (self.version))
-        self.requires("gstreamer-plugins-base/[^%s]" % (self.gst_version))
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+        "pkgconf/[^1.6.3]",
+    )
+    requires = (
+        "mesa/[^19.2.0]",
+        "nv-jetson-drivers/[^%s]" % (self.version),
+        "nv-jetson-v4l2/[^%s]" % (self.version),
+        "gstreamer-plugins-base/[^%s]" % (self.gst_version),
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):

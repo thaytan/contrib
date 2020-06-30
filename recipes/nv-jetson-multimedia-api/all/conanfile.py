@@ -11,9 +11,7 @@ class NvJetsonMultimediaApi(ConanFile):
     exports_sources = ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = "jetson=TX2"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
+    build_requires = ("generators/1.0.0",)
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):

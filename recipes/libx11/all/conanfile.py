@@ -6,16 +6,14 @@ class Libx11Conan(ConanFile):
     description = "X11 client-side library"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("pkgconf/[^1.6.3]")
-        self.build_requires("xorg-util-macros/[^1.19.1]")
-        self.build_requires("xtrans/[^1.4.0]")
-        self.build_requires("xorgproto/[^2019.1]")
-
-    def requirements(self):
-        self.requires("libxcb/[^1.13.1]")
+    build_requires = (
+        "generators/1.0.0",
+        "pkgconf/[^1.6.3]",
+        "xorg-util-macros/[^1.19.1]",
+        "xtrans/[^1.4.0]",
+        "xorgproto/[^2019.1]",
+    )
+    requires = ("libxcb/[^1.13.1]",)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libX11-{}.tar.gz".format(self.version))

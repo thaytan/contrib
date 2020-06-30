@@ -10,18 +10,18 @@ class LibRealsenseConan(ConanFile):
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     options = {"cuda": [True, False], "python": [True, False]}
     default_options = ("cuda=False", "python=True")
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
-        self.build_requires("cmake/[^3.15.3]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+        "cmake/[^3.15.3]",
         if self.options.cuda:
             self.build_requires("cuda/[^10.1.243]")
-
-    def requirements(self):
-        self.requires("libusb/[^1.0.23]")
+    )
+    requires = (
+        "libusb/[^1.0.23]",
         if self.options.python:
-            self.requires("python/[^3.7.4]")
+            "python/[^3.7.4]",
+    )
 
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)

@@ -23,17 +23,17 @@ class GStreamerVaapiConan(ConanFile):
         "drm=True",
         "glx=True",
     )
-
-    def build_requirements(self):
-        self.requires("generators/[^1.0.0]")
-        self.build_requires("meson/[^0.51.2]")
+    build_requires = (
+        "generators/[^1.0.0]",
+        "meson/[^0.51.2]",
         if self.options.introspection:
             self.build_requires("gobject-introspection/[^1.59.3]")
-
-    def requirements(self):
-        self.requires("gstreamer-plugins-base/[~%s]" % (self.version))
-        self.requires("gstreamer-plugins-bad/[~%s]" % (self.version))
-        self.requires("libva/[^2.3.0]")
+    )
+    requires = (
+        "gstreamer-plugins-base/[~%s]" % (self.version),
+        "gstreamer-plugins-bad/[~%s]" % (self.version),
+        "libva/[^2.3.0]",
+    )
 
     def source(self):
         git = tools.Git(folder="gstreamer-vaapi-" + self.version)

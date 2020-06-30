@@ -7,10 +7,10 @@ class MakeConan(ConanFile):
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("bootstrap-gcc/7.4.0")
-        self.build_requires("bootstrap-make/4.3")
+    build_requires = (
+        "bootstrap-gcc/7.4.0",
+        "bootstrap-make/4.3",
+    )
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/make/make-{}.tar.gz".format(self.version))

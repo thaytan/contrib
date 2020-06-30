@@ -7,9 +7,7 @@ class RenderprotoConan(ConanFile):
     description = "X11 Render extension wire protocol"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
+    build_requires = ("generators/1.0.0",)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/proto/renderproto-%s.tar.gz" % self.version)

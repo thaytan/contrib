@@ -5,14 +5,14 @@ class LibvncserverConan(ConanFile):
     description = "Cross-platform C libraries that allow you to easily implement VNC server or client functionality"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("cmake/[^3.15.3]")
-
-    def requirements(self):
-        self.requires("libpng/[^1.6.37]")
-        self.requires("openssl/[^1.1.1b]")
+    build_requires = (
+        "generators/1.0.0",
+        "cmake/[^3.15.3]",
+    )
+    requires = (
+        "libpng/[^1.6.37]",
+        "openssl/[^1.1.1b]",
+    )
 
     def source(self):
         tools.get("https://github.com/LibVNC/libvncserver/archive/LibVNCServer-%s.tar.gz" % self.version)

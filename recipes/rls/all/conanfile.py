@@ -10,11 +10,12 @@ class RlsConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/rust-lang/rls/archive/{}.tar.gz".format(self.version))
-
-    def requirements(self):
-        self.requires("rust/nightly")
-        self.requires("openssl/1.1.1b")
-        self.requires("generators/[^1.0.0]")
+    )
+    requires = (
+        "rust/nightly",
+        "openssl/1.1.1b",
+        "generators/[^1.0.0]",
+    )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

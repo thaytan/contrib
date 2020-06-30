@@ -9,26 +9,26 @@ class MesaConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("meson/[^0.51.2]")
-        self.build_requires("gettext/[^0.20.1]")
-        self.build_requires("bison/[^3.3]")
-        self.build_requires("flex/[^2.6.4]")
-        self.build_requires("python-mako/[^1.1.0]")
-        self.build_requires("zlib/[^1.2.11]")
-        self.build_requires("expat/[^2.2.7]")
-        self.build_requires("libdrm/[^2.4.99]")
+    build_requires = (
+        "generators/1.0.0",
+        "meson/[^0.51.2]",
+        "gettext/[^0.20.1]",
+        "bison/[^3.3]",
+        "flex/[^2.6.4]",
+        "python-mako/[^1.1.0]",
+        "zlib/[^1.2.11]",
+        "expat/[^2.2.7]",
+        "libdrm/[^2.4.99]",
         if self.options.x11:
             self.build_requires("libx11/[^1.6.8]")
             self.build_requires("libxext/[^1.3.4]")
             self.build_requires("libxdamage/[^1.1.5]")
             self.build_requires("libxshmfence/[^1.3]")
             self.build_requires("libxxf86vm/[^1.1.4]")
-
-    def requirements(self):
-        self.requires("libglvnd/[^1.2.0]")
+    )
+    requires = (
+        "libglvnd/[^1.2.0]",
+    )
 
     def source(self):
         tools.get("https://mesa.freedesktop.org/archive/mesa-%s.tar.xz" % self.version)

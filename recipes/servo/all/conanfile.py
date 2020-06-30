@@ -8,23 +8,23 @@ class ServoConan(ConanFile):
     description = "The Servo Browser Engine"
     license = "MIT", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("cmake/[^3.15.3]")
-        self.build_requires("python/[^3.7.4]")
-        self.build_requires("python-virtualenv/[^3.7.4]")
-        self.build_requires("python-pillow/[^7.1.2]")
-        self.build_requires("rustup/[^1.21.1]")
-
-    def requirements(self):
-        self.requires("openssl/[^1.1.1b]")
-        self.requires("dbus/[^1.12.16]")
-        self.requires("libx11/[^1.6.8]")
-        self.requires("libunwind/[^1.3.1]")
-        self.requires("gstreamer/[^1.16.2]")
-        self.requires("gstreamer-plugins-base/[^1.16.2]")
-        self.requires("gstreamer-plugins-bad/[^1.16.2]")
+    build_requires = (
+        "generators/1.0.0",
+        "cmake/[^3.15.3]",
+        "python/[^3.7.4]",
+        "python-virtualenv/[^3.7.4]",
+        "python-pillow/[^7.1.2]",
+        "rustup/[^1.21.1]",
+    )
+    requires = (
+        "openssl/[^1.1.1b]",
+        "dbus/[^1.12.16]",
+        "libx11/[^1.6.8]",
+        "libunwind/[^1.3.1]",
+        "gstreamer/[^1.16.2]",
+        "gstreamer-plugins-base/[^1.16.2]",
+        "gstreamer-plugins-bad/[^1.16.2]",
+    )
 
     def source(self):
         tools.get("https://github.com/noverby/servo/archive/{}.tar.gz".format(self.version))

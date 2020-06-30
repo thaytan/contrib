@@ -7,11 +7,11 @@ class M4Conan(ConanFile):
     description = "The GNU macro processor"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("bootstrap-gcc/[^7.4.0]")
-        self.build_requires("make/[^4.3]")
+    build_requires = (
+        "generators/1.0.0",
+        "bootstrap-gcc/[^7.4.0]",
+        "make/[^4.3]",
+    )
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/m4/m4-%s.tar.gz" % self.version)

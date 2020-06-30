@@ -10,10 +10,11 @@ class RustAnalyzerConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/rust-analyzer/rust-analyzer/archive/{}.tar.gz".format(self.version.replace(".", "-")))
-
-    def requirements(self):
-        self.requires("rust/nightly")
-        self.requires("generators/[^1.0.0]")
+    )
+    requires = (
+        "rust/nightly",
+        "generators/[^1.0.0]",
+    )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

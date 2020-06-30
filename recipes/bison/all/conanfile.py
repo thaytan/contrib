@@ -7,12 +7,8 @@ class BisonConan(ConanFile):
     description = "Bison is a general-purpose parser generator"
     license = "GPL-3.0-or-later"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-
-    def requirements(self):
-        self.requires("m4/[^1.4.18]")
+    build_requires = ("generators/1.0.0",)
+    requires = ("m4/[^1.4.18]",)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/bison/bison-%s.tar.gz" % self.version)

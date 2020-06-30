@@ -7,14 +7,12 @@ class GStreamerPythonConan(ConanFile):
     description = "Gstreamer Python bindings"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-
-    def requirements(self):
-        self.requires("gstreamer/%s" % (self.version))
-        self.requires("gobject-introspection/1.59.3")
-        self.requires("python-gobject/3.33.1")
+    build_requires = ("generators/1.0.0",)
+    requires = (
+        "gstreamer/%s" % (self.version),
+        "gobject-introspection/1.59.3",
+        "python-gobject/3.33.1",
+    )
 
     def source(self):
         tools.get("https://github.com/GStreamer/gst-python/archive/%s.tar.gz" % self.version)

@@ -11,11 +11,8 @@ class DirenvConan(ConanFile):
     def source(self):
         tools.get("https://github.com/direnv/direnv/archive/v{}.tar.gz".format(self.version))
 
-    def build_requirements(self):
-        self.build_requires("go/1.13.8")
-
-    def requirements(self):
-        self.requires("generators/1.0.0")
+    build_requires = ("go/1.13.8",)
+    requires = ("generators/1.0.0",)
 
     def build(self):
         env = {"DESTDIR": self.package_folder}

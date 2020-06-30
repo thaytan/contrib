@@ -7,18 +7,18 @@ class PythonConan(ConanFile):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
-
-    def requirements(self):
-        self.requires("expat/[^2.2.7]")
-        self.requires("openssl/[^1.1.1b]")
-        self.requires("libffi/[^3.3]")
-        self.requires("zlib/[^1.2.11]")
-        self.requires("bzip2/[^1.0.8]")
-        self.requires("sqlite/[^3.30.1]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+    )
+    requires = (
+        "expat/[^2.2.7]",
+        "openssl/[^1.1.1b]",
+        "libffi/[^3.3]",
+        "zlib/[^1.2.11]",
+        "bzip2/[^1.0.8]",
+        "sqlite/[^3.30.1]",
+    )
 
     def source(self):
         tools.get("https://www.python.org/ftp/python/{0}/Python-{0}.tar.xz".format(self.version))

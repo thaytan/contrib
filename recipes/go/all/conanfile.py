@@ -7,9 +7,7 @@ class GoConan(ConanFile):
     description = "Core compiler tools for the Go programming language"
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
+    build_requires = ("generators/1.0.0",)
 
     def source(self):
         arch = {"x86_64": "amd64", "armv8": "arm64"}[str(self.settings.arch)]

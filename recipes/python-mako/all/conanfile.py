@@ -11,12 +11,11 @@ class PythonMakoConan(ConanFile):
     def source(self):
         tools.get("https://github.com/sqlalchemy/mako/archive/rel_%s.tar.gz" % self.version.replace(".", "_"))
 
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("python-setuptools/[^41.2.0]")
-
-    def requirements(self):
-        self.requires("python/[^3.7.4]")
+    build_requires = (
+        "generators/1.0.0",
+        "python-setuptools/[^41.2.0]",
+    )
+    requires = ("python/[^3.7.4]",)
 
     def build(self):
         with tools.chdir("mako-rel_" + self.version.replace(".", "_")):

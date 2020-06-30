@@ -7,16 +7,16 @@ class GccConan(ConanFile):
     description = "The GNU Compiler Collection - C and C++ frontends"
     license = "custom", "FDL", "GPL", "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("bootstrap-gcc/[^7.4.0]")
-        self.build_requires("make/[^4.3]")
-
-    def requirements(self):
-        self.requires("binutils/[^2.33.1]")
-        self.requires("isl/[^0.22.1]")
-        self.requires("mpfr/[^4.0.2]")
-        self.requires("mpc/[^1.1.0]")
+    build_requires = (
+        "bootstrap-gcc/[^7.4.0]",
+        "make/[^4.3]",
+    )
+    requires = (
+        "binutils/[^2.33.1]",
+        "isl/[^0.22.1]",
+        "mpfr/[^4.0.2]",
+        "mpc/[^1.1.0]",
+    )
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/gcc/gcc-{0}/gcc-{0}.tar.xz".format(self.version))

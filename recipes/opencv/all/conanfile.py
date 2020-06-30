@@ -7,14 +7,14 @@ class OpenCVConan(ConanFile):
     description = "OpenCV is an open source computer vision and machine learning software library."
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("cmake/[^3.15.3]")
-
-    def requirements(self):
-        self.requires("zlib/[^1.2.11]")
-        self.requires("libpng/[^1.6.37]")
+    build_requires = (
+        "generators/1.0.0",
+        "cmake/[^3.15.3]",
+    )
+    requires = (
+        "zlib/[^1.2.11]",
+        "libpng/[^1.6.37]",
+    )
 
     def source(self):
         tools.get("https://github.com/opencv/opencv/archive/%s.tar.gz" % self.version)

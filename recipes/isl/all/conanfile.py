@@ -7,13 +7,11 @@ class IslConan(ConanFile):
     description = "Library for manipulating sets and relations of integer points bounded by linear constraints"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("bootstrap-gcc/[^7.4.0]")
-        self.build_requires("make/[^4.3]")
-
-    def requirements(self):
-        self.requires("gmp/[^6.1.2]")
+    build_requires = (
+        "bootstrap-gcc/[^7.4.0]",
+        "make/[^4.3]",
+    )
+    requires = ("gmp/[^6.1.2]",)
 
     def source(self):
         tools.get("http://isl.gforge.inria.fr/isl-%s.tar.xz" % self.version)

@@ -8,11 +8,11 @@ class AutomakeConan(ConanFile):
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "automake-include-fix.patch"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
-        self.build_requires("autoconf/[^2.69]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+        "autoconf/[^2.69]",
+    )
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/automake/automake-%s.tar.gz" % self.version)

@@ -5,9 +5,7 @@ class CapNProtoConan(ConanFile):
     description = "Cap'n Proto serialization/RPC system"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
+    build_requires = ("generators/1.0.0",)
 
     def source(self):
         tools.get("https://capnproto.org/capnproto-c++-%s.tar.gz" % self.version)

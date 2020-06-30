@@ -7,9 +7,7 @@ class BinutilsConan(ConanFile):
     description = "A set of programs to assemble and manipulate binary and object files"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("bootstrap-gcc/7.4.0")
+    build_requires = ("bootstrap-gcc/7.4.0",)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/binutils/binutils-{0}.tar.xz".format(self.version))

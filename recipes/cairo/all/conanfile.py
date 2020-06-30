@@ -21,24 +21,24 @@ class CairoConan(ConanFile):
         "recursive": True,
         "subfolder": ("cairo-%s" % version),
     }
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("meson/[^0.51.2]")
+    build_requires = (
+        "generators/1.0.0",
+        "meson/[^0.51.2]",
         if self.options.introspection:
             self.build_requires("gobject-introspection/[^1.59.3]")
-
-    def requirements(self):
-        self.requires("glib/[^2.62.0]")
-        self.requires("pixman/[^0.38.4]")
-        self.requires("libxrender/[^0.9.10]")
-        self.requires("libxext/[^1.3.4]")
+    )
+    requires = (
+        "glib/[^2.62.0]",
+        "pixman/[^0.38.4]",
+        "libxrender/[^0.9.10]",
+        "libxext/[^1.3.4]",
         if self.options.fontconfig:
-            self.requires("fontconfig/[^2.13.1]")
+            "fontconfig/[^2.13.1]",
         if self.options.zlib:
-            self.requires("zlib/[^1.2.11]")
+            "zlib/[^1.2.11]",
         if self.options.png:
-            self.requires("libpng/[^1.6.37]")
+            "libpng/[^1.6.37]",
+    )
 
     def build(self):
         meson = Meson(self)

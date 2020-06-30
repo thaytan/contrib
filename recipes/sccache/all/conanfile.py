@@ -11,10 +11,11 @@ class SccacheConan(ConanFile):
     def source(self):
         tools.get("https://github.com/mozilla/sccache/archive/{}.tar.gz".format(self.version))
 
-    def build_requirements(self):
-        self.build_requires("generators/[^1.0.0]")
-        self.build_requires("rust/[^1.3.8]")
-        self.build_requires("openssl/[^1.1.1b]")
+    build_requires = (
+        "generators/[^1.0.0]",
+        "rust/[^1.3.8]",
+        "openssl/[^1.1.1b]",
+    )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

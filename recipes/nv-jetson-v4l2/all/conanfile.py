@@ -38,10 +38,10 @@ class NvJetsonV4l2(ConanFile):
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     exports_sources = {"patches/*"}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+    )
 
     def source(self):
         if self.version == "32.3.1":

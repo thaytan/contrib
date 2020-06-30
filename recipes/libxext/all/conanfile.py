@@ -5,14 +5,12 @@ class LibxextConan(ConanFile):
     description = "X11 miscellaneous extensions library"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("pkgconf/[^1.6.3]")
-        self.build_requires("xorg-util-macros/[^1.19.1]")
-
-    def requirements(self):
-        self.requires("libx11/[^1.6.8]")
+    build_requires = (
+        "generators/1.0.0",
+        "pkgconf/[^1.6.3]",
+        "xorg-util-macros/[^1.19.1]",
+    )
+    requires = ("libx11/[^1.6.8]",)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/lib/libXext-%s.tar.gz" % self.version)

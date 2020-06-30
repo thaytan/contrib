@@ -5,11 +5,11 @@ class FlexConan(ConanFile):
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD 2-Clause"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("autotools/[^1.0.0]")
-        self.build_requires("bison/[^3.3]")
+    build_requires = (
+        "generators/1.0.0",
+        "autotools/[^1.0.0]",
+        "bison/[^3.3]",
+    )
 
     def source(self):
         tools.get("https://github.com/westes/flex/releases/download/v{0}/flex-{0}.tar.gz".format(self.version))

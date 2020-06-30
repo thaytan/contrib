@@ -8,14 +8,14 @@ class LibtoolConan(ConanFile):
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "libtool-prefix-fix.patch"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
-        self.build_requires("autoconf/[^2.69]")
-        self.build_requires("automake/[^1.16.1]")
-        self.build_requires("help2man/[^1.47.11]")
-        self.build_requires("texinfo/[^6.6]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+        "autoconf/[^2.69]",
+        "automake/[^1.16.1]",
+        "help2man/[^1.47.11]",
+        "texinfo/[^6.6]",
+    )
 
     def source(self):
         git = tools.Git(folder="%s-%s" % (self.name, self.version))

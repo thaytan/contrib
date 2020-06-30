@@ -7,14 +7,14 @@ class ItstoolConan(ConanFile):
     description = "XML to PO and back again"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("autotools/[^1.0.0]")
-
-    def requirements(self):
-        self.requires("libxml2/[^2.9.9]")
-        self.requires("python/[^3.7.4]")
+    build_requires = (
+        "generators/1.0.0",
+        "autotools/[^1.0.0]",
+    )
+    requires = (
+        "libxml2/[^2.9.9]",
+        "python/[^3.7.4]",
+    )
 
     def source(self):
         tools.get("https://github.com/itstool/itstool/archive/%s.tar.gz" % self.version)

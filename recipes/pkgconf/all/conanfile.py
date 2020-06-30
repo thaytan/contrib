@@ -9,12 +9,12 @@ class PkgconfConan(ConanFile):
     description = "Package compiler and linker metadata toolkit"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("gcc/[^7.4.0]")
-        self.build_requires("autoconf/[^2.69]")
-        self.build_requires("automake/[^1.16.1]")
-        self.build_requires("libtool/[^2.4.6]")
+    build_requires = (
+        "gcc/[^7.4.0]",
+        "autoconf/[^2.69]",
+        "automake/[^1.16.1]",
+        "libtool/[^2.4.6]",
+    )
 
     def source(self):
         tools.get("https://github.com/pkgconf/pkgconf/archive/pkgconf-%s.tar.gz" % self.version)

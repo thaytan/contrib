@@ -9,15 +9,15 @@ class RustConan(ConanFile):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("curl/[^7.66.0]")
-
-    def requirements(self):
-        self.requires("pkgconf/[^1.6.3]")
-        self.requires("clang/[^9.0.0]")
-        self.requires("gcc/[^7.4.0]")
+    build_requires = (
+        "generators/1.0.0",
+        "curl/[^7.66.0]",
+    )
+    requires = (
+        "pkgconf/[^1.6.3]",
+        "clang/[^9.0.0]",
+        "gcc/[^7.4.0]",
+    )
 
     def source(self):
         tools.download("https://sh.rustup.rs", "rustup.sh")

@@ -10,11 +10,11 @@ class CudaConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports_sources = ("cuda-10.1.pc", "cudart-10.1.pc")
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/7.4.0")
-        self.build_requires("libxml2/[^2.9.10]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/7.4.0",
+        "libxml2/[^2.9.10]",
+    )
 
     def source(self):
         tools.download("http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_%s_%s_linux.run" % (self.version, driver_map[self.version]), filename="cuda_%s_linux.run" % self.version)

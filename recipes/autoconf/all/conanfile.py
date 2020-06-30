@@ -8,13 +8,11 @@ class AutoconfConan(ConanFile):
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "m4-include.patch"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("gcc/[^7.4.0]")
-
-    def requirements(self):
-        self.requires("m4/[^1.4.18]")
+    build_requires = (
+        "generators/1.0.0",
+        "gcc/[^7.4.0]",
+    )
+    requires = ("m4/[^1.4.18]",)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/autoconf/autoconf-%s.tar.gz" % self.version)

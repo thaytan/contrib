@@ -7,13 +7,11 @@ class MpfrConan(ConanFile):
     description = "Multiple-precision floating-point library"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("bootstrap-gcc/[^7.4.0]")
-        self.build_requires("make/[^4.3]")
-
-    def requirements(self):
-        self.requires("gmp/[^6.1.2]")
+    build_requires = (
+        "bootstrap-gcc/[^7.4.0]",
+        "make/[^4.3]",
+    )
+    requires = ("gmp/[^6.1.2]",)
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/mpfr/mpfr-%s.tar.gz" % self.version)

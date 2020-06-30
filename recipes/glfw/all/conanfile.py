@@ -8,18 +8,18 @@ class GlfwcConan(ConanFile):
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     exports = "fix-x11-exts.patch"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("cmake/[^3.15.3]")
-
-    def requirements(self):
+    build_requires = (
+        "generators/1.0.0",
+        "cmake/[^3.15.3]",
+    )
+    requires = (
         if self.options.x11:
-            self.requires("libx11/[^1.6.8]")
-            self.requires("libxrandr/[^1.5.2]")
-            self.requires("libxinerama/[^1.1.4]")
-            self.requires("libxcursor/[^1.2.0]")
-            self.requires("libxi/[^1.7.1]")
+            "libx11/[^1.6.8]",
+            "libxrandr/[^1.5.2]",
+            "libxinerama/[^1.1.4]",
+            "libxcursor/[^1.2.0]",
+            "libxi/[^1.7.1]",
+    )
 
     def source(self):
         tools.get("https://github.com/glfw/glfw/archive/%s.tar.gz" % self.version)

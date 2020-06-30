@@ -8,9 +8,7 @@ class LibuuidConan(ConanFile):
     description = "Portable uuid C library"
     license = "BSD-3-Clause"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
+    build_requires = ("generators/1.0.0",)
 
     def source(self):
         tools.get("https://netix.dl.sourceforge.net/project/libuuid/libuuid-%s.tar.gz" % self.version)

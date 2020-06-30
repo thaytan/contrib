@@ -7,16 +7,16 @@ class GObjectIntrospectionConan(ConanFile):
     description = "Middleware layer between C libraries (using GObject) and language bindings"
     license = "GPL, LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("meson/[^0.51.2]")
-        self.build_requires("bison/[^3.3]")
-        self.build_requires("flex/[^2.6.4]")
-
-    def requirements(self):
-        self.requires("python/[^3.7.4]")
-        self.requires("glib/[^2.62.0]")
+    build_requires = (
+        "generators/1.0.0",
+        "meson/[^0.51.2]",
+        "bison/[^3.3]",
+        "flex/[^2.6.4]",
+    )
+    requires = (
+        "python/[^3.7.4]",
+        "glib/[^2.62.0]",
+    )
 
     def source(self):
         tools.get("https://github.com/GNOME/gobject-introspection/archive/%s.tar.gz" % self.version)

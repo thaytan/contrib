@@ -10,9 +10,10 @@ class DotnetSdkConan(ConanFile):
     description = "The .NET Core SDK"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def requirements(self):
-        self.requires("generators/1.0.0")
+    )
+    requires = (
+        "generators/1.0.0",
+    )
 
     def source(self):
         tools.get("https://download.visualstudio.microsoft.com/download/pr/%s/dotnet-sdk-%s-linux-x64.tar.gz" % (id[self.version], self.version))

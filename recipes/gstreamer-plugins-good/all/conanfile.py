@@ -41,19 +41,19 @@ class GStreamerPluginsGoodConan(ConanFile):
         "ximagesrc_xshm=True",
         "jpeg=True",
     )
-
-    def build_requirements(self):
-        self.build_requires("generators/[^1.0.0]")
-        self.build_requires("meson/[^0.51.2]")
-
-    def requirements(self):
-        self.requires("glib/[^2.62.0]")
-        self.requires("gstreamer-plugins-base/[~%s]" % (self.version))
-        self.requires("libpng/[^1.6.37]")
+    build_requires = (
+        "generators/[^1.0.0]",
+        "meson/[^0.51.2]",
+    )
+    requires = (
+        "glib/[^2.62.0]",
+        "gstreamer-plugins-base/[~%s]" % (self.version),
+        "libpng/[^1.6.37]",
         if self.options.vpx:
-            self.requires("libvpx/[^1.8.0]")
+            "libvpx/[^1.8.0]",
         if self.options.jpeg:
-            self.requires("libjpeg-turbo/[^2.0.3]")
+            "libjpeg-turbo/[^2.0.3]",
+    )
 
     def source(self):
         git = tools.Git(folder="gst-plugins-good-" + self.version)

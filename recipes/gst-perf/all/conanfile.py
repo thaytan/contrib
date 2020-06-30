@@ -8,16 +8,16 @@ class GStreamerPerfConan(ConanFile):
     description = "Performance Evaluation tool for Gstreamer"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def requirements(self):
-        self.requires("glib/[^2.62.0]")
-        self.requires("gstreamer/[^%s]" % (self.version))
-
-    def build_requirements(self):
-        self.build_requires("generators/[^1.0.0]")
-        self.build_requires("autotools/[^1.0.0]")
-        self.build_requires("automake/[^1.16.1]")
-        self.build_requires("autoconf/[^2.69]")
+    )
+    requires = (
+        "glib/[^2.62.0]",
+        "gstreamer/[^%s]" % (self.version),
+    build_requires = (
+        "generators/[^1.0.0]",
+        "autotools/[^1.0.0]",
+        "automake/[^1.16.1]",
+        "autoconf/[^2.69]",
+    )
 
     def source(self):
         git = tools.Git()

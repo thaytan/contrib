@@ -5,10 +5,10 @@ class FFMpegConan(ConanFile):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("yasm/[^1.3.0]")
+    build_requires = (
+        "generators/1.0.0",
+        "yasm/[^1.3.0]",
+    )
 
     def source(self):
         tools.get("http://ffmpeg.org/releases/ffmpeg-%s.tar.bz2" % self.version)

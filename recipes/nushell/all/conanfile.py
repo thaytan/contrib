@@ -11,12 +11,11 @@ class NushellConan(ConanFile):
     def source(self):
         tools.get("https://github.com/nushell/nushell/archive/{}.tar.gz".format(self.version))
 
-    def build_requirements(self):
-        self.build_requires("rust/[^1.43.1]")
-
-    def requirements(self):
-        self.requires("generators/[^1.0.0]")
-        self.requires("openssl/[^1.1.1b]")
+    build_requires = ("rust/[^1.43.1]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "openssl/[^1.1.1b]",
+    )
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

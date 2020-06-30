@@ -5,14 +5,12 @@ class PngquantConan(ConanFile):
     description = "Command-line utility to quantize PNGs down to 8-bit paletted PNGs"
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("autotools/1.0.0")
-
-    def requirements(self):
-        self.requires("generators/1.0.0")
-        self.requires("libpng/[^1.6.37]")
-        self.requires("libimagequant/[^2.12.6]")
+    build_requires = ("autotools/1.0.0",)
+    requires = (
+        "generators/1.0.0",
+        "libpng/[^1.6.37]",
+        "libimagequant/[^2.12.6]",
+    )
 
     def source(self):
         tools.get(f"https://github.com/kornelski/pngquant/archive/{self.version}/pngquant-{self.version}.tar.gz")

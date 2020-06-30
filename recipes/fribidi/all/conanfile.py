@@ -7,10 +7,10 @@ class FribidiConan(ConanFile):
     description = "The Free Implementation of the Unicode Bidirectional Algorithm"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("meson/[^0.5.12]")
+    build_requires = (
+        "generators/1.0.0",
+        "meson/[^0.5.12]",
+    )
 
     def source(self):
         tools.get("https://github.com/fribidi/fribidi/archive/v%s.tar.gz" % self.version)

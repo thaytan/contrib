@@ -7,9 +7,7 @@ class LibXorgUtilMacrosConan(ConanFile):
     description = "X.Org Autotools macros"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
+    build_requires = ("generators/1.0.0",)
 
     def source(self):
         tools.get("https://xorg.freedesktop.org/releases/individual/util/util-macros-%s.tar.gz" % self.version)

@@ -55,30 +55,31 @@ class GStreamerPluginsBadConan(ConanFile):
             self.options.remove("nvdec")
             self.options.remove("nvenc")
             self.options.remove("nvcodec")
-
-    def build_requirements(self):
-        self.requires("generators/[^1.0.0]")
-        self.build_requires("meson/[^0.51.2]")
+    build_requires = (
+        "generators/[^1.0.0]",
+        "meson/[^0.51.2]",
         if self.options.introspection:
             self.build_requires("gobject-introspection/[^1.59.3]")
         if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
             self.build_requires("cuda/[^10.1 <10.2]")
             self.build_requires("orc/[^0.4.31]")
+    )
+    requires = (
+        "glib/[^2.62.0]",
+    )
 
-    def requirements(self):
-        self.requires("glib/[^2.62.0]")
-
-        self.requires("gstreamer-plugins-base/[~%s]" % (self.version))
+        "gstreamer-plugins-base/[~%s]" % (self.version),
         if self.options.webrtc:
-            self.requires("libnice/[~0.1]")
+            "libnice/[~0.1]",
         if self.options.srtp:
-            self.requires("libsrtp/[^2.2.0]")
+            "libsrtp/[^2.2.0]",
         if self.options.opencv:
-            self.requires("opencv/[^3.4.8]")
+            "opencv/[^3.4.8]",
         if self.options.closedcaption:
-            self.requires("pango/[^1.4.3]")
+            "pango/[^1.4.3]",
         if self.options.webp:
-            self.requires("libwebp/[^1.1.0]")
+            "libwebp/[^1.1.0]",
+    )
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad-" + self.version)

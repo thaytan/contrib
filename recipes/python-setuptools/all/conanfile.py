@@ -11,11 +11,8 @@ class PythonSetuptoolsConan(ConanFile):
     def source(self):
         tools.get("https://github.com/pypa/setuptools/archive/v%s.tar.gz" % self.version)
 
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-
-    def requirements(self):
-        self.requires("python/[^3.7.4]")
+    build_requires = ("generators/1.0.0",)
+    requires = ("python/[^3.7.4]",)
 
     def build(self):
         py_path = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")

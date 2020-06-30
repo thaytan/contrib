@@ -8,16 +8,16 @@ class FontconfigConan(ConanFile):
     description = "A library for configuring and customizing font access"
     license = "Old MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("autotools/[^1.0.0]")
-        self.build_requires("gperf/[^3.1]")
-
-    def requirements(self):
-        self.requires("freetype/[^2.10.1]")
-        self.requires("libuuid/[^1.0.3]")
-        self.requires("expat/[^2.2.7]")
+    build_requires = (
+        "generators/1.0.0",
+        "autotools/[^1.0.0]",
+        "gperf/[^3.1]",
+    )
+    requires = (
+        "freetype/[^2.10.1]",
+        "libuuid/[^1.0.3]",
+        "expat/[^2.2.7]",
+    )
 
     def source(self):
         tools.get("https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/{0}/fontconfig-{0}.tar.gz".format(self.version))

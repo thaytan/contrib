@@ -5,13 +5,11 @@ class LibpngConan(ConanFile):
     description = "A collection of routines used to create PNG format graphics files"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def build_requirements(self):
-        self.build_requires("autotools/1.0.0")
-
-    def requirements(self):
-        self.requires("generators/1.0.0")
-        self.requires("zlib/[^1.2.11]")
+    build_requires = ("autotools/1.0.0",)
+    requires = (
+        "generators/1.0.0",
+        "zlib/[^1.2.11]",
+    )
 
     def source(self):
         tools.get("https://downloads.sourceforge.net/sourceforge/libpng/libpng-%s.tar.xz" % self.version)

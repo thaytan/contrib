@@ -10,17 +10,17 @@ class LibglvndConan(ConanFile):
     }
     default_options = ("x11=True",)
     exports = "ignore-warnings.patch"
-
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0")
-        self.build_requires("autotools/[^1.0.0]")
+    build_requires = (
+        "generators/1.0.0",
+        "autotools/[^1.0.0]",
         if self.options.x11:
             self.build_requires("xorgproto/[^2019.1]")
-
-    def requirements(self):
+    )
+    requires = (
         if self.options.x11:
-            self.requires("libx11/[^1.6.8]")
-            self.requires("libxext/[^1.3.4]")
+            "libx11/[^1.6.8]",
+            "libxext/[^1.3.4]",
+    )
 
     def source(self):
         tools.get("https://github.com/NVIDIA/libglvnd/archive/v%s.tar.gz" % self.version)
