@@ -1,6 +1,6 @@
 import os
 
-from conans import CMake, ConanFile, tools
+from conans import *
 
 
 class X265Conan(ConanFile):

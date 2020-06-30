@@ -1,6 +1,6 @@
 import os
 
-from conans import ConanFile, tools
+from conans import *
 
 
 class GoConan(ConanFile):

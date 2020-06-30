@@ -1,5 +1,5 @@
 import os
-from conans import ConanFile, Meson, tools
+from conans import *
 
 
 class GStreamerPluginsBadConan(ConanFile):

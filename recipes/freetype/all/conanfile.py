@@ -1,7 +1,7 @@
 from glob import glob
 from os import path, remove
 
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class FreetypeConan(ConanFile):

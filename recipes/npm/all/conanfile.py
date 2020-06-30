@@ -1,6 +1,6 @@
 import os, shutil
 
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class NpmConan(ConanFile):

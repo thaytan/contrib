@@ -1,4 +1,4 @@
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class LibtiffConan(ConanFile):

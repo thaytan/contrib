@@ -1,4 +1,4 @@
-from conans import AutoToolsBuildEnvironment, ConanFile, tools, CMake
+from conans import *
 
 
 class ConanLibwebp(ConanFile):

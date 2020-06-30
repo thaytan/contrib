@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from conans import ConanFile, tools
+from conans import *
 
 
 class ServoConan(ConanFile):

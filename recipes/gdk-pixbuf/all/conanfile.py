@@ -1,7 +1,7 @@
 import os
 from os import environ, path, pathsep
 
-from conans import ConanFile, Meson, tools
+from conans import *
 
 
 class GdkPixbufConan(ConanFile):

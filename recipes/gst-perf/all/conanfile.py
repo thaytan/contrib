@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from conans import ConanFile, Meson, tools, CMake, AutoToolsBuildEnvironment
+from conans import *
 
 
 class GStreamerPerfConan(ConanFile):

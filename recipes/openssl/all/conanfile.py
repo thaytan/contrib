@@ -2,7 +2,7 @@ import os
 import platform
 import shutil
 
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class OpensslConan(ConanFile):

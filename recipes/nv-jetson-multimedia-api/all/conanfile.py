@@ -1,7 +1,7 @@
 import re
 from os import listdir, path, symlink
 
-from conans import ConanFile, tools
+from conans import *
 
 
 class NvJetsonMultimediaApi(ConanFile):

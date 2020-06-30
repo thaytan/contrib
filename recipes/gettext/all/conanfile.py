@@ -1,7 +1,7 @@
 from glob import glob
 from os import path, remove, symlink
 
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class GettextConan(ConanFile):

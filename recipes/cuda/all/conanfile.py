@@ -1,6 +1,6 @@
 import os
 
-from conans import ConanFile, tools
+from conans import *
 
 driver_map = {"10.1.243": "418.87.00"}
 

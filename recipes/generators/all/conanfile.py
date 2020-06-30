@@ -2,7 +2,7 @@ import glob
 import os
 import shutil
 
-from conans import ConanFile
+from conans import *
 from conans.model import Generator
 
 

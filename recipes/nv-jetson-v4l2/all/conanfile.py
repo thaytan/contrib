@@ -1,6 +1,6 @@
 from os import path, symlink, listdir
 
-from conans import ConanFile, tools
+from conans import *
 
 pc_v4lconvert = """
 prefix=%s

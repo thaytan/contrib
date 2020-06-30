@@ -2,7 +2,7 @@ import glob
 import os
 import shutil
 
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class PkgconfConan(ConanFile):

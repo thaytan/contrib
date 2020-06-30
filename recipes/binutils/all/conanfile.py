@@ -1,6 +1,6 @@
 import os
 
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class BinutilsConan(ConanFile):

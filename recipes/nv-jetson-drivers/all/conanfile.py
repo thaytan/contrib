@@ -1,7 +1,7 @@
 import os
 import re
 
-from conans import ConanFile, tools
+from conans import *
 
 # These come from https://developer.nvidia.com/embedded/downloads
 download_tx2_url = {

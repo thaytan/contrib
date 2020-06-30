@@ -1,6 +1,6 @@
 import os
 
-from conans import ConanFile, Meson, tools
+from conans import *
 
 
 class FribidiConan(ConanFile):

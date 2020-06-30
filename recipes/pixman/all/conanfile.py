@@ -1,4 +1,4 @@
-from conans import ConanFile, Meson, tools
+from conans import *
 
 
 class PixmanConan(ConanFile):

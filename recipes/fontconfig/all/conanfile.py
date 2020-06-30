@@ -1,7 +1,7 @@
 import os
 from glob import glob
 
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import *
 
 
 class FontconfigConan(ConanFile):
