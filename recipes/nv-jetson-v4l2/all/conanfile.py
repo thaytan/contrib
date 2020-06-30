@@ -31,7 +31,7 @@ Cflags: -I${includedir}
 """
 
 
-class NvJetsonV4l2\(ConanFile\):
+class NvJetsonV4l2(ConanFile):
     description = "NVIDIA built Accelerated GStreamer Plugins"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

@@ -3,7 +3,7 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class LibShadercConan\(ConanFile\):
+class LibShadercConan(ConanFile):
     description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

@@ -1,7 +1,7 @@
 from conans import ConanFile, tools
 
 
-class Deepstream\(ConanFile\):
+class Deepstream(ConanFile):
     description = "Complete streaming analytics toolkit for AI-based video"
     license = "proprietary"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
@@ -21,6 +21,4 @@ class Deepstream\(ConanFile\):
 
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
-        self.copy(
-            "*", dst="include", src="deepstream_sdk_v%s_jetson/sources/includes" % self.version, keep_path=False
-        )
+        self.copy("*", dst="include", src="deepstream_sdk_v%s_jetson/sources/includes" % self.version, keep_path=False)

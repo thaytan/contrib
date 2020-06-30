@@ -1,7 +1,7 @@
 from conans import CMake, ConanFile, tools
 
 
-class ClangConan\(ConanFile\):
+class ClangConan(ConanFile):
     description = "C language family frontend for LLVM"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

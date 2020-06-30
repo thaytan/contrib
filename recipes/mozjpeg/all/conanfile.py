@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class MozjpegConan\(ConanFile\):
+class MozjpegConan(ConanFile):
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

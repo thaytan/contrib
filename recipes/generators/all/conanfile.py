@@ -22,9 +22,7 @@ class env(Generator):
             if isinstance(val, str):
                 val = [val]
             if len(val) > 1 or (var in os.environ and os.pathsep in os.environ[var]):
-                content += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(
-                    var, os.pathsep.join('"%s"' % p for p in val)
-                )
+                content += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
                 content += "export {0}={1}\n".format(var, '"%s"' % val[0])
 
@@ -47,9 +45,7 @@ class direnv(Generator):
             if isinstance(val, str):
                 val = [val]
             if len(val) > 1 or (var in os.environ and os.pathsep in os.environ[var]):
-                content += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(
-                    var, os.pathsep.join('"%s"' % p for p in val)
-                )
+                content += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
                 content += "export {0}={1}\n".format(var, '"%s"' % val[0])
 
@@ -96,9 +92,7 @@ class tools(Generator):
             if isinstance(val, str):
                 val = [val]
             if len(val) > 1 or (var in os.environ and os.pathsep in os.environ[var]):
-                env_vars += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(
-                    var, os.pathsep.join('"%s"' % p for p in val)
-                )
+                env_vars += 'export {0}={1}"${{{0}:+:${0}}}"\n'.format(var, os.pathsep.join('"%s"' % p for p in val))
             else:
                 env_vars += "export {0}={1}\n".format(var, '"%s"' % val[0])
 
@@ -171,15 +165,10 @@ class pkgconf(Generator):
                 if not os.path.isdir(pc_path):
                     continue
                 for pc in os.listdir(pc_path):
-                    files[pc] = replace_prefix_in_pc_file(
-                        os.path.join(pc_path, pc), cpp_info.rootpath
-                    )
+                    files[pc] = replace_prefix_in_pc_file(os.path.join(pc_path, pc), cpp_info.rootpath)
 
         # Generate pc files from PKG_CONFIG_SYSTEM_PATH
-        if (
-            hasattr(self.conanfile, "system_pcs")
-            and "PKG_CONFIG_SYSTEM_PATH" in os.environ
-        ):
+        if hasattr(self.conanfile, "system_pcs") and "PKG_CONFIG_SYSTEM_PATH" in os.environ:
             if isinstance(self.conanfile.system_pcs, str):
                 self.conanfile.system_pcs = set([self.conanfile.system_pcs])
             system_pcs = set(self.conanfile.system_pcs)
@@ -192,14 +181,11 @@ class pkgconf(Generator):
                     with open(os.path.join(pc_path, pc), "r") as pc_file:
                         files[pc] = pc_file.read()
             if len(system_pcs):
-                raise Exception(
-                    "'%s' not available in system pkg-config directories"
-                    % ", ".join(system_pcs)
-                )
+                raise Exception("'%s' not available in system pkg-config directories" % ", ".join(system_pcs))
 
         return files
 
 
-class GeneratorsPackage\(ConanFile\):
+class GeneratorsPackage(ConanFile):
     description = "Conan generators"
     license = "MIT"

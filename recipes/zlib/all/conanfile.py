@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class ZlibConan\(ConanFile\):
+class ZlibConan(ConanFile):
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " "(Also Free, Not to Mention Unencumbered by Patents)"
     license = "Zlib"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

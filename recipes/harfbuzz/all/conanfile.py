@@ -4,7 +4,7 @@ from os import path, remove
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class HarfbuzzConan\(ConanFile\):
+class HarfbuzzConan(ConanFile):
     description = "HarfBuzz text shaping engine"
     license = "Old MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

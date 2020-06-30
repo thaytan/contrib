@@ -4,7 +4,7 @@ from os import path, remove
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibUSBConan\(ConanFile\):
+class LibUSBConan(ConanFile):
     description = "A cross-platform library to access USB devices"
     license = "LGPL-2.1"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

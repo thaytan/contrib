@@ -5,7 +5,7 @@ import shutil
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class PkgconfConan\(ConanFile\):
+class PkgconfConan(ConanFile):
     description = "Package compiler and linker metadata toolkit"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class SharedMimeInfoConan\(ConanFile\):
+class SharedMimeInfoConan(ConanFile):
     description = "Freedesktop.org Shared MIME Info"
     license = "GPL2"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

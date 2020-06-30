@@ -3,7 +3,7 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class LibjpegTurboConan\(ConanFile\):
+class LibjpegTurboConan(ConanFile):
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

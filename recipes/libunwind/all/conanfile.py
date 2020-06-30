@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibunwindConan\(ConanFile\):
+class LibunwindConan(ConanFile):
     description = "Portable and efficient C programming interface (API) to determine the call-chain of a programs"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

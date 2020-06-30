@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class GraphvizConan\(ConanFile\):
+class GraphvizConan(ConanFile):
     description = "Graph Visualization Tools"
     license = "EPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

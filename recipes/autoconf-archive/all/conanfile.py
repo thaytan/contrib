@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class AutoconfArchiveConan\(ConanFile\):
+class AutoconfArchiveConan(ConanFile):
     description = "A collection of freely re-usable Autoconf macros"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class ItstoolConan\(ConanFile\):
+class ItstoolConan(ConanFile):
     description = "XML to PO and back again"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

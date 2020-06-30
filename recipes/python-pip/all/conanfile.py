@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, tools
 
 
-class PythonPipConan\(ConanFile\):
+class PythonPipConan(ConanFile):
     description = "High productivity build system"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

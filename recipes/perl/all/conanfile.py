@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class PerlConan\(ConanFile\):
+class PerlConan(ConanFile):
     description = "A highly capable, feature-rich programming language"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools, CMake
 
 
-class ConanLibwebp\(ConanFile\):
+class ConanLibwebp(ConanFile):
     description = "library to encode and decode images in WebP format"
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

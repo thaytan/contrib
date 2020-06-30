@@ -3,7 +3,7 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class LLVMConan\(ConanFile\):
+class LLVMConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

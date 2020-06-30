@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, tools
 
 
-class MesonConan\(ConanFile\):
+class MesonConan(ConanFile):
     description = "High productivity build system"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

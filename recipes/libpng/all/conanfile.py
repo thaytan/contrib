@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibpngConan\(ConanFile\):
+class LibpngConan(ConanFile):
     description = "A collection of routines used to create PNG format graphics files"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

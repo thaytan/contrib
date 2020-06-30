@@ -5,7 +5,7 @@ from six import StringIO
 import shutil
 
 
-class RustConan\(ConanFile\):
+class RustConan(ConanFile):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

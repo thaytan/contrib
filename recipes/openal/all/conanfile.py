@@ -3,7 +3,7 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class OpenalConan\(ConanFile\):
+class OpenalConan(ConanFile):
     description = "Cross-platform 3D audio library, software implementation"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

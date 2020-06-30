@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-class MesaConan\(ConanFile\):
+class MesaConan(ConanFile):
     description = "An open-source implementation of the OpenGL specification"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
@@ -52,9 +52,7 @@ class MesaConan\(ConanFile\):
         if self.settings.arch == "armv8":
             args.append("-Dgallium-drivers=nouveau,tegra")
         meson = Meson(self)
-        meson.configure(
-            source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":")
-        )
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):

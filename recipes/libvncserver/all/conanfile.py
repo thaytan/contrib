@@ -1,7 +1,7 @@
 from conans import CMake, ConanFile, tools
 
 
-class LibvncserverConan\(ConanFile\):
+class LibvncserverConan(ConanFile):
     description = "Cross-platform C libraries that allow you to easily implement VNC server or client functionality"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

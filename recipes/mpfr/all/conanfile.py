@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class MpfrConan\(ConanFile\):
+class MpfrConan(ConanFile):
     description = "Multiple-precision floating-point library"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

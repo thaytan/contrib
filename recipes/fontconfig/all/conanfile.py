@@ -4,7 +4,7 @@ from glob import glob
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class FontconfigConan\(ConanFile\):
+class FontconfigConan(ConanFile):
     description = "A library for configuring and customizing font access"
     license = "Old MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

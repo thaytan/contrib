@@ -3,7 +3,7 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class SvtHevcConan\(ConanFile\):
+class SvtHevcConan(ConanFile):
     description = "The Scalable Video Technology for HEVC Encoder"
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

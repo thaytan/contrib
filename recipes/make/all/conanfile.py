@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class MakeConan\(ConanFile\):
+class MakeConan(ConanFile):
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

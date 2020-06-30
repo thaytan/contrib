@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class GitConan\(ConanFile\):
+class GitConan(ConanFile):
     description = "The fast distributed version control system"
     license = "GPL2"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

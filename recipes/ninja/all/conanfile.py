@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, tools
 
 
-class NinjaConan\(ConanFile\):
+class NinjaConan(ConanFile):
     description = "Small build system with a focus on speed"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
@@ -21,6 +21,4 @@ class NinjaConan\(ConanFile\):
             self.run("python configure.py --bootstrap")
 
     def package(self):
-        self.copy(
-            os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin", keep_path=False
-        )
+        self.copy(os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin", keep_path=False)

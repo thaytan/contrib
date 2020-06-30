@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibffiConan\(ConanFile\):
+class LibffiConan(ConanFile):
     description = "A portable, high level programming interface to various calling conventions"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

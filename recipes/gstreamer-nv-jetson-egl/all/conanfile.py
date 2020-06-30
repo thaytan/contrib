@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class GstreamerNvJetsonEgl\(ConanFile\):
+class GstreamerNvJetsonEgl(ConanFile):
     description = "NVIDIA jetson egl element"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

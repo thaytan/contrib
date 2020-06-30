@@ -4,7 +4,7 @@ import shutil
 from conans import ConanFile, tools
 
 
-class RustupConan\(ConanFile\):
+class RustupConan(ConanFile):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

@@ -1,7 +1,7 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class DbusConan\(ConanFile\):
+class DbusConan(ConanFile):
     description = "Freedesktop.org message bus system"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

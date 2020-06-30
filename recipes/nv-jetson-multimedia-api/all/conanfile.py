@@ -4,7 +4,7 @@ from os import listdir, path, symlink
 from conans import ConanFile, tools
 
 
-class NvJetsonMultimediaApi\(ConanFile\):
+class NvJetsonMultimediaApi(ConanFile):
     description = "Multimedia API is a collection of lower-level APIs that support flexible application development"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

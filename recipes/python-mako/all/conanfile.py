@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, tools
 
 
-class PythonMakoConan\(ConanFile\):
+class PythonMakoConan(ConanFile):
     description = "A super-fast templating language that borrows the best ideas from the existing templating languages"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

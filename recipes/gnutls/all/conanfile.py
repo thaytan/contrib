@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class GnutlsConan\(ConanFile\):
+class GnutlsConan(ConanFile):
     description = "A library which provides a secure layer over a reliable transport layer"
     license = "custom", "FDL", "GPL", "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

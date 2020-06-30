@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibeditConan\(ConanFile\):
+class LibeditConan(ConanFile):
     description = "System V Release 4.0 curses emulation library"
     license = "Zlib"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

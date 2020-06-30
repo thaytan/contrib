@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibXorgUtilMacrosConan\(ConanFile\):
+class LibXorgUtilMacrosConan(ConanFile):
     description = "X.Org Autotools macros"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

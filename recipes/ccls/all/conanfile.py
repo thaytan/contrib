@@ -1,7 +1,7 @@
 from conans import CMake, ConanFile, tools
 
 
-class CclsConan\(ConanFile\):
+class CclsConan(ConanFile):
     description = "C/C++ language server supporting cross references, hierarchies, completion and semantic highlighting"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-class IntelVaapiDriverConan\(ConanFile\):
+class IntelVaapiDriverConan(ConanFile):
     description = "VA-API user mode driver for Intel GEN Graphics family"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
@@ -27,9 +27,7 @@ class IntelVaapiDriverConan\(ConanFile\):
         args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
         args.append("-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri"))
         meson = Meson(self)
-        meson.configure(
-            source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":")
-        )
+        meson.configure(source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):

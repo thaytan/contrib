@@ -3,7 +3,7 @@ import os
 from conans import CMake, ConanFile, tools
 
 
-class RapidJsonConan\(ConanFile\):
+class RapidJsonConan(ConanFile):
     description = "A fast JSON parser/generator for C++ with both SAX/DOM style API"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

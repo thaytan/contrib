@@ -9,7 +9,7 @@ mapper = {
 }
 
 
-class GstreamerNvJetsonV4l2\(ConanFile\):
+class GstreamerNvJetsonV4l2(ConanFile):
     description = "NVIDIA jetson v4l2 element"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

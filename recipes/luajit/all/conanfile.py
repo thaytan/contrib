@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LuajitConan\(ConanFile\):
+class LuajitConan(ConanFile):
     description = "Just-in-time compiler and drop-in replacement for Lua 5.1"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

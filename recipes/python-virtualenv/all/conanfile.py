@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, tools
 
 
-class PythonVirtualenvConan\(ConanFile\):
+class PythonVirtualenvConan(ConanFile):
     description = "Virtual Python Environment builder"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

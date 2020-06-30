@@ -1,7 +1,7 @@
 from conans import ConanFile, Meson, tools
 
 
-class GperfConan\(ConanFile\):
+class GperfConan(ConanFile):
     description = "A portable, high level programming interface to various calling conventions"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

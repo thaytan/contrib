@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class TexinfoConan\(ConanFile\):
+class TexinfoConan(ConanFile):
     description = "GNU documentation system for on-line information and printed output"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

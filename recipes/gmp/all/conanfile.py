@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class GmpConan\(ConanFile\):
+class GmpConan(ConanFile):
     description = "A free library for arbitrary precision arithmetic"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

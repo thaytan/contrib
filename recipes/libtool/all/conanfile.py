@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibtoolConan\(ConanFile\):
+class LibtoolConan(ConanFile):
     description = "A generic library support script"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

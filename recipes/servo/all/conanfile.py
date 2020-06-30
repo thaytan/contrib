@@ -4,7 +4,7 @@ import shutil
 from conans import ConanFile, tools
 
 
-class ServoConan\(ConanFile\):
+class ServoConan(ConanFile):
     description = "The Servo Browser Engine"
     license = "MIT", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

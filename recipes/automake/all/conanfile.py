@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class AutomakeConan\(ConanFile\):
+class AutomakeConan(ConanFile):
     description = "A GNU tool for automatically creating Makefiles"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
@@ -16,9 +16,7 @@ class AutomakeConan\(ConanFile\):
 
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/automake/automake-%s.tar.gz" % self.version)
-        tools.patch(
-            patch_file="automake-include-fix.patch", base_path="%s-%s" % (self.name, self.version)
-        )
+        tools.patch(patch_file="automake-include-fix.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         with tools.chdir("%s-%s" % (self.name, self.version)):

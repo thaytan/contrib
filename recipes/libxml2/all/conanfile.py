@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class Libxml2Conan\(ConanFile\):
+class Libxml2Conan(ConanFile):
     description = "XML parsing library, version 2"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

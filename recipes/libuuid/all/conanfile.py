@@ -4,7 +4,7 @@ from os import path, remove
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class LibuuidConan\(ConanFile\):
+class LibuuidConan(ConanFile):
     description = "Portable uuid C library"
     license = "BSD-3-Clause"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

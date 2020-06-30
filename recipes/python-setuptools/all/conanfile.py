@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, tools
 
 
-class PythonSetuptoolsConan\(ConanFile\):
+class PythonSetuptoolsConan(ConanFile):
     description = "Easily download, build, install, upgrade, and uninstall Python packages"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

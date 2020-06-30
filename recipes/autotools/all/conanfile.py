@@ -1,7 +1,7 @@
 from conans import ConanFile, tools
 
 
-class AutotoolsConan\(ConanFile\):
+class AutotoolsConan(ConanFile):
     description = "A suite of programming tools 'designed' to assist in making source code"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

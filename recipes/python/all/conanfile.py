@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class PythonConan\(ConanFile\):
+class PythonConan(ConanFile):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

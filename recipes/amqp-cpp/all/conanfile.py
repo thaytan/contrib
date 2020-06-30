@@ -2,7 +2,7 @@ from conans import CMake, ConanFile, tools
 import os
 
 
-class AmqpCppConan\(ConanFile\):
+class AmqpCppConan(ConanFile):
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
@@ -17,9 +17,7 @@ class AmqpCppConan\(ConanFile\):
 
     def source(self):
         tools.get("https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v%s.tar.gz" % self.version)
-        tools.patch(
-            patch_file="openssl.patch", base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version)
-        )
+        tools.patch(patch_file="openssl.patch", base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

@@ -3,7 +3,7 @@ import os
 from conans import ConanFile, Meson, tools
 
 
-class LibvaMesaDriverConan\(ConanFile\):
+class LibvaMesaDriverConan(ConanFile):
     description = "VA-API user mode driver for Intel GEN Graphics family"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

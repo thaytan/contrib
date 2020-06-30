@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class BinutilsConan\(ConanFile\):
+class BinutilsConan(ConanFile):
     description = "A set of programs to assemble and manipulate binary and object files"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

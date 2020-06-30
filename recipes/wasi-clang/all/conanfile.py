@@ -3,7 +3,7 @@ import os
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
-class WasiSdkConan\(ConanFile\):
+class WasiSdkConan(ConanFile):
     description = "WASI-enabled C/C++ toolchain"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
