@@ -23,9 +23,7 @@ class AtSpi2AtkConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]
         meson = Meson(self)
-        meson.configure(
-            source_folder="at-spi2-atk-AT_SPI2_ATK_" + self.version.replace(".", "_"), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="at-spi2-atk-AT_SPI2_ATK_" + self.version.replace(".", "_"), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):

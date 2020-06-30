@@ -38,11 +38,9 @@ class RustConan\(ConanFile\):
         self.copy("*", src=os.path.join(src, "bin"), dst="bin")
         self.copy("*.so*", src=os.path.join(src, "lib"), dst="lib")
         self.copy(
-            "*", src=os.path.join(src, "etc", "bash_completion.d"), dst=os.path.join("share", "bash-completion", "completions"),
-        )
+            "*", src=os.path.join(src, "etc", "bash_completion.d"), dst=os.path.join("share", "bash-completion", "completions")\        )
         self.copy(
-            "*", src=os.path.join(src, "lib", "rustlib"), dst=os.path.join("lib", "rustlib"),
-        )
+            "*", src=os.path.join(src, "lib", "rustlib"), dst=os.path.join("lib", "rustlib")\        )
 
     def package_info(self):
         self.env_info.RUST_SRC_PATH = os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")

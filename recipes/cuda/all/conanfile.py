@@ -17,9 +17,7 @@ class CudaConan(ConanFile):
         self.build_requires("libxml2/[>=2.9.10]@%s/stable" % self.user)
 
     def source(self):
-        tools.download(
-            "http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_%s_%s_linux.run" % (self.version, driver_map[self.version]), filename="cuda_%s_linux.run" % self.version,
-        )
+        tools.download("http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_%s_%s_linux.run" % (self.version, driver_map[self.version]), filename="cuda_%s_linux.run" % self.version)
 
     def build(self):
         self.run('sh cuda_%s_linux.run --silent --override-driver-check --extract="%s"' % (self.version, self.build_folder))

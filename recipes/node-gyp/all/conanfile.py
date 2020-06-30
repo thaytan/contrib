@@ -13,9 +13,7 @@ class NodeGypConan(ConanFile):
         self.requires("nodejs/[>=13.0.1]@%s/stable" % self.user)
 
     def source(self):
-        tools.download(
-            f"https://registry.npmjs.org/node-gyp/-/node-gyp-{self.version}.tgz", f"{self.name}-{self.version}.tgz",
-        )
+        tools.download(f"https://registry.npmjs.org/node-gyp/-/node-gyp-{self.version}.tgz", f"{self.name}-{self.version}.tgz")
 
     def build(self):
         self.run(f'npm install -g --user root --prefix "{self.package_folder}" "{self.name}-{self.version}.tgz"')

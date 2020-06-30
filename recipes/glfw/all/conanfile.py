@@ -5,9 +5,7 @@ class GlfwcConan(ConanFile):
     description = "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop."
     license = "ZLIB"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    options = {
-        "x11": [True, False],
-    }
+    options = {"x11": [True, False]}
     default_options = ("x11=True",)
     exports = "fix-x11-exts.patch"
 
@@ -25,9 +23,7 @@ class GlfwcConan(ConanFile):
 
     def source(self):
         tools.get("https://github.com/glfw/glfw/archive/%s.tar.gz" % self.version)
-        tools.patch(
-            patch_file="fix-x11-exts.patch", base_path="%s-%s" % (self.name, self.version),
-        )
+        tools.patch(patch_file="fix-x11-exts.patch", base_path="%s-%s" % (self.name, self.version))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")

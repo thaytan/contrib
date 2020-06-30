@@ -22,5 +22,5 @@ class NinjaConan\(ConanFile\):
 
     def package(self):
         self.copy(
-            os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin", keep_path=False,
+            os.path.join("%s-%s" % (self.name, self.version), "ninja"), "bin", keep_path=False
         )

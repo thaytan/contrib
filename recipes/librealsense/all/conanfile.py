@@ -26,7 +26,7 @@ class LibRealsenseConan\(ConanFile\):
     def source(self):
         tools.get("https://github.com/IntelRealSense/librealsense/archive/v%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="pkgconfig-fix.patch", base_path="%s-%s" % (self.name, self.version),
+            patch_file="pkgconfig-fix.patch", base_path="%s-%s" % (self.name, self.version)
         )
         tools.patch(patch_file="libusb-fix.patch", base_path="%s-%s" % (self.name, self.version))
 

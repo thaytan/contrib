@@ -8,7 +8,7 @@ class GStreamerVaapiConan(ConanFile):
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {
-        "introspection": [True, False],
+        "introspection": [True, False]
         "encoders": [True, False],
         "egl": [True, False],
         "x11": [True, False],
@@ -38,7 +38,7 @@ class GStreamerVaapiConan(ConanFile):
     def source(self):
         git = tools.Git(folder="gstreamer-vaapi-" + self.version)
         git.clone(
-            url="https://gitlab.freedesktop.org/gstreamer/gstreamer-vaapi.git", branch=self.version, shallow=True,
+            url="https://gitlab.freedesktop.org/gstreamer/gstreamer-vaapi.git", branch=self.version, shallow=True
         )
 
     def build(self):

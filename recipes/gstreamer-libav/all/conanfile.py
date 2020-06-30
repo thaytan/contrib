@@ -23,7 +23,5 @@ class GStreamerLibavConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(
-            source_folder="gst-libav-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="gst-libav-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()

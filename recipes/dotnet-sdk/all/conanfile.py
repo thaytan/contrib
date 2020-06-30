@@ -26,7 +26,7 @@ class DotnetSdkConan\(ConanFile\):
         self.copy("dotnet", dst="share")
         os.mkdir(os.path.join(self.package_folder, "bin"))
         os.symlink(
-            os.path.join(self.package_folder, "share", "dotnet"), os.path.join(self.package_folder, "bin", "dotnet"),
+            os.path.join(self.package_folder, "share", "dotnet"), os.path.join(self.package_folder, "bin", "dotnet")
         )
 
     def package_info(self):

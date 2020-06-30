@@ -22,5 +22,5 @@ class Deepstream\(ConanFile\):
     def package(self):
         self.copy("*.so*", dst="lib", keep_path=False)
         self.copy(
-            "*", dst="include", src="deepstream_sdk_v%s_jetson/sources/includes" % self.version, keep_path=False,
+            "*", dst="include", src="deepstream_sdk_v%s_jetson/sources/includes" % self.version, keep_path=False
         )

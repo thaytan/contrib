@@ -28,7 +28,7 @@ class KinectAzureSensorSDKConan\(ConanFile\):
         # Download `libk4a` and `libk4a-dev` for headers and shared objects
         tools.download("%s/libk4a%s/%s" % (debian_repo_url, version_short, libk4a), filename=libk4a)
         tools.download(
-            "%s/libk4a%s-dev/%s" % (debian_repo_url, version_short, libk4a_dev), filename=libk4a_dev,
+            "%s/libk4a%s-dev/%s" % (debian_repo_url, version_short, libk4a_dev), filename=libk4a_dev
         )
 
         # Extract shared objects, including the closed-source `libdepthengine.so*`

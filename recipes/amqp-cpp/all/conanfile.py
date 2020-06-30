@@ -18,7 +18,7 @@ class AmqpCppConan\(ConanFile\):
     def source(self):
         tools.get("https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="openssl.patch", base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version),
+            patch_file="openssl.patch", base_path=os.path.join(self.source_folder, "AMQP-CPP-%s" % self.version)
         )
 
     def build(self):

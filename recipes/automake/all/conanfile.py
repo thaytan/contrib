@@ -17,7 +17,7 @@ class AutomakeConan\(ConanFile\):
     def source(self):
         tools.get("https://ftp.gnu.org/gnu/automake/automake-%s.tar.gz" % self.version)
         tools.patch(
-            patch_file="automake-include-fix.patch", base_path="%s-%s" % (self.name, self.version),
+            patch_file="automake-include-fix.patch", base_path="%s-%s" % (self.name, self.version)
         )
 
     def build(self):

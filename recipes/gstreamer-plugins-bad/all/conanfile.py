@@ -113,8 +113,6 @@ class GStreamerPluginsBadConan(ConanFile):
                 args.append("-Dnvcodec=" + ("enabled" if self.options.nvcodec else "disabled"))
 
         meson = Meson(self)
-        meson.configure(
-            source_folder="gst-plugins-bad-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="gst-plugins-bad-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()

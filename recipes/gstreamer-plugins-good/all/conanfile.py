@@ -63,9 +63,7 @@ class GStreamerPluginsGoodConan(ConanFile):
                 "https://gitlab.freedesktop.org/thaytan/gst-plugins-good", "splitmuxsink-muxerpad-map-1.16.0",
             )
         else:
-            git.clone(
-                "https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git", self.version,
-            )
+            git.clone("https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git", self.version)
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -87,7 +85,5 @@ class GStreamerPluginsGoodConan(ConanFile):
         args.append("-Djpeg=" + ("enabled" if self.options.jpeg else "disabled"))
 
         meson = Meson(self)
-        meson.configure(
-            source_folder="gst-plugins-good-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="gst-plugins-good-%s" % self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()

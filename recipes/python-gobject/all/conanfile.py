@@ -22,9 +22,7 @@ class PythonGobjectConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled", "--wrap-mode=nofallback"]
         meson = Meson(self)
-        meson.configure(
-            source_folder="pygobject-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="pygobject-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
 
     def package_info(self):

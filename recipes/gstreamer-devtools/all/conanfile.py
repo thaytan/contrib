@@ -22,9 +22,7 @@ class GStreamerDevtoolsConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-devtools")
-        git.clone(
-            "https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "rebased-aivero_mse_compare_changes",
-        )
+        git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "rebased-aivero_mse_compare_changes")
 
     def requirements(self):
         self.requires("gstreamer-plugins-base/%s@%s/stable" % (self.gst_version, self.user))

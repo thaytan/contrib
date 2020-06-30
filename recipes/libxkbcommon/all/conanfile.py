@@ -27,7 +27,5 @@ class LibxcbConan(ConanFile):
             "-Denable-docs=false",
         ]
         meson = Meson(self)
-        meson.configure(
-            source_folder="libxkbcommon-xkbcommon-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="libxkbcommon-xkbcommon-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()

@@ -27,6 +27,6 @@ class LibdrmConan\(ConanFile\):
         ]
         meson = Meson(self)
         meson.configure(
-            source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
+            source_folder="%s-%s" % (self.name, self.version), args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":")
         )
         meson.install()

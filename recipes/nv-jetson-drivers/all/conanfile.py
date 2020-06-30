@@ -43,12 +43,12 @@ class NvJetsonDrivers\(ConanFile\):
 
         elif self.version in ("32.3.1"):
             self.copy(
-                "*.so*", src="usr/lib/aarch64-linux-gnu/tegra", dst="lib", keep_path=False, symlinks=True,
+                "*.so*", src="usr/lib/aarch64-linux-gnu/tegra", dst="lib", keep_path=False, symlinks=True
             )
             # with tools.chdir(lib_folder):
             # symlink("/usr/lib/aarch64-linux-gnu/tegra/libcuda.so", "libcuda.so" )
             self.copy(
-                "*.so*", src="usr/lib/aarch64-linux-gnu/tegra-egl", dst="lib", keep_path=False, symlinks=False,
+                "*.so*", src="usr/lib/aarch64-linux-gnu/tegra-egl", dst="lib", keep_path=False, symlinks=False
             )
             self.copy("*.so*", src="usr/lib/xorg", dst="lib", keep_path=False, symlinks=False)
         else:

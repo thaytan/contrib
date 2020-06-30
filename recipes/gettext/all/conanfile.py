@@ -24,10 +24,10 @@ class GettextConan\(ConanFile\):
             autotools.make()
             autotools.install()
         symlink(
-            "preloadable_libintl.so", path.join(self.package_folder, "lib", "libpreloadable_libintl.so"),
+            "preloadable_libintl.so", path.join(self.package_folder, "lib", "libpreloadable_libintl.so")
         )
         symlink(
-            "preloadable_libintl.so", path.join(self.package_folder, "lib", "libgnuintl.so.8"),
+            "preloadable_libintl.so", path.join(self.package_folder, "lib", "libgnuintl.so.8")
         )
 
     def package_info(self):

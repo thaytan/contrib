@@ -65,9 +65,7 @@ class GStreamerPluginsBaseConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="gst-plugins-base-" + self.version)
-        git.clone(
-            url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-base.git", branch=self.version, shallow=True,
-        )
+        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-base.git", branch=self.version, shallow=True)
 
     def build(self):
         args = ["--auto-features=disabled", "-Dgl_platform=egl"]
@@ -87,7 +85,5 @@ class GStreamerPluginsBaseConan(ConanFile):
         args.append("-Dvideoscale=" + ("enabled" if self.options.videoscale else "disabled"))
         args.append("-Daudioconvert=" + ("enabled" if self.options.audioconvert else "disabled"))
         meson = Meson(self)
-        meson.configure(
-            source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"),
-        )
+        meson.configure(source_folder="gst-plugins-base-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()

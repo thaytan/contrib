@@ -16,12 +16,8 @@ class RenderprotoConan(ConanFile):
         with tools.chdir("%s-%s" % (self.name, self.version)):
             os.remove("config.guess")
             os.remove("config.sub")
-            tools.download(
-                "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD", "config.guess",
-            )
-            tools.download(
-                "http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD", "config.sub",
-            )
+            tools.download("http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD", "config.guess")
+            tools.download("http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD", "config.sub")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
