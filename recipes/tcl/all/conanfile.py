@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class TclConan(ConanFile):
     name = "tcl"
-    version = tools.get_env("GIT_TAG", "8.6.10")
     description = "The Tcl scripting language"
     license = "custom"
     settings = "os", "arch", "compiler", "build_type"

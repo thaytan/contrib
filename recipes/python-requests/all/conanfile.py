@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 class PythonRequestsConan(ConanFile):
     name = "python-requests"
-    version = tools.get_env("GIT_TAG", "2.7.0")
     description = "Python Requests module"
     license = "Apache 2.0"
     settings = "os", "arch", "compiler", "build_type"

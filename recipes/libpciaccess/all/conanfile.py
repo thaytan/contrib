@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibPciAccessConan(ConanFile):
     name = "libpciaccess"
-    version = tools.get_env("GIT_TAG", "0.14")
     description = "Generic PCI access library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

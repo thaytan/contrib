@@ -3,7 +3,6 @@ from conans import CMake, ConanFile, tools
 
 class GlfwcConan(ConanFile):
     name = "glfw"
-    version = tools.get_env("GIT_TAG", "3.3")
     description = "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop."
     license = "ZLIB"
     settings = "os", "compiler", "build_type", "arch"

@@ -4,7 +4,6 @@ from conans import ConanFile, tools
 
 class PythonImportlibMetadataConan(ConanFile):
     name = "python-importlib-metadata"
-    version = tools.get_env("GIT_TAG", "1.6.0")
     description = "Read metadata from Python packages"
     license = "Apache"
     settings = "os", "arch", "compiler", "build_type"

@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GraphvizConan(ConanFile):
     name = "graphviz"
-    version = tools.get_env("GIT_TAG", "2.42.1")
     license = "EPL"
     description = "Graph Visualization Tools"
     settings = "os", "compiler", "build_type", "arch"

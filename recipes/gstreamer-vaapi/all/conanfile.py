@@ -7,7 +7,6 @@ class GStreamerVaapiConan(ConanFile):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    version = tools.get_env("GIT_TAG", "1.16.2")
     options = {
         "introspection": [True, False],
         "encoders": [True, False],

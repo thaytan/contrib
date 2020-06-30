@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 class PythonPillowConan(ConanFile):
     name = "python-pillow"
-    version = tools.get_env("GIT_TAG", "7.1.2")
     description = "Python Image Library"
     license = "Python-Imaging-Library-License"
     settings = "os", "arch", "compiler", "build_type"

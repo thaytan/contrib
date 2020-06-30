@@ -3,7 +3,6 @@ from conans import ConanFile, Meson, tools
 
 class OrcConan(ConanFile):
     name = "orc"
-    version = tools.get_env("GIT_TAG", "0.4.31")
     settings = "os", "compiler", "build_type", "arch"
     license = "LGPL-2.1"
     description = "Optimized Inner Loop Runtime Compiler"

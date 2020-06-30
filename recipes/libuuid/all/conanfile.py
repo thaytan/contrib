@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibuuidConan(ConanFile):
     name = "libuuid"
-    version = tools.get_env("GIT_TAG", "1.0.3")
     settings = "os", "compiler", "build_type", "arch"
     license = "BSD-3-Clause"
     description = "Portable uuid C library"

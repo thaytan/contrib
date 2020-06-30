@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibpthreadStubsConan(ConanFile):
     name = "libpthread-stubs"
-    version = tools.get_env("GIT_TAG", "0.4")
     description = "X11 client-side library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

@@ -2,7 +2,6 @@ from conans import *
 
 class PngquantConan(ConanFile):
     name = "pngquant"
-    version = tools.get_env("GIT_TAG", "2.12.6")
     description = "Command-line utility to quantize PNGs down to 8-bit paletted PNGs"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"

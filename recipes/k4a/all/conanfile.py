@@ -3,7 +3,6 @@ from conans import ConanFile, tools
 
 class KinectAzureSensorSDKConan(ConanFile):
     name = "k4a"
-    version = tools.get_env("GIT_TAG", "1.4.0")
     license = "MIT"
     description = "Azure Kinect SDK"
     settings = "os", "compiler", "build_type", "arch"

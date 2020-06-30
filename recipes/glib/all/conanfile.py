@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class GLibConan(ConanFile):
     name = "glib"
-    version = tools.get_env("GIT_TAG", "2.62.0")
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"

@@ -4,7 +4,6 @@ import os
 
 class AmqpCppConan(ConanFile):
     name = "amqp-cpp"
-    version = tools.get_env("GIT_TAG", "4.1.5")
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"

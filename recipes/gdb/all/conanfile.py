@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GdbConan(ConanFile):
     name = "gdb"
-    version = tools.get_env("GIT_TAG", "8.3.1")
     description = "The GNU Debugger"
     license = "GPL3"
     settings = "os", "arch", "compiler"

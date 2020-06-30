@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class RustfmtConan(ConanFile):
     name = "rustfmt"
-    version = tools.get_env("GIT_TAG", "master")
     description = "A tool for formatting Rust code according to style guidelines"
     license = "MIT"
     settings = "os", "arch", "compiler"

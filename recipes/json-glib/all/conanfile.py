@@ -3,7 +3,6 @@ from conans import ConanFile, Meson, tools
 
 class JsonGlibBaseConan(ConanFile):
     name = "json-glib"
-    version = tools.get_env("GIT_TAG", "1.4.4")
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "GPL"
     settings = "os", "arch", "compiler", "build_type"

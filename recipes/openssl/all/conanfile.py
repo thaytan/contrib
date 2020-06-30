@@ -7,7 +7,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class OpensslConan(ConanFile):
     name = "openssl"
-    version = tools.get_env("GIT_TAG", "1.1.1b")
     description = "TLS/SSL and crypto library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

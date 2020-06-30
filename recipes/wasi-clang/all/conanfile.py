@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class WasiSdkConan(ConanFile):
     name = "wasi-sdk"
-    version = tools.get_env("GIT_TAG", "8.0")
     settings = "os", "compiler", "arch"
     license = "custom"
     description = "WASI-enabled C/C++ toolchain"

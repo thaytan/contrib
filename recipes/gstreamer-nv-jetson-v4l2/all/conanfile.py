@@ -11,7 +11,6 @@ mapper = {
 
 class GstreamerNvJetsonV4l2(ConanFile):
     name = "gstreamer-nv-jetson-v4l2"
-    version = tools.get_env("GIT_TAG", "32.3.1")
     license = "LGPL"
     description = "NVIDIA jetson v4l2 element"
     settings = "os", "compiler", "build_type", "arch"

@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class GstreamerNvJetsonPluginsConan(ConanFile):
     name = "gstreamer-nv-jetson-plugins"
-    version = tools.get_env("GIT_TAG", "32.2.1")
     url = "http://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT"
     description = "Demo conan package"

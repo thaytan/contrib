@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxcursorConan(ConanFile):
     name = "libxcursor"
-    version = tools.get_env("GIT_TAG", "1.2.0")
     description = "X cursor management library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

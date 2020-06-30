@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GnutlsConan(ConanFile):
     name = "gnutls"
-    version = tools.get_env("GIT_TAG", "3.6.12")
     settings = "os", "compiler", "arch"
     license = "custom", "FDL", "GPL", "LGPL"
     description = "A library which provides a secure layer over a reliable transport layer"

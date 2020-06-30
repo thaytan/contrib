@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class FribidiConan(ConanFile):
     name = "fribidi"
-    version = tools.get_env("GIT_TAG", "1.0.5")
     description = "The Free Implementation of the Unicode Bidirectional Algorithm"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"

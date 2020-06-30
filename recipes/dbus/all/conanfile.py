@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class DbusConan(ConanFile):
     name = "dbus"
-    version = tools.get_env("GIT_TAG", "1.12.16")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "Freedesktop.org message bus system"

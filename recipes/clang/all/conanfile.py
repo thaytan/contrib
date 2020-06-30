@@ -3,7 +3,6 @@ from conans import CMake, ConanFile, tools
 
 class ClangConan(ConanFile):
     name = "clang"
-    version = tools.get_env("GIT_TAG", "9.0.0")
     license = "Apache"
     description = "C language family frontend for LLVM"
     settings = "os", "compiler", "arch"

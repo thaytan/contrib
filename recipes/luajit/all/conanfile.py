@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LuajitConan(ConanFile):
     name = "luajit"
-    version = tools.get_env("GIT_TAG", "2.0.5")
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "Just-in-time compiler and drop-in replacement for Lua 5.1"

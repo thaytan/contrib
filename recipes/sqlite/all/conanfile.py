@@ -8,7 +8,6 @@ def conv_version(version):
 
 class SqliteConan(ConanFile):
     name = "sqlite"
-    version = tools.get_env("GIT_TAG", "3.30.1")
     description = "A C library that implements an SQL database engine"
     license = "custom:Public Domain"
     settings = "os", "arch", "compiler", "build_type"

@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class NcursesConan(ConanFile):
     name = "ncurses"
-    version = tools.get_env("GIT_TAG", "6.1")
     license = "Zlib"
     description = "System V Release 4.0 curses emulation library"
     settings = "os", "arch", "compiler", "build_type"

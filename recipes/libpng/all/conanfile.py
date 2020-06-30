@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibpngConan(ConanFile):
     name = "libpng"
-    version = tools.get_env("GIT_TAG", "1.6.37")
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "A collection of routines used to create PNG format graphics files"

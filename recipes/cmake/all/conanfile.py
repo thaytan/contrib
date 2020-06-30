@@ -3,7 +3,6 @@ from conans import ConanFile, tools
 
 class CMakeConan(ConanFile):
     name = "cmake"
-    version = tools.get_env("GIT_TAG", "3.15.3")
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "A cross-platform open-source make system"

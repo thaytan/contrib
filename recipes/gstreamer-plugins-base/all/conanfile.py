@@ -8,7 +8,6 @@ class GStreamerPluginsBaseConan(ConanFile):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    version = tools.get_env("GIT_TAG", "1.16.2")
 
     options = {
         "introspection": [True, False],

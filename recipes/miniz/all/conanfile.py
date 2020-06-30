@@ -3,7 +3,6 @@ from conans import CMake, ConanFile, tools
 
 class MinuzConan(ConanFile):
     name = "miniz"
-    version = tools.get_env("GIT_TAG", "2.1.0")
     description = "Single C source file zlib-replacement library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibVpxConan(ConanFile):
     name = "libvpx"
-    version = tools.get_env("GIT_TAG", "1.8.0")
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"

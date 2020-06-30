@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class NinjaConan(ConanFile):
     name = "ninja"
-    version = tools.get_env("GIT_TAG", "1.9.0")
     license = "Apache"
     description = "Small build system with a focus on speed"
     settings = "os", "compiler", "build_type", "arch"

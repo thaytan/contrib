@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibunwindConan(ConanFile):
     name = "libunwind"
-    version = tools.get_env("GIT_TAG", "1.3.1")
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "Portable and efficient C programming interface (API) to determine the call-chain of a programs"

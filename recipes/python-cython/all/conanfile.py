@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 class PythonCythonConan(ConanFile):
     name = "python-cython"
-    version = tools.get_env("GIT_TAG", "0.29.19")
     description = "Python to C compiler"
     license = "Apache"
     settings = "os", "arch", "compiler", "build_type"

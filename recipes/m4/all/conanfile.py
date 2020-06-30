@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class M4Conan(ConanFile):
     name = "m4"
-    version = tools.get_env("GIT_TAG", "1.4.18")
     settings = "os", "compiler", "arch"
     license = "GPL3"
     description = "The GNU macro processor"

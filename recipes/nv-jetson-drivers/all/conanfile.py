@@ -16,7 +16,6 @@ download_tx1_url = {
 
 class NvJetsonDrivers(ConanFile):
     name = "nv-jetson-drivers"
-    version = tools.get_env("GIT_TAG", "32.3.1")
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     settings = "os", "compiler", "build_type", "arch"

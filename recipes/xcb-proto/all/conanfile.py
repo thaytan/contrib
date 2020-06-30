@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class XcbProtoConan(ConanFile):
     name = "xcb-proto"
-    version = tools.get_env("GIT_TAG", "1.13")
     description = "XML-XCB protocol descriptions"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

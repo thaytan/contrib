@@ -6,7 +6,6 @@ from conans import ConanFile, tools
 
 class RustupConan(ConanFile):
     name = "rustup"
-    version = tools.get_env("GIT_TAG", "1.21.1")
     settings = "os", "compiler", "arch"
     license = "MIT", "Apache"
     description = "Systems programming language focused on safety, speed and concurrency"

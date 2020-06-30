@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class PerlConan(ConanFile):
     name = "perl"
-    version = tools.get_env("GIT_TAG", "5.30.0")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "A highly capable, feature-rich programming language"

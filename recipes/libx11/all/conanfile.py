@@ -4,7 +4,6 @@ import os
 
 class Libx11Conan(ConanFile):
     name = "libx11"
-    version = tools.get_env("GIT_TAG", "1.6.8")
     description = "X11 client-side library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

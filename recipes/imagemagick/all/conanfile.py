@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class ImagemagickConan(ConanFile):
     name = "imagemagick"
-    version = tools.get_env("GIT_TAG", "7.0.10.0")
     tar_version = "%s-%s" % (version[:version.rfind(".")], version[version.rfind(".") + 1:])
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL2"

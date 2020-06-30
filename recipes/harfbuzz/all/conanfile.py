@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class HarfbuzzConan(ConanFile):
     name = "harfbuzz"
-    version = tools.get_env("GIT_TAG", "2.6.1")
     license = "Old MIT"
     description = "HarfBuzz text shaping engine"
     settings = "os", "compiler", "build_type", "arch"

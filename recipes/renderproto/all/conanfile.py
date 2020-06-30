@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class RenderprotoConan(ConanFile):
     name = "renderproto"
-    version = tools.get_env("GIT_TAG", "0.11.1")
     description = "X11 Render extension wire protocol"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

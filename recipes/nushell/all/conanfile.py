@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class NushellConan(ConanFile):
     name = "nushell"
-    version = tools.get_env("GIT_TAG", "0.15.0")
     description = "Development and debugging tools for GStreamer"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"

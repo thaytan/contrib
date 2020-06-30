@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class LibVaConan(ConanFile):
     name = "libva"
-    version = tools.get_env("GIT_TAG", "2.3.0")
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"

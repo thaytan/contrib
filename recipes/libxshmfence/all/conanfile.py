@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxshmfenceConan(ConanFile):
     name = "libxshmfence"
-    version = tools.get_env("GIT_TAG", "1.3")
     description = "Library that exposes a event API on top of Linux futexes"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

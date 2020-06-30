@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class PythonConan(ConanFile):
     name = "python"
-    version = tools.get_env("GIT_TAG", "3.7.4")
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "Next generation of the python high-level scripting language"

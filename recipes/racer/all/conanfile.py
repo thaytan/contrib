@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class RacerConan(ConanFile):
     name = "racer"
-    version = tools.get_env("GIT_TAG", "master")
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler"

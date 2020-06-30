@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class MesonConan(ConanFile):
     name = "meson"
-    version = tools.get_env("GIT_TAG", "0.51.2")
     license = "Apache"
     description = "High productivity build system"
     settings = "os", "compiler", "build_type", "arch"

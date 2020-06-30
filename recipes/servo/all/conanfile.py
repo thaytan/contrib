@@ -6,7 +6,6 @@ from conans import ConanFile, tools
 
 class ServoConan(ConanFile):
     name = "servo"
-    version = tools.get_env("GIT_TAG", "master")
     settings = "os", "compiler", "arch"
     license = "MIT", "Apache"
     description = "The Servo Browser Engine"

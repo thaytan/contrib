@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools, CMake, AutoToolsBuildEnvironment
 
 class GStreamerPerfConan(ConanFile):
     name = "gst-perf"
-    version = tools.get_env("GIT_TAG", "0.2.3")
     description = "Performance Evaluation tool for Gstreamer"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"

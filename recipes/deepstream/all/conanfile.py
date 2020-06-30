@@ -3,7 +3,6 @@ from conans import ConanFile, tools
 
 class Deepstream(ConanFile):
     name = "deepstream"
-    version = tools.get_env("GIT_TAG", "4.0.1")
     license = "proprietary"
     description = "Complete streaming analytics toolkit for AI-based video"
     settings = "os", "compiler", "build_type", "arch"

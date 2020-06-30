@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibXorgUtilMacrosConan(ConanFile):
     name = "xorg-util-macros"
-    version = tools.get_env("GIT_TAG", "1.19.1")
     license = "custom"
     description = "X.Org Autotools macros"
     settings = "os", "compiler", "build_type", "arch"

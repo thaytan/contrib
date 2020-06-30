@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxfixesConan(ConanFile):
     name = "libxfixes"
-    version = tools.get_env("GIT_TAG", "5.0.3")
     description = "X11 miscellaneous 'fixes' extension library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

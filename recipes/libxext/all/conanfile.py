@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxextConan(ConanFile):
     name = "libxext"
-    version = tools.get_env("GIT_TAG", "1.3.4")
     description = "X11 miscellaneous extensions library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

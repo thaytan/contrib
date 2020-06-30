@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibffiConan(ConanFile):
     name = "libffi"
-    version = tools.get_env("GIT_TAG", "3.3")
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "A portable, high level programming interface to various calling conventions"

@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class AtkConan(ConanFile):
     name = "atk"
-    version = tools.get_env("GIT_TAG", "2.35.1")
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"

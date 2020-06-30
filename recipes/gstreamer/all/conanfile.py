@@ -7,7 +7,6 @@ class GStreamerConan(ConanFile):
     description = "A framework for streaming media"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    version = tools.get_env("GIT_TAG", "1.16.2")
     options = {
         "introspection": [True, False],
         "check": [True, False],

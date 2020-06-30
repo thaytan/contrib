@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibUSBConan(ConanFile):
     name = "libusb"
-    version = tools.get_env("GIT_TAG", "1.0.23")
     license = "LGPL-2.1"
     description = "A cross-platform library to access USB devices"
     settings = "os", "compiler", "build_type", "arch"

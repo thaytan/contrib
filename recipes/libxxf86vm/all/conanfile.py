@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class Libxxf86vmConan(ConanFile):
     name = "libxxf86vm"
-    version = tools.get_env("GIT_TAG", "1.1.4")
     description = "X11 XFree86 video mode extension library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

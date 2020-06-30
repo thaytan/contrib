@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GiflibConan(ConanFile):
     name = "giflib"
-    version = tools.get_env("GIT_TAG", "5.2.1")
     description = "Library for reading and writing gif images"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

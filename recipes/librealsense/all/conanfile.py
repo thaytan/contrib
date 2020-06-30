@@ -5,7 +5,6 @@ from conans import CMake, ConanFile, tools
 
 class LibRealsenseConan(ConanFile):
     name = "librealsense"
-    version = tools.get_env("GIT_TAG", "2.35.2")
     license = "Apache"
     description = "Intel RealSense SDK"
     settings = "os", "compiler", "build_type", "arch"

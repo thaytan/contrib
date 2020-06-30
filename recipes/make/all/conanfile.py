@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class MakeConan(ConanFile):
     name = "make"
-    version = tools.get_env("GIT_TAG", "4.3")
     settings = "os", "compiler", "arch"
     license = "GPL"
     description = "GNU make utility to maintain groups of programs"

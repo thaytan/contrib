@@ -5,7 +5,6 @@ from conans import CMake, ConanFile, tools
 
 class LLVMConan(ConanFile):
     name = "llvm"
-    version = tools.get_env("GIT_TAG", "9.0.1")
     license = "custom", "Apache"
     description = "Collection of modular and reusable compiler and toolchain technologies"
     settings = "os", "compiler", "arch"

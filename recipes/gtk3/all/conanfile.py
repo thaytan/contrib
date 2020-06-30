@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class Gtk3Conan(ConanFile):
     name = "gtk3"
-    version = tools.get_env("GIT_TAG", "3.24.11")
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"

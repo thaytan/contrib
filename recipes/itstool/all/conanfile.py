@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class ItstoolConan(ConanFile):
     name = "itstool"
-    version = tools.get_env("GIT_TAG", "2.0.6")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL3"
     description = "XML to PO and back again"

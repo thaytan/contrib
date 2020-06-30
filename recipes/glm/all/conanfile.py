@@ -3,7 +3,6 @@ import os
 
 class GlmConan(ConanFile):
     name = "glm"
-    version = tools.get_env("GIT_TAG", "0.9.9.6")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "MIT License"

@@ -6,7 +6,6 @@ from conans import ConanFile, Meson, tools
 
 class GdkPixbufConan(ConanFile):
     name = "gdk-pixbuf"
-    version = tools.get_env("GIT_TAG", "2.40.0")
     description = "An image loading library"
     license = "LGPL-2.1"
     settings = "os", "arch", "compiler", "build_type"

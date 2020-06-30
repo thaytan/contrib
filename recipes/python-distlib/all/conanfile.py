@@ -2,7 +2,6 @@ from conans import ConanFile, tools
 
 class PythonDistlibConan(ConanFile):
     name = "python-distlib"
-    version = tools.get_env("GIT_TAG", "0.3.0")
     description = "Low-level components of distutils2/packaging"
     license = "PSF"
     settings = "os", "arch", "compiler", "build_type"

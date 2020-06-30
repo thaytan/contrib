@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class FreetypeConan(ConanFile):
     name = "freetype"
-    version = tools.get_env("GIT_TAG", "2.10.1")
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
     settings = "os", "arch", "compiler", "build_type"

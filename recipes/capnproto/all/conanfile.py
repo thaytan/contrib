@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class CapNProtoConan(ConanFile):
     name = "capnproto"
-    version = tools.get_env("GIT_TAG", "0.7.0")
     license = "MIT"
     description = "Cap'n Proto serialization/RPC system"
     settings = "os", "arch", "compiler", "build_type"

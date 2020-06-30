@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxpmConan(ConanFile):
     name = "libxpm"
-    version = tools.get_env("GIT_TAG", "3.5.13")
     description = "X11 pixmap library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

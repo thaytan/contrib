@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class PythonVirtualenvConan(ConanFile):
     name = "python-virtualenv"
-    version = tools.get_env("GIT_TAG", "20.0.21")
     license = "MIT"
     description = "Virtual Python Environment builder"
     settings = "os", "compiler", "build_type", "arch"

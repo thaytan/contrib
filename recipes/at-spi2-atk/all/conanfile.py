@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class AtSpi2AtkConan(ConanFile):
     name = "at-spi2-atk"
-    version = tools.get_env("GIT_TAG", "2.34.0")
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"

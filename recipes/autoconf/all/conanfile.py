@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class AutoconfConan(ConanFile):
     name = "autoconf"
-    version = tools.get_env("GIT_TAG", "2.69")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL3"
     description = "A GNU tool for automatically configuring source code"

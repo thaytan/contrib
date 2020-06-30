@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxrenderConan(ConanFile):
     name = "libxrender"
-    version = tools.get_env("GIT_TAG", "0.9.10")
     description = "X Rendering Extension client library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

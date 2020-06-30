@@ -3,7 +3,6 @@ from conans import CMake, ConanFile, tools
 
 class LibvncserverConan(ConanFile):
     name = "libvncserver"
-    version = tools.get_env("GIT_TAG", "0.9.12")
     license = "Apache"
     description = "Cross-platform C libraries that allow you to easily implement VNC server or client functionality"
     settings = "os", "compiler", "arch"

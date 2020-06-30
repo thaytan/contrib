@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class FontconfigConan(ConanFile):
     name = "fontconfig"
-    version = tools.get_env("GIT_TAG", "2.13.92")
     license = "Old MIT"
     description = "A library for configuring and customizing font access"
     settings = "os", "compiler", "build_type", "arch"

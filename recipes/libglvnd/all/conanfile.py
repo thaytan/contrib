@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibglvndConan(ConanFile):
     name = "libglvnd"
-    version = tools.get_env("GIT_TAG", "1.2.0")
     description = "The GL Vendor-Neutral Dispatch library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

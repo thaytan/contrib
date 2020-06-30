@@ -4,7 +4,6 @@ from conans import ConanFile, Meson, tools
 
 class PythonNumpyConan(ConanFile):
     name = "python-numpy"
-    version = tools.get_env("GIT_TAG", "1.18.4")
     description = "conan package for Python Numpy module"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"

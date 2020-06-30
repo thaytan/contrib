@@ -4,7 +4,6 @@ import os
 
 class LibeventConan(ConanFile):
     name = "libevent"
-    version = tools.get_env("GIT_TAG", "2.1.11")
     settings = "os", "compiler", "build_type", "arch"
     url = "https://gitlab.com/aivero/public/conan/conan-" + name
     license = "BSD-3-Clause"

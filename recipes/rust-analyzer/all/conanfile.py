@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class RustAnalyzerConan(ConanFile):
     name = "rust-analyzer"
-    version = tools.get_env("GIT_TAG", "2020.03.09")
     description = "An experimental Rust compiler front-end for IDEs."
     license = "MIT", "Apache2"
     settings = "os", "arch", "compiler"

@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxrandrConan(ConanFile):
     name = "libxrandr"
-    version = tools.get_env("GIT_TAG", "1.5.2")
     description = "X11 RandR extension library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

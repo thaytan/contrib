@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class MesaConan(ConanFile):
     name = "mesa"
-    version = tools.get_env("GIT_TAG", "20.0.0")
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "An open-source implementation of the OpenGL specification"

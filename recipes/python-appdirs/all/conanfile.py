@@ -4,7 +4,6 @@ from conans import ConanFile, tools
 
 class PythonAppdirsConan(ConanFile):
     name = "python-appdirs"
-    version = tools.get_env("GIT_TAG", "1.4.4")
     description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"

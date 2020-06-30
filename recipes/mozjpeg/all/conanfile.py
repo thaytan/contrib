@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class MozjpegConan(ConanFile):
     name = "mozjpeg"
-    version = tools.get_env("GIT_TAG", "3.3.1")
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"

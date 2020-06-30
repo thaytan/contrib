@@ -4,7 +4,6 @@ from conans import CMake, ConanFile, tools
 
 class LibShadercConan(ConanFile):
     name = "shaderc"
-    version = tools.get_env("GIT_TAG", "2020.1")
     license = "Apache"
     description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
     settings = "os", "compiler", "build_type", "arch"

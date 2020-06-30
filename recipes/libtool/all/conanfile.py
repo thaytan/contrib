@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibtoolConan(ConanFile):
     name = "libtool"
-    version = tools.get_env("GIT_TAG", "2.4.6")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "A generic library support script"

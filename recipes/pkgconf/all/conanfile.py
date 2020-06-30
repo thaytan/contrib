@@ -7,7 +7,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class PkgconfConan(ConanFile):
     name = "pkgconf"
-    version = tools.get_env("GIT_TAG", "1.6.3")
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "Package compiler and linker metadata toolkit"

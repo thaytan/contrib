@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GstreamerSharkConan(ConanFile):
     name = "gstreamer-shark"
-    version = tools.get_env("GIT_TAG", "0.6.1")
     description = "GstShark is a front-end for GStreamer traces "
     license = "LGPL"
     settings = "os", "compiler", "build_type", "arch"

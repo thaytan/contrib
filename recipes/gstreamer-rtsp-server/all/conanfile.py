@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class GStreamerRtspServerConan(ConanFile):
     name = "gstreamer-rtsp-server"
-    version = tools.get_env("GIT_TAG", "1.16.2")
     description = "A framework for streaming media"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"

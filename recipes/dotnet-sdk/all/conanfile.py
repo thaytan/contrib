@@ -8,7 +8,6 @@ id = {"3.1.201": "f65a8eb0-4537-4e69-8ff3-1a80a80d9341/cc0ca9ff8b9634f3d9780ec59
 
 class DotnetSdkConan(ConanFile):
     name = "dotnet-sdk"
-    version = tools.get_env("GIT_TAG", "3.1.201")
     settings = "os", "compiler", "arch"
     license = "custom"
     description = "The .NET Core SDK"

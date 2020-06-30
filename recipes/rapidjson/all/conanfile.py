@@ -5,7 +5,6 @@ from conans import CMake, ConanFile, tools
 
 class RapidJsonConan(ConanFile):
     name = "rapidjson"
-    version = tools.get_env("GIT_TAG", "master")
     license = "MIT"
     description = "A fast JSON parser/generator for C++ with both SAX/DOM style API"
     settings = "os", "compiler", "build_type", "arch"

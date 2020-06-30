@@ -2,7 +2,6 @@ from conans import *
 
 class LibimagequantConan(ConanFile):
     name = "libimagequant"
-    version = tools.get_env("GIT_TAG", "2.12.6")
     description = "Library for high-quality conversion of RGBA images to 8-bit indexed-color (palette) images"
     license = "BSD"
     settings = "os", "arch", "compiler", "build_type"

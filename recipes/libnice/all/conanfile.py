@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class LibNiceConan(ConanFile):
     name = "libnice"
-    version = tools.get_env("GIT_TAG", "1.16.2")
     gst_version = "master" if version == "master" else "[~1]"
 
     description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"

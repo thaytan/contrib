@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class GoConan(ConanFile):
     name = "go"
-    version = tools.get_env("GIT_TAG", "1.13.8")
     license = "BSD"
     description = "Core compiler tools for the Go programming language"
     settings = "os", "compiler", "arch"

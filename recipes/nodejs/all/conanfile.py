@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class NodejsConan(ConanFile):
     name = "nodejs"
-    version = tools.get_env("GIT_TAG", "14.4.0")
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "os", "arch", "compiler"

@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class PangoConan(ConanFile):
     name = "pango"
-    version = tools.get_env("GIT_TAG", "1.44.6")
     description = "A library for layout and rendering of text"
     license = "GPL"
     settings = "os", "arch", "compiler", "build_type"

@@ -33,7 +33,6 @@ Cflags: -I${includedir}
 
 class NvJetsonV4l2(ConanFile):
     name = "nv-jetson-v4l2"
-    version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     settings = "os", "compiler", "build_type", "arch"

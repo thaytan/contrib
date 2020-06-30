@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class ZlibConan(ConanFile):
     name = "zlib"
-    version = tools.get_env("GIT_TAG", "1.2.11")
     license = "Zlib"
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " "(Also Free, Not to Mention Unencumbered by Patents)"
     settings = "os", "arch", "compiler", "build_type"

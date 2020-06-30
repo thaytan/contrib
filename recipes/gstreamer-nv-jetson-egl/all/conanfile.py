@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GstreamerNvJetsonEgl(ConanFile):
     name = "gstreamer-nv-jetson-egl"
-    version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
     description = "NVIDIA jetson egl element"
     settings = "os", "compiler", "build_type", "arch"

@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GitConan(ConanFile):
     name = "git"
-    version = tools.get_env("GIT_TAG", "2.23.0")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL2"
     description = "The fast distributed version control system"

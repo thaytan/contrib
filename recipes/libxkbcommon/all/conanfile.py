@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class LibxcbConan(ConanFile):
     name = "libxkbcommon"
-    version = tools.get_env("GIT_TAG", "0.8.4")
     description = "Keymap handling library for toolkits and window systems"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

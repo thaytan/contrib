@@ -3,7 +3,6 @@ from conans import ConanFile, tools
 
 class AutotoolsConan(ConanFile):
     name = "autotools"
-    version = tools.get_env("GIT_TAG", "1.0.0")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "A suite of programming tools 'designed' to assist in making source code"

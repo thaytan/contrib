@@ -5,7 +5,6 @@ from conans import ConanFile, Meson, tools
 
 class LibdrmConan(ConanFile):
     name = "libdrm"
-    version = tools.get_env("GIT_TAG", "2.4.99")
     license = "MIT"
     description = "Direct Rendering Manager headers and kernel modules"
     settings = "os", "arch", "compiler", "build_type"

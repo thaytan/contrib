@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class Libxml2Conan(ConanFile):
     name = "libxml2"
-    version = tools.get_env("GIT_TAG", "2.9.10")
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "XML parsing library, version 2"

@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class Help2ManConan(ConanFile):
     name = "help2man"
-    version = tools.get_env("GIT_TAG", "1.47.11")
     settings = "os", "compiler", "build_type", "arch"
     license = "GPL"
     description = "Conversion tool to create man files"

@@ -6,7 +6,6 @@ from conans import ConanFile, tools
 
 class NvJetsonMultimediaApi(ConanFile):
     name = "nv-jetson-multimedia-api"
-    version = tools.get_env("GIT_TAG", "32.2.1")
     license = "LGPL"
     description = "Multimedia API is a collection of lower-level APIs that support flexible application development"
     settings = "os", "compiler", "build_type", "arch"

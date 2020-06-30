@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class SccacheConan(ConanFile):
     name = "sccache"
-    version = tools.get_env("GIT_TAG", "0.2.12")
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = "os", "arch", "compiler", "build_type"

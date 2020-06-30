@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class OpusConan(ConanFile):
     name = "opus"
-    version = tools.get_env("GIT_TAG", "1.3.1")
     description = "Modern audio compression for the internet"
     license = "BSD"
     settings = "os", "compiler", "build_type", "arch"

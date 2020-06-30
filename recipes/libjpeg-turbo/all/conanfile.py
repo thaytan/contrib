@@ -5,7 +5,6 @@ from conans import CMake, ConanFile, tools
 
 class LibjpegTurboConan(ConanFile):
     name = "libjpeg-turbo"
-    version = tools.get_env("GIT_TAG", "2.0.4")
     settings = "os", "compiler", "build_type", "arch"
     license = "custom"
     description = "JPEG image codec with accelerated baseline compression and decompression"

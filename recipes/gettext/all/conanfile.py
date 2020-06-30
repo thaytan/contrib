@@ -6,7 +6,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class GettextConan(ConanFile):
     name = "gettext"
-    version = tools.get_env("GIT_TAG", "0.20.1")
     settings = "os", "compiler", "build_type", "arch"
     description = "GNU internationalization library"
     license = "GPL"

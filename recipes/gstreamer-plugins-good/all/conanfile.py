@@ -7,7 +7,6 @@ class GStreamerPluginsGoodConan(ConanFile):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     settings = "os", "arch", "compiler", "build_type"
-    version = tools.get_env("GIT_TAG", "1.16.2")
     options = {
         "autodetect": [True, False],
         "rtp": [True, False],

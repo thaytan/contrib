@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class IslConan(ConanFile):
     name = "isl"
-    version = tools.get_env("GIT_TAG", "0.22.1")
     settings = "os", "compiler", "arch"
     license = "MIT"
     description = "Library for manipulating sets and relations of integer points bounded by linear constraints"

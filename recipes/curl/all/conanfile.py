@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class CurlConan(ConanFile):
     name = "curl"
-    version = tools.get_env("GIT_TAG", "7.66.0")
     settings = "os", "compiler", "build_type", "arch"
     license = "MIT"
     description = "An URL retrieval utility and library"

@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class LibxineramaConan(ConanFile):
     name = "libxinerama"
-    version = tools.get_env("GIT_TAG", "1.1.4")
     description = "X11 Xinerama extension library"
     license = "custom"
     settings = "os", "compiler", "build_type", "arch"

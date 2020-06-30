@@ -5,7 +5,6 @@ from conans import ConanFile, tools
 
 class PythonSetuptoolsConan(ConanFile):
     name = "python-setuptools"
-    version = tools.get_env("GIT_TAG", "41.2.0")
     license = "Apache"
     description = ("Easily download, build, install, upgrade, and uninstall Python packages")
     settings = "os", "compiler", "build_type", "arch"

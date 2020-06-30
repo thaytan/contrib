@@ -3,7 +3,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class ExpatConan(ConanFile):
     name = "expat"
-    version = tools.get_env("GIT_TAG", "2.2.7")
     description = "An XML parser library"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"

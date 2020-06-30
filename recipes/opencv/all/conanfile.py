@@ -5,7 +5,6 @@ from conans import CMake, ConanFile, tools
 
 class OpenCVConan(ConanFile):
     name = "opencv"
-    version = tools.get_env("GIT_TAG", "3.4.6")
     description = "OpenCV is an open source computer vision and machine learning software library."
     license = "BSD"
     settings = "os", "compiler", "build_type", "arch"

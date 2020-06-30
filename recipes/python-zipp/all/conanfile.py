@@ -4,7 +4,6 @@ from conans import ConanFile, tools
 
 class PythonZippConan(ConanFile):
     name = "python-zipp"
-    version = tools.get_env("GIT_TAG", "3.1.0")
     description = "Pathlib-compatible object wrapper for zip files"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"

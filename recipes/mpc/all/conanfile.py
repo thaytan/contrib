@@ -5,7 +5,6 @@ from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 class MpcConan(ConanFile):
     name = "mpc"
-    version = tools.get_env("GIT_TAG", "1.1.0")
     settings = "os", "compiler", "arch"
     license = "LGPL"
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"

@@ -4,7 +4,6 @@ from conans import ConanFile, tools
 
 class PythonSixConan(ConanFile):
     name = "python-six"
-    version = tools.get_env("GIT_TAG", "1.15.0")
     description = "Python 2 and 3 compatibility utilities"
     license = "MIT"
     settings = "os", "arch", "compiler", "build_type"
