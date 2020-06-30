@@ -1,6 +1,0 @@
-include:
-  - project: 'aivero/cloud/cicd'
-    file: 'conan-ci-base.yml'
-  - project: 'aivero/cloud/cicd'
-    file: 'conan-ci-arm64v8.yml'
-  - local: '.gitlab-ci-tx1.yml'
