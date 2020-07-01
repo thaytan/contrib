@@ -108,16 +108,20 @@ pub(crate) enum StreamId {
     Depth,
     Color,
     Infra1,
-    Infra2
+    Infra2,
 }
 impl Display for StreamId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            StreamId::Color => "color",
-            StreamId::Depth => "depth",
-            StreamId::Infra1 => "infra1",
-            StreamId::Infra2 => "infra2",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                StreamId::Color => "color",
+                StreamId::Depth => "depth",
+                StreamId::Infra1 => "infra1",
+                StreamId::Infra2 => "infra2",
+            }
+        )
     }
 }
 impl StreamId {

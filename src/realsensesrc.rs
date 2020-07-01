@@ -24,7 +24,6 @@ use gst_base::subclass::prelude::*;
 
 use camera_meta::Distortion;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd, rgbd_timestamps::*};
-use rs2;
 use rs2::high_level_utils::StreamInfo;
 
 use crate::errors::*;
@@ -1140,7 +1139,6 @@ impl RealsenseSrc {
                 _ => false,
             })
             .expect("There is no stream profile for the primary enabled stream");
-
 
         // Iterate over all stream profiles and find extrinsics to the other enabled streams
         let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
