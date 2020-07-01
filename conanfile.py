@@ -28,7 +28,7 @@ class K4aSrcConan(ConanFile):
     description = "GStreamer plugin containing `video/rgbd` source for an Azure Kinect DK (K4A) device"
     url = "https://aivero.com"
     license = "LGPL"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = [
         "Cargo.toml",
         "schema/*",
@@ -38,7 +38,7 @@ class K4aSrcConan(ConanFile):
     generators = "env"
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("rust/[>=1.3.8]@%s/stable" % self.user)
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
 
