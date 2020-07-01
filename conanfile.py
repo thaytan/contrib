@@ -6,7 +6,7 @@ class GstreamerColorizerConan(ConanFile):
     license = "LGPL"
     description = "Plugin to colorize 16 bit grayscale depth images with a color map"
     url = "https://aivero.com"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = ["CMakeLists.txt", "src/*"]
 
     def set_version(self):
@@ -18,9 +18,7 @@ class GstreamerColorizerConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
-        gst_version = "[~1]"
-
-        self.requires("gstreamer-plugins-base/%s@%s/stable" % (gst_version, self.user))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
 
     def build(self):
         env = {
