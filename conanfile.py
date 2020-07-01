@@ -26,7 +26,7 @@ class RealsenseConan(ConanFile):
     description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
     url = "https://aivero.com"
     license = "LGPL"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = [
         "Cargo.toml",
         "schema/*",
@@ -42,12 +42,13 @@ class RealsenseConan(ConanFile):
         tools.replace_path_in_file(file_path="Cargo.toml", search=("[package]\nname = \"%s\"\nversion = \"0.0.0-ohmyconanpleaseoverwriteme\"" % self.name), replace=("[package]\nname = \"%s\"\nversion = \"%s\"" % (self.name, make_cargo_version(self.version))))
 
     def build_requirements(self):
-        self.build_requires("env-generator/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
         self.build_requires("rust/[>=1.40.0]@%s/stable" % self.user)
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
 
     def requirements(self):
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
         self.requires("librealsense/[>=2.20.0]@%s/stable" % self.user)
         self.requires("capnproto/[>=0.7.0]@%s/stable" % self.user)
 
