@@ -27,7 +27,7 @@ class RgbdConan(ConanFile):
     description = "GStreamer plugin for demuxing and muxing `video/rgbd` streams"
     url = "https://aivero.com"
     license = "LGPL"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = [
         "Cargo.toml",
         "src/*",
