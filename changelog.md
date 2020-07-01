@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2020-07-01
+
+### Changed
+
+- Updated dependencies
+
 ## [0.2.1] - 2019-09-19
 ### Added
 - Per-frame metadata support, represented as `u_int_8_t[]`
