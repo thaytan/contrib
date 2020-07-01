@@ -7,7 +7,7 @@ class DepthMetaConan(ConanFile):
     license = "Apache 2.0"
     description = "Library to stream depth video"
     url = "https://aivero.com"
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "arch", "compiler", "build_type", "gstreamer"
     version = tools.get_env("GIT_TAG", "master")
     exports_sources = ["CMakeLists.txt", "src/*"]
 
@@ -15,8 +15,7 @@ class DepthMetaConan(ConanFile):
         self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
 
     def requirements(self):
-        gst_version = tools.get_env("GST_VERSION", "1.16.2")
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (gst_version, self.user))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
 
     def build(self):
         env = {
