@@ -8,7 +8,7 @@ class LibeditConan(ConanFile):
     license = "Zlib"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
     )
     requires = (

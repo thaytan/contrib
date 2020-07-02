@@ -8,7 +8,7 @@ class GdbConan(ConanFile):
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",
         "texinfo/[^6.6]",
     )
     requires = (

@@ -8,7 +8,7 @@ class AutoconfConan(ConanFile):
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "m4-include.patch"
-    build_requires = ("gcc/[^7.4.0]",)
+    build_requires = ("cc/[^1.0.0]",)
     requires = (
         "generators/[^1.0.0]",
         "m4/[^1.4.18]",

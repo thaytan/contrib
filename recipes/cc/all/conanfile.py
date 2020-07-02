@@ -7,4 +7,4 @@ class CcConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     )
     requires = (
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",

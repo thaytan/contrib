@@ -9,7 +9,7 @@ class AutomakeConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "automake-include-fix.patch"
     build_requires = (
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",
         "autoconf/[^2.69]",
     )
 

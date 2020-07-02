@@ -8,7 +8,7 @@ class PerlConan(ConanFile):
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "link-m-pthread.patch"
-    build_requires = ("gcc/[^7.4.0]",)
+    build_requires = ("cc/[^1.0.0]",)
 
     def source(self):
         tools.get(f"https://github.com/Perl/perl5/archive/v{self.version}.tar.gz")

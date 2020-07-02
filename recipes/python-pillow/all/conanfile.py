@@ -8,7 +8,7 @@ class PythonPillowConan(ConanFile):
     license = "Python-Imaging-Library-License"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
         "python-setuptools/[^41.2.0]",
         "zlib/[^1.2.11]",

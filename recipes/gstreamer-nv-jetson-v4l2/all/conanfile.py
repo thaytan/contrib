@@ -18,7 +18,7 @@ class GstreamerNvJetsonV4l2(ConanFile):
     gst_version = "1.16.0"
     exports_sources = {"patches/*"}
     build_requires = (
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
     )
 

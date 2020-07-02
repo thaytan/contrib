@@ -7,7 +7,7 @@ class ReadlineConan(ConanFile):
     description = "GNU readline library"
     license = "GPL-3.0-or-later"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = ("gcc/[^7.4.0]",)
+    build_requires = ("cc/[^1.0.0]",)
     requires = (
         "generators/[^1.0.0]",
         "ncurses/[^6.1]",

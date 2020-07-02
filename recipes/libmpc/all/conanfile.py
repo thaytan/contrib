@@ -8,7 +8,7 @@ class MpcConan(ConanFile):
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "bootstrap-gcc/[^7.4.0]",
+        "bootstrap-cc/[^1.0.0]",
         "make/[^4.3]",
     )
     requires = (

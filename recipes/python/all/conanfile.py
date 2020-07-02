@@ -7,7 +7,7 @@ class PythonConan(ConanFile):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = ("gcc/[^7.4.0]",)
+    build_requires = ("cc/[^1.0.0]",)
     requires = (
         "generators/[^1.0.0]",
         "expat/[^2.2.7]",

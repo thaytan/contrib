@@ -8,7 +8,7 @@ class GnutlsConan(ConanFile):
     license = "custom", "FDL", "GPL", "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",
         "make/[^4.3]",
     )
     requires = (

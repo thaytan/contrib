@@ -16,7 +16,7 @@ class RustConan(ConanFile):
         "generators/[^1.0.0]",
         "pkgconf/[^1.6.3]",
         "clang/[^9.0.0]",
-        "gcc/[^7.4.0]",
+        "cc/[^1.0.0]",
     )
 
     def source(self):
