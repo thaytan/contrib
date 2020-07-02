@@ -31,7 +31,7 @@ use std::convert::TryFrom;
 /// K4A_IMAGE_FORMAT_COLOR_* part of it.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aColorFormat {
+pub enum K4aColorFormat {
     MJPG = 0,
     NV12 = 1,
     YUV2 = 2,
@@ -39,7 +39,7 @@ pub(crate) enum K4aColorFormat {
 }
 
 impl K4aColorFormat {
-    pub(crate) fn get_glib_type() -> glib::Type {
+    pub fn get_glib_type() -> glib::Type {
         use std::sync::Once;
         static ONCE: Once = Once::new();
         static mut TYPE: glib::Type = glib::Type::Invalid;
@@ -167,7 +167,7 @@ impl From<K4aColorFormat> for k4a::ImageFormat {
 /// Represents the Azure Kinect's color resolution and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aColorResolution {
+pub enum K4aColorResolution {
     C720p = 0,
     C1080p = 1,
     C1440p = 2,
@@ -322,7 +322,7 @@ impl K4aColorResolution {
 /// Represents the Azure Kinect's depth mode and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aDepthMode {
+pub enum K4aDepthMode {
     Nfov2x2Binned,
     NfovUnbinned,
     Wfov2x2Binned,
@@ -460,7 +460,7 @@ impl From<K4aDepthMode> for k4a::DepthMode {
 /// represent it as an enum here. This enum is used to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aFramerate {
+pub enum K4aFramerate {
     FPS5,
     FPS15,
     FPS30,
