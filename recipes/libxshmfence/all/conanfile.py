@@ -6,11 +6,13 @@ class LibxshmfenceConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "pkgconf/[^1.6.3]",
         "xorg-util-macros/[^1.19.1]",
     )
-    requires = ("xorgproto/[^2019.1]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "xorgproto/[^2019.1]",
+    )
 
     def source(self):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libxshmfence-{self.version}.tar.gz")

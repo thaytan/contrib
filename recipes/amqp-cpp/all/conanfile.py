@@ -7,11 +7,11 @@ class AmqpCppConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "openssl.patch"
-    build_requires = (
-        "generators/1.0.0",
-        "cmake/3.15.3",
+    build_requires = ("cmake/3.15.3",)
+    requires = (
+        "generators/[^1.0.0]",
+        "openssl/1.1.1b",
     )
-    requires = ("openssl/1.1.1b",)
 
     def source(self):
         tools.get(f"https://github.com/CopernicaMarketingSoftware/AMQP-CPP/archive/v{self.version}.tar.gz")

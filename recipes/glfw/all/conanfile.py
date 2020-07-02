@@ -8,10 +8,7 @@ class GlfwcConan(ConanFile):
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     exports = "fix-x11-exts.patch"
-    build_requires = (
-        "generators/1.0.0",
-        "cmake/[^3.15.3]",
-    )
+    build_requires = ("cmake/[^3.15.3]",)
 
     def requirements(self):
         if self.options.x11:

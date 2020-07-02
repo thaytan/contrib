@@ -9,11 +9,9 @@ class LibVaConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
-    build_requires = (
-        "generators/1.0.0",
-        "meson/[^0.51.2]",
-    )
+    build_requires = ("meson/[^0.51.2]",)
     requires = (
+        "generators/[^1.0.0]",
         "libdrm/[^2.4.96]",
         "libx11/[^1.6.8]",
         "libxext/[^1.3.4]",

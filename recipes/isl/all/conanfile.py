@@ -11,7 +11,10 @@ class IslConan(ConanFile):
         "bootstrap-gcc/[^7.4.0]",
         "make/[^4.3]",
     )
-    requires = ("gmp/[^6.1.2]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "gmp/[^6.1.2]",
+    )
 
     def source(self):
         tools.get(f"http://isl.gforge.inria.fr/isl-{self.version}.tar.xz")

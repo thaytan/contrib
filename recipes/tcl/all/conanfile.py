@@ -11,7 +11,10 @@ class TclConan(ConanFile):
         "generators/[^1.0.0]",
         "autotools/[^1.0.0]",
     )
-    requires = ("zlib/[^1.2.11]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "zlib/[^1.2.11]",
+    )
 
     def source(self):
         tools.get(f"https://downloads.sourceforge.net/sourceforge/tcl/tcl{self.version}-src.tar.gz")

@@ -7,11 +7,11 @@ class CppzmqConan(ConanFile):
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "cmake/[^3.15.3]",
+    build_requires = ("cmake/[^3.15.3]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "libzmq/[^4.3.1]",
     )
-    requires = ("libzmq/[^4.3.1]",)
 
     def source(self):
         tools.get(f"https://github.com/zeromq/cppzmq/archive/v{self.version}.tar.gz")

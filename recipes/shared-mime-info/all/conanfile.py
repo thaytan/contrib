@@ -6,7 +6,6 @@ class SharedMimeInfoConan(ConanFile):
     license = "GPL2"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/[^1.0.0]",
         "itstool/[^2.0.6]",
         "xz/[^5.2.4]",

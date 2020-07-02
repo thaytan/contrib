@@ -5,7 +5,6 @@ class LibSrtpConan(ConanFile):
     description = "Library for SRTP (Secure Realtime Transport Protocol)"
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = ("generators/1.0.0",)
 
     def source(self):
         tools.get(f"https://github.com/cisco/libsrtp/archive/v{self.version}.tar.gz")

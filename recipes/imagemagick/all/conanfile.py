@@ -7,11 +7,11 @@ class ImagemagickConan(ConanFile):
     description = "An image viewing/manipulation program"
     license = "GPL2"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "autotools/[^1.0.0]",
+    build_requires = ("autotools/[^1.0.0]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "libpng/[^1.6.37]",
     )
-    requires = ("libpng/[^1.6.37]",)
 
     def source(self):
         tar_version = "-".join([self.version[: self.version.rfind(".")], self.version[self.version.rfind(".") + 1 :]])

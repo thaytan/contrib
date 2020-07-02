@@ -10,7 +10,6 @@ class MesaConan(ConanFile):
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "gettext/[^0.20.1]",
         "bison/[^3.3]",
@@ -27,6 +26,7 @@ class MesaConan(ConanFile):
             self.build_requires("libxxf86vm/[^1.1.4]")
     )
     requires = (
+        "generators/[^1.0.0]",
         "libglvnd/[^1.2.0]",
     )
 

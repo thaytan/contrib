@@ -11,7 +11,10 @@ class MpfrConan(ConanFile):
         "bootstrap-gcc/[^7.4.0]",
         "make/[^4.3]",
     )
-    requires = ("gmp/[^6.1.2]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "gmp/[^6.1.2]",
+    )
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/mpfr/mpfr-{self.version}.tar.gz")

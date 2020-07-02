@@ -12,6 +12,7 @@ class RlsConan(ConanFile):
         tools.get(f"https://github.com/rust-lang/rls/archive/{self.version}.tar.gz")
     )
     requires = (
+        "generators/[^1.0.0]",
         "rust/nightly",
         "openssl/1.1.1b",
         "generators/[^1.0.0]",

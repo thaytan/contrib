@@ -8,7 +8,6 @@ class PythonSixConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/1.0.0",
         "python-setuptools/[^41.2.0]",
     )

@@ -7,11 +7,9 @@ class LLVMConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "cmake/[^3.15.3]",
-    )
+    build_requires = ("cmake/[^3.15.3]",)
     requires = (
+        "generators/[^1.0.0]",
         "libffi/[^3.3]",
         "zlib/[^1.2.11]",
     )

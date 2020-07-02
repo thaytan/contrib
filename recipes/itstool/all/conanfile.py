@@ -7,11 +7,9 @@ class ItstoolConan(ConanFile):
     description = "XML to PO and back again"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "autotools/[^1.0.0]",
-    )
+    build_requires = ("autotools/[^1.0.0]",)
     requires = (
+        "generators/[^1.0.0]",
         "libxml2/[^2.9.9]",
         "python/[^3.7.4]",
     )

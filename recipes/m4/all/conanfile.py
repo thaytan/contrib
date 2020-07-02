@@ -8,7 +8,6 @@ class M4Conan(ConanFile):
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "bootstrap-gcc/[^7.4.0]",
         "make/[^4.3]",
     )

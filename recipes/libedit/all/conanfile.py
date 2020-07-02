@@ -8,11 +8,13 @@ class LibeditConan(ConanFile):
     license = "Zlib"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "gcc/[^7.4.0]",
         "pkgconf/[^1.6.3]",
     )
-    requires = ("ncurses/[^6.1]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "ncurses/[^6.1]",
+    )
 
     def source(self):
         tools.get(f"https://thrysoee.dk/editline/libedit-{self.version}.tar.gz")

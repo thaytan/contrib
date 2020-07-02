@@ -10,7 +10,6 @@ class X265Conan(ConanFile):
     options = {"bit_depth": [8, 10, 12], "HDR10": [True, False]}
     default_options = "bit_depth=8", "HDR10=False"
     build_requires = (
-        "generators/1.0.0",
         "cmake/[^3.15.3]",
         "yasm/[^1.3.0]",
     )

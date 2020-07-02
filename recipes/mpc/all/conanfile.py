@@ -11,7 +11,10 @@ class MpcConan(ConanFile):
         "bootstrap-gcc/[^7.4.0]",
         "make/[^4.3]",
     )
-    requires = ("mpfr/[^4.0.2]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "mpfr/[^4.0.2]",
+    )
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/mpc/mpc-{self.version}.tar.gz")

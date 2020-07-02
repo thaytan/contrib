@@ -7,11 +7,11 @@ class ReadlineConan(ConanFile):
     description = "GNU readline library"
     license = "GPL-3.0-or-later"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "gcc/[^7.4.0]",
+    build_requires = ("gcc/[^7.4.0]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "ncurses/[^6.1]",
     )
-    requires = ("ncurses/[^6.1]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/readline/readline-{self.version}.tar.gz")

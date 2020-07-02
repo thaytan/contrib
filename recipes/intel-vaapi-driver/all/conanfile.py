@@ -10,10 +10,10 @@ class IntelVaapiDriverConan(ConanFile):
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "libdrm/[^2.4.96]",
         "libva/[^2.3.0]",
     )

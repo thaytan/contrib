@@ -12,6 +12,7 @@ class GccConan(ConanFile):
         "make/[^4.3]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "binutils/[^2.33.1]",
         "isl/[^0.22.1]",
         "mpfr/[^4.0.2]",

@@ -7,12 +7,8 @@ class PythonVirtualenvConan(ConanFile):
     description = "Virtual Python Environment builder"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-
-    def source(self):
-        tools.get(f"https://github.com/pypa/virtualenv/archive/{self.version}.tar.gz")
-
-    build_requires = ("generators/1.0.0",)
     requires = (
+        "generators/[^1.0.0]",
         "python/[^3.7.4]",
         "python-setuptools/[^41.2.0]",
         "python-appdirs/[^1.4.4]",
@@ -21,6 +17,9 @@ class PythonVirtualenvConan(ConanFile):
         "python-six/[^1.15.0]",
         "python-importlib-metadata/[^1.6.0]",
     )
+
+    def source(self):
+        tools.get(f"https://github.com/pypa/virtualenv/archive/{self.version}.tar.gz")
 
     def build(self):
         env = {

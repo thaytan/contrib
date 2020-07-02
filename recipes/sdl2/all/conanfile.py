@@ -7,8 +7,8 @@ class Sdl2Conan(ConanFile):
     description = "A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = ("generators/1.0.0",)
-    requires = (
+        requires = (
+        "generators/[^1.0.0]",
         "libxcb/[^1.13.1]",
         "libxext/[^1.3.4]",
     )

@@ -8,10 +8,10 @@ class GLibConan(ConanFile):
     license = "LGPL-2.1"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "zlib/[^1.2.11]",
         "libffi/[^3.3]",
     )

@@ -8,7 +8,6 @@ class LibShadercConan(ConanFile):
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "gcc/[^7.4.0]",
         "cmake/[^3.15.3]",
         "python/[^3.7.4]",

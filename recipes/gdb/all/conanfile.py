@@ -8,11 +8,11 @@ class GdbConan(ConanFile):
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "gcc/[^7.4.0]",
         "texinfo/[^6.6]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "python/[^3.7.4]",
         "ncurses/[^6.1]",
         "readline/[^8.0]",

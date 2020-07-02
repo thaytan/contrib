@@ -9,11 +9,11 @@ class FontconfigConan(ConanFile):
     license = "Old MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/[^1.0.0]",
         "gperf/[^3.1]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "freetype/[^2.10.1]",
         "libuuid/[^1.0.3]",
         "expat/[^2.2.7]",

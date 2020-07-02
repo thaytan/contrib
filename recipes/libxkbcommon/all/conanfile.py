@@ -8,12 +8,14 @@ class LibxcbConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "bison/[^3.3]",
         "flex/[^2.6.4]",
     )
-    requires = ("libxcb/[^1.13.1]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "libxcb/[^1.13.1]",
+    )
 
     def source(self):
         tools.get(f"https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-{self.version}.tar.gz")

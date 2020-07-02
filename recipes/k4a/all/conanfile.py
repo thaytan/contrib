@@ -7,7 +7,6 @@ class KinectAzureSensorSDKConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports = "k4a.pc"
-    build_requires = ("generators/1.0.0",)
 
     def source(self):
         version_short = self.version[:3]

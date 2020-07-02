@@ -6,7 +6,6 @@ class GraphvizConan(ConanFile):
     license = "EPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/[^1.0.0]",
         "flex/[^2.6.4]",
         "bison/[^3.3]",

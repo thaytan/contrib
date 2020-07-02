@@ -5,11 +5,9 @@ class LibvncserverConan(ConanFile):
     description = "Cross-platform C libraries that allow you to easily implement VNC server or client functionality"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "cmake/[^3.15.3]",
-    )
+    build_requires = ("cmake/[^3.15.3]",)
     requires = (
+        "generators/[^1.0.0]",
         "libpng/[^1.6.37]",
         "openssl/[^1.1.1b]",
     )

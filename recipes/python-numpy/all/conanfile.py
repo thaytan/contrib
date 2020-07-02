@@ -8,13 +8,15 @@ class PythonNumpyConan(ConanFile):
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "gcc/[^7.4.0]",
         "pkgconf/[^1.6.3]",
         "python-setuptools/[^41.2.0]",
         "cython/[^0.29.19]",
     )
-    requires = ("python/[^3.7.4]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "python/[^3.7.4]",
+    )
 
     def source(self):
         tools.get(f"https://github.com/numpy/numpy/releases/download/v{self.version}/numpy-{self.version}.tar.gz")

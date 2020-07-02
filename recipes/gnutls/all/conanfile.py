@@ -11,7 +11,10 @@ class GnutlsConan(ConanFile):
         "gcc/[^7.4.0]",
         "make/[^4.3]",
     )
-    requires = ("zlib/[^1.2.11]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "zlib/[^1.2.11]",
+    )
 
     def source(self):
         tools.get(f"https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-{self.version}.tar.xz")

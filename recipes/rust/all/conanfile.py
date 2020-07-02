@@ -10,10 +10,10 @@ class RustConan(ConanFile):
     license = "MIT", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "curl/[^7.66.0]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "pkgconf/[^1.6.3]",
         "clang/[^9.0.0]",
         "gcc/[^7.4.0]",

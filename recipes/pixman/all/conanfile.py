@@ -6,7 +6,6 @@ class PixmanConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
     )
 

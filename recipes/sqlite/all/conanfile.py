@@ -16,6 +16,7 @@ class SqliteConan(ConanFile):
         "tcl/[^8.6.10]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "zlib/[^1.2.11]",
         "readline/[^8.0]",
     )

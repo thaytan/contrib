@@ -8,7 +8,6 @@ class GstreamerNvJetsonPluginsConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports_sources = ["lib/gstreamer-1.0/*.so"]
-    build_requires = ("generators/1.0.0",)
 
     def requirements(self):
         self.requires("nv-jetson-drivers/[^{self.version}]")

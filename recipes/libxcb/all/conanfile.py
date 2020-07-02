@@ -6,11 +6,11 @@ class LibxcbConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "pkgconf/[^1.6.3]",
         "xcb-proto/[^1.13]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "libxau/[^1.0.9]",
         "libpthread-stubs/[^0.4]",
     )

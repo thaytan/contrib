@@ -6,11 +6,11 @@ class LibxrandrConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "pkgconf/[^1.6.3]",
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "libx11/[^1.6.8]",
         "libxrender/[^0.9.10]",
         "libxext/[^1.3.4]",

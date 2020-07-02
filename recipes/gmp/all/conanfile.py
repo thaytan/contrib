@@ -8,7 +8,6 @@ class GmpConan(ConanFile):
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "bootstrap-gcc/[^7.4.0]",
         "m4/[^1.4.18]",
         "make/[^4.3]",

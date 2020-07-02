@@ -8,10 +8,10 @@ class AtSpi2AtkConan(ConanFile):
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "atk/[^2.35.1]",
         "at-spi2-core/[^2.34.0]",
         "libxml2/[^2.9.9]",

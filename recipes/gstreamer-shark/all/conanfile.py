@@ -7,10 +7,7 @@ class GstreamerSharkConan(ConanFile):
     description = "GstShark is a front-end for GStreamer traces "
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "autotools/[^1.0.0]",
-    )
+    build_requires = ("autotools/[^1.0.0]",)
     requires = (
         "gstreamer/[^1.16.0]",
         "graphviz/[^2.42.1]",

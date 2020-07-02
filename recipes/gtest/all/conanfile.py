@@ -5,10 +5,7 @@ class GTestConan(ConanFile):
     description = "Google's C++ test framework"
     license = "BSD-3-Clause"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "cmake/[^3.15.3]",
-    )
+    build_requires = ("cmake/[^3.15.3]",)
 
     def source(self):
         tools.get(f"https://github.com/google/googletest/archive/release-{self.version}.tar.gz")

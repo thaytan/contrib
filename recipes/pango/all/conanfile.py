@@ -8,11 +8,11 @@ class PangoConan(ConanFile):
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "fribidi/[^1.0.5]",
         "cairo/[^1.16.0]",
         "harfbuzz/[^2.6.1]",

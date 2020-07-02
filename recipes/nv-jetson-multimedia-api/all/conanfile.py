@@ -11,8 +11,7 @@ class NvJetsonMultimediaApi(ConanFile):
     exports_sources = ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = "jetson=TX2"
-    build_requires = ("generators/1.0.0",)
-
+    
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
             tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version.replace(".", "-")}_Release_v1.0/TX2-AGX/Tegra_Multimedia_API_R{self.version}_aarch64.tbz2")

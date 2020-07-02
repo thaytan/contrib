@@ -45,12 +45,14 @@ class GStreamerPluginsBaseConan(ConanFile):
         "audioresample=False",
     )
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "mesa/[^19.2.0]",
         "gobject-introspection/[^1.59.3]",
     )
-    requires = ("gstreamer/[~1.16]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "gstreamer/[~1.16]",
+    )
 
     def requirements(self):
         if self.options.orc:

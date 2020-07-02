@@ -6,12 +6,14 @@ class JsonGlibBaseConan(ConanFile):
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "gettext/[^0.20.1]",
         "gobject-introspection/[^1.59.3]",
     )
-    requires = ("glib/[^2.62.0]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "glib/[^2.62.0]",
+    )
 
     def source(self):
         tools.get(f"https://gitlab.gnome.org/GNOME/json-glib/-/archive/{self.version}/json-glib-{self.version}.tar.gz")

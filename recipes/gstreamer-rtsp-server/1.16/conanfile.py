@@ -18,7 +18,6 @@ class GStreamerRtspServerConan(ConanFile):
         "rtspclientsink=True",
     )
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "bison/[^3.3]",
         "flex/[^2.6.4]",

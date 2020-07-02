@@ -5,10 +5,7 @@ class LibffiConan(ConanFile):
     description = "A portable, high level programming interface to various calling conventions"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "autotools/[^1.0.0]",
-    )
+    build_requires = ("autotools/[^1.0.0]",)
 
     def source(self):
         tools.get(f"https://github.com/libffi/libffi/archive/v{self.version}.tar.gz")

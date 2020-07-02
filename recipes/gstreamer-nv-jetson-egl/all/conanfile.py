@@ -11,7 +11,6 @@ class GstreamerNvJetsonEgl(ConanFile):
     default_options = ("jetson=TX2",)
     gst_version = "1.16"
     build_requires = (
-        "generators/1.0.0",
         "gcc/[^7.4.0]",
         "pkgconf/[^1.6.3]",
     )

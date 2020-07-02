@@ -9,11 +9,13 @@ class HarfbuzzConan(ConanFile):
     license = "Old MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/[^1.0.0]",
         "freetype-no-harfbuzz/[^2.10.1]",
     )
-    requires = ("glib/[^2.62.0]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "glib/[^2.62.0]",
+    )
 
     def source(self):
         tools.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")

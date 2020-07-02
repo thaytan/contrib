@@ -8,11 +8,11 @@ class PythonCairoConan(ConanFile):
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "gcc/[^7.4.0]",
         "pkgconf/[^1.6.3]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "python/[^3.7.4]",
         "cairo/[^1.16.0]",
     )

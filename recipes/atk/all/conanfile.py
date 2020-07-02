@@ -8,7 +8,6 @@ class AtkConan(ConanFile):
     license = "LGPL-2.1"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "gettext/[^0.20.1]",
         "gobject-introspection/[^1.59.3]",

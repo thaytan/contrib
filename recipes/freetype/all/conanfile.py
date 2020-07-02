@@ -8,11 +8,11 @@ class FreetypeConan(ConanFile):
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "autotools/[^1.0.0]",
+    build_requires = ("autotools/[^1.0.0]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "harfbuzz/2.6.1",
     )
-    requires = ("harfbuzz/2.6.1",)
 
     def source(self):
         tools.get(f"https://git.savannah.gnu.org/cgit/freetype/freetype2.git/snapshot/freetype2-VER-{self.version}.tar.gz".replace(".", "-"))

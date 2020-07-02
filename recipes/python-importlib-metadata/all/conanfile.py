@@ -7,11 +7,11 @@ class PythonImportlibMetadataConan(ConanFile):
     description = "Read metadata from Python packages"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0@",
-        "python-setuptools/[^41.2.0]",
+    build_requires = ("python-setuptools/[^41.2.0]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "python-zipp/[^3.1.0]",
     )
-    requires = ("python-zipp/[^3.1.0]",)
 
     def source(self):
         tools.get(f"https://gitlab.com/python-devs/importlib_metadata/-/archive/v{self.version}/importlib_metadata-v{self.version}.tar.bz2")

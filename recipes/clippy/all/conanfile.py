@@ -12,7 +12,10 @@ class ClippyConan(ConanFile):
         tools.get(f"https://github.com/rust-lang/rust-clippy/archive/{self.version}.tar.gz")
 
     build_requires = ("rust/nightly",)
-    requires = ("generators/[^1.0.0]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "generators/[^1.0.0]",
+    )
 
     def build(self):
         with tools.chdir(f"rust-clippy-{self.version}"):

@@ -7,10 +7,7 @@ class GStreamerLibavConan(ConanFile):
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "meson/[^0.51.2]",
-    )
+    build_requires = ("meson/[^0.51.2]",)
     requires = (
         "glib/[^2.58.1]",
         "gstreamer-plugins-base/[~1.16]",

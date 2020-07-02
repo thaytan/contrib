@@ -6,7 +6,6 @@ class FlexConan(ConanFile):
     license = "BSD 2-Clause"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/[^1.0.0]",
         "bison/[^3.3]",
     )

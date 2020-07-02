@@ -16,7 +16,6 @@ class Gtk3Conan(ConanFile):
         "x11=True",
     )
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "gettext/[^0.20.1]",
         if self.options.introspection:

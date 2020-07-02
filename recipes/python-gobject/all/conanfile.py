@@ -7,10 +7,7 @@ class PythonGobjectConan(ConanFile):
     description = "Python GObject bindings"
     license = "LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "meson/[^0.51.2]",
-    )
+    build_requires = ("meson/[^0.51.2]",)
     requires = (
         "gobject-introspection/[^1.59.3]",
         "python-cairo/[^1.18.2]",

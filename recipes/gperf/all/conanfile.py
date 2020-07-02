@@ -5,7 +5,6 @@ class GperfConan(ConanFile):
     description = "A portable, high level programming interface to various calling conventions"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = ("generators/1.0.0",)
 
     def source(self):
         git = tools.Git(f"{self.name}-{self.version}")

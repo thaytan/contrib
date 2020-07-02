@@ -12,6 +12,7 @@ class RustAnalyzerConan(ConanFile):
         tools.get(f"https://github.com/rust-analyzer/rust-analyzer/archive/{self.version.replace('.', '-')}.tar.gz")
 
     requires = (
+        "generators/[^1.0.0]",
         "rust/nightly",
         "generators/[^1.0.0]",
     )

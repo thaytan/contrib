@@ -8,10 +8,12 @@ class LibdrmConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
     )
-    requires = ("libpciaccess/[^0.14]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "libpciaccess/[^0.14]",
+    )
 
     def source(self):
         tools.get(f"http://dri.freedesktop.org/libdrm/libdrm-{self.version}.tar.gz")

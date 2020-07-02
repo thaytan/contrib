@@ -7,13 +7,15 @@ class Libx11Conan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "pkgconf/[^1.6.3]",
         "xorg-util-macros/[^1.19.1]",
         "xtrans/[^1.4.0]",
         "xorgproto/[^2019.1]",
     )
-    requires = ("libxcb/[^1.13.1]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "libxcb/[^1.13.1]",
+    )
 
     def source(self):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libX11-{self.version}.tar.gz")

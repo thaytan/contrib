@@ -5,11 +5,11 @@ class ClangConan(ConanFile):
     description = "C language family frontend for LLVM"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "cmake/[^3.15.3]",
+    build_requires = ("cmake/[^3.15.3]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "llvm/[^9.0.0]",
     )
-    requires = ("llvm/[^9.0.0]",)
 
     def source(self):
         tools.get(f"https://releases.llvm.org/{self.version}/cfe-{self.version}.src.tar.xz")

@@ -8,12 +8,12 @@ class GObjectIntrospectionConan(ConanFile):
     license = "GPL, LGPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "bison/[^3.3]",
         "flex/[^2.6.4]",
     )
     requires = (
+        "generators/[^1.0.0]",
         "python/[^3.7.4]",
         "glib/[^2.62.0]",
     )

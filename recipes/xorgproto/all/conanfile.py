@@ -6,7 +6,6 @@ class XorgProtoConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "meson/[^0.51.2]",
         "xorg-util-macros/[^1.19.1]",
     )

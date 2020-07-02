@@ -10,10 +10,7 @@ class LibUSBConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     options = {"udev": [True, False]}
     default_options = "udev=False"
-    build_requires = (
-        "generators/1.0.0",
-        "autotools/[^1.0.0]",
-    )
+    build_requires = ("autotools/[^1.0.0]",)
 
     def source(self):
         tools.get(f"https://github.com/libusb/libusb/releases/download/v{self.version}/libusb-{self.version}.tar.bz2")

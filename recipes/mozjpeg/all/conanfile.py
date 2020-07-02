@@ -8,7 +8,6 @@ class MozjpegConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/1.0.0",
         "yasm/[^1.3.0]",
         "cmake/[^3.15.3]",

@@ -11,7 +11,6 @@ class CudaConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     exports_sources = ("cuda-10.1.pc", "cudart-10.1.pc")
     build_requires = (
-        "generators/1.0.0",
         "gcc/7.4.0",
         "libxml2/[^2.9.10]",
     )

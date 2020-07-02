@@ -6,11 +6,13 @@ class LibxineramaConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = (
-        "generators/1.0.0",
         "autotools/[^1.0.0]",
         "xorg-util-macros/[^1.19.1]",
     )
-    requires = ("libxext/[^1.3.4]",)
+    requires = (
+        "generators/[^1.0.0]",
+        "libxext/[^1.3.4]",
+    )
 
     def source(self):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXinerama-{self.version}.tar.gz")

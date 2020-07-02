@@ -7,10 +7,7 @@ class AutoconfArchiveConan(ConanFile):
     description = "A collection of freely re-usable Autoconf macros"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
-    build_requires = (
-        "generators/1.0.0",
-        "autoconf/[^2.69]",
-    )
+    build_requires = ("autoconf/[^2.69]",)
 
     def source(self):
         tools.get(f"https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-{self.version}.tar.xz")
