@@ -4,7 +4,6 @@
 use crate::device::Device;
 use crate::error::Error;
 use crate::stream_profile::StreamProfile;
-use rs2;
 
 /// Struct representation of [`PipelineProfile`](../pipeline_profile/struct.PipelineProfile.html)
 /// that wraps around `rs2_pipeline_profile` handle.

@@ -4,7 +4,6 @@
 use crate::device::Device;
 use crate::error::Error;
 use crate::pipeline_profile::PipelineProfile;
-use rs2;
 
 // Expose `rs2_camera_info` for external use.
 pub use rs2::rs2_camera_info;

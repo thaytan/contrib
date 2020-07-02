@@ -6,7 +6,6 @@ use crate::context::Context;
 use crate::error::Error;
 use crate::frame::Frame;
 use crate::pipeline_profile::PipelineProfile;
-use rs2;
 
 /// Struct representation of [`Pipeline`](../pipeline/struct.Pipeline.html) that wraps around
 /// `rs2_pipeline` handle. The [`Pipeline`](../pipeline/struct.Pipeline.html) simplifies the user

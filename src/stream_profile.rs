@@ -4,7 +4,6 @@
 use crate::error::Error;
 use crate::extrinsics::*;
 use crate::intrinsics::*;
-use rs2;
 
 /// Struct representation of [`StreamProfile`](../stream_profile/struct.Pipeline.html) that wraps
 /// around `rs2_stream_profile` handle. The
@@ -66,10 +65,7 @@ impl Default for StreamResolution {
 impl StreamResolution {
     /// Constructor of [`StreamResolution`](../stream_profile/struct.StreamResolution.html) with specified `width` and `height`.
     pub fn new(width: i32, height: i32) -> Self {
-        Self {
-            width,
-            height,
-        }
+        Self { width, height }
     }
 }
 

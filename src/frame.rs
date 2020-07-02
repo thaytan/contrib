@@ -4,7 +4,6 @@ use crate::error::Error;
 use crate::metadata::{Metadata, MetadataAttribute};
 use crate::sensor::Sensor;
 use crate::stream_profile::StreamProfile;
-use rs2;
 use std::collections::HashMap;
 
 /// Struct representation of [`Frame`](../frame/struct.Frame.html) that wraps around

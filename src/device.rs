@@ -3,7 +3,6 @@
 use crate::error::Error;
 use crate::low_level_utils::cstring_to_string;
 use crate::sensor::Sensor;
-use rs2;
 
 // Expose `rs2_camera_info` for external use.
 pub use rs2::rs2_camera_info;

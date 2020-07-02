@@ -3,7 +3,6 @@
 use crate::error::Error;
 use crate::pipeline::Pipeline;
 use crate::pipeline_profile::PipelineProfile;
-use rs2;
 
 // Expose `rs2_format` and `rs2_stream` for external use.
 pub use rs2::rs2_format;

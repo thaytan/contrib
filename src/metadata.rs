@@ -1,7 +1,6 @@
 // License: MIT. See LICENSE file in root directory.
 // Copyright(c) 2019 Aivero. All Rights Reserved.
 
-use rs2;
 use std::collections::HashMap;
 
 pub enum MetadataAttribute {

@@ -4,7 +4,6 @@ use crate::device::Device;
 use crate::error::Error;
 use crate::record_playback::Playback;
 use crate::sensor::Sensor;
-use rs2;
 
 /// Struct representation of [`Context`](../context/struct.Context.html) that wraps
 /// around `rs2_context` handle. The [`Context`](../context/struct.Context.html) is
