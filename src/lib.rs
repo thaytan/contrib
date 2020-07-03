@@ -25,7 +25,7 @@ extern crate gstreamer_video as gst_video;
 extern crate lazy_static;
 extern crate k4a;
 
-mod enums;
+pub mod enums;
 mod error;
 mod k4asrc;
 mod properties;
