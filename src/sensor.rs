@@ -3,7 +3,6 @@
 
 use crate::error::Error;
 use crate::stream_profile::StreamProfile;
-use rs2;
 
 /// Struct representation of [`Sensor`](../sensor/struct.Sensor.html) that wraps around
 /// `rs2_sensor` handle.

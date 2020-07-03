@@ -4,7 +4,6 @@ use crate::error::Error;
 use crate::metadata::{Metadata, MetadataAttribute};
 use crate::sensor::Sensor;
 use crate::stream_profile::StreamProfile;
-use rs2;
 use std::collections::HashMap;
 
 /// Struct representation of [`Frame`](../frame/struct.Frame.html) that wraps around
@@ -62,8 +61,15 @@ impl Frame {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(Error)` on failure.
-    pub fn get_timestamp_domain(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub fn get_timestamp_domain(&self) -> Result<rs2::rs2_timestamp_domain, Error> {
+        let mut error = Error::default();
+        let timestamp_domain =
+            unsafe { rs2::rs2_get_frame_timestamp_domain(self.handle, error.inner()) };
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(timestamp_domain)
+        }
     }
 
     /// Read the given metadata attribute from the

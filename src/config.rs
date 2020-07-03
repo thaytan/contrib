@@ -3,7 +3,6 @@
 use crate::error::Error;
 use crate::pipeline::Pipeline;
 use crate::pipeline_profile::PipelineProfile;
-use rs2;
 
 // Expose `rs2_format` and `rs2_stream` for external use.
 pub use rs2::rs2_format;
@@ -285,7 +284,7 @@ impl Config {
     /// This call removes any filter on the stream configuration.
     ///
     /// # Arguments
-    ///	* stream - stream type, for which the filters are cleared.
+    /// * stream - stream type, for which the filters are cleared.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -308,8 +307,8 @@ impl Config {
     /// computer vision module request. This call removes any filter on the stream configuration.
     ///
     /// # Arguments
-    ///	* `stream` - Stream type, for which the filters are cleared.
-    ///	* `index` - Stream index, for which the filters are cleared.
+    /// * `stream` - Stream type, for which the filters are cleared.
+    /// * `index` - Stream index, for which the filters are cleared.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -375,7 +374,7 @@ impl Config {
     /// streaming starts.
     ///
     /// # Arguments
-    ///	* `pipe` - The [`Pipeline`](../pipeline/struct.Pipeline.html) for which the
+    /// * `pipe` - The [`Pipeline`](../pipeline/struct.Pipeline.html) for which the
     /// selected filters are applied.
     ///
     /// # Returns
@@ -400,7 +399,7 @@ impl Config {
     /// as described in [`Config::resolve()`](../config/struct.Config.html#method.resolve).
     ///
     /// # Arguments
-    ///	* `pipe` - The [`Pipeline`](../pipeline/struct.Pipeline.html) for which the
+    /// * `pipe` - The [`Pipeline`](../pipeline/struct.Pipeline.html) for which the
     /// selected filters are
     /// applied.
     ///
@@ -413,12 +412,10 @@ impl Config {
         let ret = unsafe { rs2::rs2_config_can_resolve(self.handle, pipe.handle, error.inner()) };
         if error.check() {
             Err(error)
+        } else if ret == 0 {
+            Ok(false)
         } else {
-            if ret == 0 {
-                Ok(false)
-            } else {
-                Ok(true)
-            }
+            Ok(true)
         }
     }
 }

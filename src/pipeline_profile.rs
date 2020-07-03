@@ -4,7 +4,6 @@
 use crate::device::Device;
 use crate::error::Error;
 use crate::stream_profile::StreamProfile;
-use rs2;
 
 /// Struct representation of [`PipelineProfile`](../pipeline_profile/struct.PipelineProfile.html)
 /// that wraps around `rs2_pipeline_profile` handle.
@@ -105,10 +104,11 @@ impl PipelineProfile {
     ) -> Result<Option<StreamProfile>, Error> {
         for stream in self.get_streams()? {
             let stream_data = stream.get_data()?;
-            if stream_data.stream == stream_type {
-                if stream_index != -1 && stream_data.index == stream_index {
-                    return Ok(Some(stream));
-                }
+            if stream_data.stream == stream_type
+                && stream_index != -1
+                && stream_data.index == stream_index
+            {
+                return Ok(Some(stream));
             }
         }
         Ok(None)

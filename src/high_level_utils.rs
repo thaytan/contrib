@@ -6,7 +6,6 @@ use crate::error::Error;
 use crate::pipeline::Pipeline;
 use crate::pipeline_profile::PipelineProfile;
 use crate::stream_profile::{StreamData, StreamResolution};
-use rs2;
 use rs2::rs2_camera_info::*;
 
 /// Print to STDOUT what RealSense [`Device`](../device/struct.Device.html)s are connected.
