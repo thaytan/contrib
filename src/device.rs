@@ -213,12 +213,17 @@ impl Device {
         if !self.is_advanced_mode_enabled()? {
             self.set_advanced_mode(true)?;
         }
-        let json_content = std::fs::read_to_string(json_path).unwrap_or_else(|_| {
-            panic!(
-                "Cannot read RealSense JSON configuration from file \"{}\"",
-                json_path
+        let json_content = std::fs::read_to_string(json_path).map_err(|err| {
+            Error::new(
+                &format!(
+                    "Cannot read RealSense JSON configuration from file \"{}\" - {}",
+                    json_path, err
+                ),
+                "Device::load_json_file_path()",
+                "json_path",
+                0,
             )
-        });
+        })?;
         self.load_json(&json_content)?;
         Ok(())
     }

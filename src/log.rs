@@ -27,8 +27,7 @@ pub fn log_to_console(min_severity: rs2_log_severity) -> Result<(), Error> {
 /// # Returns
 /// * `Ok()` on success.
 /// * `Err(Error)` on failure.
-#[cfg(target_arch = "x86")]
-#[cfg(target_arch = "x86_64")]
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn log_to_file(min_severity: rs2_log_severity, file_path: &str) -> Result<(), Error> {
     let mut error = Error::default();
     unsafe {
@@ -46,8 +45,7 @@ pub fn log_to_file(min_severity: rs2_log_severity, file_path: &str) -> Result<()
 /// # Returns
 /// * `Ok()` on success.
 /// * `Err(Error)` on failure.
-#[cfg(target_arch = "arm")]
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
 pub fn log_to_file(min_severity: rs2_log_severity, file_path: &str) -> Result<(), Error> {
     let mut error = Error::default();
     unsafe {
