@@ -10,7 +10,7 @@ jobs:
         with:
           fetch-depth: 2
       - name: Install apt dependencies
-        run: apt install python3-setuptools
+        run: sudo apt install python3-setuptools
       - name: Install pip dependencies
         run: python3 -m pip install --upgrade pip conan
       - name: Conan Dispatch
