@@ -11,4 +11,3 @@ jobs:
         uses: aivero/conan-dispatch-action@test
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          event-type: conan
