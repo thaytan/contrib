@@ -6,7 +6,7 @@ from conans import *
 class LibjpegTurboConan(ConanFile):
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "yasm/1.3.0",
         "cmake/3.15.3",

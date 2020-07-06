@@ -6,7 +6,7 @@ from conans import *
 class PythonSixConan(ConanFile):
     description = "Python 2 and 3 compatibility utilities"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/1.0.0",
         "python-setuptools/[^41.2.0]",

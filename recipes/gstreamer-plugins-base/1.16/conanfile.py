@@ -6,7 +6,7 @@ from conans import *
 class GStreamerPluginsBaseConan(ConanFile):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     options = {
         "introspection": [True, False],

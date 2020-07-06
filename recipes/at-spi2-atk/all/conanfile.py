@@ -6,7 +6,7 @@ from conans import *
 class AtSpi2AtkConan(ConanFile):
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
     )

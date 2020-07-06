@@ -4,7 +4,7 @@ from conans import *
 class SharedMimeInfoConan(ConanFile):
     description = "Freedesktop.org Shared MIME Info"
     license = "GPL2"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/[^1.0.0]",
         "itstool/[^2.0.6]",

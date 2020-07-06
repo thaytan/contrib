@@ -4,7 +4,7 @@ from conans import *
 class LibtiffConan(ConanFile):
     description = "Library for manipulation of TIFF images"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("mesa/20.0.0",)
     requires = (
         "base/[^1.0.0]",

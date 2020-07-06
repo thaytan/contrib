@@ -4,7 +4,7 @@ from conans import *
 class LibxdamageConan(ConanFile):
     description = "X11 damaged region extension library"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("pkgconf/[^1.6.3]",)
     requires = (
         "base/[^1.0.0]",

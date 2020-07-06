@@ -6,7 +6,7 @@ from conans import *
 class AutomakeConan(ConanFile):
     description = "A GNU tool for automatically creating Makefiles"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports = "automake-include-fix.patch"
     build_requires = (
         "cc/[^1.0.0]",

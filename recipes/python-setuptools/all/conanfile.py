@@ -6,7 +6,7 @@ from conans import *
 class PythonSetuptoolsConan(ConanFile):
     description = "Easily download, build, install, upgrade, and uninstall Python packages"
     license = "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     requires = (
         "base/[^1.0.0]",
         "python/[^3.7.4]",

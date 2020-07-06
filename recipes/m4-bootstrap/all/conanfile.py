@@ -6,7 +6,7 @@ from conans import *
 class M4BootstrapConan(ConanFile):
     description = "The GNU macro processor"
     license = "GPL3"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/m4/m4-{self.version}.tar.gz")

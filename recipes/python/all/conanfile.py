@@ -6,7 +6,7 @@ from conans import *
 class PythonConan(ConanFile):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cc/[^1.0.0]",)
     requires = (
         "base/[^1.0.0]",
@@ -47,6 +47,6 @@ class PythonConan(ConanFile):
         self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7"))
         if "CC" in os.environ:
             ldshared = os.environ["CC"] + " -pthread -shared "
-            if self.settings.arch == "x86_64":
+            if self.settings.arch_build == "x86_64":
                 ldshared += "-m64 "
             self.env_info.LDSHARED = ldshared

@@ -6,7 +6,7 @@ from conans import *
 class IntelVaapiDriverConan(ConanFile):
     description = "VA-API user mode driver for Intel GEN Graphics family"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
     build_requires = (

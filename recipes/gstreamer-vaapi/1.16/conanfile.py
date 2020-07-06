@@ -6,7 +6,7 @@ from conans import *
 class GStreamerVaapiConan(ConanFile):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {
         "encoders": [True, False],
         "egl": [True, False],

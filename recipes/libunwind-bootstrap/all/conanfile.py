@@ -4,7 +4,7 @@ from conans import *
 class LibunwindBoostrapConan(ConanFile):
     description = "Portable and efficient C programming interface (API) to determine the call-chain of a programs"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://download.savannah.gnu.org/releases/libunwind/libunwind-{self.version}.tar.gz")

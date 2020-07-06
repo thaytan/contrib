@@ -6,7 +6,7 @@ from conans import *
 class GStreamerRtspServerConan(ConanFile):
     description = "A framework for streaming media"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {
         "examples": [True, False],
         "tests": [True, False],

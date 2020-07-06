@@ -66,14 +66,14 @@ exec clang++ \
 class MuslConan(ConanFile):
     description = "Lightweight implementation of C standard library"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("clang-bootstrap/[^10.0.0]",)
 
     def source(self):
         tools.get(f"https://www.musl-libc.org/releases/musl-{self.version}.tar.gz")
 
     def build(self):
-        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         vars = {"CC": "clang", "TARGET": f"{arch}-linux-musl"}
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(vars=vars, configure_dir=f"{self.name}-{self.version}")

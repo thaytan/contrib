@@ -4,7 +4,7 @@ from conans import *
 class ClangBootstrapConan(ConanFile):
     description = "C language family frontend for LLVM"
     license = "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cmake-bootstrap/[^3.17.3]",
         "ninja-bootstrap/[^1.10.0]",

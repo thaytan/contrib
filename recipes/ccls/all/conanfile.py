@@ -4,7 +4,7 @@ from conans import *
 class CclsConan(ConanFile):
     description = "C/C++ language server supporting cross references, hierarchies, completion and semantic highlighting"
     license = "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cmake/[^3.15.3]",)
     requires = (
         "base/[^1.0.0]",

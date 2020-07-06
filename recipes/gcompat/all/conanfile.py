@@ -4,7 +4,7 @@ from conans import *
 class GcompatConan(ConanFile):
     description = "The GNU C Library compatibility layer for musl"
     license = "NCSA"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("clang-bootstrap/[^10.0.0]",)
 
     def source(self):

@@ -4,7 +4,7 @@ from conans import *
 class LibxpmConan(ConanFile):
     description = "X11 pixmap library"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/[^1.0.0]",
         "xorg-util-macros/[^1.19.1]",

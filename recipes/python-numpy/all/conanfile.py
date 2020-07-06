@@ -6,7 +6,7 @@ from conans import *
 class PythonNumpyConan(ConanFile):
     description = "conan package for Python Numpy module"
     license = "BSD"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",

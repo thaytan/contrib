@@ -6,7 +6,7 @@ from conans import *
 class AutoconfArchiveConan(ConanFile):
     description = "A collection of freely re-usable Autoconf macros"
     license = "GPL3"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("autoconf/[^2.69]",)
 
     def source(self):

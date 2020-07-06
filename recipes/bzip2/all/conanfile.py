@@ -6,7 +6,7 @@ from conans import *
 class Bzip2Conan(ConanFile):
     description = "A high-quality data compression program"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
     )

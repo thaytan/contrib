@@ -4,7 +4,7 @@ from conans import *
 class LibxshmfenceConan(ConanFile):
     description = "Library that exposes a event API on top of Linux futexes"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "pkgconf/[^1.6.3]",
         "xorg-util-macros/[^1.19.1]",

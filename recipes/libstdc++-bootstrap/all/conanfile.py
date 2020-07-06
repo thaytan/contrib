@@ -6,7 +6,7 @@ import shutil
 class LibstdcppBootstrapConan(ConanFile):
     description = "GNU C++ Standard Library"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "clang-bootstrap/[^10.0.0]",
         "cmake-bootstrap/[^3.17.3]",

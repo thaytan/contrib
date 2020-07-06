@@ -8,7 +8,7 @@ from conans import *
 class PkgconfConan(ConanFile):
     description = "Package compiler and linker metadata toolkit"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
         "autoconf/[^2.69]",
@@ -35,7 +35,7 @@ class PkgconfConan(ConanFile):
         # Support system pkgconfig files
         if self.settings.os == "Linux":
             self.env_info.PKG_CONFIG_SYSTEM_PATH.append("/usr/share/pkgconfig")
-            if self.settings.arch == "x86_64":
+            if self.settings.arch_build == "x86_64":
                 self.env_info.PKG_CONFIG_SYSTEM_PATH.append("/usr/lib/x86_64-linux-gnu/pkgconfig")
-            if self.settings.arch == "armv8":
+            if self.settings.arch_build == "armv8":
                 self.env_info.PKG_CONFIG_SYSTEM_PATH.append("/usr/lib/aarch64-linux-gnu/pkgconfig")

@@ -4,7 +4,7 @@ from conans import *
 class DbusConan(ConanFile):
     description = "Freedesktop.org message bus system"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/[^1.0.0]",
         "autoconf-archive/[^2019.01.06]",

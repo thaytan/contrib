@@ -6,7 +6,7 @@ from conans import *
 class MpcConan(ConanFile):
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "bootstrap-cc/[^1.0.0]",
         "make/[^4.3]",

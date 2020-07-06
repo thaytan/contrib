@@ -6,7 +6,7 @@ class GStreamerPluginsBadConan(ConanFile):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     exports = "reduce_latency.patch"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {
         "introspection": [True, False],
         "videoparsers": [True, False],
@@ -60,13 +60,13 @@ class GStreamerPluginsBadConan(ConanFile):
     )
 
     def configure(self):
-        if self.settings.arch != "x86_64":
+        if self.settings.arch_build != "x86_64":
             self.options.remove("nvdec")
             self.options.remove("nvenc")
             self.options.remove("nvcodec")
 
     def build_requirements(self):
-        if self.settings.arch == "x86_64" and (self.options.nvenc or self.options.nvdec):
+        if self.settings.arch_build == "x86_64" and (self.options.nvenc or self.options.nvdec):
             self.build_requires("cuda/[~10.1]")
             self.build_requires("orc/[^0.4.31]")
 
@@ -104,7 +104,7 @@ class GStreamerPluginsBadConan(ConanFile):
         args.append("-Dclosedcaption=" + ("enabled" if self.options.closedcaption else "disabled"))
         args.append("-Dinter=" + ("enabled" if self.options.inter else "disabled"))
         args.append("-Dwebp=" + ("enabled" if self.options.webp else "disabled"))
-        if self.settings.arch == "x86_64":
+        if self.settings.arch_build == "x86_64":
             args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
             if self.version == "master":

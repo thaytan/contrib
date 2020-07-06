@@ -6,7 +6,7 @@ from conans import *
 class TexinfoConan(ConanFile):
     description = "GNU documentation system for on-line information and printed output"
     license = "GPL3"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/pub/gnu/texinfo/texinfo-{self.version}.tar.xz")

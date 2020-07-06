@@ -8,7 +8,7 @@ import shutil
 class RustConan(ConanFile):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "curl/[^7.66.0]",
     )
@@ -33,7 +33,7 @@ class RustConan(ConanFile):
             self.run("./bin/rustup component add rust-src rustc-dev")
 
     def package(self):
-        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         src = os.path.join(f"toolchains", "{self.version}-{arch}-unknown-linux-gnu")
         self.copy("*", src=os.path.join(src, "bin"), dst="bin")
         self.copy("*.so*", src=os.path.join(src, "lib"), dst="lib")

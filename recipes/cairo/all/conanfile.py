@@ -6,7 +6,7 @@ from conans import *
 class CairoConan(ConanFile):
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     default_options = ("introspection=True", "zlib=True", "png=True", "fontconfig=True")
     scm = {
         "type": "git",

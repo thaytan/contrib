@@ -6,7 +6,7 @@ from conans import *
 class NushellConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://github.com/nushell/nushell/archive/{self.version}.tar.gz")

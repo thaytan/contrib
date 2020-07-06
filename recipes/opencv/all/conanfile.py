@@ -6,7 +6,7 @@ from conans import *
 class OpenCVConan(ConanFile):
     description = "OpenCV is an open source computer vision and machine learning software library."
     license = "BSD"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cmake/[^3.15.3]",)
     requires = (
         "base/[^1.0.0]",

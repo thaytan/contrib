@@ -6,7 +6,7 @@ from conans import *
 class LibRealsenseConan(ConanFile):
     description = "Intel RealSense SDK"
     license = "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     options = {"cuda": [True, False], "python": [True, False]}
     default_options = ("cuda=False", "python=True")

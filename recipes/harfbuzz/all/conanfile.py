@@ -7,7 +7,7 @@ from conans import *
 class HarfbuzzConan(ConanFile):
     description = "HarfBuzz text shaping engine"
     license = "Old MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/[^1.0.0]",
         "freetype-no-harfbuzz/[^2.10.1]",

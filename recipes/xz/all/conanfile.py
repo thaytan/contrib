@@ -6,7 +6,7 @@ from conans import *
 class XzConan(ConanFile):
     description = "Library and command line tools for XZ and LZMA compressed files"
     license = "custom", "GPL", "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://tukaani.org/xz/xz-{self.version}.tar.gz")

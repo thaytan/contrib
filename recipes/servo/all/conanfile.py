@@ -7,7 +7,7 @@ from conans import *
 class ServoConan(ConanFile):
     description = "The Servo Browser Engine"
     license = "MIT", "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cmake/[^3.15.3]",
         "python/[^3.7.4]",

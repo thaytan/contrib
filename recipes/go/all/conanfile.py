@@ -6,10 +6,10 @@ from conans import *
 class GoConan(ConanFile):
     description = "Core compiler tools for the Go programming language"
     license = "BSD"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
-        arch = {"x86_64": "amd64", "armv8": "arm64"}[str(self.settings.arch)]
+        arch = {"x86_64": "amd64", "armv8": "arm64"}[str(self.settings.arch_build)]
         filename = f"go{self.version}.linux-{arch}.tar.gz"
         tools.download(f"https://dl.google.com/go/" + filename, filename)
         # Workaround: Python3 in Ubuntu 18.04 does not support ascii encoded tarballs

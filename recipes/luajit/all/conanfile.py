@@ -6,7 +6,7 @@ from conans import *
 class LuajitConan(ConanFile):
     description = "Just-in-time compiler and drop-in replacement for Lua 5.1"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cc/[^1.0.0]",)
 
     def source(self):

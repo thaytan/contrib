@@ -6,7 +6,7 @@ from conans import *
 class GmpConan(ConanFile):
     description = "A free library for arbitrary precision arithmetic"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "bootstrap-cc/[^1.0.0]",
         "m4/[^1.4.18]",

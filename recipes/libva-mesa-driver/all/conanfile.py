@@ -6,7 +6,7 @@ from conans import *
 class LibvaMesaDriverConan(ConanFile):
     description = "VA-API user mode driver for Intel GEN Graphics family"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("meson/[^0.51.2]",)
     requires = (
         "base/[^1.0.0]",

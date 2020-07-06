@@ -6,7 +6,7 @@ from conans import *
 class NpmConan(ConanFile):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/1.0.0",
         "python/[^3.7.4]",

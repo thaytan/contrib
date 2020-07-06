@@ -6,7 +6,7 @@ from conans import *
 class SwigConan(ConanFile):
     description = "Generate scripting interfaces to C/C++ code"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
         "python/[^3.7.4]",

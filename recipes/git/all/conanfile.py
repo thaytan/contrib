@@ -4,7 +4,7 @@ from conans import *
 class GitConan(ConanFile):
     description = "The fast distributed version control system"
     license = "GPL2"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
         "gettext/[^0.20.1]",

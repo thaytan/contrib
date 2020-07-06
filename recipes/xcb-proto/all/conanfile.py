@@ -4,7 +4,7 @@ from conans import *
 class XcbProtoConan(ConanFile):
     description = "XML-XCB protocol descriptions"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("pkgconf/[^1.6.3]",)
 
     def source(self):

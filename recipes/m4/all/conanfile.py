@@ -6,7 +6,7 @@ from conans import *
 class M4Conan(ConanFile):
     description = "The GNU macro processor"
     license = "GPL3"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "bootstrap-cc/[^1.0.0]",
         "make/[^4.3]",

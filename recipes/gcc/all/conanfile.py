@@ -6,7 +6,7 @@ from conans import *
 class GccConan(ConanFile):
     description = "The GNU Compiler Collection - C and C++ frontends"
     license = "custom", "FDL", "GPL", "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "bootstrap-cc/[^1.0.0]",
         "make/[^4.3]",
@@ -50,9 +50,9 @@ class GccConan(ConanFile):
             "--enable-default-ssp",
             "--enable-cet=auto",
         ]
-        if self.settings.arch == "x86_64":
+        if self.settings.arch_build == "x86_64":
             target = "x86_64-linux-gnu"
-        elif self.settings.arch == "armv8":
+        elif self.settings.arch_build == "armv8":
             target = "aarch64-linux-gnu"
         args.append("--build=" + target)
         args.append("--host=" + target)
@@ -67,6 +67,6 @@ class GccConan(ConanFile):
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "g++")
         # Needed for building Python modules
         ldshared = os.path.join(self.package_folder, "bin", "gcc") + " -pthread -shared "
-        if self.settings.arch == "x86_64":
+        if self.settings.arch_build == "x86_64":
             ldshared += "-m64 "
         self.env_info.LDSHARED = ldshared

@@ -6,7 +6,7 @@ from conans import *
 class PythonAppdirsConan(ConanFile):
     description = 'A small Python module for determining appropriate platform-specific dirs, e.g. a "user data dir".'
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("python-setuptools/[^41.2.0]",)
     requires = (
         "base/[^1.0.0]",

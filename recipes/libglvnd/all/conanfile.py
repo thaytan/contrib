@@ -4,7 +4,7 @@ from conans import *
 class LibglvndConan(ConanFile):
     description = "The GL Vendor-Neutral Dispatch library"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {
         "x11": [True, False],
     }

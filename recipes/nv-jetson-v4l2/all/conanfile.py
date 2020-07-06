@@ -34,7 +34,7 @@ Cflags: -I${includedir}
 class NvJetsonV4l2(ConanFile):
     description = "NVIDIA built Accelerated GStreamer Plugins"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     exports_sources = {"patches/*"}

@@ -6,7 +6,7 @@ from conans import *
 class AutoconfConan(ConanFile):
     description = "A GNU tool for automatically configuring source code"
     license = "GPL3"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports = "m4-include.patch"
     build_requires = ("cc/[^1.0.0]",)
     requires = (

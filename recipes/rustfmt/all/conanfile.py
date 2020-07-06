@@ -6,7 +6,7 @@ from conans import *
 class RustfmtConan(ConanFile):
     description = "A tool for formatting Rust code according to style guidelines"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://github.com/rust-lang/rustfmt/archive/{self.version}.tar.gz")

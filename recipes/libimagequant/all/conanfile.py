@@ -4,7 +4,7 @@ from conans import *
 class LibimagequantConan(ConanFile):
     description = "Library for high-quality conversion of RGBA images to 8-bit indexed-color (palette) images"
     license = "BSD"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("autotools/1.0.0",)
     requires = ("base/[^1.0.0]",)
 

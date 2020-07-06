@@ -6,7 +6,7 @@ from conans import *
 class LibeditConan(ConanFile):
     description = "System V Release 4.0 curses emulation library"
     license = "Zlib"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",

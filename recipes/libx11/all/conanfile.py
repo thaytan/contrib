@@ -5,7 +5,7 @@ import os
 class Libx11Conan(ConanFile):
     description = "X11 client-side library"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "pkgconf/[^1.6.3]",
         "xorg-util-macros/[^1.19.1]",

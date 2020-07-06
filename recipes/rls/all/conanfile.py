@@ -6,7 +6,7 @@ from conans import *
 class RlsConan(ConanFile):
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://github.com/rust-lang/rls/archive/{self.version}.tar.gz")

@@ -6,7 +6,7 @@ from conans import *
 class GstreamerNvJetsonEgl(ConanFile):
     description = "NVIDIA jetson egl element"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     gst_version = "1.16"

@@ -7,7 +7,7 @@ from conans import *
 class FontconfigConan(ConanFile):
     description = "A library for configuring and customizing font access"
     license = "Old MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/[^1.0.0]",
         "gperf/[^3.1]",

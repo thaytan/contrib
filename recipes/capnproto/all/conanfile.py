@@ -4,7 +4,7 @@ from conans import *
 class CapNProtoConan(ConanFile):
     description = "Cap'n Proto serialization/RPC system"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://capnproto.org/capnproto-c++-{self.version}.tar.gz")

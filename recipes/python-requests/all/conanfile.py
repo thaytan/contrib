@@ -6,7 +6,7 @@ from conans import *
 class PythonRequestsConan(ConanFile):
     description = "Python Requests module"
     license = "Apache 2.0"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",

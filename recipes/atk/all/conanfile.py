@@ -6,7 +6,7 @@ from conans import *
 class AtkConan(ConanFile):
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL-2.1"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
         "gettext/[^0.20.1]",

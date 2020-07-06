@@ -4,7 +4,7 @@ from conans import *
 class GlfwcConan(ConanFile):
     description = "GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop."
     license = "ZLIB"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     exports = "fix-x11-exts.patch"

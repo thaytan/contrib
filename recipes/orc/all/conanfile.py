@@ -4,7 +4,7 @@ from conans import *
 class OrcConan(ConanFile):
     description = "Optimized Inner Loop Runtime Compiler"
     license = "LGPL-2.1"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("meson/[^0.51.2]",)
 
     def source(self):

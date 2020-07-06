@@ -2,10 +2,9 @@ from conans import *
 
 
 class GlibcConan(ConanFile):
-    name = "glibc"
     description = "GNU C Library"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/glibc/glibc-{self.version}.tar.xz")

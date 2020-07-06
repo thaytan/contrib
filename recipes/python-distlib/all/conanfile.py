@@ -4,7 +4,7 @@ from conans import *
 class PythonDistlibConan(ConanFile):
     description = "Low-level components of distutils2/packaging"
     license = "PSF"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
         requires = (
         "base/[^1.0.0]",
         "python/[^3.7.4]",

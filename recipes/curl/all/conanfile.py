@@ -6,7 +6,7 @@ from conans import *
 class CurlConan(ConanFile):
     description = "An URL retrieval utility and library"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cc/[^1.0.0]",
         "zlib/[^1.2.11]",

@@ -6,7 +6,7 @@ from conans import *
 class AtSpi2CoreConan(ConanFile):
     description = "Protocol definitions and daemon for D-Bus at-spi"
     license = "GPL2"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
     )

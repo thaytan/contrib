@@ -4,7 +4,7 @@ from conans import *
 class FlexConan(ConanFile):
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD 2-Clause"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "autotools/[^1.0.0]",
         "bison/[^3.3]",

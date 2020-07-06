@@ -4,7 +4,7 @@ from conans import *
 class LlvmConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom", "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     requires = ("base/[^1.0.0]", "libcxx/[^1.0.0]")
 
     def source(self):

@@ -4,7 +4,7 @@ from conans import *
 class LibvncserverConan(ConanFile):
     description = "Cross-platform C libraries that allow you to easily implement VNC server or client functionality"
     license = "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cmake/[^3.15.3]",)
     requires = (
         "base/[^1.0.0]",

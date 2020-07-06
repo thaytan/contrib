@@ -6,7 +6,7 @@ from conans import *
 class GStreamerPluginsGoodConan(ConanFile):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {
         "autodetect": [True, False],
         "rtp": [True, False],

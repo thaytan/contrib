@@ -4,7 +4,7 @@ from conans import *
 class LibpthreadStubsConan(ConanFile):
     description = "X11 client-side library"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://xcb.freedesktop.org/dist/libpthread-stubs-{self.version}.tar.bz2")

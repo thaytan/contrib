@@ -6,7 +6,7 @@ from conans import *
 class MesaConan(ConanFile):
     description = "An open-source implementation of the OpenGL specification"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     build_requires = (
@@ -47,9 +47,9 @@ class MesaConan(ConanFile):
             "-Dvulkan-drivers=",
             "-Dgallium-drivers=",
         ]
-        if self.settings.arch == "x86_64":
+        if self.settings.arch_build == "x86_64":
             args.append("-Ddri-drivers=i915,i965")
-        if self.settings.arch == "armv8":
+        if self.settings.arch_build == "armv8":
             args.append("-Dgallium-drivers=nouveau,tegra")
         meson = Meson(self)
         meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")

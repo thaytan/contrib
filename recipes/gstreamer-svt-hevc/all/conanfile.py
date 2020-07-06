@@ -6,7 +6,7 @@ from conans import *
 class GStreamerSvtHevcConan(ConanFile):
     description = "The Scalable Video Technology for HEVC Encoder GStreamer plugin"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "base/[^1.0.0]",
         "meson/[^0.51.2]",

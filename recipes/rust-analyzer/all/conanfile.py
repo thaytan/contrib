@@ -6,7 +6,7 @@ from conans import *
 class RustAnalyzerConan(ConanFile):
     description = "An experimental Rust compiler front-end for IDEs."
     license = "MIT", "Apache2"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://github.com/rust-analyzer/rust-analyzer/archive/{self.version.replace('.', '-')}.tar.gz")

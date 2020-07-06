@@ -4,7 +4,7 @@ from conans import *
 class XorgProtoConan(ConanFile):
     description = "combined X.Org X11 Protocol headers"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
         "xorg-util-macros/[^1.19.1]",

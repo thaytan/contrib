@@ -6,7 +6,7 @@ from conans import *
 class IslConan(ConanFile):
     description = "Library for manipulating sets and relations of integer points bounded by linear constraints"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "bootstrap-cc/[^1.0.0]",
         "make/[^4.3]",

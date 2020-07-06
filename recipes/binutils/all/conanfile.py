@@ -6,7 +6,7 @@ from conans import *
 class BinutilsConan(ConanFile):
     description = "A set of programs to assemble and manipulate binary and object files"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("bootstrap-gcc/7.4.0",)
 
     def source(self):

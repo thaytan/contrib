@@ -6,7 +6,7 @@ from conans import *
 class DirenvConan(ConanFile):
     description = "A shell extension that manages your environment"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://github.com/direnv/direnv/archive/v{self.version}.tar.gz")

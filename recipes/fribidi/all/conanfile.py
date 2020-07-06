@@ -6,7 +6,7 @@ from conans import *
 class FribidiConan(ConanFile):
     description = "The Free Implementation of the Unicode Bidirectional Algorithm"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.5.12]",
     )

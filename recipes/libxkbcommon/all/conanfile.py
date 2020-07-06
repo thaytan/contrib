@@ -6,7 +6,7 @@ from conans import *
 class LibxcbConan(ConanFile):
     description = "Keymap handling library for toolkits and window systems"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
         "bison/[^3.3]",

@@ -6,7 +6,7 @@ from conans import *
 class GLibConan(ConanFile):
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     license = "LGPL-2.1"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
     )

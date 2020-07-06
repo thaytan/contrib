@@ -6,7 +6,7 @@ from conans import *
 class GObjectIntrospectionConan(ConanFile):
     description = "Middleware layer between C libraries (using GObject) and language bindings"
     license = "GPL, LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
         "bison/[^3.3]",

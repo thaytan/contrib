@@ -6,7 +6,7 @@ from conans import *
 class PythonGobjectConan(ConanFile):
     description = "Python GObject bindings"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("meson/[^0.51.2]",)
     requires = (
         "gobject-introspection/[^1.59.3]",

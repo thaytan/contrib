@@ -4,7 +4,7 @@ from conans import *
 class Help2ManConan(ConanFile):
     description = "Conversion tool to create man files"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cc/[^1.0.0]",)
 
     def source(self):

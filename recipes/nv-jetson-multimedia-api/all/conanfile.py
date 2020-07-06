@@ -7,7 +7,7 @@ from conans import *
 class NvJetsonMultimediaApi(ConanFile):
     description = "Multimedia API is a collection of lower-level APIs that support flexible application development"
     license = "LGPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports_sources = ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = "jetson=TX2"

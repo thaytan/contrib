@@ -6,7 +6,7 @@ from conans import *
 class TclConan(ConanFile):
     description = "The Tcl scripting language"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "base/[^1.0.0]",
         "autotools/[^1.0.0]",

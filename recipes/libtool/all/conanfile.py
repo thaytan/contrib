@@ -6,7 +6,7 @@ from conans import *
 class LibtoolConan(ConanFile):
     description = "A generic library support script"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports = "libtool-prefix-fix.patch"
     build_requires = (
         "cc/[^1.0.0]",

@@ -4,7 +4,7 @@ from conans import *
 class ConanLibwebp(ConanFile):
     description = "library to encode and decode images in WebP format"
     license = "BSD"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cmake/[^3.15.3]",)
 
     def source(self):

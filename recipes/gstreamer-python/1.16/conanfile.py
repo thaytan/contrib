@@ -6,7 +6,7 @@ from conans import *
 class GStreamerPythonConan(ConanFile):
     description = "Gstreamer Python bindings"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
         requires = (
         "gstreamer/[~1.16]",
         "gobject-introspection/1.59.3",

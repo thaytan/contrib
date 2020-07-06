@@ -6,7 +6,7 @@ from conans import *
 class ReadlineConan(ConanFile):
     description = "GNU readline library"
     license = "GPL-3.0-or-later"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("cc/[^1.0.0]",)
     requires = (
         "base/[^1.0.0]",

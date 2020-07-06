@@ -4,7 +4,7 @@ from conans import *
 class CMakeConan(ConanFile):
     description = "A cross-platform open-source make system"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     requires = (
         "base/[^1.0.0]",
         "cc/[^1.0.0]",

@@ -6,7 +6,7 @@ from conans import *
 class ClippyConan(ConanFile):
     description = "A bunch of lints to catch common mistakes and improve your Rust code"
     license = "Apache2"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
         tools.get(f"https://github.com/rust-lang/rust-clippy/archive/{self.version}.tar.gz")

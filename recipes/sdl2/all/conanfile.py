@@ -6,7 +6,7 @@ from conans import *
 class Sdl2Conan(ConanFile):
     description = "A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
         requires = (
         "base/[^1.0.0]",
         "libxcb/[^1.13.1]",

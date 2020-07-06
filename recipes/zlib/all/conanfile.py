@@ -4,7 +4,7 @@ from conans import *
 class ZlibConan(ConanFile):
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " "(Also Free, Not to Mention Unencumbered by Patents)"
     license = "Zlib"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("clang-bootstrap/[^10.0.0]",)
     requires = ("musl/[^1.2.0]",)
 

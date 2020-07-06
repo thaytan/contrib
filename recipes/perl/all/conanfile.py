@@ -6,7 +6,7 @@ from conans import *
 class PerlConan(ConanFile):
     description = "A highly capable, feature-rich programming language"
     license = "GPL"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports = "link-m-pthread.patch"
     build_requires = ("cc/[^1.0.0]",)
 
@@ -35,7 +35,7 @@ class PerlConan(ConanFile):
 
     def package_info(self):
         arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
-        platform = arch_conv[str(self.settings.arch)] + "-linux"
+        platform = arch_conv[str(self.settings.arch_build)] + "-linux"
         self.env_info.PERL = "perl"
         self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version))
         self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, platform + "-thread-multi"))

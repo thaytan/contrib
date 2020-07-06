@@ -8,7 +8,7 @@ driver_map = {"10.1.243": "418.87.00"}
 class CudaConan(ConanFile):
     description = "NVIDIA's GPU programming toolkit"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports_sources = ("cuda-10.1.pc", "cudart-10.1.pc")
     build_requires = (
         "gcc/7.4.0",

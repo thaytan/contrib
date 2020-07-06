@@ -4,7 +4,7 @@ from conans import *
 class ClangConan(ConanFile):
     description = "C language family frontend for LLVM"
     license = "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     requires = (
         "base/[^1.0.0]",
         "llvm/[^10.0.0]",

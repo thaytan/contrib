@@ -7,7 +7,7 @@ from conans import *
 class GdkPixbufConan(ConanFile):
     description = "An image loading library"
     license = "LGPL-2.1"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "meson/[^0.51.2]",
         "gobject-introspection/[^1.59.3]",

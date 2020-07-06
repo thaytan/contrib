@@ -6,7 +6,7 @@ from conans import *
 class NodeGypConan(ConanFile):
     description = "Node.js native addon build tool"
     license = "MIT"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     )
     requires = (
         "base/[^1.0.0]",

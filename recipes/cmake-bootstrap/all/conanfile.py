@@ -4,7 +4,7 @@ from conans import *
 class CmakeBootstrapConan(ConanFile):
     description = "A cross-platform open-source make system"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     requires = "openssl-bootstrap/[^3.0.0-alpha4]"
 
     def source(self):

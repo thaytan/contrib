@@ -5,7 +5,7 @@ import os
 class AmqpCppConan(ConanFile):
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     exports = "openssl.patch"
     build_requires = ("cmake/3.15.3",)
     requires = (

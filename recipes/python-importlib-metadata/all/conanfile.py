@@ -6,7 +6,7 @@ from conans import *
 class PythonImportlibMetadataConan(ConanFile):
     description = "Read metadata from Python packages"
     license = "Apache"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("python-setuptools/[^41.2.0]",)
     requires = (
         "base/[^1.0.0]",
