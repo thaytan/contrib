@@ -9,18 +9,15 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.client_payload.ref }}
-    - name: Add ~/.local/bin to PATH
-      run: echo "export PATH=~/.local/bin:$PATH" > ~/.profile
     - name: Install apt dependencies
       run: sudo apt install python3-setuptools
     - name: Install pip dependencies
       run: python3 -m pip install --upgrade pip conan
-    - name: Echo PATH
-      run: echo $PATH
     - name: Conan Create
       uses: aivero/conan-action@test
       with:
         package: ${{ github.event.client_payload.package }}
-        version: ${{ github.event.client_payload.version }}
         profile: ${{ github.event.client_payload.profile }}
         path: ${{ github.event.client_payload.path }}
+        conan_config: ${{ github.event.client_payload.conan_config }}
+        conan_repo: ${{ github.event.client_payload.conan_repo }}
