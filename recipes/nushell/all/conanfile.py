@@ -4,6 +4,7 @@ from conans import *
 
 
 class NushellConan(ConanFile):
+    name = "nushell"
     description = "Development and debugging tools for GStreamer"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

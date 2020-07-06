@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxcbConan(ConanFile):
+    name = "libxcb"
     description = "X11 client-side library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

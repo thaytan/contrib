@@ -4,6 +4,7 @@ from conans import *
 
 
 class Bzip2Conan(ConanFile):
+    name = "bzip2"
     description = "A high-quality data compression program"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class GStreamerPythonConan(ConanFile):
+    name = "gstreamer-python"
     description = "Gstreamer Python bindings"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

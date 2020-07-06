@@ -4,6 +4,7 @@ from conans import *
 
 
 class PerlConan(ConanFile):
+    name = "perl"
     description = "A highly capable, feature-rich programming language"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class OpenalConan(ConanFile):
+    name = "openal"
     description = "Cross-platform 3D audio library, software implementation"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

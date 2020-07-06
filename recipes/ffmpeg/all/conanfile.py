@@ -2,6 +2,7 @@ from conans import *
 
 
 class FFMpegConan(ConanFile):
+    name = "ffmpeg"
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "GPL3"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

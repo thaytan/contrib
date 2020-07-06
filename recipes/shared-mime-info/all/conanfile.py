@@ -2,6 +2,7 @@ from conans import *
 
 
 class SharedMimeInfoConan(ConanFile):
+    name = "shared-mime-info"
     description = "Freedesktop.org Shared MIME Info"
     license = "GPL2"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

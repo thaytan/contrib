@@ -2,6 +2,7 @@ from conans import *
 
 
 class GiflibConan(ConanFile):
+    name = "giflib"
     description = "Library for reading and writing gif images"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

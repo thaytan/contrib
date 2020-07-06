@@ -4,6 +4,7 @@ from conans import *
 
 
 class ItstoolConan(ConanFile):
+    name = "itstool"
     description = "XML to PO and back again"
     license = "GPL3"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

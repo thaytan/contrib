@@ -4,6 +4,7 @@ from conans import *
 
 
 class AutoconfConan(ConanFile):
+    name = "autoconf"
     description = "A GNU tool for automatically configuring source code"
     license = "GPL3"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

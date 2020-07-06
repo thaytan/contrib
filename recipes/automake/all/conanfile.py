@@ -4,6 +4,7 @@ from conans import *
 
 
 class AutomakeConan(ConanFile):
+    name = "automake"
     description = "A GNU tool for automatically creating Makefiles"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class MpfrConan(ConanFile):
+    name = "mpfr"
     description = "Multiple-precision floating-point library"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

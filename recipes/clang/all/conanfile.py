@@ -2,6 +2,7 @@ from conans import *
 
 
 class ClangConan(ConanFile):
+    name = "clang"
     description = "C language family frontend for LLVM"
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -2,6 +2,7 @@ from conans import *
 
 
 class XorgProtoConan(ConanFile):
+    name = "xorgproto"
     description = "combined X.Org X11 Protocol headers"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

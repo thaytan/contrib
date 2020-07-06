@@ -4,6 +4,7 @@ from conans import *
 
 
 class CppzmqConan(ConanFile):
+    name = "cppzmq"
     description = "ZeroMQ core engine in C++, implements ZMTP/3.1"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

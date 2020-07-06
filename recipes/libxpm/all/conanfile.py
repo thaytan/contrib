@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxpmConan(ConanFile):
+    name = "libxpm"
     description = "X11 pixmap library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

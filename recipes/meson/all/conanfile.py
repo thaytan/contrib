@@ -4,6 +4,7 @@ from conans import *
 
 
 class MesonConan(ConanFile):
+    name = "meson"
     description = "High productivity build system"
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

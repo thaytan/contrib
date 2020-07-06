@@ -7,6 +7,7 @@ def conv_version(version):
 
 
 class SqliteConan(ConanFile):
+    name = "sqlite"
     description = "A C library that implements an SQL database engine"
     license = "custom:Public Domain"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

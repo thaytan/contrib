@@ -2,6 +2,7 @@ from conans import *
 
 
 class ConanLibwebp(ConanFile):
+    name = "libwebp"
     description = "library to encode and decode images in WebP format"
     license = "BSD"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

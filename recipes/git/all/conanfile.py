@@ -2,6 +2,7 @@ from conans import *
 
 
 class GitConan(ConanFile):
+    name = "git"
     description = "The fast distributed version control system"
     license = "GPL2"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

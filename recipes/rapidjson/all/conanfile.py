@@ -4,6 +4,7 @@ from conans import *
 
 
 class RapidJsonConan(ConanFile):
+    name = "rapidjson"
     description = "A fast JSON parser/generator for C++ with both SAX/DOM style API"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

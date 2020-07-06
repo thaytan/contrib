@@ -4,6 +4,7 @@ from conans import *
 
 
 class SvtHevcConan(ConanFile):
+    name = "svt-hevc"
     description = "The Scalable Video Technology for HEVC Encoder"
     license = "BSD"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

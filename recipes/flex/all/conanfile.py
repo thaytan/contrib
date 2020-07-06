@@ -2,6 +2,7 @@ from conans import *
 
 
 class FlexConan(ConanFile):
+    name = "flex"
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD 2-Clause"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

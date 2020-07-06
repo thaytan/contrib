@@ -4,6 +4,7 @@ from conans import *
 
 
 class GnutlsConan(ConanFile):
+    name = "gnutls"
     description = "A library which provides a secure layer over a reliable transport layer"
     license = "custom", "FDL", "GPL", "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

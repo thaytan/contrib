@@ -2,6 +2,7 @@ from conans import *
 
 
 class Deepstream(ConanFile):
+    name = "deepstream"
     description = "Complete streaming analytics toolkit for AI-based video"
     license = "proprietary"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

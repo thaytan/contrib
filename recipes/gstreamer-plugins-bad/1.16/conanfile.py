@@ -3,6 +3,7 @@ from conans import *
 
 
 class GStreamerPluginsBadConan(ConanFile):
+    name = "gstreamer-plugins-bad"
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     exports = "reduce_latency.patch"

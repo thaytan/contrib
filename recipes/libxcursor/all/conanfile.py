@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxcursorConan(ConanFile):
+    name = "libxcursor"
     description = "X cursor management library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

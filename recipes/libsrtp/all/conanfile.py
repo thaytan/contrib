@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibSrtpConan(ConanFile):
+    name = "libsrtp"
     description = "Library for SRTP (Secure Realtime Transport Protocol)"
     license = "BSD"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonPipConan(ConanFile):
+    name = "python-pip"
     description = "High productivity build system"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

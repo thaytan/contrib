@@ -4,6 +4,7 @@ from conans import *
 
 
 class ClippyConan(ConanFile):
+    name = "clippy"
     description = "A bunch of lints to catch common mistakes and improve your Rust code"
     license = "Apache2"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

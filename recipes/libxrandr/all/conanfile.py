@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxrandrConan(ConanFile):
+    name = "libxrandr"
     description = "X11 RandR extension library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

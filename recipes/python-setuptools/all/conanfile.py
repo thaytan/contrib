@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonSetuptoolsConan(ConanFile):
+    name = "python-setuptools"
     description = "Easily download, build, install, upgrade, and uninstall Python packages"
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

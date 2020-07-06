@@ -5,6 +5,7 @@ from conans import *
 
 
 class GettextConan(ConanFile):
+    name = "gettext"
     description = "GNU internationalization library"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     license = "GPL"

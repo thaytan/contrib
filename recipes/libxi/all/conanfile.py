@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxiConan(ConanFile):
+    name = "libxi"
     description = "X11 Input extension library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

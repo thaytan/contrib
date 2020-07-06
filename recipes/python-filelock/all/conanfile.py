@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonFilelockConan(ConanFile):
+    name = "python-filelock"
     description = "A platform independent file lock"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

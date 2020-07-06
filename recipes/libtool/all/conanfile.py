@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibtoolConan(ConanFile):
+    name = "libtool"
     description = "A generic library support script"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

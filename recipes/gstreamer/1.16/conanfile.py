@@ -4,6 +4,7 @@ from conans import *
 
 
 class GStreamerConan(ConanFile):
+    name = "gstreamer"
     description = "A framework for streaming media"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

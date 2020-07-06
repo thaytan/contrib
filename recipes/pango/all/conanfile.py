@@ -4,6 +4,7 @@ from conans import *
 
 
 class PangoConan(ConanFile):
+    name = "pango"
     description = "A library for layout and rendering of text"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibepoxyConan(ConanFile):
+    name = "libepoxy"
     description = "Library handling OpenGL function pointer management"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

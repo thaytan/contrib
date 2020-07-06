@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibcConan(ConanFile):
+    name = "libc"
     description = "Virtual libc package"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc": ["glibc", "musl", "system"]}

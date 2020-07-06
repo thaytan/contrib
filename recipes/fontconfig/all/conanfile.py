@@ -5,6 +5,7 @@ from conans import *
 
 
 class FontconfigConan(ConanFile):
+    name = "fontconfig"
     description = "A library for configuring and customizing font access"
     license = "Old MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

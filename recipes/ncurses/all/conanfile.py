@@ -4,6 +4,7 @@ from conans import *
 
 
 class NcursesConan(ConanFile):
+    name = "ncurses"
     description = "System V Release 4.0 curses emulation library"
     license = "Zlib"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

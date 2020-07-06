@@ -4,6 +4,7 @@ from conans import *
 
 
 class MpcConan(ConanFile):
+    name = "mpc"
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

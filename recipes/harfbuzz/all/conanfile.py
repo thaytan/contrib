@@ -5,6 +5,7 @@ from conans import *
 
 
 class HarfbuzzConan(ConanFile):
+    name = "harfbuzz"
     description = "HarfBuzz text shaping engine"
     license = "Old MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

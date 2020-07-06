@@ -4,6 +4,7 @@ from conans import *
 
 
 class GoConan(ConanFile):
+    name = "go"
     description = "Core compiler tools for the Go programming language"
     license = "BSD"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

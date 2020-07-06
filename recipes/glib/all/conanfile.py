@@ -4,6 +4,7 @@ from conans import *
 
 
 class GLibConan(ConanFile):
+    name = "glib"
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     license = "LGPL-2.1"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

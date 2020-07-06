@@ -45,6 +45,7 @@ pub const INCLUDE_PATHS: &'static [ &'static str ] = &[%(include_paths)s];
 
 
 class CargoGeneratorPackage(ConanFile):
+    name = "cargo-wrapper-generator"
     description = "Cargo integration generator"
     license = "MIT"
     settings = None

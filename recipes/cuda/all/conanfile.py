@@ -6,6 +6,7 @@ driver_map = {"10.1.243": "418.87.00"}
 
 
 class CudaConan(ConanFile):
+    name = "cuda"
     description = "NVIDIA's GPU programming toolkit"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

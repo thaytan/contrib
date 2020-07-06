@@ -5,6 +5,7 @@ from conans import *
 
 
 class NvJetsonMultimediaApi(ConanFile):
+    name = "nv-jetson-multimedia-api"
     description = "Multimedia API is a collection of lower-level APIs that support flexible application development"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

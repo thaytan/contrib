@@ -2,6 +2,7 @@ from conans import *
 
 
 class GTestConan(ConanFile):
+    name = "gtest"
     description = "Google's C++ test framework"
     license = "BSD-3-Clause"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

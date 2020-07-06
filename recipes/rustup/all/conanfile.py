@@ -5,6 +5,7 @@ from conans import *
 
 
 class RustupConan(ConanFile):
+    name = "rustup"
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

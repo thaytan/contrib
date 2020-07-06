@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibShadercConan(ConanFile):
+    name = "shaderc"
     description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

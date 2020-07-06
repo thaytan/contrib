@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibdrmConan(ConanFile):
+    name = "libdrm"
     description = "Direct Rendering Manager headers and kernel modules"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

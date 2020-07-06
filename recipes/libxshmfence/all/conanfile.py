@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxshmfenceConan(ConanFile):
+    name = "libxshmfence"
     description = "Library that exposes a event API on top of Linux futexes"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

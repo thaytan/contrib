@@ -4,6 +4,7 @@ from conans import *
 
 
 class BinutilsConan(ConanFile):
+    name = "binutils"
     description = "A set of programs to assemble and manipulate binary and object files"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

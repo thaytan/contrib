@@ -2,6 +2,7 @@ from conans import *
 
 
 class JsonGlibBaseConan(ConanFile):
+    name = "json-glib"
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

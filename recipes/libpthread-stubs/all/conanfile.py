@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibpthreadStubsConan(ConanFile):
+    name = "libpthread-stubs"
     description = "X11 client-side library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

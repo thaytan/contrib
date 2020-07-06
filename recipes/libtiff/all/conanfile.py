@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibtiffConan(ConanFile):
+    name = "libtiff"
     description = "Library for manipulation of TIFF images"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

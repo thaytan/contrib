@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibPciAccessConan(ConanFile):
+    name = "libpciaccess"
     description = "Generic PCI access library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

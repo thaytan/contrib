@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibNiceConan(ConanFile):
+    name = "libnice"
     description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

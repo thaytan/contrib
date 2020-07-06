@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibpngConan(ConanFile):
+    name = "libpng"
     description = "A collection of routines used to create PNG format graphics files"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

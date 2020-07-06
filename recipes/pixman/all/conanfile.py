@@ -2,6 +2,7 @@ from conans import *
 
 
 class PixmanConan(ConanFile):
+    name = "pixman"
     description = "Image processing and manipulation library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

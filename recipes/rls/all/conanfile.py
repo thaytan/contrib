@@ -4,6 +4,7 @@ from conans import *
 
 
 class RlsConan(ConanFile):
+    name = "rls"
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

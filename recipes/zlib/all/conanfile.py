@@ -2,6 +2,7 @@ from conans import *
 
 
 class ZlibConan(ConanFile):
+    name = "zlib"
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " "(Also Free, Not to Mention Unencumbered by Patents)"
     license = "Zlib"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

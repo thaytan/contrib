@@ -5,6 +5,7 @@ from conans import *
 
 
 class LibuuidConan(ConanFile):
+    name = "libuuid"
     description = "Portable uuid C library"
     license = "BSD-3-Clause"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

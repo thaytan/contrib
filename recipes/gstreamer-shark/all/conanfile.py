@@ -4,6 +4,7 @@ from conans import *
 
 
 class GstreamerSharkConan(ConanFile):
+    name = "gstreamer-shark"
     description = "GstShark is a front-end for GStreamer traces "
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

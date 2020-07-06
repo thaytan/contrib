@@ -4,6 +4,7 @@ from conans import *
 
 
 class AtkConan(ConanFile):
+    name = "atk"
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL-2.1"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

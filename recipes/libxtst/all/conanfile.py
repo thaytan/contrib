@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxtstConan(ConanFile):
+    name = "libxtst"
     description = "X11 Testing Resource extension library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

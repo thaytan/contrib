@@ -4,6 +4,7 @@ from conans import *
 
 
 class ReadlineConan(ConanFile):
+    name = "readline"
     description = "GNU readline library"
     license = "GPL-3.0-or-later"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

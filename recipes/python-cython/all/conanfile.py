@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonCythonConan(ConanFile):
+    name = "python-cython"
     description = "Python to C compiler"
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -2,6 +2,7 @@ from conans import *
 
 
 class CapNProtoConan(ConanFile):
+    name = "capnproto"
     description = "Cap'n Proto serialization/RPC system"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -3,6 +3,7 @@ import os
 
 
 class GlmConan(ConanFile):
+    name = "glm"
     description = "OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications."
     license = "MIT License"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

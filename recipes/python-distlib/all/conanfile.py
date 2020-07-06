@@ -2,6 +2,7 @@ from conans import *
 
 
 class PythonDistlibConan(ConanFile):
+    name = "python-distlib"
     description = "Low-level components of distutils2/packaging"
     license = "PSF"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

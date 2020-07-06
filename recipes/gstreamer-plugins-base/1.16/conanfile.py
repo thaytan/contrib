@@ -4,6 +4,7 @@ from conans import *
 
 
 class GStreamerPluginsBaseConan(ConanFile):
+    name = "gstreamer-plugins-base"
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

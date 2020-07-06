@@ -4,6 +4,7 @@ from conans import *
 
 
 class NodejsConan(ConanFile):
+    name = "nodejs"
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

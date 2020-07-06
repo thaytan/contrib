@@ -3,6 +3,7 @@ import os
 
 
 class Libx11Conan(ConanFile):
+    name = "libx11"
     description = "X11 client-side library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

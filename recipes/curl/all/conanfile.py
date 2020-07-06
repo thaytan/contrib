@@ -4,6 +4,7 @@ from conans import *
 
 
 class CurlConan(ConanFile):
+    name = "curl"
     description = "An URL retrieval utility and library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

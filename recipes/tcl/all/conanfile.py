@@ -4,6 +4,7 @@ from conans import *
 
 
 class TclConan(ConanFile):
+    name = "tcl"
     description = "The Tcl scripting language"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class GdbConan(ConanFile):
+    name = "gdb"
     description = "The GNU Debugger"
     license = "GPL3"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

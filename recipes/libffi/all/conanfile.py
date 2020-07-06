@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibffiConan(ConanFile):
+    name = "libffi"
     description = "A portable, high level programming interface to various calling conventions"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

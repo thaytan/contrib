@@ -4,6 +4,7 @@ from conans import *
 
 
 class GccConan(ConanFile):
+    name = "gcc"
     description = "The GNU Compiler Collection - C and C++ frontends"
     license = "custom", "FDL", "GPL", "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

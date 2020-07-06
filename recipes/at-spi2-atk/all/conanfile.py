@@ -4,6 +4,7 @@ from conans import *
 
 
 class AtSpi2AtkConan(ConanFile):
+    name = "at-spi2-atk"
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

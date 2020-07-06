@@ -4,6 +4,7 @@ from conans import *
 
 
 class GStreamerLibavConan(ConanFile):
+    name = "gstreamer-libav"
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

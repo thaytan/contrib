@@ -2,6 +2,7 @@ from conans import *
 
 
 class AutotoolsConan(ConanFile):
+    name = "autotools"
     description = "A suite of programming tools 'designed' to assist in making source code"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

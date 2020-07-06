@@ -4,6 +4,7 @@ from conans import *
 
 
 class DirenvConan(ConanFile):
+    name = "direnv"
     description = "A shell extension that manages your environment"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

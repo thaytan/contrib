@@ -2,6 +2,7 @@ from conans import *
 
 
 class OrcConan(ConanFile):
+    name = "orc"
     description = "Optimized Inner Loop Runtime Compiler"
     license = "LGPL-2.1"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

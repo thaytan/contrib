@@ -3,6 +3,7 @@ import os
 
 
 class LibeventConan(ConanFile):
+    name = "libevent"
     description = "Event notification library https://libevent.org"
     license = "BSD-3-Clause"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

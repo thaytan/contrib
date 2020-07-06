@@ -2,6 +2,7 @@ from conans import *
 
 
 class MinuzConan(ConanFile):
+    name = "miniz"
     description = "Single C source file zlib-replacement library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

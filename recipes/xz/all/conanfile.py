@@ -4,6 +4,7 @@ from conans import *
 
 
 class XzConan(ConanFile):
+    name = "xz"
     description = "Library and command line tools for XZ and LZMA compressed files"
     license = "custom", "GPL", "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

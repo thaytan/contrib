@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibXorgUtilMacrosConan(ConanFile):
+    name = "xorg-util-macros"
     description = "X.Org Autotools macros"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

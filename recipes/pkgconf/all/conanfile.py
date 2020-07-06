@@ -6,6 +6,7 @@ from conans import *
 
 
 class PkgconfConan(ConanFile):
+    name = "pkgconf"
     description = "Package compiler and linker metadata toolkit"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

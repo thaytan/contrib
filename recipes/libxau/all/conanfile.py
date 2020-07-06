@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxauConan(ConanFile):
+    name = "libxau"
     description = "X11 authorisation library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

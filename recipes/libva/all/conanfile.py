@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibVaConan(ConanFile):
+    name = "libva"
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

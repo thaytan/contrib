@@ -4,6 +4,7 @@ import shutil
 
 
 class LibcppBootstrapConan(ConanFile):
+    name = "libc++-bootstrap"
     description = "LLVM C++ Standard Library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -2,6 +2,7 @@ from conans import *
 
 
 class GperfConan(ConanFile):
+    name = "gperf"
     description = "A portable, high level programming interface to various calling conventions"
     license = "GPL3"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

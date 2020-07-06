@@ -5,6 +5,7 @@ from conans import *
 
 
 class FreetypeConan(ConanFile):
+    name = "freetype"
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

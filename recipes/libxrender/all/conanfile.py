@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxrenderConan(ConanFile):
+    name = "libxrender"
     description = "X Rendering Extension client library"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class X265Conan(ConanFile):
+    name = "x265"
     description = "x265 is the leading H.265 / HEVC encoder software library"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

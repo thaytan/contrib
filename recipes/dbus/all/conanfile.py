@@ -2,6 +2,7 @@ from conans import *
 
 
 class DbusConan(ConanFile):
+    name = "dbus"
     description = "Freedesktop.org message bus system"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

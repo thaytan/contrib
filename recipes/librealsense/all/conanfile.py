@@ -4,6 +4,7 @@ from conans import *
 
 
 class LibRealsenseConan(ConanFile):
+    name = "librealsense"
     description = "Intel RealSense SDK"
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

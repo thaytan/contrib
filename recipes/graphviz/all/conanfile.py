@@ -2,6 +2,7 @@ from conans import *
 
 
 class GraphvizConan(ConanFile):
+    name = "graphviz"
     description = "Graph Visualization Tools"
     license = "EPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

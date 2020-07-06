@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonSixConan(ConanFile):
+    name = "python-six"
     description = "Python 2 and 3 compatibility utilities"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

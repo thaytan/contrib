@@ -2,6 +2,7 @@ from conans import *
 
 
 class OpusConan(ConanFile):
+    name = "opus"
     description = "Modern audio compression for the internet"
     license = "BSD"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -5,6 +5,7 @@ from conans import *
 
 
 class GStreamerPerfConan(ConanFile):
+    name = "gstreamer-perf"
     description = "Performance Evaluation tool for Gstreamer"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

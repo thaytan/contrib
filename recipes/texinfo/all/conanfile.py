@@ -4,6 +4,7 @@ from conans import *
 
 
 class TexinfoConan(ConanFile):
+    name = "texinfo"
     description = "GNU documentation system for on-line information and printed output"
     license = "GPL3"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

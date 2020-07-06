@@ -4,6 +4,7 @@ from conans import *
 
 
 class Sdl2Conan(ConanFile):
+    name = "sdl2"
     description = "A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

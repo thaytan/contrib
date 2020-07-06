@@ -5,6 +5,7 @@ from conans import *
 
 
 class LibUSBConan(ConanFile):
+    name = "libusb"
     description = "A cross-platform library to access USB devices"
     license = "LGPL-2.1"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

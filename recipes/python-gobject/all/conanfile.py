@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonGobjectConan(ConanFile):
+    name = "python-gobject"
     description = "Python GObject bindings"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

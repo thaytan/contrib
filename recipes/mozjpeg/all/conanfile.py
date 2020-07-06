@@ -4,6 +4,7 @@ from conans import *
 
 
 class MozjpegConan(ConanFile):
+    name = "mozjpeg"
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

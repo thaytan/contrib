@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibxextConan(ConanFile):
+    name = "libxext"
     description = "X11 miscellaneous extensions library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

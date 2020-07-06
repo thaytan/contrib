@@ -3,6 +3,7 @@ from conans import *
 
 
 class LinuxHeadersConan(ConanFile):
+    name = "linux-headers"
     description = "Linux system headers"
     license = "GPL-2.0-only"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

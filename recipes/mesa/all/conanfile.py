@@ -4,6 +4,7 @@ from conans import *
 
 
 class MesaConan(ConanFile):
+    name = "mesa"
     description = "An open-source implementation of the OpenGL specification"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

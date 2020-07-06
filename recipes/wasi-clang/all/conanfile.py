@@ -4,6 +4,7 @@ from conans import *
 
 
 class WasiSdkConan(ConanFile):
+    name = "wasi-clang"
     description = "WASI-enabled C/C++ toolchain"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

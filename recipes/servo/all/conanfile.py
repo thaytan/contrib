@@ -5,6 +5,7 @@ from conans import *
 
 
 class ServoConan(ConanFile):
+    name = "servo"
     description = "The Servo Browser Engine"
     license = "MIT", "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

@@ -4,6 +4,7 @@ from conans import *
 
 
 class GObjectIntrospectionConan(ConanFile):
+    name = "gobject-introspection"
     description = "Middleware layer between C libraries (using GObject) and language bindings"
     license = "GPL, LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

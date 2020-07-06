@@ -2,6 +2,7 @@ from conans import *
 
 
 class XcbProtoConan(ConanFile):
+    name = "xcb-proto"
     description = "XML-XCB protocol descriptions"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

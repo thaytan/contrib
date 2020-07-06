@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonMakoConan(ConanFile):
+    name = "python-mako"
     description = "A super-fast templating language that borrows the best ideas from the existing templating languages"
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

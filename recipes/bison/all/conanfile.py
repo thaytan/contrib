@@ -4,6 +4,7 @@ from conans import *
 
 
 class BisonConan(ConanFile):
+    name = "bison"
     description = "Bison is a general-purpose parser generator"
     license = "GPL-3.0-or-later"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

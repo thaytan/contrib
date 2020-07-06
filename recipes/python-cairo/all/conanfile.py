@@ -4,6 +4,7 @@ from conans import *
 
 
 class PythonCairoConan(ConanFile):
+    name = "python-cairo"
     description = "Python bindings for the cairo graphics library"
     license = "LGPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

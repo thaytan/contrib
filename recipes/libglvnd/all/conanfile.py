@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibglvndConan(ConanFile):
+    name = "libglvnd"
     description = "The GL Vendor-Neutral Dispatch library"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

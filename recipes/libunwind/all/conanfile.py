@@ -2,6 +2,7 @@ from conans import *
 
 
 class LibunwindConan(ConanFile):
+    name = "libunwind"
     description = "Portable and efficient C programming interface (API) to determine the call-chain of a programs"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}

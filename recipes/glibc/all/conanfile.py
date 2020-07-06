@@ -2,6 +2,7 @@ from conans import *
 
 
 class GlibcConan(ConanFile):
+    name = "glibc"
     description = "GNU C Library"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
