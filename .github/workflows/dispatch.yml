@@ -10,7 +10,9 @@ jobs:
         with:
           fetch-depth: 2
       - name: Install dependencies
-        run: python3 -m pip install --upgrade setuptools pip conan
+        run:
+          - apt install python3-setuptools
+          - python3 -m pip install --upgrade pip conan
       - name: Conan Dispatch
         uses: aivero/conan-dispatch-action@test
         with:
