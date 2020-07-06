@@ -1,0 +1,20 @@
+name: Conan Build and Upload
+on:
+  repository_dispatch:
+    types: [conan]
+jobs:
+  build:
+    runs-on: ${{ github.event.client_payload.tags }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.client_payload.ref }}
+    - name: Install dependencies
+      run: python3 -m pip install --upgrade pip conan
+    - name: Conan Create
+      uses: aivero/conan-action@test
+      with:
+        package: ${{ github.event.client_payload.package }}
+        version: ${{ github.event.client_payload.version }}
+        profile: ${{ github.event.client_payload.profile }}
+        path: ${{ github.event.client_payload.path }}

@@ -1,0 +1,14 @@
+name: Dispatch Conan builds
+
+on: [push, create]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Conan Dispatch
+        uses: aivero/conan-dispatch-action@test
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: conan
