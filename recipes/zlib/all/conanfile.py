@@ -7,7 +7,6 @@ class ZlibConan(ConanFile):
     license = "Zlib"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = ("clang-bootstrap/[^10.0.0]",)
-    requires = ("musl/[^1.2.0]",)
 
     def source(self):
         tools.get(f"https://github.com/madler/zlib/archive/v{self.version}.tar.gz")
