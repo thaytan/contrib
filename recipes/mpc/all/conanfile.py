@@ -12,7 +12,7 @@ class MpcConan(ConanFile):
         "make/[^4.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "mpfr/[^4.0.2]",
     )
 

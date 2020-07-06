@@ -6,7 +6,7 @@ class CMakeConan(ConanFile):
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
         "ninja/[^1.9.0]",

@@ -13,7 +13,7 @@ class FontconfigConan(ConanFile):
         "gperf/[^3.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "freetype/[^2.10.1]",
         "libuuid/[^1.0.3]",
         "expat/[^2.2.7]",

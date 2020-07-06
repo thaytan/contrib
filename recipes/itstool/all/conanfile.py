@@ -9,7 +9,7 @@ class ItstoolConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("autotools/[^1.0.0]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxml2/[^2.9.9]",
         "python/[^3.7.4]",
     )

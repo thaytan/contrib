@@ -7,7 +7,7 @@ class LibvncserverConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("cmake/[^3.15.3]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libpng/[^1.6.37]",
         "openssl/[^1.1.1b]",
     )

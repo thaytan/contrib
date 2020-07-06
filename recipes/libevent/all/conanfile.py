@@ -12,7 +12,7 @@ class LibeventConan(ConanFile):
         "cmake/3.15.3",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "openssl/1.1.1b",
         "zlib/[^1.2.11]",
     )

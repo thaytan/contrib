@@ -12,7 +12,7 @@ class LibjpegTurboConan(ConanFile):
         "cmake/3.15.3",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "zlib/[^1.2.11]",
     )
 

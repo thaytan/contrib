@@ -12,7 +12,7 @@ class LibeditConan(ConanFile):
         "pkgconf/[^1.6.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "ncurses/[^6.1]",
     )
 

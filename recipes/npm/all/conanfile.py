@@ -15,7 +15,7 @@ class NpmConan(ConanFile):
         "pngquant/[^2.12.6]",
     )
     requires = (
-        "generators/1.0.0",
+        "base/[^1.0.0]",
         "nodejs/[^13.0.1]",
     )
 

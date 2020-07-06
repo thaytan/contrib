@@ -4,7 +4,6 @@ from conans import *
 
 
 class LibcppConan(ConanFile):
-    name = "libc++"
     description = "LLVM C++ Standard Library"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

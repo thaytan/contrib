@@ -6,7 +6,7 @@ class AutotoolsConan(ConanFile):
     license = "GPL"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "cc/[^1.0.0]",
         "make/[^3.4.0]",
         "autoconf/[^2.69]",

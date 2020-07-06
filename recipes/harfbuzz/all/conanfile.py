@@ -13,7 +13,7 @@ class HarfbuzzConan(ConanFile):
         "freetype-no-harfbuzz/[^2.10.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "glib/[^2.62.0]",
     )
 

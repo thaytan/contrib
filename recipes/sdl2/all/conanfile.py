@@ -8,7 +8,7 @@ class Sdl2Conan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
         requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxcb/[^1.13.1]",
         "libxext/[^1.3.4]",
     )

@@ -13,7 +13,7 @@ class NushellConan(ConanFile):
 
     build_requires = ("rust/[^1.43.1]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "openssl/[^1.1.1b]",
     )
 

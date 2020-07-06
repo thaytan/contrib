@@ -10,7 +10,7 @@ class RustupConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("rust/[^1.3.8]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "curl/7.66.0",
         "openssl/[^1.1.1b]",
     )

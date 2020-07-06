@@ -26,7 +26,7 @@ class MesaConan(ConanFile):
             self.build_requires("libxxf86vm/[^1.1.4]")
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libglvnd/[^1.2.0]",
     )
 

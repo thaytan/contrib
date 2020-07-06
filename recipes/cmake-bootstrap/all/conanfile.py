@@ -2,7 +2,6 @@ from conans import *
 
 
 class CmakeBootstrapConan(ConanFile):
-    name = "cmake-bootstrap"
     description = "A cross-platform open-source make system"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

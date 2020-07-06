@@ -9,7 +9,7 @@ class CppzmqConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("cmake/[^3.15.3]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libzmq/[^4.3.1]",
     )
 

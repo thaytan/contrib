@@ -10,7 +10,7 @@ class GitConan(ConanFile):
         "gettext/[^0.20.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "zlib/[^1.2.11]",
         "curl/[^7.66.0]",
         "openssl/[^1.1.1b]",

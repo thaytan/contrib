@@ -16,7 +16,7 @@ class ServoConan(ConanFile):
         "rustup/[^1.21.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "openssl/[^1.1.1b]",
         "dbus/[^1.12.16]",
         "libx11/[^1.6.8]",

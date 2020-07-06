@@ -11,7 +11,7 @@ class LibxrenderConan(ConanFile):
         "xtrans/[^1.4.0]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libx11/[^1.6.8]",
     )
 

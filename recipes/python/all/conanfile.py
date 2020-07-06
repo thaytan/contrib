@@ -9,7 +9,7 @@ class PythonConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("cc/[^1.0.0]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "expat/[^2.2.7]",
         "openssl/[^1.1.1b]",
         "libffi/[^3.3]",

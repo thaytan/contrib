@@ -13,8 +13,8 @@ class ClippyConan(ConanFile):
 
     build_requires = ("rust/nightly",)
     requires = (
-        "generators/[^1.0.0]",
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
+        "base/[^1.0.0]",
     )
 
     def build(self):

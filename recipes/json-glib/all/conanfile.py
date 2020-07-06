@@ -11,7 +11,7 @@ class JsonGlibBaseConan(ConanFile):
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "glib/[^2.62.0]",
     )
 

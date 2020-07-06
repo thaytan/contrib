@@ -8,7 +8,7 @@ class PythonVirtualenvConan(ConanFile):
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
         "python-setuptools/[^41.2.0]",
         "python-appdirs/[^1.4.4]",

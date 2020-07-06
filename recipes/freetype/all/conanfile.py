@@ -10,7 +10,7 @@ class FreetypeConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("autotools/[^1.0.0]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "harfbuzz/2.6.1",
     )
 

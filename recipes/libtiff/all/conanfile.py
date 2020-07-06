@@ -7,7 +7,7 @@ class LibtiffConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("mesa/20.0.0",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "zlib/[^1.2.11]",
         "libjpeg-turbo/[^2.0.4]",
     )

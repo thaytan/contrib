@@ -10,7 +10,7 @@ class LibxcbConan(ConanFile):
         "xcb-proto/[^1.13]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxau/[^1.0.9]",
         "libpthread-stubs/[^0.4]",
     )

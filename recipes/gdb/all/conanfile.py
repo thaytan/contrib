@@ -12,7 +12,7 @@ class GdbConan(ConanFile):
         "texinfo/[^6.6]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
         "ncurses/[^6.1]",
         "readline/[^8.0]",

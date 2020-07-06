@@ -10,7 +10,7 @@ class LibxshmfenceConan(ConanFile):
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "xorgproto/[^2019.1]",
     )
 

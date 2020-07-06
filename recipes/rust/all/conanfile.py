@@ -13,7 +13,7 @@ class RustConan(ConanFile):
         "curl/[^7.66.0]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "pkgconf/[^1.6.3]",
         "clang/[^9.0.0]",
         "cc/[^1.0.0]",

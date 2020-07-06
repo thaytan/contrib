@@ -2,7 +2,6 @@ from conans import *
 
 
 class ClangBootstrapConan(ConanFile):
-    name = "clang-bootstrap"
     description = "C language family frontend for LLVM"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

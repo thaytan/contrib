@@ -8,7 +8,7 @@ class BisonConan(ConanFile):
     license = "GPL-3.0-or-later"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
         requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "m4/[^1.4.18]",
     )
 

@@ -50,7 +50,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "gstreamer/[~1.16]",
     )
 

@@ -6,10 +6,7 @@ class LibimagequantConan(ConanFile):
     license = "BSD"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("autotools/1.0.0",)
-    requires = (
-        "generators/[^1.0.0]",
-        "generators/1.0.0",
-    )
+    requires = ("base/[^1.0.0]",)
 
     def source(self):
         tools.get(f"https://github.com/ImageOptim/libimagequant/archive/{self.version}/libimagequant-{self.version}.tar.gz")

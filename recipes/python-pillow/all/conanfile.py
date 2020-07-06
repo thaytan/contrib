@@ -15,7 +15,7 @@ class PythonPillowConan(ConanFile):
         "libjpeg-turbo/[^2.0.4]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
     )
 

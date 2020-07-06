@@ -10,7 +10,7 @@ class LibxcursorConan(ConanFile):
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxrender/[^0.9.10]",
         "libxfixes/[^5.0.3]",
     )

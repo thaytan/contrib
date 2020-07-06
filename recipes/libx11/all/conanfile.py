@@ -13,7 +13,7 @@ class Libx11Conan(ConanFile):
         "xorgproto/[^2019.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxcb/[^1.13.1]",
     )
 

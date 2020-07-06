@@ -12,7 +12,7 @@ class SccacheConan(ConanFile):
         tools.get(f"https://github.com/mozilla/sccache/archive/{self.version}.tar.gz")
 
     build_requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "rust/[^1.3.8]",
         "openssl/[^1.1.1b]",
     )

@@ -18,7 +18,7 @@ class LibRealsenseConan(ConanFile):
             self.build_requires("cuda/[^10.1.243]")
 
     def requirements(self):
-        self.requires("generators/1.0.0")
+        self.requires("base/[^1.0.0]")
         self.requires("libusb/[^1.0.23]")
         if self.options.python:
             self.requires("python/[^3.7.4]")

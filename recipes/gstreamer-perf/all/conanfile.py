@@ -10,7 +10,7 @@ class GStreamerPerfConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     gst_version = "1.16"
     build_requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "autotools/[^1.0.0]",
         "automake/[^1.16.1]",
         "autoconf/[^2.69]",

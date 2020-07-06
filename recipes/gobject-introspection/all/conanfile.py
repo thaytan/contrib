@@ -13,7 +13,7 @@ class GObjectIntrospectionConan(ConanFile):
         "flex/[^2.6.4]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
         "glib/[^2.62.0]",
     )

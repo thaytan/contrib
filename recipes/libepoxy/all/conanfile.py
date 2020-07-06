@@ -11,7 +11,7 @@ class LibepoxyConan(ConanFile):
         "meson/[^0.51.2]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libx11/[^1.6.8]",
         "mesa/[^19.2.0]",
     )

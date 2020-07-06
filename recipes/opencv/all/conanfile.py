@@ -9,7 +9,7 @@ class OpenCVConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("cmake/[^3.15.3]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "zlib/[^1.2.11]",
         "libpng/[^1.6.37]",
     )
@@ -34,6 +34,3 @@ class OpenCVConan(ConanFile):
         cmake.configure(source_folder=f"{self.name}-{self.version}")
         cmake.build()
         cmake.install()
-
-    def package_info(self):
-        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "python3.6", "dist-packages")

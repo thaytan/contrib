@@ -12,7 +12,7 @@ class PangoConan(ConanFile):
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "fribidi/[^1.0.5]",
         "cairo/[^1.16.0]",
         "harfbuzz/[^2.6.1]",

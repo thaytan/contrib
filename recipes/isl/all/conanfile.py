@@ -12,7 +12,7 @@ class IslConan(ConanFile):
         "make/[^4.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "gmp/[^6.1.2]",
     )
 

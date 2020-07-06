@@ -22,7 +22,7 @@ class GStreamerVaapiConan(ConanFile):
         "glx=True",
     )
     build_requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "meson/[^0.51.2]",
         "gobject-introspection/[^1.59.3]",
     )

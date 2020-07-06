@@ -10,7 +10,7 @@ class LibxiConan(ConanFile):
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libx11/[^1.6.8]",
         "libxext/[^1.3.4]",
         "libxfixes/[^5.0.3]",

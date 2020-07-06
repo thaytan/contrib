@@ -25,6 +25,3 @@ class Libxml2Conan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-
-    def package_info(self):
-        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")

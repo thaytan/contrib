@@ -64,7 +64,6 @@ exec clang++ \
 
 
 class MuslConan(ConanFile):
-    name = "musl"
     description = "Lightweight implementation of C standard library"
     license = "MIT"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

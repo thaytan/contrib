@@ -10,7 +10,7 @@ class LibxauConan(ConanFile):
         "pkgconf/[^1.6.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "xorgproto/[^2019.1]",
     )
 

@@ -7,7 +7,7 @@ class PngquantConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("autotools/1.0.0",)
     requires = (
-        "generators/1.0.0",
+        "base/[^1.0.0]",
         "libpng/[^1.6.37]",
         "libimagequant/[^2.12.6]",
     )

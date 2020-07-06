@@ -14,7 +14,7 @@ class PythonNumpyConan(ConanFile):
         "cython/[^0.29.19]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
     )
 

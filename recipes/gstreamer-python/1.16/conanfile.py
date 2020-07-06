@@ -21,6 +21,3 @@ class GStreamerPythonConan(ConanFile):
         meson = Meson(self)
         meson.configure(source_folder="gst-python-" + self.version, args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
-
-    def package_info(self):
-        self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")

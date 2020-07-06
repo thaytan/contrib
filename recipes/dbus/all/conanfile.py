@@ -10,7 +10,7 @@ class DbusConan(ConanFile):
         "autoconf-archive/[^2019.01.06]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "expat/[^2.2.7]",
     )
 

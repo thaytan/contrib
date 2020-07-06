@@ -9,7 +9,7 @@ class NodeGypConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     )
     requires = (
-        "generators/1.0.0",
+        "base/[^1.0.0]",
         "nodejs/[^13.0.1]",
     )
 

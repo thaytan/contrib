@@ -8,7 +8,7 @@ class MesonConan(ConanFile):
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
         "python-setuptools/[^41.2.0]",
         "ninja/[^1.9.0]",
@@ -25,6 +25,3 @@ class MesonConan(ConanFile):
         os.makedirs(py_path)
         with tools.chdir(f"{self.name}-{self.version}"), tools.environment_append(env):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
-
-    def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))

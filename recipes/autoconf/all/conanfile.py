@@ -10,7 +10,7 @@ class AutoconfConan(ConanFile):
     exports = "m4-include.patch"
     build_requires = ("cc/[^1.0.0]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "m4/[^1.4.18]",
     )
 

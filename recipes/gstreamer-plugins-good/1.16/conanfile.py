@@ -42,7 +42,7 @@ class GStreamerPluginsGoodConan(ConanFile):
         "jpeg=True",
     )
     build_requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "meson/[^0.51.2]",
     )
     requires = (

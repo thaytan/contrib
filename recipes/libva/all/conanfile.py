@@ -11,7 +11,7 @@ class LibVaConan(ConanFile):
     default_options = ("x11=True", "wayland=False")
     build_requires = ("meson/[^0.51.2]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libdrm/[^2.4.96]",
         "libx11/[^1.6.8]",
         "libxext/[^1.3.4]",

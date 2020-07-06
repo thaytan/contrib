@@ -2,7 +2,6 @@ from conans import *
 
 
 class LlvmBootstrapConan(ConanFile):
-    name = "llvm-bootstrap"
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom", "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

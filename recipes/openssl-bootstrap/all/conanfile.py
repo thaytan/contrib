@@ -6,7 +6,6 @@ from conans import *
 
 
 class OpensslBoostrapConan(ConanFile):
-    name = "openssl-bootstrap"
     description = "TLS/SSL and crypto library"
     license = "custom"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

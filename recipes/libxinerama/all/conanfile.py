@@ -10,7 +10,7 @@ class LibxineramaConan(ConanFile):
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxext/[^1.3.4]",
     )
 

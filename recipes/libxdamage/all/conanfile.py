@@ -7,7 +7,7 @@ class LibxdamageConan(ConanFile):
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     build_requires = ("pkgconf/[^1.6.3]",)
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxfixes/[^5.0.3]",
     )
 

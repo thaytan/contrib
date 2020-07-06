@@ -12,7 +12,7 @@ class LibglvndConan(ConanFile):
     exports = "ignore-warnings.patch"
 
     def build_requirements(self):
-        self.build_requirements("generators/1.0.0")
+        self.build_requirements("base/[^1.0.0]")
         self.build_requirements("autotools/[^1.0.0]")
         if self.options.x11:
             self.build_requires("xorgproto/[^2019.1]")

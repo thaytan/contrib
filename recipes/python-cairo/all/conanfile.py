@@ -12,7 +12,7 @@ class PythonCairoConan(ConanFile):
         "pkgconf/[^1.6.3]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
         "cairo/[^1.16.0]",
     )
@@ -23,6 +23,3 @@ class PythonCairoConan(ConanFile):
     def build(self):
         with tools.chdir(f"pycairo-{self.version}"):
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
-
-    def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))

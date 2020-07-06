@@ -11,7 +11,7 @@ class GLibConan(ConanFile):
         "meson/[^0.51.2]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "zlib/[^1.2.11]",
         "libffi/[^3.3]",
     )

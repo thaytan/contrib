@@ -4,7 +4,6 @@ from conans import *
 
 
 class M4BootstrapConan(ConanFile):
-    name = "m4-bootstrap"
     description = "The GNU macro processor"
     license = "GPL3"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

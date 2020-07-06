@@ -11,7 +11,7 @@ class Libxxf86vmConan(ConanFile):
         "xorgproto/[^2019.1]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxext/[^1.3.4]",
     )
 

@@ -8,7 +8,7 @@ class PythonSetuptoolsConan(ConanFile):
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "python/[^3.7.4]",
     )
 
@@ -22,6 +22,3 @@ class PythonSetuptoolsConan(ConanFile):
         with tools.chdir("setuptools-" + self.version), tools.environment_append(env):
             self.run("python bootstrap.py")
             self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
-
-    def package_info(self):
-        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python3.7", "site-packages"))

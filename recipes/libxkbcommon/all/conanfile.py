@@ -13,7 +13,7 @@ class LibxcbConan(ConanFile):
         "flex/[^2.6.4]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libxcb/[^1.13.1]",
     )
 

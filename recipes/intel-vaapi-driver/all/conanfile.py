@@ -13,7 +13,7 @@ class IntelVaapiDriverConan(ConanFile):
         "meson/[^0.51.2]",
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "libdrm/[^2.4.96]",
         "libva/[^2.3.0]",
     )

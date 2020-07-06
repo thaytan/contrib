@@ -2,7 +2,6 @@ from conans import *
 
 
 class GcompatConan(ConanFile):
-    name = "gcompat"
     description = "The GNU C Library compatibility layer for musl"
     license = "NCSA"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

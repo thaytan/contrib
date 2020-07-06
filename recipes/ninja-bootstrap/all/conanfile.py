@@ -4,7 +4,6 @@ from conans import *
 
 
 class NinjaBootstrapConan(ConanFile):
-    name = "ninja-bootstrap"
     description = "Small build system with a focus on speed"
     license = "Apache"
     settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}

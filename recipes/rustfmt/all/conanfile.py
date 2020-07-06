@@ -12,9 +12,9 @@ class RustfmtConan(ConanFile):
         tools.get(f"https://github.com/rust-lang/rustfmt/archive/{self.version}.tar.gz")
     )
     requires = (
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
         "rust/nightly",
-        "generators/[^1.0.0]",
+        "base/[^1.0.0]",
     )
 
     def build(self):
