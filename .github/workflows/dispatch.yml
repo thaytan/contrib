@@ -1,9 +1,8 @@
-name: Dispatch Conan builds
-
+name: Conan Dispatch
 on: [push, create]
-
 jobs:
   dispatch:
+    name: Conan Dispatch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,7 +12,7 @@ jobs:
         run: sudo apt install python3-setuptools
       - name: Install pip dependencies
         run: python3 -m pip install --upgrade pip conan
-      - name: Conan Dispatch
+      - name: Conan Dispatch Action
         uses: aivero/conan-dispatch-action@test
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}

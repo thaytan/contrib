@@ -1,9 +1,10 @@
-name: Conan Build and Upload
+name: Conan Create and Upload
 on:
   repository_dispatch:
     types: [conan]
 jobs:
   build:
+    name: ${{ github.event.client_payload.package }} - ${{ github.event.client_payload.profile }}
     runs-on: ${{ github.event.client_payload.tags }}
     steps:
     - uses: actions/checkout@v2
