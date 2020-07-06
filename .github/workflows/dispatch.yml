@@ -9,6 +9,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 2
+      - name: Add ~/.local/bin to PATH
+        run: echo "export PATH=~/.local/bin:$PATH" > ~/.profile
       - name: Install apt dependencies
         run: sudo apt install python3-setuptools
       - name: Install pip dependencies
