@@ -16,6 +16,7 @@
 extern crate capnp;
 pub mod rs_meta_capnp {
     #![allow(dead_code)]
+    #![allow(clippy::redundant_field_names)]
     include!(concat!(env!("OUT_DIR"), "/rs_meta_capnp.rs"));
 }
 

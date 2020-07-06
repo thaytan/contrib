@@ -5,9 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.1.4] - 2020-7-01
+## Fixed
+- Implement latency query handling.
+
 ## [2.1.3] - 2020-7-01
 ### Changed
 - Add gstreamer conan settings, add plugins-base with deps on it.
+
 ## [2.1.2] - 2020-05-26
 ### Changed
 - Use new version of gstreamer-depth-meta - 1.2.0

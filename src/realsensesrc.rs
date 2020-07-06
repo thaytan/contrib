@@ -15,7 +15,10 @@
 // Boston, MA 02110-1301, USA.
 
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::{
+    convert::TryInto,
+    sync::{Arc, Mutex},
+};
 
 use glib::subclass;
 use gst::subclass::prelude::*;
@@ -58,6 +61,121 @@ struct RealsenseSrcInternals {
 enum State {
     Stopped,
     Started { pipeline: rs2::pipeline::Pipeline },
+}
+
+impl RealsenseSrcInternals {
+    /// Configure the realsense pipeline, checking the settings for the realsensesrc to verify that the user of the plugin has specified a valid configuration.
+    /// # Returns
+    /// - Ok(rs2::config::Config) if realsenesrc could be configured to use serial or rosbag
+    /// - Err() if
+    ///   - Neither serial, nor rosbag_location are specified
+    ///   - BOTH serial and rosbag_location are specified
+    ///   - No streams are enabled
+    /// # Panics
+    /// - Does not panic
+    fn configure(&self) -> Result<rs2::config::Config, RealsenseError> {
+        let settings = &self.settings;
+
+        // Create new RealSense device config
+        let config = rs2::config::Config::new()?;
+
+        // Make sure the pipeline has started
+        if let State::Started { .. } = self.state {
+            unreachable!("Element has already started");
+        }
+
+        // Either `serial` or `rosbag-location` must be specified
+        match (&settings.serial, &settings.rosbag_location) {
+            (None, None) => {
+                return Err(RealsenseError("Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!".to_string()));
+            }
+            // Make sure that only one stream source is selected
+            (Some(serial), Some(rosbag_location)) => {
+                return Err(RealsenseError(format!("Both `serial`: {:?} and `rosbag-location`: {:?} are defined. Only one of these can be defined!", serial, rosbag_location)))
+            }
+            // A serial is specified. We attempt to open a live recording from the camera
+            (Some(serial), _) => {
+                // Enable the selected streams
+                Self::enable_streams(&config, &settings)?;
+
+                // Enable device with the given serial number and device configuration
+                config.enable_device(&serial)?;
+            }
+            // A serial was not specified, but a ROSBAG was, attempt to load that instead
+            (None, Some(rosbag)) => {
+                config.enable_device_from_file_repeat_option(&rosbag, settings.loop_rosbag)?;
+            }
+        }
+
+        // At least one stream must be enabled
+        if !settings.streams.enabled_streams.any() {
+            return Err(RealsenseError(
+                "No stream is enabled. At least one stream must be enabled!".to_string(),
+            ));
+        }
+
+        Ok(config)
+    }
+
+    /// Enable all the streams that has their associated property set to `true`. This function
+    /// returns an error if any streams cannot be enabled.
+    /// # Arguments
+    /// * `config` - The realsense configuration, which may be used to enable streams.
+    /// * `settings` - The settings for the realsensesrc, which in this case specifies which streams to enable.
+    fn enable_streams(
+        config: &rs2::config::Config,
+        settings: &Settings,
+    ) -> Result<(), StreamEnableError> {
+        if settings.streams.enabled_streams.depth {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_DEPTH,
+                    -1,
+                    settings.streams.depth_resolution.width,
+                    settings.streams.depth_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_Z16,
+                    settings.streams.framerate,
+                )
+                .map_err(|_e| StreamEnableError("Depth stream"))?;
+        }
+        if settings.streams.enabled_streams.infra1 {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_INFRARED,
+                    1,
+                    settings.streams.depth_resolution.width,
+                    settings.streams.depth_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_Y8,
+                    settings.streams.framerate,
+                )
+                .map_err(|_e| StreamEnableError("Infra1 stream"))?;
+        }
+        if settings.streams.enabled_streams.infra2 {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_INFRARED,
+                    2,
+                    settings.streams.depth_resolution.width,
+                    settings.streams.depth_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_Y8,
+                    settings.streams.framerate,
+                )
+                .map_err(|_e| StreamEnableError("Infra2 stream"))?;
+        }
+        if settings.streams.enabled_streams.color {
+            config
+                .enable_stream(
+                    rs2::rs2_stream::RS2_STREAM_COLOR,
+                    -1,
+                    settings.streams.color_resolution.width,
+                    settings.streams.color_resolution.height,
+                    rs2::rs2_format::RS2_FORMAT_RGB8,
+                    settings.streams.framerate,
+                )
+                .map_err(|_e| StreamEnableError("Color stream"))?;
+        }
+        Ok(())
+    }
 }
 
 impl ObjectSubclass for RealsenseSrc {
@@ -129,10 +247,6 @@ impl BaseSrcImpl for RealsenseSrc {
             .internals
             .lock()
             .expect("Failed to obtain internals lock.");
-        let settings = &internals.settings;
-
-        // Make sure that the set properties are viable
-        Self::check_internals(internals)?;
 
         // Specify realsense log severity level
         rs2::log::log_to_console(rs2::rs2_log_severity::RS2_LOG_SEVERITY_ERROR).map_err(|e| {
@@ -142,53 +256,13 @@ impl BaseSrcImpl for RealsenseSrc {
             )
         })?;
 
-        // Create new RealSense device config
-        let config = rs2::config::Config::new().map_err(|e| {
+        // Make sure that the set properties are viable
+        let config = internals.configure().map_err(|e| {
             gst_error_msg!(
-                gst::ResourceError::OpenRead,
-                [&format!("Could not open RealSense device: {}", e)]
+                gst::ResourceError::Settings,
+                ("Failed to configure librealsense2 pipeline due to: {:?}", e)
             )
         })?;
-
-        // Based on properties, enable streaming, reading from or recording to a file (with the enabled streams)
-        if !settings.serial.is_empty() {
-            // A serial is specified. We attempt to open a live recording from the camera
-            // Enable the selected streams
-            Self::enable_streams(&config, &settings).map_err(|e| {
-                gst_error_msg!(
-                    gst::ResourceError::OpenRead,
-                    [&format!(
-                        "Failed to enable a stream on `realsensesrc`: {:?}",
-                        e
-                    )]
-                )
-            })?;
-
-            // Enable device with the given serial number and device configuration
-            config.enable_device(&settings.serial).map_err(|_e| {
-                gst_error_msg!(
-                    gst::ResourceError::Settings,
-                    ["No device with serial `{}` is connected!", settings.serial]
-                )
-            })?;
-        } else {
-            // A serial was not specified, but a ROSBAG was, attempt to load that instead
-            config
-                .enable_device_from_file_repeat_option(
-                    &settings.rosbag_location,
-                    settings.loop_rosbag,
-                )
-                .map_err(|e| {
-                    gst_error_msg!(
-                        gst::ResourceError::Settings,
-                        [
-                            "Cannot read from \"{}\": {:?}!",
-                            settings.rosbag_location,
-                            e
-                        ]
-                    )
-                })?;
-        }
 
         let pipeline = self
             .prepare_and_start_librealsense_pipeline(&config, internals)
@@ -406,11 +480,57 @@ impl BaseSrcImpl for RealsenseSrc {
 
             // Fixate the framerate
             s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
-
+            // Send bus message to notify about a potential change in latency.
+            let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
             // Update buffer duration for `RgbdTimestamps` trait
             self.set_buffer_duration(settings.streams.framerate as f32);
         }
         self.parent_fixate(element, caps)
+    }
+
+    // Handle queries such as the Latency query
+    fn query(&self, element: &gst_base::BaseSrc, query: &mut gst::QueryRef) -> bool {
+        use gst::QueryView;
+        let settings = &self
+            .internals
+            .lock()
+            .expect("Could not lock internals")
+            .settings;
+
+        match query.view_mut() {
+            QueryView::Latency(ref mut q) => {
+                let framerate: u64 = if let Ok(f) = settings.streams.framerate.try_into() {
+                    f
+                } else {
+                    gst_error!(
+                        CAT,
+                        obj: element,
+                        "Could not convert framerate: {} into u64",
+                        settings.streams.framerate
+                    );
+                    return false;
+                };
+
+                // Setting latency to minimum of 1 frame - 1/framerate
+                let latency = if let Some(l) = gst::SECOND.mul_div_floor(1, framerate) {
+                    l
+                } else {
+                    // Return early if we are (most likely) dividing by zero.
+                    gst_error!(
+                        CAT,
+                        obj: element,
+                        "Could not compute latency, tried to divide 1/{}",
+                        framerate
+                    );
+                    return false;
+                };
+                gst_debug!(CAT, obj: element, "Returning latency {}", latency);
+                // Return latency
+                q.set(element.is_live(), latency, gst::CLOCK_TIME_NONE);
+                true
+            }
+            _ => BaseSrcImplExt::parent_query(self, element, query),
+        }
     }
 }
 
@@ -434,8 +554,8 @@ impl RealsenseSrc {
         // Load JSON if `json-location` is defined
         let devices = context.query_devices()?;
 
-        if !settings.json_location.is_empty() && !settings.serial.is_empty() {
-            Self::load_json(&devices, &settings.serial, &settings.json_location)?;
+        if let (Some(json_location), Some(serial)) = (&settings.json_location, &settings.serial) {
+            Self::load_json(&devices, &serial, &json_location)?;
         }
 
         // Crate new RealSense pipeline
@@ -449,7 +569,7 @@ impl RealsenseSrc {
 
         // If playing from a rosbag recording, check whether the correct properties were selected
         // and update them
-        if !settings.rosbag_location.is_empty() {
+        if settings.rosbag_location.is_some() {
             self.configure_rosbag_settings(&mut *settings, &pipeline_profile)?;
         }
 
@@ -459,105 +579,6 @@ impl RealsenseSrc {
         }
 
         Ok(pipeline)
-    }
-
-    /// Check the settings for the realsensesrc to verify that the user of the plugin has specified
-    /// a valid configuration.
-    /// # Arguments
-    /// * `internals` - The current settings for the `realsensesrc`.
-    fn check_internals(internals: &RealsenseSrcInternals) -> Result<(), gst::ErrorMessage> {
-        let settings = &internals.settings;
-
-        // Make sure the pipeline has started
-        if let State::Started { .. } = internals.state {
-            unreachable!("Element has already started");
-        }
-
-        // Either `serial` or `rosbag-location` must be specified
-        if settings.serial.is_empty() && settings.rosbag_location.is_empty() {
-            return Err(gst_error_msg!(
-                gst::ResourceError::Settings,
-                ["Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!"]
-            ));
-        }
-
-        // Make sure that only one stream source is selected
-        if !settings.serial.is_empty() && !settings.rosbag_location.is_empty() {
-            return Err(gst_error_msg!(
-                gst::ResourceError::Settings,
-                ["Both `serial` and `rosbag-location` are defined. Only one of these can be defined!"]
-            ));
-        }
-
-        // At least one stream must be enabled
-        if !settings.streams.enabled_streams.any() {
-            return Err(gst_error_msg!(
-                gst::ResourceError::Settings,
-                ["No stream is enabled. At least one stream must be enabled!"]
-            ));
-        }
-
-        Ok(())
-    }
-
-    /// Enable all the streams that has their associated property set to `true`. This function
-    /// returns an error if any streams cannot be enabled.
-    /// # Arguments
-    /// * `config` - The realsense configuration, which may be used to enable streams.
-    /// * `settings` - The settings for the realsensesrc, which in this case specifies which streams to enable.
-    fn enable_streams(
-        config: &rs2::config::Config,
-        settings: &Settings,
-    ) -> Result<(), StreamEnableError> {
-        if settings.streams.enabled_streams.depth {
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_DEPTH,
-                    -1,
-                    settings.streams.depth_resolution.width,
-                    settings.streams.depth_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_Z16,
-                    settings.streams.framerate,
-                )
-                .map_err(|_e| StreamEnableError("Depth stream"))?;
-        }
-        if settings.streams.enabled_streams.infra1 {
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_INFRARED,
-                    1,
-                    settings.streams.depth_resolution.width,
-                    settings.streams.depth_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_Y8,
-                    settings.streams.framerate,
-                )
-                .map_err(|_e| StreamEnableError("Infra1 stream"))?;
-        }
-        if settings.streams.enabled_streams.infra2 {
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_INFRARED,
-                    2,
-                    settings.streams.depth_resolution.width,
-                    settings.streams.depth_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_Y8,
-                    settings.streams.framerate,
-                )
-                .map_err(|_e| StreamEnableError("Infra2 stream"))?;
-        }
-        if settings.streams.enabled_streams.color {
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_COLOR,
-                    -1,
-                    settings.streams.color_resolution.width,
-                    settings.streams.color_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_RGB8,
-                    settings.streams.framerate,
-                )
-                .map_err(|_e| StreamEnableError("Color stream"))?;
-        }
-        Ok(())
     }
 
     /// Configure the device with the given `serial` with the JSON file specified on the given
@@ -605,12 +626,7 @@ impl RealsenseSrc {
     /// * `frame` - The frame to read and serialize metadata for.
     /// * `element` - The element that represents the realsensesrc.
     fn get_frame_meta(&self, frame: &rs2::frame::Frame) -> Result<Vec<u8>, RealsenseError> {
-        let frame_meta = frame.get_metadata().map_err(|e| {
-            RealsenseError(format!(
-                "Failed to read metadata from RealSense camera: {}",
-                e
-            ))
-        })?;
+        let frame_meta = frame.get_metadata()?;
         capnp_serialize(frame_meta).map_err(|e| {
             RealsenseError(format!(
                 "Failed to serialize metadata from RealSense camera: {}",
@@ -1343,69 +1359,93 @@ impl ObjectImpl for RealsenseSrc {
         let property = &PROPERTIES[id];
         match *property {
             subclass::Property("serial", ..) => {
-                let serial = value
-                    .get()
-                    .unwrap_or_else(|err| {
-                        panic!(
-                            "Failed to set property `serial` due to incorrect type: {:?}",
-                            err
-                        )
-                    })
-                    .unwrap_or_default();
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `serial` from {:?} to {:?}",
-                    settings.serial,
-                    serial
-                );
-                settings.serial = serial;
-                obj.downcast_ref::<gst_base::BaseSrc>()
-                    .unwrap()
-                    .set_live(true);
+                match value.get().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `serial` due to incorrect type: {:?}",
+                        err
+                    )
+                }) {
+                    Some(serial) => {
+                        gst_info!(
+                            CAT,
+                            obj: element,
+                            "Changing property `serial` from {:?} to {:?}",
+                            settings.serial,
+                            serial
+                        );
+                        settings.serial = Some(serial);
+                        obj.downcast_ref::<gst_base::BaseSrc>()
+                            .unwrap()
+                            .set_live(true);
+                    }
+                    None => {
+                        gst_warning!(
+                            CAT,
+                            obj: element,
+                            "`serial` property not set, setting from {:?} to None",
+                            settings.serial
+                        );
+                    }
+                }
             }
             subclass::Property("rosbag-location", ..) => {
-                let mut rosbag_location = value
-                    .get()
-                    .unwrap_or_else(|err| {
-                        panic!(
-                            "Failed to set property `rosbag-location` due to incorrect type: {:?}",
-                            err
-                        )
-                    })
-                    .unwrap_or_default();
-                expand_tilde_as_home_dir(&mut rosbag_location);
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `rosbag-location` from {:?} to {:?}",
-                    settings.rosbag_location,
-                    rosbag_location
-                );
-                settings.rosbag_location = rosbag_location;
-                obj.downcast_ref::<gst_base::BaseSrc>()
-                    .unwrap()
-                    .set_live(settings.real_time_rosbag_playback);
+                match value.get().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `rosbag-location` due to incorrect type: {:?}",
+                        err
+                    )
+                }) {
+                    Some(mut rl) => {
+                        expand_tilde_as_home_dir(&mut rl);
+                        gst_info!(
+                            CAT,
+                            obj: element,
+                            "Changing property `rosbag-location` from {:?} to {:?}",
+                            settings.rosbag_location,
+                            rl
+                        );
+                        settings.rosbag_location = Some(rl);
+                        obj.downcast_ref::<gst_base::BaseSrc>()
+                            .unwrap()
+                            .set_live(settings.real_time_rosbag_playback);
+                    }
+                    None => {
+                        gst_warning!(
+                            CAT,
+                            obj: element,
+                            "`rosbag-location` property not set, setting from {:?} to None",
+                            settings.rosbag_location
+                        );
+                    }
+                }
             }
             subclass::Property("json-location", ..) => {
-                let mut json_location = value
-                    .get()
-                    .unwrap_or_else(|err| {
-                        panic!(
-                            "Failed to set property `json-location` due to incorrect type: {:?}",
-                            err
-                        )
-                    })
-                    .unwrap_or_default();
-                expand_tilde_as_home_dir(&mut json_location);
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `json-location` from {:?} to {:?}",
-                    settings.json_location,
-                    json_location
-                );
-                settings.json_location = json_location;
+                match value.get().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `json-location` due to incorrect type: {:?}",
+                        err
+                    )
+                }) {
+                    Some(mut jl) => {
+                        expand_tilde_as_home_dir(&mut jl);
+                        gst_info!(
+                            CAT,
+                            obj: element,
+                            "Changing property `json-location` from {:?} to {:?}",
+                            settings.json_location,
+                            jl
+                        );
+                        settings.json_location = Some(jl);
+                    }
+                    None => {
+                        gst_info!(
+                            CAT,
+                            obj: element,
+                            "`json-location` property not set, setting from {:?} to None",
+                            settings.json_location,
+                        );
+                    }
+                }
             }
             subclass::Property("enable-depth", ..) => {
                 let enable_depth = value.get_some().unwrap_or_else(|err| {

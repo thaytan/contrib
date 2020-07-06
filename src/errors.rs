@@ -34,6 +34,12 @@ impl From<rs2::error::Error> for RealsenseError {
     }
 }
 
+impl From<StreamEnableError> for RealsenseError {
+    fn from(error: StreamEnableError) -> Self {
+        Self(error.0.to_string())
+    }
+}
+
 impl From<RealsenseError> for gst::FlowError {
     fn from(e: RealsenseError) -> Self {
         gst_error!(
