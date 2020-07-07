@@ -1,4 +1,5 @@
 from conans import *
+import os
 
 
 class ClangBootstrapConan(ConanFile):
@@ -25,3 +26,7 @@ class ClangBootstrapConan(ConanFile):
         cmake.configure(source_folder=f"clang-{self.version}.src")
         cmake.build()
         cmake.install()
+
+    def package_info(self):
+        self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
+        self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
