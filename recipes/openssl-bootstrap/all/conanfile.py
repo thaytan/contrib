@@ -1,5 +1,3 @@
-import os
-import platform
 import shutil
 
 from conans import *
@@ -8,7 +6,7 @@ from conans import *
 class OpensslBoostrapConan(ConanFile):
     name = "openssl-bootstrap"
     description = "TLS/SSL and crypto library"
-    license = "custom"
+    license = "BSD"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
     def source(self):
