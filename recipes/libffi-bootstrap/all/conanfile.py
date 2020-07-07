@@ -7,7 +7,7 @@ class LibffiBootstrapConan(ConanFile):
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
 
-    def source(self)    build_requires = ("autotools/[^1.0.0]",):
+    def source(self):
         tools.get(f"https://github.com/libffi/libffi/archive/v{self.version}.tar.gz")
 
     def build(self):
