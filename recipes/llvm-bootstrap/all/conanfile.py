@@ -9,7 +9,7 @@ class LlvmBootstrapConan(ConanFile):
     build_requires = (
         "cmake-bootstrap/[^3.17.3]",
         "ninja-bootstrap/[^1.10.0]",
-        "libunwind-bootstrap/[^10.0.0]",
+        "libunwind-bootstrap/[^1.3.1]",
     )
 
     def source(self):
