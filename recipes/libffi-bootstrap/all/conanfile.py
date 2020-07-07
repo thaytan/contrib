@@ -25,10 +25,3 @@ class LibffiBootstrapConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-
-    def package(self):
-        # TODO: remove once the libs get ins.
-        print(self.package_folder)
-        tools.mkdir(f"{self.package_folder}/lib")
-        self.run(f"mv {self.package_folder}/lib64/* {self.package_folder}/lib/")
-        tools.rmdir(f"{self.package_folder}/lib64")
