@@ -4,7 +4,7 @@ from conans import *
 class LlvmBootstrapConan(ConanFile):
     name = "llvm-bootstrap"
     description = "Collection of modular and reusable compiler and toolchain technologies"
-    license = "custom", "Apache"
+    license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
         "cmake-bootstrap/[^3.17.3]",
