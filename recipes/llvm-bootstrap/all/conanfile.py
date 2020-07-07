@@ -16,7 +16,7 @@ class LlvmBootstrapConan(ConanFile):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
 
     def build(self):
-        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_buld)]
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
