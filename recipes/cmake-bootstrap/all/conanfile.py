@@ -6,7 +6,7 @@ class CmakeBootstrapConan(ConanFile):
     description = "A cross-platform open-source make system"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
-    requires = "openssl-bootstrap/[^3.0.0-alpha4]"
+    requires = ("openssl-bootstrap/[^3.0.0-alpha4]",)
 
     def source(self):
         tools.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
