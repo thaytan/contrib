@@ -1,5 +1,5 @@
-from conans import *
 import os
+from conans import *
 
 
 class ClangBootstrapConan(ConanFile):
