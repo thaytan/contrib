@@ -13,5 +13,5 @@ class CmakeBootstrapConan(ConanFile):
 
     def build(self):
         with tools.chdir(f"cmake-{self.version}"):
-            self.run(f"./bootstrap --verbose --prefix=${self.package_folder}")
-            self.run(f"make install")
+            self.run(f"./bootstrap --verbose --prefix={self.package_folder}")
+            self.run(f'make DESTDIR="{self.package_folder}" install')
