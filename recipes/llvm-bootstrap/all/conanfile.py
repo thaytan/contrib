@@ -9,6 +9,8 @@ class LlvmBootstrapConan(ConanFile):
     build_requires = (
         "cmake-bootstrap/[^3.17.3]",
         "ninja-bootstrap/[^1.10.0]",
+    )
+    requires = (
         "libunwind-bootstrap/[^1.3.1]",
         "libffi-bootstrap/[^3.3]",
     )
