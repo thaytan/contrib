@@ -39,7 +39,7 @@ k4a_demux.src_color ! queue ! glimagesink
 The `k4asrc` element utilises https://gstreamer.freedesktop.org/documentation/base/gstbasesrc.html[GstBaseSrc] as a base class.
 
 
-== Pads and CAPS
+=== Pads and CAPS
 
 This element has only a single `.src` pad, which is used to output all streams.
 
@@ -77,7 +77,7 @@ The priority of fields in `streams` for K4A is _depth_ > _ir_ > _color_, where t
 
 
 
-== Stream Source
+=== Stream Source
 
 The `k4asrc` can be configured to stream RGB-D video from one of two sources.
 
@@ -91,7 +91,7 @@ The `k4asrc` can be configured to stream RGB-D video from one of two sources.
 Note, that you can only play the recorded streams when streaming from playback. Enabling stream not present in the recording will throw an exception.
 
 
-== Output
+=== Output
 
 The `k4asrc` produces `video/rgbd` https://gstreamer.freedesktop.org/documentation/gstreamer/gstbuffer.html[GstBuffer]s, that each contain the following data based on its properties.
 
@@ -101,7 +101,7 @@ The `k4asrc` produces `video/rgbd` https://gstreamer.freedesktop.org/documentati
 The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:system:ROOT:buildingblocks:pages$a-depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged accordingly using the `TagsMeta`.
 
 
-=== Video Format
+==== Video Format
 
 The `k4asrc` always outputs the _depth_ and _ir_ video streams with the following formats, if enabled.
 
@@ -203,19 +203,19 @@ Finally, the framerate of all streams is determined by `framerate` property, whi
 Note, that you cannot reconfigure these properties when streaming from playback. A warning will be posted about the discrepancy in requested and available configuration. Hereafter, the properties will have no effect and the recorded configuration will be automatically used for streaming.
 
 
-=== Timestamping and Synchronisation
+==== Timestamping and Synchronisation
 
 All GstBuffers for *main stream* and all *auxiliary streams* are explicitly given `duration` as well as `pts` and `dts` timestamps. You can set the timestamping mode via `timestamp-mode` property, please see xref:system:ROOT:concepts:pages$e-timestamping-and-synchronisation.adoc[Timestamping and Synchronisation] for more details. 
 
 Streaming from physical device sets the element always to a *live* mode. Playback from recording is by default *non-live*, however, `real-time-playback` property can be set to *true* in order to provide a pseudo-live streaming.
 
 
-=== Camera Metadata
+==== Camera Metadata
 
 You can enable `attach-camera-meta` to stream meta associated with K4A device such as intrinsics, extrinsics and depth scale. Please see xref:system:ROOT:concepts:pages$g-camera-meta.adoc[Camera Meta] for more details.
 
 
-=== Depth Rectification
+==== Depth Rectification
 
 If desired, _depth_ frames can be rectified and registered to _color_ frames by setting `rectify-depth` flag. This produces _depth_ frames where each pixel matches the corresponding pixel coordinate of the _color_ frames, which also means that the resulting _depth_ stream will have resolution equal to the color stream. Note that color stream must be enabled when streaming from a physical device, or recorded as a part of recording that is played back.
 
