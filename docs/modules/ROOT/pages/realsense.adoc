@@ -1,6 +1,8 @@
 [[realsense]]
 = RealSense
 
+// tag::realsense[]
+
 This GStreamer plugin allows streaming of `video/rgbd` video from a RealSense (RS) camera or recording.
 
 * *Repository:* https://gitlab.com/aivero/public/gstreamer/gst-realsense/[GitLab]
@@ -240,3 +242,5 @@ The diagram below describes the `realsensesrc` states and which `librealsense2` 
 ....
 include::ROOT:partial$realsensesrc-sequence.plantuml[]
 ....
+
+// end::realsense[]
