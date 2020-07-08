@@ -1,6 +1,8 @@
 [[k4a]]
 = Azure Kinect
 
+// tag::k4a[]
+
 This GStreamer plugin allows streaming of `video/rgbd` video from an Azure Kinect (K4A) camera or recording.
 
 * *Repository:* https://gitlab.com/aivero/public/gstreamer/gst-k4a/[GitLab]
@@ -226,3 +228,5 @@ The diagram below describes the `k4asrc` states and which `k4a` calls are execut
 ....
 include::ROOT:partial$k4asrc-sequence.plantuml[]
 ....
+
+// end::k4a[]
