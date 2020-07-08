@@ -5,7 +5,7 @@ class RsyncBootstrapConan(ConanFile):
     name = "rsync-bootstrap"
     description = "A fast and versatile file copying tool for remote and local files"
     license = "GPL3"
-    settings = {"os": ["Linux"], "arch": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     requires = ("openssl-bootstrap/[^3.0.0-alpha4]",)
 
     def source(self):
