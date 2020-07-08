@@ -1,10 +1,9 @@
-@startuml
+@startuml realsensesrc
 Actor user
 entity "Gstreamer Pipeline" as g_pipe
 entity "realsensesrc" as src
 entity "librealsense2" as lrs
 entity "GStreamer" as go
-entity "data callback" as d_cb
 
 autoactivate on
 user -> g_pipe: realsensesrc \n serial=728...

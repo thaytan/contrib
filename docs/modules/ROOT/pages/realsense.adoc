@@ -1,99 +1,160 @@
+[[realsense]]
 = RealSense
 
-// tag::realsense[]
+This GStreamer plugin allows streaming of `video/rgbd` video from a RealSense (RS) camera or recording.
 
-This element outputs `video/rgbd` stream using librealsense2.
+* *Repository:* https://gitlab.com/aivero/public/gstreamer/gst-realsense/[GitLab]
+* *Device:* https://www.intelrealsense.com/stereo-depth/[Intel RealSense D400 series]
+    ** Tested with https://www.intelrealsense.com/depth-camera-d415/[D415] and https://www.intelrealsense.com/depth-camera-d435/[D435]
+* *Source:* Physical device or http://wiki.ros.org/rosbag[ROSbag]
+* *Available video streams (D400 series):*  depth, infra1, infra2, color
+* *Additional streams:* imu 
+    ** Currently not supported
 
-* *Git:* https://gitlab.com/aivero/public/gstreamer/gst-realsense (Rust)
-* *Device:* Intel® RealSense™ D400 series (D415, D435 and D435i)
-* *Source:* Physical device or ROS bags
-* *Available video streams:*  depth, infra1, infra2, color
-* *Additional streams:* IMU (only D435i) _Currently not implemented_
 
 == Motivation
 
-This is a GStreamer element wrapped around the librealsense2 library.
-Naturally it will make use of plenty classes and methods of it.
+Provide an easy access to all RS frames in GStreamer for further processing and streaming. This is accomplished by wrapping around https://github.com/IntelRealSense/librealsense[librealsense2] library via its https://gitlab.com/aivero/public/librealsense-rs[Rust bindings].
 
-The `realsensesrc` element will produce GstBuffers containing:
+== Minimal GStreamer Pipeline
 
-- Frame data from a single main stream (typically the Depth stream)
-- Frame data on `BufferMeta` from additional streams (i.e. Color/IR stream)
-- Optionally, RealSense-specific per-frame metadata attached on each frame buffer
+The pipeline below streams _depth_, _infra1_, _infra2_ and _color_ from a physical device specified by `RS_SERIAL`. These are then visualised in real-time via `glimagesink` for each stream.
 
-The `realsensesrc` supports two streaming modes:
+This example requires xref:system:ROOT:buildingblocks:page:gstreamer$b-rgbd.adoc[`rgbddemux`] in order to demultiplex a single `video/rgbd` stream into multiple `video/x-raw` streams.
 
-* *Live*, in which one specifies the serial number of the RealSense
-Camera or sets the `real-time-rosbag-playback` property to `true`.
-* *Playback*, in which one specifies the filepath to a ROSBAG, which is
-opened and played.
+[source,sourceCode,bash]
+----
+export RS_SERIAL=XXXXXXXXXXXX
 
-If the mode is set to LIVE, the pipeline will be configured to drop
-frames to maintain a close-to-realtime feed from the camera. If set
-to non-LIVE the pipeline will work as slow as needed to ensure that
-all frames get through.
+gst-launch-1.0 rgbddemux name=rsdemux \
+realsensesrc serial=${RS_SERIAL} enable-depth=true enable-infra1=true enable-infra2=true enable-color=true ! \
+rsdemux.sink \
+rsdemux.src_depth ! queue ! glimagesink  \
+rsdemux.src_infra1 ! queue ! glimagesink \
+rsdemux.src_infra2 ! queue ! glimagesink \
+rsdemux.src_color ! queue ! glimagesink 
+----
 
-The `realsensesrc` will also register all options and properties of the
-respective RealSense camera as GStreamer properties. This will allow
-control of said parameters using the `g_object_set` interface.
 
-The RealSense camera supports a number of streams (i.e. D, RGB, IR1.
-IR2) and stream profiles (1280x720px30fps...). These will be used to
-CAPS negotiate the GstCaps of this element.
+== Description
 
-== States
+The `realsensesrc` element utilises https://gstreamer.freedesktop.org/documentation/base/gstbasesrc.html[GstBaseSrc] as a base class.
 
-The diagram below describes the `realsensesrc` states and which
-librealsense2 calls are executed when the `realsensesrc` changes
-to the given states.
 
-[plantuml, realsense-sequence, png]
-....
-include::ROOT:partial$realsensesrc-sequence.plantuml[]
-....
+== Pads and CAPS
 
-== Functionality
+This element has only a single `.src` pad, which is used to output all streams.
 
-Internally, `realsensesrc` utilises our
-https://gitlab.com/aivero/public/librealsense-rs[librealsense rust bindings]. It
-is used to configure the connected RealSense device and capture the
-frames that are subsequently pushed downstream.
+----
+SRC template: 'src'
+    Availability: Always
+    CAPS:
+        video/rgbd
+            streams = "depth,infra1,infra2,color,depthmeta,infra1meta,infra2meta,colormeta,camerameta"
+            framerate = [6/1,   90/1]
+----
 
-== Pad and CAPS
+The `realsensesrc` determines and fixates CAPS on its own based purely on the properties set on this element. Re-negotiation is currently NOT supported. 
 
-src, always, `video/rgbd`
 
-This element decides and fixates its src CAPS. No re-negotiation is
-allowed. Depending on the configuration of the `enable-*` properties,
-the `realsensesrc` will include `streams` in the `video/rgbd` CAPS.
-The `realsensesrc` uses the following formats for the different streams:
+For each enabled `enable-*` property, `realsensesrc` will include an addition stream in `streams` of the `video/rgbd` CAPS. All enabled video streams will have a
+`*_format`, `*_width` and `*_height` field, which can vary among the streams. Meta streams, e.g. _depthmeta_, _infra1meta_ and _camerameta_, do not require these fields and will therefore not be used. Finally, one common `framerate` is included in the CAPS and applies to all streams. Below is an example of valid CAPS that are fixated.
 
-- Depth: `gray16le`
-- Color: `rgb`
-- Infra (1 and 2): `gray8`
+----
+video/rgbd
+    streams = "depth,color,camerameta"
+    framerate = 30/1
+    depth_format = "GRAY16_LE"
+    depth_width = 1280
+    depth_height = 720
+    color_format = "RGB"
+    color_width = 1920
+    color_height = 1080
+----
 
-One common `framerate` will be included in the `video/rgbd` CAPS, which
-is shared across all the streams. All included stream will have a
-`*_width`, `*_height` and `*_format` field in the CAPS. The resolutions
-of the stream are therefore not shared across the streams.
+The priority of fields in `streams` for RS is _depth_ > _infra1_ > _infra2_ > _color_, where the first of these is considered to be the *main stream*.
+
+
+== Stream Source
+
+The `realsensesrc` can be configured to stream RGB-D video from one of two sources.
+
+* _Physical Camera_ connected to local device, which you can specify by the `serial` property.
+    ** Serial number can be found via `realsense-viewer` and it is also printed on the camera itself.
+    ** The element waits for availability of the next frameset, where the timeout duration can be specified by `wait-for-frames-timeout` property.
+* _ROSbag_ containing recoding of RGB-D video, which one specifies with filepath through `rosbag-location` property.
+    ** You can use `realsense-viewer` or `rs-record` to create a new file whenever you need one.
+    ** Looping can be set via `loop-rosbag` property, however, behaviour for certain timestamping modes is undefined and might not work as expected.
+
+Note, that you can only play the recorded streams when streaming from playback. Enabling stream not present in the recording will throw an exception.
+
+
+== Output
+
+The `realsensesrc` produces `video/rgbd` https://gstreamer.freedesktop.org/documentation/gstreamer/gstbuffer.html[GstBuffer]s, that each contain the following data based on its properties.
+
+* Frame data for *main stream*, typically the _depth_ stream.
+* A full GstBuffer for each *auxiliary stream*, e.g. _infra1_, _color_ or any of the meta streams. 
+
+The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:system:ROOT:buildingblocks:page$a-depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged using the `TagsMeta`.
+
+
+=== Video Format
+
+The `realsensesrc` always outputs the enabled video streams with the following formats.
+
+----
+depth_format = "GRAY16_LE"
+infra1_format = "GRAY8"
+infra2_format = "GRAY8"
+color_format = "RGB"
+----
+
+
+=== Resolution and Framerate Configuration
+
+The resolution of _depth_, _infra1_ and _infra2_ streams can be configured via `depth-height` and `depth-width` properties. It is not possible to stream _infra1_ or _infra2_ streams at a different resolution than _depth_ stream. The resolution of _color_ stream can be configured similarly via `color-height` and `color-width` properties. Framerate of all streams is determined by `framerate` property.
+
+RS devices support only certain resolution and framerate configurations. The best way to check what combinations your device/firmware supports is to use https://github.com/IntelRealSense/librealsense/tree/master/tools/realsense-viewer[realsense-viewer]. Make sure a common framerate is supported on all enabled streams when working with `realsensesrc`. Here is a very limited list of some of the available configurations for the specific streams.
+
+* _depth_, _infra1_ and _infra2_
+    ** 424x240px@90fps
+    ** 640x480px@60fps
+    ** 1280x720px@30fps
+* _color_
+    ** 640x480px@60fps
+    ** 1280x720px@30fps
+    ** 1920x1080px@30fps
+
+Note, that you cannot reconfigure these properties when streaming from playback. A warning will be posted about the discrepancy in requested and available configuration. Hereafter, the properties will have no effect and the recorded configuration will be automatically used for streaming.
+
+
+=== Camera Configuration (JSON)
+
+One can load a configuration of depth module and color camera from `.json` configuration file. For this, you can specify a filepath to the configuration file via `json-location` property.
+
+
+=== Timestamping and Synchronisation
+
+All GstBuffers for *main stream* and all *auxiliary streams* are explicitly given `duration` as well as `pts` and `dts` timestamps. You can set the timestamping mode via `timestamp-mode` property, please see xref:system:ROOT:concepts:page$e-timestamping-and-synchronisation.adoc[Timestamping and Synchronisation] for more details. 
+
+Streaming from physical device sets the element always to a *live* mode. Playback from ROSbag is by default *non-live*, however, `real-time-rosbag-playback` property can be set to *true* in order to provide a pseudo-live streaming.
+
+
+=== Camera Metadata
+
+You can enable `attach-camera-meta` to stream meta associated with RS device such as intrinsics, extrinsics and depth scale. Please see xref:system:ROOT:concepts:page$g-camera-meta.adoc[Camera Meta] for more details.
+
 
 [[realsense_metadata]]
-== Per-frame metadata
+=== Per-frame Metadata
 
-The `realsensesrc` has the `include-per-frame-metadata` flag, which
-causes it to attach the librealsense-specific per-frame metadata to each
-of the frames. Currently the metadata is included for every frame, even
-though some of the metadata is duplicated for the frames.
+The `realsensesrc` has the `include-per-frame-metadata` flag, which causes it to attach the RS-specific per-frame metadata to each of the frames. Currently, the metadata is included for every frame, even though some of the metadata is duplicated for the frames.
 
-=== librealsense Bindings
 
-The per-frame metadata may be read from librealsense with the two
-functions `supports_frame_metadata` and `get_frame_metadata`, which both
-takes an `int` as argument, which uniquely defines the property to be
-read. In the Rust bindings for librealsense, we have added a method on
-the `frame` struct called `get_metadata`, which reads all the available
-metadata for the frame and returns that as a struct of the following
-format:
+==== Bindings for Per-frame Metadata
+
+The per-frame metadata may be read from `librealsense` with the two functions `supports_frame_metadata()` and `get_frame_metadata()`, which both take an `int` as argument that uniquely defines the property to be read. In the Rust bindings for `librealsense`, we have added a method on the `frame` struct called `get_metadata()`, which reads all the available metadata for the frame and returns that as a struct of the following format:
 
 [source,sourceCode,Rust]
 ----
@@ -130,23 +191,12 @@ pub struct Metadata {
 }
 ----
 
-The reason for this design choice is that this is more expressive than
-using an `int` as identifier. If only a single attribute from the
-metadata is desired, please use the `frame.supports_frame_metadata` and
-`frame.get_frame_metadata` functions, which accepts a
-`MetadataAttribute` enum.
+The reason for this design choice is that this is more expressive than using an `int` as identifier. If only a single attribute from the metadata is desired, please use the `frame.supports_frame_metadata()` and `frame.get_frame_metadata()` functions, which accepts a `MetadataAttribute` enum.
 
-=== Serialisation
 
-We use Cap’n Proto for serialisation. This is also handled in the
-`realsensesrc` (rs_meta.rs). When the `include-per-frame-metadata`
-property is set to true, the `realsensesrc` attaches the Cap’n Proto
-serialized metadata buffers to the main buffer using the `BufferMeta`
-API. These buffers are tagged, using the `TagsMeta` API as `%smeta`,
-where `%s` is the tag of the stream (e.g. _depth_ or _infra1_). Similar
-to the other streams, the per-frame metadata streams are also included
-in the `streams` section of the `video/rgbd` CAPS, but does not need a
-`*_format`, `*_width` and `*_height` field.
+==== Serialisation
+
+We use Cap’n Proto for serialisation, please see xref:system:ROOT:concepts:page:f-storage-container-format$c-capnproto.adoc[Metadata format and handling] for more information. When the `include-per-frame-metadata` property is set to true, the `realsensesrc` attaches the Cap’n Proto serialized metadata buffers to the buffer of *main stream* using the `BufferMeta` API. These buffers are tagged, using the `TagsMeta` API as `%smeta`, where `%s` is the tag of the stream, e.g. _depth_ or _infra1_.
 
 [[example]]
 [source,sourceCode,json]
@@ -168,18 +218,25 @@ in the `streams` section of the `video/rgbd` CAPS, but does not need a
 
 And the resulting CAPS would be:
 
-[source,sourceCode,bash]
 ----
-video/rgbd,streams="depth,infra1,depthmeta,infra1meta",
-    depth_format=GRAY16,depth_width=1080,depth_height=720,
-    infra1_format=GRAY8,infra1_width=1080,infra1_height=720,
-    framerate=30
+video/rgbd
+    streams = "depth,infra1,depthmeta,infra1meta"
+    framerate = 30/1
+    depth_format = "GRAY16_LE"
+    depth_width = 1280
+    depth_height = 720
+    infra1_format = "RGB"
+    infra1_width = 1920
+    infra1_height = 1080
 ----
 
-As all values in the `Metadata` struct are `Option` s, which are not
-available in Cap’n Proto, we need to translate from the Cap’n Proto
-representation to the rust representation and vice-versa. This is done
-by treating `None` values as `0` when translating from rust to Cap’n
-Proto and `0` as `None` when translating the other way.
+As all values in the `Metadata` struct are `Option`s, which are not available in Cap’n Proto, we need to translate from the Cap’n Proto representation to the rust representation and vice-versa. This is done by treating `None` values as `0` when translating from rust to Cap’n Proto and `0` as `None` when translating the other way.
 
-// end::realsense[]
+== States
+
+The diagram below describes the `realsensesrc` states and which `librealsense2` calls are executed when the `realsensesrc` changes to the given states.
+
+[plantuml, realsensesrc-sequence, png]
+....
+include::ROOT:partial$realsensesrc-sequence.plantuml[]
+....
