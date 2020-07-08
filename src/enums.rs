@@ -31,7 +31,7 @@ use std::convert::TryFrom;
 /// K4A_IMAGE_FORMAT_COLOR_* part of it.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aColorFormat {
+pub enum K4aColorFormat {
     MJPG = 0,
     NV12 = 1,
     YUV2 = 2,
@@ -39,7 +39,7 @@ pub(crate) enum K4aColorFormat {
 }
 
 impl K4aColorFormat {
-    pub(crate) fn get_glib_type() -> glib::Type {
+    pub fn get_glib_type() -> glib::Type {
         use std::sync::Once;
         static ONCE: Once = Once::new();
         static mut TYPE: glib::Type = glib::Type::Invalid;
@@ -78,7 +78,12 @@ impl K4aColorFormat {
 
             let name = ffi::CString::new("GstK4aColorFormat").unwrap();
             unsafe {
-                let type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
+                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
+                if type_ == 0 {
+                    // Register the type ONLY if not done before
+                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                }
                 TYPE = glib::translate::from_glib(type_);
             }
         });
@@ -167,7 +172,7 @@ impl From<K4aColorFormat> for k4a::ImageFormat {
 /// Represents the Azure Kinect's color resolution and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aColorResolution {
+pub enum K4aColorResolution {
     C720p = 0,
     C1080p = 1,
     C1440p = 2,
@@ -307,7 +312,12 @@ impl K4aColorResolution {
 
             let name = ffi::CString::new("GstK4aColorResolution").unwrap();
             unsafe {
-                let type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
+                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
+                if type_ == 0 {
+                    // Register the type ONLY if not done before
+                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                }
                 TYPE = glib::translate::from_glib(type_);
             }
         });
@@ -322,7 +332,7 @@ impl K4aColorResolution {
 /// Represents the Azure Kinect's depth mode and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aDepthMode {
+pub enum K4aDepthMode {
     Nfov2x2Binned,
     NfovUnbinned,
     Wfov2x2Binned,
@@ -413,7 +423,12 @@ impl K4aDepthMode {
 
             let name = ffi::CString::new("GstK4aDepthMode").unwrap();
             unsafe {
-                let type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
+                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
+                if type_ == 0 {
+                    // Register the type ONLY if not done before
+                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                }
                 TYPE = glib::translate::from_glib(type_);
             }
         });
@@ -460,7 +475,7 @@ impl From<K4aDepthMode> for k4a::DepthMode {
 /// represent it as an enum here. This enum is used to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 #[repr(u32)]
-pub(crate) enum K4aFramerate {
+pub enum K4aFramerate {
     FPS5,
     FPS15,
     FPS30,
@@ -546,7 +561,12 @@ impl K4aFramerate {
 
             let name = ffi::CString::new("GstK4aFramerate").unwrap();
             unsafe {
-                let type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
+                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
+                if type_ == 0 {
+                    // Register the type ONLY if not done before
+                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
+                }
                 TYPE = glib::translate::from_glib(type_);
             }
         });

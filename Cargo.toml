@@ -38,5 +38,5 @@ features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
 
 [lib]
 name = "gstk4asrc"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 path = "src/lib.rs"
