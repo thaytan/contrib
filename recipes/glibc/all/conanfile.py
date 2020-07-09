@@ -9,7 +9,7 @@ class GlibcConan(ConanFile):
     build_requires = (
         "clang-bootstrap/[^10.0.0]",
         "gawk-bootstrap/[5.1.0]",
-        "linux-headers[^5.4.50]",
+        "linux-headers/[^5.4.50]",
     )
 
     def source(self):
