@@ -26,7 +26,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_ENABLE_FFI"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
-        cmake.definitions["LLVM_DEFAULT_TARGET_TRIPLE"] = f"{arch}-linux-musl"
+        cmake.definitions["LLVM_DEFAULT_TARGET_TRIPLE"] = f"{arch}-linux-gnu"
         cmake.configure(source_folder=f"llvm-{self.version}.src")
         cmake.build()
         cmake.install()
