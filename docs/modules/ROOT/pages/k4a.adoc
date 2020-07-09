@@ -21,7 +21,7 @@ Provide an easy access to K4A frames in GStreamer for further processing and str
 
 The pipeline below streams _depth_, _ir_, and _color_ from the first physical device that can be found on local system. These are then visualised in real-time with the help of `glimagesink`s.
 
-This example requires xref:system:ROOT:buildingblocks:pages:gstreamer$b-rgbd.adoc[`rgbddemux`] in order to demultiplex a single `video/rgbd` stream into multiple `video/x-raw` streams.
+This example requires xref:rgbd:ROOT:pages$rgbd.adoc[`rgbddemux`] in order to demultiplex a single `video/rgbd` stream into multiple `video/x-raw` streams.
 
 [source,sourceCode,bash]
 ----
@@ -98,7 +98,7 @@ The `k4asrc` produces `video/rgbd` https://gstreamer.freedesktop.org/documentati
 * Frame data for *main stream*, typically the _depth_ stream.
 * A full GstBuffer for each *auxiliary stream*, e.g. _ir_, _color_ or any of the meta streams. 
 
-The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:system:ROOT:buildingblocks:pages$a-depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged accordingly using the `TagsMeta`.
+The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:depthmeta:ROOT:pages$depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged accordingly using the `TagsMeta`.
 
 
 ==== Video Format
