@@ -47,7 +47,7 @@ class GccBootstrapConan(ConanFile):
             target = "aarch64-linux-gnu"
         args.append("--build=" + target)
         args.append("--host=" + target)
-        with tools.chdir(f"{self.name}-{self.version}"):
+        with tools.chdir(f"gcc-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
