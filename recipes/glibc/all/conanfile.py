@@ -6,6 +6,11 @@ class GlibcConan(ConanFile):
     description = "GNU C Library"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    build_requires = (
+        "clang-bootstrap/[^10.0.0]",
+        "gawk-bootstrap/[5.1.0]",
+        "linux-headers[^5.4.50]",
+    )
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/glibc/glibc-{self.version}.tar.xz")
