@@ -23,6 +23,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
+        cmake.definitions["LLVM_BUILD_STATIC"] = False
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_ENABLE_FFI"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
