@@ -13,6 +13,8 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use std::fmt::{Display, Formatter};
+
 use crate::camera_meta_capnp::intrinsics::*;
 
 /// Intrinsic parameters of a specific camera.
@@ -53,9 +55,19 @@ impl Intrinsics {
     }
 }
 
+impl Display for Intrinsics {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "fx={}, fy={}, cy={}, cx={}, dist={}",
+            self.fx, self.fy, self.cx, self.cy, self.distortion
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum Distortion {
-    /// Unknown or unsupported distortion model. Distortion coefficients might are invalid.
+    /// Unknown or unsupported distortion model.
     Unknown,
     /// Image is already rectilinear. No distortion compensation is required.
     None,
@@ -71,6 +83,37 @@ pub enum Distortion {
     RsFTheta(RsCoefficients),
     /// K4A Brown-Conrady calibration model.
     K4aBrownConrady(K4aCoefficients),
+}
+
+impl Display for Distortion {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use Distortion::*;
+        let cs = match self {
+            Unknown | None => String::default(),
+            RsBrownConrady(rs)
+            | RsModifiedBrownConrady(rs)
+            | RsInverseBrownConrady(rs)
+            | RsKannalaBrandt4(rs)
+            | RsFTheta(rs) => format!(
+                "a1={}, a2={}, a3={}, a4={}, a5={}",
+                rs.a1, rs.a2, rs.a3, rs.a4, rs.a5
+            ),
+            K4aBrownConrady(k4a) => format!(
+                "k1={}, k2={}, k3={}, k4={}, k5={}, k6={}, p1={}, p2={}",
+                k4a.k1, k4a.k2, k4a.k3, k4a.k4, k4a.k5, k4a.k6, k4a.p1, k4a.p2
+            ),
+        };
+
+        match self {
+            Unknown => write!(f, "Unknown"),
+            None => write!(f, "Already rectilinear"),
+            RsBrownConrady(_) | K4aBrownConrady(_) => write!(f, "Brown-Conrady[{}]", cs),
+            RsModifiedBrownConrady(_) => write!(f, "Modified Brown-Conrady[{}]", cs),
+            RsInverseBrownConrady(_) => write!(f, "Inverse Brown-Conrady[{}]", cs),
+            RsKannalaBrandt4(_) => write!(f, "Kannala-Brandt[{}]", cs),
+            RsFTheta(_) => write!(f, "F-Theta[{}]", cs),
+        }
+    }
 }
 
 /// RealSense distortion coefficients. The use of these coefficients depend on the utilised distrortion model.

@@ -55,7 +55,11 @@ impl From<RgbdError> for gst::LoggableError {
     fn from(e: RgbdError) -> Self {
         gst::LoggableError::new(
             gst::DebugCategory::get("rgbd").unwrap_or_else(|| {
-                gst::DebugCategory::new("rgbd", gst::DebugColorFlags::empty(), Some("RGBD convenience functions"))
+                gst::DebugCategory::new(
+                    "rgbd",
+                    gst::DebugColorFlags::empty(),
+                    Some("RGBD convenience functions"),
+                )
             }),
             glib::BoolError::from(e),
         )

@@ -13,6 +13,8 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use std::fmt::{Display, Formatter};
+
 /// Transformation in 3D.
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Transformation {
@@ -20,6 +22,27 @@ pub struct Transformation {
     pub translation: Translation,
     /// Rotation.
     pub rotation: RotationMatrix,
+}
+
+impl Display for Transformation {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{r11}\t{r12}\t{r13}\t{tx}\n{r21}\t{r22}\t{r23}\t{ty}\n{r31}\t{r32}\t{r33}\t{tz}",
+            tx = self.translation.x,
+            ty = self.translation.y,
+            tz = self.translation.z,
+            r11 = self.rotation.r11,
+            r12 = self.rotation.r12,
+            r13 = self.rotation.r13,
+            r21 = self.rotation.r21,
+            r22 = self.rotation.r22,
+            r23 = self.rotation.r23,
+            r31 = self.rotation.r31,
+            r32 = self.rotation.r32,
+            r33 = self.rotation.r33,
+        )
+    }
 }
 
 impl Transformation {
