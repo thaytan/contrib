@@ -13,10 +13,11 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use std::fmt::{Display, Formatter};
+
 pub(crate) use crate::d400_limits::*;
 pub(crate) use crate::enabled_streams::EnabledStreams;
 pub(crate) use rs2::stream_profile::StreamResolution;
-use std::fmt::{Display, Formatter};
 
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 pub(crate) const DEFAULT_LOOP_ROSBAG: bool = false;
@@ -69,6 +70,45 @@ pub(crate) struct Streams {
     pub(crate) depth_resolution: StreamResolution,
     pub(crate) color_resolution: StreamResolution,
     pub(crate) framerate: i32,
+}
+
+impl Display for Streams {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let depth_info = &format!(
+            "{}x{}px@{}fps",
+            self.depth_resolution.height, self.depth_resolution.height, self.framerate
+        );
+        let color_info = &format!(
+            "{}x{}px@{}fps",
+            self.color_resolution.height, self.color_resolution.height, self.framerate
+        );
+        let dis = "disabled";
+
+        write!(
+            f,
+            "depth: {}, color: {}, infra1: {}, infra2: {}",
+            if self.enabled_streams.depth {
+                depth_info
+            } else {
+                dis
+            },
+            if self.enabled_streams.color {
+                color_info
+            } else {
+                dis
+            },
+            if self.enabled_streams.infra1 {
+                depth_info
+            } else {
+                dis
+            },
+            if self.enabled_streams.infra2 {
+                depth_info
+            } else {
+                dis
+            },
+        )
+    }
 }
 
 impl Default for Settings {

@@ -5,25 +5,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [2.1.4] - 2020-7-01
+## [2.2.0] - 2020-Jul-10
+
+## Added
+- Printing of CameraMeta (intrinsics, extrinsics and depth scale) to GST_INFO.
+- Printing of more detailed error messages when either serial or resolution+framerate is invalid.
+
+## [2.1.4] - 2020-Jul-01
 ## Fixed
 - Implement latency query handling.
 
-## [2.1.3] - 2020-7-01
+## [2.1.3] - 2020-Jul-01
 ### Changed
 - Add gstreamer conan settings, add plugins-base with deps on it.
 
-## [2.1.2] - 2020-05-26
+## [2.1.2] - 2020-May-26
 ### Changed
 - Use new version of gstreamer-depth-meta - 1.2.0
 - Use new version of librealsense-rs - 2.1.0
 - Update readme
 
-## [2.1.1] - 2020-04-28
+## [2.1.1] - 2020-Apr-28
 ### Changed
 - Use new version of gstreamer-depth-meta - 1.0.1
 
-## [2.1.0] - 2020-04-02
+## [2.1.0] - 2020-Apr-02
 ### Added
 - Accept "~/path/to/file", i.e. tilde as $HOME, while setting `rosbag-location` and `json-location`.
 ### Changed
@@ -31,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `glib` to 0.9
   - `gst` to 0.15
 
-## [2.0.0] - 2020-04-02
+## [2.0.0] - 2020-Apr-02
 
 ### Changed
 
@@ -39,14 +45,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default value for `loop-rosbag` is now *false*.
 
 
-## [1.2.1] - 2020-03-27
+## [1.2.1] - 2020-Mar-27
 
 ### Fixed
 
 - Updated librealsense-rs to newest version (2.0.0) in cargo.toml.
 
 
-## [1.2.0] - 2020-03-04
+## [1.2.0] - 2020-Mar-04
 
 ### Added
 - Implemented attaching of camera meta containing intrinsics, extrinsics and depth scale. This functionality can be enabled by `attach-camera-meta` property.
@@ -55,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use of standard function for work with `video/rgbd` CAPS from `gst_depth_meta::rgbd` module, instead of custom-local implementation.
 
 
-## [1.1.0] - 2020-02-18
+## [1.1.0] - 2020-Feb-18
 
 ### Added
 - Explicitly call `rs2::Config::resolve()` before starting the pipeline in order to speed up returning of errors if `Config` cannot be resolved.
@@ -66,13 +72,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Terminate when both `serial` and `rosbag-location` are specified.
 
 
-## [1.0.1] - 2020-01-29
+## [1.0.1] - 2020-Jan-29
 
 ### Fixed
 
 - Properly set live-mode based on `real-time-rosbag-playback` property when playing from ROSBAG.
 
-## [1.0.0] - 2020-01-21
+## [1.0.0] - 2020-Jan-21
 
 ### Added
 
@@ -87,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `realsensesrc` now includes per-frame metadata buffers as top-level buffers. This means that the per-frame metadata buffers of all streams are attached as `BufferMeta` onto the main buffer.
 
-## [0.1.9] - 2020-01-03
+## [0.1.9] - 2020-Jan-03
 
 ### Changed
 
@@ -97,20 +103,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `realsensesrc` now correctly sets the LIVE-mode to false when playing from ROSBAG.
 
-## [0.1.8] - 2019-12-20
+## [0.1.8] - 2019-Dec-20
 
 ### Changed
 
 - `do-rs2-timestamp` now defaults to `false`, as it proved troublesome. It is thus treated as an advanced options from now on.
 
-## [0.1.7] - 2019-12-12
+## [0.1.7] - 2019-Dec-12
 
 ### Added
 - `do-rs2-timestamp` property that stamps all buffers with timestamps from `librealsense`, starting from 0 and monotomically increasing. If enabled, this property has higher priority than `do-custom-timestamp`. If used in combination with playing back from rosbag, make sure that property `loop-rosbag=false`. If set to false, behaviour is identical to previous versions.
 - `real-time-rosbag-playback` property that makes playback from rosbag behave as a real-time live source. If set to false, playback from rosbag is independent from real-time and allows arbitrary rate of playback, if downstream element(s) have `sync=false`. If set to true, behaviour is identical to previous versions.
 
 
-## [0.1.6] - 2019-11-13
+## [0.1.6] - 2019-Nov-13
 
 ### Added
 - Fixed issues related to playback from rosbag recording.
@@ -128,23 +134,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Also set timestamp and buffer duration on per-frame metadata buffers.
 
 
-## [0.1.5] - 2019-10-30
+## [0.1.5] - 2019-Oct-30
 ### Patched
 - Set duration on buffers to remove the `missing offset_end` warnings
 - Also set timestamp and buffer duration on per-frame metadata buffers.
 - Fix git dependencies in cargo.toml to the relevant tags
 
-## [0.1.4] - 2019-10-17
+## [0.1.4] - 2019-Oct-17
 ### Added
 - `do-custom-timestamp` property to `realsensesrc`
 ### Modified
 - The way in which timestamps are computed
 
-## [0.1.3] - 2019-09-25
+## [0.1.3] - 2019-Sep-25
 ### Added
 - Custom timestamps
 
-## [0.1.0] - 2019-09-19
+## [0.1.0] - 2019-Sep-19
 ### Added
 - `include-per-frame-metadata` property to `realsensesrc`
 - CapnProto serialized metadata
