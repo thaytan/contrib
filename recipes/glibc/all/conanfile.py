@@ -28,7 +28,6 @@ class GlibcConan(ConanFile):
             # "--enable-systemtap",
             "--disable-profile",
             "--disable-werror",
-            "--host=x86_64-pc-linux-gnu",
         ]
         vars = {
             "CFLAGS": "-O2 -U_FORTIFY_SOURCE=2 -fno-plt",
