@@ -7,7 +7,6 @@ class GlibcConan(ConanFile):
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     build_requires = (
-        "clang-bootstrap/[^10.0.0]",
         "gawk-bootstrap/[5.1.0]",
         "linux-headers/[^5.4.50]",
     )
