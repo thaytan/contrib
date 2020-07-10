@@ -23,7 +23,7 @@ class LlvmBootstrapConan(ConanFile):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
-        cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
+        # cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
         cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_ENABLE_FFI"] = True
