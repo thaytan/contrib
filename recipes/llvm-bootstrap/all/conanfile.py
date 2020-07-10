@@ -11,8 +11,9 @@ class LlvmBootstrapConan(ConanFile):
         "ninja-bootstrap/[^1.10.0]",
     )
     requires = (
-        "libunwind-bootstrap/[^1.3.1]",
+        "llvm-libunwind-bootstrap/[^10.0.0]",
         "libffi-bootstrap/[^3.3]",
+        "ncurses-bootstrap/[^6.2]",
     )
 
     def source(self):
@@ -23,10 +24,11 @@ class LlvmBootstrapConan(ConanFile):
         cmake = CMake(self, generator="Ninja")
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
-        cmake.definitions["LLVM_BUILD_STATIC"] = False
+        cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_ENABLE_FFI"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
+        cmake.definitions["LLVM_INSTALL_BINUTILS_SYMLINKS"] = True
         cmake.definitions["LLVM_DEFAULT_TARGET_TRIPLE"] = f"{arch}-linux-gnu"
         cmake.configure(source_folder=f"llvm-{self.version}.src")
         cmake.build()
