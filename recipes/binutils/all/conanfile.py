@@ -8,7 +8,7 @@ class BinutilsConan(ConanFile):
     description = "A set of programs to assemble and manipulate binary and object files"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
-    build_requires = ("bootstrap-gcc/7.4.0",)
+    build_requires = ("clang-bootstrap/[^10.0.0]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/binutils/binutils-{self.version}.tar.xz")
@@ -28,12 +28,11 @@ class BinutilsConan(ConanFile):
             "--with-pic",
             "--with-system-zlib",
         ]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make(target="configure-host")
-            autotools.make(["tooldir=" + self.package_folder])
-            autotools.make(["tooldir=" + self.package_folder], target="install-strip")
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(args=args, configure_dir=f"{self.name}-{self.version}")
+        autotools.make(target="configure-host")
+        autotools.make(["tooldir=" + self.package_folder])
+        autotools.install(["tooldir=" + self.package_folder])
 
     def package_info(self):
         self.env_info.LD = os.path.join(self.package_folder, "bin", "ld")
