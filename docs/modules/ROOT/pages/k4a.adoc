@@ -205,14 +205,14 @@ Note, that you cannot reconfigure these properties when streaming from playback.
 
 ==== Timestamping and Synchronisation
 
-All GstBuffers for *main stream* and all *auxiliary streams* are explicitly given `duration` as well as `pts` and `dts` timestamps. You can set the timestamping mode via `timestamp-mode` property, please see xref:system:ROOT:concepts:pages$e-timestamping-and-synchronisation.adoc[Timestamping and Synchronisation] for more details. 
+All GstBuffers for *main stream* and all *auxiliary streams* are explicitly given `duration` as well as `pts` and `dts` timestamps. You can set the timestamping mode via `timestamp-mode` property, please see xref:system:concepts:e-timestamping-and-synchronisation.adoc[Timestamping and Synchronisation] for more details. 
 
 Streaming from physical device sets the element always to a *live* mode. Playback from recording is by default *non-live*, however, `real-time-playback` property can be set to *true* in order to provide a pseudo-live streaming.
 
 
 ==== Camera Metadata
 
-You can enable `attach-camera-meta` to stream meta associated with K4A device such as intrinsics, extrinsics and depth scale. Please see xref:system:ROOT:concepts:pages$g-camera-meta.adoc[Camera Meta] for more details.
+You can enable `attach-camera-meta` to stream meta associated with K4A device such as intrinsics, extrinsics and depth scale. Please see xref:system:concepts:g-camera-meta.adoc[Camera Meta] for more details.
 
 
 ==== Depth Rectification
