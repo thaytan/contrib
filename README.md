@@ -24,3 +24,12 @@ Usually the Conan builde folder path looks something like this:
 `/home/$USER/.conan/data/gstreamer-frame-aligner/master/aivero/stable/build/$BUILD_FOLDER_NUMBER/target/debug/libgstframealigner.so`
 
 You can find the exact folder path from the output of the `conan create` command.
+
+## Running 
+To run this element plese use it in a gstreamer pipeline.
+
+For example:
+```bash
+gst-launch-1.0 realsensesrc serial=728312070140 timestamp-mode=clock_all enable-color=true ! framealigner calib-file=calib/rs728312070140.yaml ! rgbddemux name=depth_demux depth_demux.src_depth ! queue ! glimagesink depth_demux.src_color ! queue ! glimagesink
+```
+The only necessary parameter is the path to the YAML camera parameter file. We provide an example one taken from a D435 Realsense camera.
