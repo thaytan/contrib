@@ -327,7 +327,7 @@ impl ObjectSubclass for FrameAligner {
             state: Mutex::new(FrameAlignerState {
                 depth_factor: DEFAULT_DEPTH_FACTOR,
                 video_info: None,
-                calib_file: "calib.txt".to_string(),
+                calib_file: "calib/rs728312070140.yaml".to_string(),
                 rotation: Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                 k_color: Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                 k_depth: Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
