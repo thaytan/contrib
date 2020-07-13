@@ -20,13 +20,11 @@ capnp = "0.12"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-# tag = "1.3.0"
-branch = "fmt-camera-calib"
+tag = "1.3.0"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
-# tag = "2.2.1"
-branch = "fmt-streamresolution"
+tag = "2.2.1"
 
 [build-dependencies]
 capnpc = "0.12"
