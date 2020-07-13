@@ -42,7 +42,7 @@ lazy_static! {
 /// units this should be 2000.
 const DEFAULT_DEPTH_FACTOR: f32 = 1000.0;
 
-/// Properties for the `pcbuilder` element
+/// Properties for the `framealigner` element
 static PROPERTIES: [subclass::Property; 2] = [
     subclass::Property("depth_factor", |name| {
         glib::ParamSpec::float(
@@ -66,7 +66,7 @@ static PROPERTIES: [subclass::Property; 2] = [
     }),
 ];
 
-/// This structure holds the `pcbuilder` state
+/// This structure holds the `framealigner` state
 #[derive(Debug)]
 struct FrameAlignerState {
     /// * `depth_factor` - The depth factor to use to convert the read depth data into meters.
@@ -99,7 +99,7 @@ impl FrameAligner {
     /// Map a point in depth image to a point in color image.
     /// Code based in http://docs.ros.org/kinetic/api/librealsense2/html/align_8cpp_source.html#l00019
     /// # Arguments
-    /// * `state` - The internal state of the pcbuilder.
+    /// * `state` - The internal state of the framealigner.
     /// * `data` - Mutable reference to the in-place buffer
     /// * `width` - The width of the image.
     /// * `height` - The height of the image.
@@ -189,7 +189,7 @@ impl FrameAligner {
     /// Function that gets calibration matrices from a calib file
     /// # Arguments
     /// * `path_to_calib_file` - a path to the calib file.
-    /// * `state` - The state of the pcbuilder.
+    /// * `state` - The state of the framealigner.
     /// # Panics
     /// If the specified file did not exist, or contained invalid data.
     fn get_parameters(
@@ -253,7 +253,7 @@ impl ElementImpl for FrameAligner {
                 let mut state = self
                     .state
                     .lock()
-                    .expect("Failed to lock state in pcbuilder");
+                    .expect("Failed to lock state in framealigner");
                 // TODO: In the future extrinsics should come from the stream instead of file
                 gst_fixme!(
                     CAT,
@@ -262,7 +262,7 @@ impl ElementImpl for FrameAligner {
                 // Read parameters from file.
                 let path = &state.calib_file;
                 if let Err(e) = self.get_parameters(path.to_string(), &mut *state) {
-                    gst_error!(CAT, "Properties could not be read from file. The pcbuilder will likely produce some strange point clouds. {:?}", e);
+                    gst_error!(CAT, "Properties could not be read from file. {:?}", e);
                 }
                 gst_debug!(CAT, "State after get_parameters: {:?}", state);
             }
@@ -349,18 +349,18 @@ impl ObjectImpl for FrameAligner {
         let mut state = self
             .state
             .lock()
-            .expect("Failed to lock state in PcBuilder");
+            .expect("Failed to lock state in FrameAligner");
 
         let element = obj
             .downcast_ref::<gst_base::BaseTransform>()
-            .expect("Failed to cast pcbuilder `obj` to `gst_base::BaseTransform`.");
+            .expect("Failed to cast framealigner `obj` to `gst_base::BaseTransform`.");
 
         let property = &PROPERTIES[id];
         match *property {
             subclass::Property("depth_factor", ..) => {
                 let depth_factor = value
                     .get_some()
-                    .expect("Failed to set property `depth_factor` on pcbuilder.");
+                    .expect("Failed to set property `depth_factor` on framealigner.");
                 gst_info!(
                     CAT,
                     obj: element,
@@ -373,7 +373,7 @@ impl ObjectImpl for FrameAligner {
                 let calib_file = value
                 .get()
                 .unwrap_or_else(|err| {
-                    panic!("pcbuilder: Failed to set property `calib_file` due to incorrect type: {:?}", err)
+                    panic!("framealigner: Failed to set property `calib_file` due to incorrect type: {:?}", err)
                 })
                 .unwrap_or_else(|| "calib.txt".to_string());
                 gst_info!(
@@ -454,7 +454,7 @@ impl BaseTransformImpl for FrameAligner {
         let video_info = &self
             .state
             .lock()
-            .expect("Failed to lock state in pcbuilder")
+            .expect("Failed to lock state in framealigner")
             .video_info;
 
         // Set blocksize based on the pad direction
@@ -483,7 +483,7 @@ impl BaseTransformImpl for FrameAligner {
         let state = self
             .state
             .lock()
-            .expect("Failed to lock state in pcbuilder");
+            .expect("Failed to lock state in framealigner");
 
         {
             let video_info = &state.video_info.as_ref().unwrap().depth_video_info;
