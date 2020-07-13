@@ -65,6 +65,7 @@ pub(crate) struct Settings {
 }
 
 /// A struct containing properties of `realsensesrc` about streams
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Streams {
     pub(crate) enabled_streams: EnabledStreams,
     pub(crate) depth_resolution: StreamResolution,
@@ -74,38 +75,30 @@ pub(crate) struct Streams {
 
 impl Display for Streams {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let depth_info = &format!(
-            "{}@{}fps",
-            self.depth_resolution, self.framerate
-        );
-        let color_info = &format!(
-            "{}@{}fps",
-            self.color_resolution, self.framerate
-        );
-        let dis = "disabled";
-
+        let depth_info = &format!("{}@{}fps", self.depth_resolution, self.framerate);
+        let color_info = &format!("{}@{}fps", self.color_resolution, self.framerate);
         write!(
             f,
             "depth: {}, color: {}, infra1: {}, infra2: {}",
             if self.enabled_streams.depth {
                 depth_info
             } else {
-                dis
+                "disabled"
             },
             if self.enabled_streams.color {
                 color_info
             } else {
-                dis
+                "disabled"
             },
             if self.enabled_streams.infra1 {
                 depth_info
             } else {
-                dis
+                "disabled"
             },
             if self.enabled_streams.infra2 {
                 depth_info
             } else {
-                dis
+                "disabled"
             },
         )
     }

@@ -267,21 +267,16 @@ impl BaseSrcImpl for RealsenseSrc {
             .prepare_and_start_librealsense_pipeline(element, &config, internals)
             .map_err(|e| {
                 let err_msg = match e.0.as_str() {
-                    "No device connected" => format!(
-                        "Device with serial '{}' is not connected.",
-                        internals.settings.serial.as_ref().unwrap()
+                    "No device connected" => ConfigError::DeviceNotFound(
+                        internals.settings.serial.as_ref().unwrap().clone(),
                     ),
-                    "Couldn't resolve requests" => format!(
-                        "The selected RealSense configuration is NOT supported by your device: {}.",
-                        internals.settings.streams
-                    ),
-                    _ => format!(
-                        "Failed to prepare and start librealsense2 pipeline: {}",
-                        e.0
-                    ),
+                    "Couldn't resolve requests" => {
+                        ConfigError::InvalidRequest(internals.settings.streams.clone())
+                    }
+                    _ => ConfigError::Other(e.0),
                 };
                 gst_error!(CAT, obj: element, "{}", &err_msg);
-                gst_error_msg!(gst::ResourceError::Settings, (&err_msg))
+                gst_error_msg!(gst::ResourceError::Settings, ("{}", err_msg))
             })?;
         internals.state = State::Started { pipeline };
 

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 - Printing of CameraMeta (intrinsics, extrinsics and depth scale) to GST_INFO.
-- Printing of more detailed error messages when either serial or resolution+framerate is invalid.
+- Printing of more detailed error messages when either serial or resolution+framerate is invalid. Implemented with ConfigError enum.
 
 ## [2.1.4] - 2020-Jul-01
 ## Fixed
