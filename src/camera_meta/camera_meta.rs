@@ -49,7 +49,7 @@ impl Display for CameraMeta {
 
         write!(
             f,
-            "Intrinsics:\n{}Extrinsics:\n{}Depth scale: {}",
+            "Intrinsics:\n{}\nExtrinsics:\n{}\nDepth scale: {}",
             intrinsics, extrinsics, self.depth_scale
         )
     }
