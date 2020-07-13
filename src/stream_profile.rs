@@ -1,6 +1,8 @@
 // License: MIT. See LICENSE file in root directory.
 // Copyright(c) 2019 Aivero. All Rights Reserved.
 
+use std::fmt::{Display, Formatter};
+
 use crate::error::Error;
 use crate::extrinsics::*;
 use crate::intrinsics::*;
@@ -59,6 +61,17 @@ impl Default for StreamResolution {
             width: -1,
             height: -1,
         }
+    }
+}
+
+impl Display for StreamResolution {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}x{}px",
+            self.width,
+            self.height
+        )
     }
 }
 
