@@ -25,7 +25,8 @@ branch = "fmt-camera-calib"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
-tag = "2.2.0"
+# tag = "2.2.1"
+branch = "fmt-streamresolution"
 
 [build-dependencies]
 capnpc = "0.12"

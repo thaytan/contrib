@@ -75,12 +75,12 @@ pub(crate) struct Streams {
 impl Display for Streams {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let depth_info = &format!(
-            "{}x{}px@{}fps",
-            self.depth_resolution.height, self.depth_resolution.height, self.framerate
+            "{}@{}fps",
+            self.depth_resolution, self.framerate
         );
         let color_info = &format!(
-            "{}x{}px@{}fps",
-            self.color_resolution.height, self.color_resolution.height, self.framerate
+            "{}@{}fps",
+            self.color_resolution, self.framerate
         );
         let dis = "disabled";
 
