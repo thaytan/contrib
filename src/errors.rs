@@ -17,6 +17,8 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+use crate::settings::Streams;
+
 #[derive(Clone, Debug)]
 pub(crate) struct RealsenseError(pub(crate) String);
 
@@ -70,5 +72,38 @@ impl Display for StreamEnableError {
 impl From<gst::ErrorMessage> for RealsenseError {
     fn from(error: gst::ErrorMessage) -> RealsenseError {
         RealsenseError(format!("{}", error))
+    }
+}
+
+/// ConfigError occurs when a `librealsense2` pipeline config cannot be resolved, which is used to provide more
+/// descriptive error messages to the user.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum ConfigError {
+    /// Error that occurs when a physical RealSense device cannot be opened for streaming.
+    DeviceNotFound(String),
+    /// Error that occurs in case the combination of resolution and framerate is invalid for the connected device
+    /// with a specific firmware.
+    InvalidRequest(Streams),
+    /// Other errors that either do not need more detailed error handling, or they occur only rarely.
+    Other(String),
+}
+
+impl std::error::Error for ConfigError {}
+impl std::fmt::Display for ConfigError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            ConfigError::DeviceNotFound(serial) => {
+                format!("Device with serial '{}' is not connected", serial)
+            }
+            ConfigError::InvalidRequest(streams) => format!(
+                "The selected RealSense configuration is NOT supported by your device: {}",
+                streams
+            ),
+            ConfigError::Other(err_msg) => format!(
+                "Failed to prepare and start librealsense2 pipeline: {}",
+                err_msg
+            ),
+        };
+        write!(f, "{}", msg)
     }
 }

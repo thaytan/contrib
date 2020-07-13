@@ -258,19 +258,25 @@ impl BaseSrcImpl for RealsenseSrc {
 
         // Make sure that the set properties are viable
         let config = internals.configure().map_err(|e| {
-            gst_error_msg!(
-                gst::ResourceError::Settings,
-                ("Failed to configure librealsense2 pipeline due to: {:?}", e)
-            )
+            let err_msg = format!("Failed to configure librealsense2 pipeline due to: {:?}", e);
+            gst_error!(CAT, obj: element, "{}", &err_msg);
+            gst_error_msg!(gst::ResourceError::Settings, (&err_msg))
         })?;
 
         let pipeline = self
-            .prepare_and_start_librealsense_pipeline(&config, internals)
+            .prepare_and_start_librealsense_pipeline(element, &config, internals)
             .map_err(|e| {
-                gst_error_msg!(
-                    gst::ResourceError::Settings,
-                    ["Failed to prepare and start pipeline: {:?}", e]
-                )
+                let err_msg = match e.0.as_str() {
+                    "No device connected" => ConfigError::DeviceNotFound(
+                        internals.settings.serial.as_ref().unwrap().clone(),
+                    ),
+                    "Couldn't resolve requests" => {
+                        ConfigError::InvalidRequest(internals.settings.streams.clone())
+                    }
+                    _ => ConfigError::Other(e.0),
+                };
+                gst_error!(CAT, obj: element, "{}", &err_msg);
+                gst_error_msg!(gst::ResourceError::Settings, ("{}", err_msg))
             })?;
         internals.state = State::Started { pipeline };
 
@@ -543,6 +549,7 @@ impl RealsenseSrc {
     /// * `internals` - The internals of the realsensesrc.
     fn prepare_and_start_librealsense_pipeline(
         &self,
+        element: &gst_base::BaseSrc,
         config: &rs2::config::Config,
         internals: &mut RealsenseSrcInternals,
     ) -> Result<rs2::pipeline::Pipeline, RealsenseError> {
@@ -550,10 +557,9 @@ impl RealsenseSrc {
 
         // Get context and a list of connected devices
         let context = rs2::context::Context::new()?;
-
-        // Load JSON if `json-location` is defined
         let devices = context.query_devices()?;
 
+        // Load JSON if `json-location` is defined
         if let (Some(json_location), Some(serial)) = (&settings.json_location, &settings.serial) {
             Self::load_json(&devices, &serial, &json_location)?;
         }
@@ -573,9 +579,22 @@ impl RealsenseSrc {
             self.configure_rosbag_settings(&mut *settings, &pipeline_profile)?;
         }
 
-        // Setup camera meta, if enabled
+        // Extract and print camera meta
+        let camera_meta =
+            Self::get_camera_meta(&settings.streams.enabled_streams, &pipeline_profile)?;
+        gst_info!(
+            CAT,
+            obj: element,
+            "RealSense stream source has the following calibration:\n{}",
+            camera_meta
+        );
+
+        // Setup camera meta for transport, if enabled
         if settings.attach_camera_meta {
-            Self::setup_camera_meta(internals, &pipeline_profile)?;
+            // Serialise the CameraMeta
+            internals.camera_meta_serialised = camera_meta
+                .serialise()
+                .map_err(|err| RealsenseError(format!("Cannot serialise camera meta: {}", err)))?;
         }
 
         Ok(pipeline)
@@ -1019,12 +1038,10 @@ impl RealsenseSrc {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(RealsenseError)` on failure.
-    fn setup_camera_meta(
-        internals: &mut RealsenseSrcInternals,
+    fn get_camera_meta(
+        desired_streams: &EnabledStreams,
         pipeline_profile: &rs2::pipeline_profile::PipelineProfile,
-    ) -> Result<(), RealsenseError> {
-        let desired_streams = &internals.settings.streams.enabled_streams;
-
+    ) -> Result<CameraMeta, RealsenseError> {
         // Get the sensors and active stream profiles from the pipeline profile
         let sensors = pipeline_profile.get_device()?.query_sensors()?;
         let stream_profiles = pipeline_profile.get_streams()?;
@@ -1036,15 +1053,11 @@ impl RealsenseSrc {
         let extrinsics = Self::extract_extrinsics(desired_streams, &stream_profiles)?;
 
         // Create camera meta from the intrinsics, extrinsics and depth scale
-        let camera_meta = CameraMeta::new(intrinsics, extrinsics, Self::get_depth_scale(sensors));
-
-        // Serialise the CameraMeta.
-        internals.camera_meta_serialised = camera_meta
-            .serialise()
-            .map_err(|err| RealsenseError(format!("Cannot serialise camera meta: {}", err)))?;
-
-        // Return Ok if everything went fine
-        Ok(())
+        Ok(CameraMeta::new(
+            intrinsics,
+            extrinsics,
+            Self::get_depth_scale(sensors),
+        ))
     }
 
     /// Extract Intrinsics from the active RealSense stream profiles, while taking into account what streams are enabled.
