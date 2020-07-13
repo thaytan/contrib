@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.0] - 2020-07-02
+## [2.2.1] - 2020-Jul-13
+### Added
+- Display for `StreamResolution` in addition to Constructor and Debug introduced in '2.2.0'
+
+## [2.2.0] - 2020-Jul-02
 ### Added
 - `ProcessingBlock`
 - `log::log_to_file()`
@@ -13,18 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Applied clippy suggestions
 
-## [1.1.0] - 2020-03-03
+## [1.1.0] - 2020-Mar-03
 ### Added
 - Wrappers for `Intrinsics` and `Extrinsics`
   - Acquisition of `Intrinsics` via `StreamProfile::get_intrinsics()`
   - Acquisition of `Extrinsics` via `StreamProfile::get_extrinsics()` or `StreamProfile::get_extrinsics_to()`
 
-## [1.0.1] - 2019-12-12
+## [1.0.1] - 2019-Dec-12
 ### Added
 - Add `Pipeline::poll_for_frames()`
 - Add `Playback` and the functionality for setting rosbag playback to non real-time
 
-## [1.0.0] - 2019-11-11
+## [1.0.0] - 2019-Nov-11
 ### Added
 - Add new features
 - Add documentation, README and CHANGELOG
