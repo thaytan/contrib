@@ -28,7 +28,7 @@ lazy_static! {
         Some("Frame Aligner")
     );
 }
-/// Struct that holds a Error struct for `pcbuilder`
+/// Struct that holds a Error struct for `framealigner`
 #[derive(Debug, Clone)]
 pub struct GstFrameAlignerError(pub String, Option<gst::DebugCategory>);
 impl GstFrameAlignerError {
