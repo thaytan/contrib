@@ -1,0 +1,34 @@
+[package]
+name = "gstreamer-frame-aligner"
+version = "0.0.0-ohmyconanpleaseoverwriteme"
+authors = ["João Alves <joao.alves@aivero.com>"]
+license = "Proprietary"
+description = "GStreamer plugin to align depth frames to color frames"
+keywords = ["GStreamer", "Rust"]
+repository = "https://gitlab.com/aivero/frontend/gst-pointcloud-display"
+edition = "2018"
+readme = "README.md"
+
+[dependencies]
+glib = { version = "0.9" }
+gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", tag="1.2.0" }
+gstreamer = { version = "0.15" }
+gstreamer-base = { version = "0.15" }
+gstreamer-video = "0.15"
+lazy_static = "1.4.0"
+nalgebra = { version = "0.21", features = ["serde-serialize"] }
+serde = "1.0"
+serde_yaml = "0.8"
+dirs = "2.0"
+
+# Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
+
+[lib]
+name = "gstframealigner"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+

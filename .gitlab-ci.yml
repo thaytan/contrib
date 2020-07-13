@@ -1,0 +1,5 @@
+include:
+  - project: 'aivero/cloud/cicd'
+    file: 'conan-ci.yml'
+variables:
+  SPECIFICS: '/rust'
