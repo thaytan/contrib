@@ -36,14 +36,16 @@ impl Display for CameraMeta {
         let intrinsics: String = self
             .intrinsics
             .iter()
-            .map(|(s, i)| format!("'{}': {}\n", s, i))
-            .collect();
+            .map(|(s, i)| format!("'{}': {}", s, i))
+            .collect::<Vec<String>>()
+            .join("\n");
 
         let extrinsics: String = self
             .extrinsics
             .iter()
-            .map(|(s, e)| format!("'{}' -> '{}':\n{}\n", s.0, s.1, e))
-            .collect();
+            .map(|(s, e)| format!("'{}' -> '{}':\n{}", s.0, s.1, e))
+            .collect::<Vec<String>>()
+            .join("\n");
 
         write!(
             f,
