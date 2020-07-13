@@ -14,12 +14,10 @@ cd gst-frame-aligner
 conan create . aivero/stable
 ```
 
-And then copy the .so file from your Conan build folder to your Gstreamer environment folder, where the other gstreamer elements reside (you can check this doing
+And then copy the .so file from your Conan build folder to your Gstreamer environment folder, where the other gstreamer elements reside. You can check this by gst-inspecting a Gstreamer element, e.g.:
 ```bash
 gst-inspect-1.0 rgbdmux
 ```
-for example).
-
 Usually the Conan builde folder path looks something like this:
 `/home/$USER/.conan/data/gstreamer-frame-aligner/master/aivero/stable/build/$BUILD_FOLDER_NUMBER/target/debug/libgstframealigner.so`
 
