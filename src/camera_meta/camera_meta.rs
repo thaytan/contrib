@@ -14,6 +14,7 @@
 // Boston, MA 02110-1301, USA.
 
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 
 use crate::camera_meta_capnp::{intrinsics::*, *};
 pub use crate::intrinsics::*;
@@ -28,6 +29,30 @@ pub struct CameraMeta {
     pub extrinsics: HashMap<(String, String), Transformation>,
     /// Scaling factor of the depth map, in metres.
     pub depth_scale: f32,
+}
+
+impl Display for CameraMeta {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let intrinsics: String = self
+            .intrinsics
+            .iter()
+            .map(|(s, i)| format!("'{}': {}", s, i))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        let extrinsics: String = self
+            .extrinsics
+            .iter()
+            .map(|(s, e)| format!("'{}' -> '{}':\n{}", s.0, s.1, e))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        write!(
+            f,
+            "Intrinsics:\n{}Extrinsics:\n{}Depth scale: {}",
+            intrinsics, extrinsics, self.depth_scale
+        )
+    }
 }
 
 impl CameraMeta {

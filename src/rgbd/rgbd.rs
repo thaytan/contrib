@@ -1,7 +1,7 @@
 use crate::buffer::BufferMeta;
 use crate::tags::TagsMeta;
-use glib::value::FromValueOptional;
 use crate::RgbdError;
+use glib::value::FromValueOptional;
 
 /// Fill the `main_buffer` with `buffer` and mark it appropriately with `tag`.
 ///
@@ -257,7 +257,10 @@ pub fn get_field<'structure, T: FromValueOptional<'structure>>(
 ) -> Result<T, RgbdError> {
     let value = structure
         .get::<T>(name)
-        .map_err(|_| RgbdError::WrongCapsFormat { name: name.to_string(), type_ })?
+        .map_err(|_| RgbdError::WrongCapsFormat {
+            name: name.to_string(),
+            type_,
+        })?
         .ok_or_else(|| RgbdError::MissingCapsField(name.to_string()))?;
     Ok(value)
 }
@@ -274,7 +277,7 @@ pub fn get_field<'structure, T: FromValueOptional<'structure>>(
 /// * `Err(RgbdError::NoVideoInfo)` - If `caps` could not be converted into `VideoInfo`.
 pub fn get_video_info(
     caps: &gst::StructureRef,
-    stream_name: &str
+    stream_name: &str,
 ) -> Result<gstreamer_video::VideoInfo, RgbdError> {
     let framerate = get_field::<gst::Fraction>(caps, "framerate", "Fraction")?;
     let stream_width = get_field::<i32>(caps, &format!("{}_width", stream_name), "i32")?;
@@ -524,4 +527,3 @@ mod tests {
         assert_eq!(tag_infra, original_tag_infra);
     }
 }
-
