@@ -1,4 +1,5 @@
 import os
+import shutil
 from conans import *
 
 
@@ -10,22 +11,35 @@ class ClangBootstrapConan(ConanFile):
     build_requires = (
         "cmake-bootstrap/[^3.17.3]",
         "ninja-bootstrap/[^1.10.0]",
-        "libunwind-bootstrap/[^1.3.1]",
     )
-    requires = ("llvm-bootstrap/[^10.0.0]",)
 
     def source(self):
+        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
+        shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
+        shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
 
     def build(self):
         cmake = CMake(self, generator="Ninja")
-        cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
-        cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
-        cmake.definitions["LLVM_INSTALL_UTILS"] = True
+        cmake.definitions["LLVM_BUILD_DOCS"] = False
+        cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
+        cmake.definitions["LLVM_BUILD_RUNTIME"] = False
+        cmake.definitions["LLVM_BUILD_TESTS"] = False
+
+        cmake.definitions["LLVM_ENABLE_ASSERTIONS"] = False
+        cmake.definitions["LLVM_ENABLE_FFI"] = False
+        cmake.definitions["LLVM_ENABLE_LIBCXX"] = False
+        cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
-        cmake.configure(source_folder=f"clang-{self.version}.src")
-        cmake.build()
-        cmake.install()
+        cmake.definitions["LLVM_ENABLE_SPHINX"] = False
+        cmake.definitions["LLVM_ENABLE_TERMINFO"] = True
+        cmake.definitions["LLVM_ENABLE_ZLIB"] = True
+
+        cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
+
+        cmake.configure(source_folder=f"llvm-{self.version}")
+        cmake.build(target="clang")
+        cmake.build(target="clang-install")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
