@@ -16,11 +16,13 @@ class ClangBootstrapConan(ConanFile):
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
+        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz")
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
+        shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))
 
     def build(self):
-        cmake = CMake(self, generator="Ninja")
+        cmake = CMake(self, generator="Ninja", build_type="Release")
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
         cmake.definitions["LLVM_BUILD_RUNTIME"] = False
