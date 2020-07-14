@@ -23,6 +23,10 @@ class ClangBootstrapConan(ConanFile):
 
     def build(self):
         cmake = CMake(self, generator="Ninja", build_type="Release")
+
+        # Reduce memory footprint of linking with gold linker
+        cmake.definitions["LLVM_USE_LINKER"] = "gold"
+
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
         cmake.definitions["LLVM_BUILD_RUNTIME"] = False
