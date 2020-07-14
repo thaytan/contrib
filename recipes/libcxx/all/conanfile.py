@@ -11,6 +11,7 @@ class LibcxxConan(ConanFile):
     build_requires = (
         "clang-bootstrap/[^10.0.0]",
         "cmake-bootstrap/[^3.17.3]",
+        "ninja-bootstrap/[^1.10.0]",
     )
 
     def source(self):
