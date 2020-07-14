@@ -6,7 +6,11 @@ class LibffiConan(ConanFile):
     description = "A portable, high level programming interface to various calling conventions"
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
-    build_requires = ("autotools/[^1.0.0]",)
+    build_requires = (
+        "clang-bootstrap/[^10.0.0]",
+        "cmake-bootstrap/[^3.17.3]",
+        "ninja-bootstrap/[^1.10.0]",
+    )
 
     def source(self):
         tools.get(f"https://github.com/libffi/libffi/archive/v{self.version}.tar.gz")
@@ -26,10 +30,3 @@ class LibffiConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-
-    def package(self):
-        # TODO: remove once the libs get installed into /lib instead of /lib64 by itself.
-        print(self.package_folder)
-        tools.mkdir(f"{self.package_folder}/lib")
-        self.run(f"mv {self.package_folder}/lib64/* {self.package_folder}/lib/")
-        tools.rmdir(f"{self.package_folder}/lib64")
