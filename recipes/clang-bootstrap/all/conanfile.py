@@ -32,7 +32,7 @@ class ClangBootstrapConan(ConanFile):
         cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
         cmake.definitions["LLVM_ENABLE_SPHINX"] = False
-        cmake.definitions["LLVM_ENABLE_TERMINFO"] = True
+        cmake.definitions["LLVM_ENABLE_TERMINFO"] = False
         cmake.definitions["LLVM_ENABLE_ZLIB"] = True
 
         cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
