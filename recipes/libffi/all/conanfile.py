@@ -5,7 +5,7 @@ class LibffiConan(ConanFile):
     name = "libffi"
     description = "A portable, high level programming interface to various calling conventions"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = (
         "clang-bootstrap/[^10.0.0]",
         "cmake-bootstrap/[^3.17.3]",
