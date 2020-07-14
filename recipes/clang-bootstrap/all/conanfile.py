@@ -41,7 +41,6 @@ class ClangBootstrapConan(ConanFile):
 
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build(target="lld")
-        cmake.build(target="lld-install")
         cmake.build(target="clang")
         cmake.build(target="clang-install")
 
