@@ -48,6 +48,7 @@ class ClangBootstrapConan(ConanFile):
         cmake.build(target="install-lld")
         cmake.build(target="clang")
         cmake.build(target="install-clang")
+        cmake.build(target="install-clang-resource-headers")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
