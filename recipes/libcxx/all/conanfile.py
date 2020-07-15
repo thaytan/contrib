@@ -9,7 +9,7 @@ class LibcxxConan(ConanFile):
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = (
-        "clang-bootstrap/[^10.0.0]",
+        "llvm-bootstrap/[^10.0.0]",
         "cmake-bootstrap/[^3.17.3]",
         "ninja-bootstrap/[^1.10.0]",
     )
@@ -43,6 +43,7 @@ class LibcxxConan(ConanFile):
         cmake.definitions["LLVM_ENABLE_TERMINFO"] = True
         cmake.definitions["LLVM_ENABLE_ZLIB"] = True
         cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
+        cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
@@ -58,3 +59,6 @@ class LibcxxConan(ConanFile):
         cmake.build(target="install-libcxx")
         cmake.build(target="install-libcxxabi")
         cmake.build(target="install-unwind")
+
+    def package_info(self):
+        self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
