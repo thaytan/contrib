@@ -57,6 +57,7 @@ class LlvmBootstrapConan(ConanFile):
         # clang options
         cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
+        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
@@ -70,3 +71,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build()
         cmake.install()
+
+    def package_info(self):
+        self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
+        self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
