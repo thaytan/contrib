@@ -17,12 +17,14 @@ class LlvmBootstrapConan(ConanFile):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz")
+        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libunwind-{self.version}.src.tar.xz")
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
         shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))
+        shutil.move(f"compiler-rt-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
         shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
         shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
@@ -58,6 +60,12 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
+        cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
+
+        # compiler-rt options
+        cmake.definitions["COMPILER_RT_BUILD_SANITIZERS"] = False
+        cmake.definitions["COMPILER_RT_BUILD_XRAY"] = False
+        cmake.definitions["COMPILER_RT_BUILD_LIBFUZZER"] = False
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
