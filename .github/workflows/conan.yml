@@ -4,7 +4,7 @@ on:
     types: [conan]
 jobs:
   build:
-    name: ${{ github.event.client_payload.package }} - ${{ github.event.client_payload.profile }}
+    name: ${{ github.event.client_payload.profile }}>${{ github.event.client_payload.package }}
     runs-on: ${{ github.event.client_payload.tags }}
     steps:
     - uses: actions/checkout@v2
