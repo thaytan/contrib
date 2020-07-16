@@ -27,31 +27,36 @@ class LlvmBootstrapConan(ConanFile):
         shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
-        cmake = CMake(self, generator="Ninja", build_type="Release")
+        cmake = CMake(self, build_type="Release")
 
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
         # LLVM build options
+        if self.settings.arch_build == "x86_64":
+            cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "X86"
+        elif self.settings.arch_build == "armv8":
+            cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
+        cmake.definitions["LLVM_BUILD_RUNTIME"] = True
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
-        cmake.definitions["LLVM_BUILD_RUNTIME"] = True
         cmake.definitions["LLVM_BUILD_TESTS"] = False
 
         # LLVM enable options
-        cmake.definitions["LLVM_ENABLE_ASSERTIONS"] = False
-        cmake.definitions["LLVM_ENABLE_FFI"] = False
-        cmake.definitions["LLVM_ENABLE_LIBXML2"] = False
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
         cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
-        cmake.definitions["LLVM_ENABLE_SPHINX"] = False
-        cmake.definitions["LLVM_ENABLE_TERMINFO"] = True
         cmake.definitions["LLVM_ENABLE_ZLIB"] = True
+        cmake.definitions["LLVM_ENABLE_Z3_SOLVER"] = False
+        cmake.definitions["LLVM_ENABLE_TERMINFO"] = False
+        cmake.definitions["LLVM_ENABLE_FFI"] = False
+        cmake.definitions["LLVM_ENABLE_LIBXML2"] = False
+        cmake.definitions["LLVM_ENABLE_SPHINX"] = False
 
         # LLVM other options
         cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
         cmake.definitions["LLVM_INSTALL_BINUTILS_SYMLINKS"] = True
+        cmake.definitions["LLVM_INSTALL_UTILS"] = True
 
         # clang options
         cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
@@ -64,14 +69,14 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["COMPILER_RT_BUILD_XRAY"] = False
         cmake.definitions["COMPILER_RT_BUILD_LIBFUZZER"] = False
 
+        # libcxx options
+        cmake.definitions["LIBCXX_ENABLE_STATIC"] = False
+        cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
+
         # libcxxabi options
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
-
-        # No static libs
-        cmake.definitions["LIBCXX_ENABLE_STATIC"] = False
-        cmake.definitions["LIBCXXABI_ENABLE_STATIC"] = False
+        cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_LINK_TESTS_WITH_SHARED_LIBCXX"] = True
-        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build()
