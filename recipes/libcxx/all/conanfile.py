@@ -11,8 +11,8 @@ class LibcxxConan(ConanFile):
     build_requires = (
         "llvm-bootstrap/[^10.0.0]",
         "cmake-bootstrap/[^3.17.3]",
-        "ninja-bootstrap/[^1.10.0]",
     )
+    requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
@@ -25,7 +25,7 @@ class LibcxxConan(ConanFile):
         shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
-        cmake = CMake(self, generator="Ninja")
+        cmake = CMake(self)
 
         # LLVM build options
         cmake.definitions["LLVM_BUILD_DOCS"] = False
@@ -47,18 +47,19 @@ class LibcxxConan(ConanFile):
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
+        cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
+        cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
+        cmake.definitions["LIBCXX_HAS_GCC_S_LIB"] = False
+        cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
+        cmake.definitions["LIBCXX_USE_COMPILER_RT"] = True
 
         # No static libs
         cmake.definitions["LIBCXX_ENABLE_STATIC"] = False
-        cmake.definitions["LIBCXXABI_ENABLE_STATIC"] = False
         cmake.definitions["LIBCXXABI_LINK_TESTS_WITH_SHARED_LIBCXX"] = True
-        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build(target="cxx")
         cmake.build(target="install-libcxx")
-        cmake.build(target="install-libcxxabi")
-        cmake.build(target="install-unwind")
 
     def package_info(self):
         self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
