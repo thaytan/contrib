@@ -7,7 +7,7 @@ class LibffiConan(ConanFile):
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = ("llvm-bootstrap/[^10.0.0]",)
-    requires = ("generators/[^1.0.0]",)
+    requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
         tools.get(f"https://github.com/libffi/libffi/archive/v{self.version}.tar.gz")
