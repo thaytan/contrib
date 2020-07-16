@@ -14,11 +14,9 @@ class LldConan(ConanFile):
     requires = (
         "generators/[^1.0.0]",
         "llvm/[^10.0.0]",
+        # Prioritize llvm > llvm-bootstrap (build_requires are added firsts)
+        ("llvm-bootstrap/[^10.0.0]", "private"),
     )
-
-    # Prioritize llvm > llvm-bootstrap (build_requires are added first)
-    def requirements(self):
-        self.requires("llvm-bootstrap/[^10.0.0]", private=True)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz")
