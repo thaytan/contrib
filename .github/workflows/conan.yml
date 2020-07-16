@@ -20,7 +20,6 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
     - name: Install pip dependencies
       run: python3 -m pip install --upgrade pip conan
-      if: ${{ runner.os == 'Linux' }}
     - name: Conan Create
       uses: aivero/conan-action@test
       with:
