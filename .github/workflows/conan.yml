@@ -13,8 +13,14 @@ jobs:
     - name: Install apt dependencies
       run: sudo apt install python3-setuptools
       if: ${{ runner.os == 'Linux' }}
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+      if: ${{ runner.os == 'Windows' }}
     - name: Install pip dependencies
       run: python3 -m pip install --upgrade pip conan
+      if: ${{ runner.os == 'Linux' }}
     - name: Conan Create
       uses: aivero/conan-action@test
       with:
