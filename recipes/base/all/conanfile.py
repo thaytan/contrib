@@ -6,6 +6,6 @@ class BaseConan(ConanFile):
     description = "Virtual base package"
     license = "MIT"
     requires = (
-        "generators/[^1.0.0]",
+        ("generators/[^1.0.0]", "private"),
         "libc/[^1.0.0]",
     )
