@@ -9,10 +9,7 @@ class NcursesConan(ConanFile):
     license = "MIT"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = ("llvm-bootstrap/[^10.0.0]",)
-    requires = (
-        "generators/[^1.0.0]",
-        "libcxx/[^10.0.0]",
-    )
+    requires = ("generators/[^1.0.0]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/pub/gnu/ncurses/ncurses-{self.version}.tar.gz")
@@ -23,8 +20,7 @@ class NcursesConan(ConanFile):
             "--with-shared",
             "--without-normal",
             "--without-debug",
-            "--with-cxx-shared",
-            "--with-cxx-binding",
+            "--without-cxx-binding",
             "--enable-pc-files",
             "--with-pkg-config-libdir=" + os.path.join(self.package_folder, "lib", "pkgconfig"),
         ]
