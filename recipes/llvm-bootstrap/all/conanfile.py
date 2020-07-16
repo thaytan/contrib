@@ -8,10 +8,7 @@ class LlvmBootstrapConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
-    build_requires = (
-        "cmake-bootstrap/[^3.17.3]",
-        "ninja-bootstrap/[^1.10.0]",
-    )
+    build_requires = ("cmake-bootstrap/[^3.17.3]",)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
