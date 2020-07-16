@@ -12,7 +12,7 @@ jobs:
         ref: ${{ github.event.client_payload.ref }}
     - name: Install apt dependencies
       run: sudo apt install python3-setuptools
-      if: ${{ runner.os == "Linux" }}
+      if: ${{ runner.os == 'Linux' }}
     - name: Install pip dependencies
       run: python3 -m pip install --upgrade pip conan
     - name: Conan Create
