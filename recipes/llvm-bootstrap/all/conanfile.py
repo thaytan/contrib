@@ -59,6 +59,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
 
         # clang options
+        cmake.definitions["CLANG_VENDOR"] = "Aivero"
         cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
