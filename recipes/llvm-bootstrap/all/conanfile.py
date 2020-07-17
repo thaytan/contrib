@@ -10,6 +10,8 @@ class LlvmBootstrapConan(ConanFile):
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = ("cmake-bootstrap/[^3.17.3]",)
 
+    requires = (("generators/[^1.0.0]", "private"),)
+
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
@@ -31,6 +33,9 @@ class LlvmBootstrapConan(ConanFile):
 
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
+
+        # Fix static build of libunwind
+        cmake.definitions["CMAKE_CXX_FLAGS"] = "-ldl"
 
         # LLVM build options
         if self.settings.arch_build == "x86_64":
