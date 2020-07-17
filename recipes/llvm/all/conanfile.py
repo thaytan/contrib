@@ -25,24 +25,31 @@ class LlvmConan(ConanFile):
         cmake = CMake(self)
 
         # LLVM build options
+        if self.settings.arch_build == "x86_64":
+            cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly"
+        elif self.settings.arch_build == "armv8":
+            cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
         cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["LLVM_BUILD_RUNTIME"] = True
-        cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
         cmake.definitions["LLVM_BUILD_TESTS"] = False
 
         # LLVM enable options
-        cmake.definitions["LLVM_ENABLE_ASSERTIONS"] = False
+        cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
+        cmake.definitions["LLVM_ENABLE_RTTI"] = True
+        cmake.definitions["LLVM_ENABLE_PIC"] = True
+        cmake.definitions["LLVM_ENABLE_ZLIB"] = True
+        cmake.definitions["LLVM_ENABLE_FFI"] = True
+        cmake.definitions["LLVM_ENABLE_TERMINFO"] = True
         cmake.definitions["LLVM_ENABLE_Z3_SOLVER"] = False
         cmake.definitions["LLVM_ENABLE_SPHINX"] = False
         cmake.definitions["LLVM_ENABLE_LIBXML2"] = False
-        cmake.definitions["LLVM_ENABLE_FFI"] = True
-        cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
-        cmake.definitions["LLVM_ENABLE_PIC"] = True
-        cmake.definitions["LLVM_ENABLE_RTTI"] = True
-        cmake.definitions["LLVM_ENABLE_TERMINFO"] = True
-        cmake.definitions["LLVM_ENABLE_ZLIB"] = True
+
+        # LLVM other options
+        cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
+        cmake.definitions["LLVM_INSTALL_BINUTILS_SYMLINKS"] = True
+        cmake.definitions["LLVM_INSTALL_UTILS"] = True
 
         env = {
             "CPLUS_INCLUDE_PATH": "",  # Use only llvm-bootstrap header files to avoid header conflicts with libcxx
