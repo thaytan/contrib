@@ -84,6 +84,9 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_LINK_TESTS_WITH_SHARED_LIBCXX"] = True
 
+        # libunwind options
+        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
+
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build()
         cmake.install()
