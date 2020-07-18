@@ -35,6 +35,10 @@ class ClangConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
         cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
 
-        cmake.configure(source_folder=f"{self.name}-{self.version}.src")
-        cmake.build()
-        cmake.install()
+        env = {
+            "CPLUS_INCLUDE_PATH": "",  # Use only llvm-bootstrap header files to avoid header conflicts with libcxx
+        }
+            with tools.environment_append(env):
+            cmake.configure(source_folder=f"{self.name}-{self.version}.src")
+            cmake.build()
+            cmake.install()
