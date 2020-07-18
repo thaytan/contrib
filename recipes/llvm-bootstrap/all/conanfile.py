@@ -34,9 +34,6 @@ class LlvmBootstrapConan(ConanFile):
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
-        # Fix static build of libunwind
-        cmake.definitions["CMAKE_CXX_FLAGS"] = "-ldl"
-
         # LLVM build options
         if self.settings.arch_build == "x86_64":
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "X86"
