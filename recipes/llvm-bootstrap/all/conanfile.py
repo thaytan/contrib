@@ -67,6 +67,8 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
         cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
+        cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
+        cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
 
         # compiler-rt options
