@@ -6,13 +6,11 @@ class LlvmConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "Apache"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
-    build_requires = (
-        "llvm-bootstrap/[^10.0.0]",
-        "cmake-bootstrap/[^3.17.3]",
-    )
+    build_requires = ("cmake-bootstrap/[^3.17.3]",)
     requires = (
         ("generators/[^1.0.0]", "private"),
         "libcxx/[^10.0.0]",
+        ("llvm-bootstrap/[^10.0.0]", "private"),
         "zlib/[^1.2.11]",
         "ncurses/[^6.2]",
         "libffi/[^3.3]",
