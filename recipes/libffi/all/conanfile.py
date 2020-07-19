@@ -18,8 +18,7 @@ class LibffiConan(ConanFile):
             "--disable-debug",
             "--disable-dependency-tracking",
             "--disable-docs",
-            "--disable-static",
-            "--enable-shared",
+            "--disable-shared",
         ]
         with tools.chdir(f"{self.name}-{self.version}"):
             self.run("sh autogen.sh")
