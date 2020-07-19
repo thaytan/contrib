@@ -29,13 +29,13 @@ class LlvmConan(ConanFile):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly"
         elif self.settings.arch_build == "armv8":
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
-        cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["LLVM_BUILD_RUNTIME"] = True
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
         cmake.definitions["LLVM_BUILD_TESTS"] = False
 
         # LLVM enable options
+        cmake.definitions["LLVM_ENABLE_LTO"] = True
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
         cmake.definitions["LLVM_ENABLE_PIC"] = True
