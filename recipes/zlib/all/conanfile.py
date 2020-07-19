@@ -13,9 +13,10 @@ class ZlibConan(ConanFile):
         tools.get(f"https://github.com/madler/zlib/archive/v{self.version}.tar.gz")
 
     def build(self):
-        args = ["--enable-shared"]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        args = [
+            "--static",
+        ]
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(args=args, configure_dir=f"{self.name}-{self.version}")
+        autotools.make()
+        autotools.install()
