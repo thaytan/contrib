@@ -20,7 +20,7 @@ class LlvmConan(ConanFile):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
 
     def build(self):
-        cmake = CMake(self)
+        cmake = CMake(self, parallel=False)
 
         # LLVM build options
         if self.settings.arch_build == "x86_64":
@@ -48,6 +48,10 @@ class LlvmConan(ConanFile):
         cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
         cmake.definitions["LLVM_INSTALL_BINUTILS_SYMLINKS"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
+
+        # Reduce memory usage
+        cmake.definitions["CMAKE_JOB_POOL_LINK"] = "link"
+        cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         env = {
             "CPLUS_INCLUDE_PATH": "",  # Use only llvm-bootstrap header files to avoid header conflicts with libcxx
