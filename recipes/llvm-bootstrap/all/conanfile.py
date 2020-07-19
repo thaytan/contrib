@@ -46,7 +46,7 @@ class LlvmBootstrapConan(ConanFile):
 
         # LLVM enable options
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
-        cmake.definitions["LLVM_ENABLE_PIC"] = True
+        # cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
         cmake.definitions["LLVM_ENABLE_ZLIB"] = True
         cmake.definitions["LLVM_ENABLE_Z3_SOLVER"] = False
@@ -66,22 +66,16 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
         cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
+        cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
 
         # compiler-rt options
         cmake.definitions["COMPILER_RT_BUILD_SANITIZERS"] = False
         cmake.definitions["COMPILER_RT_BUILD_XRAY"] = False
         cmake.definitions["COMPILER_RT_BUILD_LIBFUZZER"] = False
 
-        # libcxx options
-        cmake.definitions["LIBCXX_ENABLE_STATIC"] = False
-        cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
-
         # libcxxabi options
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_LINK_TESTS_WITH_SHARED_LIBCXX"] = True
-
-        # libunwind options
-        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build()
