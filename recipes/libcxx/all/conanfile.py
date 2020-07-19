@@ -34,6 +34,7 @@ class LibcxxConan(ConanFile):
         cmake.definitions["LLVM_BUILD_TESTS"] = False
 
         # LLVM enable options
+        cmake.definitions["LLVM_ENABLE_LTO"] = True
         cmake.definitions["LLVM_ENABLE_ASSERTIONS"] = False
         cmake.definitions["LLVM_ENABLE_FFI"] = False
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
@@ -53,12 +54,11 @@ class LibcxxConan(ConanFile):
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
-        cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
         cmake.definitions["LIBCXXABI_LINK_TESTS_WITH_SHARED_LIBCXX"] = True
 
         # libunwind options
-        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
+        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build(target="cxx")
