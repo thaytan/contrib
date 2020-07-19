@@ -17,8 +17,6 @@ class NcursesConan(ConanFile):
     def build(self):
         args = [
             "--enable-overwrite",
-            "--with-shared",
-            "--without-normal",
             "--without-debug",
             "--without-cxx-binding",
             "--enable-pc-files",
