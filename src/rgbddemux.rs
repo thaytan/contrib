@@ -154,7 +154,10 @@ impl RgbdDemux {
     /// * `pad_handle` - The pad we want to push the "stream-start" event on.
     /// * `stream_id` - The stream identifier, that uniquely identifies the current stream.
     /// * `name` - The name of the stream we want to push a "stream-start" for.
-    fn try_push_stream_start_on_pad(pad_handle: &mut PadHandle, stream_id: Option<&StreamIdentifier>) {
+    fn try_push_stream_start_on_pad(
+        pad_handle: &mut PadHandle,
+        stream_id: Option<&StreamIdentifier>,
+    ) {
         if !pad_handle.has_pushed_stream_start {
             if let Some(sid) = stream_id {
                 Self::push_stream_start(&pad_handle.pad, sid, &pad_handle.stream_name);
@@ -173,9 +176,39 @@ impl RgbdDemux {
     fn push_stream_start_on_all_pads(&self, stream_identifier: &StreamIdentifier) {
         for (_, pad_handle) in self.src_pads.write().unwrap().iter_mut() {
             if !pad_handle.has_pushed_stream_start {
-                Self::push_stream_start(&pad_handle.pad, &stream_identifier, &pad_handle.stream_name);
+                Self::push_stream_start(
+                    &pad_handle.pad,
+                    &stream_identifier,
+                    &pad_handle.stream_name,
+                );
                 pad_handle.has_pushed_stream_start = true;
             }
+        }
+    }
+
+    /// Timestamps all auxiliary buffers with the timestamps found in the given `main_buffer`.
+    /// # Arguments
+    /// * `main_buffer` - A reference to the main `video/rgbd` buffer.
+    fn timestamp_aux_buffers_from_main(main_buffer: &gst::Buffer) {
+        // Get timestamp of the main buffer
+        let common_pts = main_buffer.get_pts();
+        let common_dts = main_buffer.get_dts();
+        let common_duration = main_buffer.get_duration();
+
+        // Get a mutable reference to the main buffer
+        // Note: I could not figure out a better/easier way of doing that. Please let me know if you find some.
+        let main_buffer_mut_ref = unsafe { gst::BufferRef::from_mut_ptr(main_buffer.as_mut_ptr()) };
+
+        // Go through all auxiliary buffers
+        for additional_buffer in &mut rgbd::get_aux_buffers_mut(main_buffer_mut_ref) {
+            // Make the buffer mutable so that we can edit its timestamps
+            let additional_buffer = additional_buffer.get_mut()
+            .expect("rgbddemux: Cannot get mutable reference to an auxiliary buffer when distributing timestamps.");
+
+            // Distribute the timestamp of the main buffer to the auxiliary buffers
+            additional_buffer.set_pts(common_pts);
+            additional_buffer.set_dts(common_dts);
+            additional_buffer.set_duration(common_duration);
         }
     }
 
@@ -224,7 +257,7 @@ impl RgbdDemux {
                     Ok(_) => {
                         gst_debug!(CAT, "Caps successfully renegotiated");
                         true
-                    },
+                    }
                     Err(e) => {
                         gst_error!(CAT, obj: element, "{}", e);
                         false
@@ -247,10 +280,7 @@ impl RgbdDemux {
             }
             _ => {
                 // By default, pass any other event to all src pads
-                let src_pads = &self
-                    .src_pads
-                    .read()
-                    .unwrap();
+                let src_pads = &self.src_pads.read().unwrap();
                 if src_pads.is_empty() {
                     // Return false if there is no src pad yet since this element does not handle it
                     return false;
@@ -272,10 +302,11 @@ impl RgbdDemux {
     ) -> Result<(), RgbdDemuxingError> {
         gst_debug!(CAT, "renegotiate_downstream_caps");
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = rgbd_caps.iter().next().ok_or_else(||
+        let rgbd_caps = rgbd_caps.iter().next().ok_or_else(|| {
             RgbdDemuxingError(
-                "Invalid `video/rgbd` caps for creation of additional src pads".to_string())
-        )?;
+                "Invalid `video/rgbd` caps for creation of additional src pads".to_string(),
+            )
+        })?;
 
         // Determine what streams are contained within the caps            )
         let streams = rgbd_caps
@@ -322,7 +353,13 @@ impl RgbdDemux {
             let pad_handle = match src_pads.get_mut(&pad_name) {
                 Some(p) => p,
                 None => {
-                    Self::create_new_src_pad(element, &mut *src_pads, &mut *flow_combiner, stream_name, None);
+                    Self::create_new_src_pad(
+                        element,
+                        &mut *src_pads,
+                        &mut *flow_combiner,
+                        stream_name,
+                        None,
+                    );
                     src_pads.get_mut(&pad_name).unwrap()
                 }
             };
@@ -331,7 +368,9 @@ impl RgbdDemux {
 
             // And a CAPS, so they know what they're dealing with
             gst_debug!(CAT, "Pushing new caps event");
-            pad_handle.pad.push_event(gst::event::Event::new_caps(&new_pad_caps).build());
+            pad_handle
+                .pad
+                .push_event(gst::event::Event::new_caps(&new_pad_caps).build());
             gst_debug!(CAT, "All done from here");
         }
         Ok(())
@@ -453,8 +492,7 @@ impl RgbdDemux {
 
         // Add the new pad to the internals
         flow_combiner.add_pad(&new_src_pad);
-        src_pads
-            .insert(new_src_pad_name.to_string(), PadHandle::new(new_src_pad));
+        src_pads.insert(new_src_pad_name.to_string(), PadHandle::new(new_src_pad));
         gst_debug!(CAT, "Pad created");
     }
 
@@ -476,27 +514,7 @@ impl RgbdDemux {
 
         // Distribute the timestamp of the main buffer to the auxiliary buffers, if enabled
         if settings.distribute_timestamps {
-            // Get timestamp of the main buffer
-            let common_pts = main_buffer.get_pts();
-            let common_dts = main_buffer.get_dts();
-            let common_duration = main_buffer.get_duration();
-
-            // Get a mutable reference to the main buffer
-            // Note: I could not figure out a better/easier way of doing that. Please let me know if you find some.
-            let main_buffer_mut_ref =
-                unsafe { gst::BufferRef::from_mut_ptr(main_buffer.as_mut_ptr()) };
-
-            // Go through all auxiliary buffers
-            for additional_buffer in &mut rgbd::get_aux_buffers_mut(main_buffer_mut_ref) {
-                // Make the buffer mutable so that we can edit its timestamps
-                let additional_buffer = additional_buffer.get_mut()
-                .expect("rgbddemux: Cannot get mutable reference to an auxiliary buffer when distributing timestamps.");
-
-                // Distribute the timestamp of the main buffer to the auxiliary buffers
-                additional_buffer.set_pts(common_pts);
-                additional_buffer.set_dts(common_dts);
-                additional_buffer.set_duration(common_duration);
-            }
+            Self::timestamp_aux_buffers_from_main(&main_buffer);
         }
 
         // Go through all auxiliary buffers attached to the main buffer in order to extract them and
