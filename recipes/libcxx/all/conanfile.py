@@ -58,12 +58,11 @@ class LibcxxConan(ConanFile):
         cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
 
         # libunwind options
-        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
-        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
+        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = True
 
         cmake.configure(source_folder=f"llvm-{self.version}")
-        cmake.build(target="cxx")
         cmake.build(target="install-libcxx")
+        cmake.build(target="install-unwind")
 
     def package_info(self):
         self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
