@@ -22,7 +22,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::sync::Mutex;
+use std::sync::{Mutex, RwLock};
 
 lazy_static! {
     static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
@@ -69,20 +69,39 @@ impl From<gst::ErrorMessage> for RgbdDemuxingError {
     }
 }
 
-/// A struct representation of the `rgbddemux` element
-struct RgbdDemux {
-    /// Mutex protecting the internal state of the element
-    internals: Mutex<RgbdDemuxInternals>,
+/// A struct that identifies a stream.
+struct StreamIdentifier {
+    /// The id of the stream.
+    stream_id: String,
+    /// The group id of the stream.
+    _group_id: gst::GroupId,
 }
 
-/// Internals of the element that are under Mutex, i.e. all the fields which may change over time.
-struct RgbdDemuxInternals {
+struct PadHandle {
+    pad: gst::Pad,
+    has_pushed_stream_start: bool,
+}
+impl PadHandle {
+    fn new(pad: gst::Pad) -> Self {
+        Self {
+            pad,
+            has_pushed_stream_start: false,
+        }
+    }
+}
+
+type SrcPads = HashMap<String, PadHandle>;
+
+/// A struct representation of the `rgbddemux` element
+struct RgbdDemux {
+    /// A mutex protecting an optional stream_id, which is set when the `rgbddemux` receives a
+    /// stream-start.
+    stream_id: Mutex<Option<StreamIdentifier>>,
     /// A hash map that associates stream tags (e.g. depth, infra1 etc.) with their associated pad.
-    src_pads: HashMap<String, gst::Pad>,
-    /// A flow combiner
-    flow_combiner: gst_base::UniqueFlowCombiner,
+    src_pads: RwLock<SrcPads>,
     /// Settings based on properties of the element
-    settings: Settings,
+    settings: RwLock<Settings>,
+    flow_combiner: Mutex<gst_base::UniqueFlowCombiner>,
 }
 
 /// A struct containing properties of `rgbddemux` element
@@ -100,6 +119,19 @@ impl Default for Settings {
 }
 
 impl RgbdDemux {
+    fn push_stream_start(pad: &gst::Pad, stream_identifier: &StreamIdentifier, pad_name: &str) {
+        let stream_name = pad_name.replace("src_", "");
+        let stream_id = format!("{}/{}", stream_identifier.stream_id, stream_name);
+        gst_debug!(CAT, "Pushing stream start event for stream {}", stream_id);
+
+        // push a StreamStart event to tell downstream to expect output soon
+        pad.push_event(
+            gst::event::Event::new_stream_start(stream_id.as_str())
+                .group_id(gst::util_group_id_next())
+                .build(),
+        );
+    }
+
     /// Set the sink pad event and chain functions. This causes it to listen to GStreamer signals
     /// and take action correspondingly.
     /// Each function is wrapped in catch_panic_pad_function(), which will
@@ -142,30 +174,47 @@ impl RgbdDemux {
                 gst_debug!(CAT, obj: element, "Got a new caps event: {:?}", caps);
                 // Call function that creates src pads according to the received Caps event
                 match self.renegotiate_downstream_caps(element, caps.get_caps()) {
-                    Ok(_) => true,
+                    Ok(_) => {
+                        gst_debug!(CAT, "Caps successfully renegotiated");
+                        true
+                    },
                     Err(e) => {
                         gst_error!(CAT, obj: element, "{}", e);
                         false
                     }
                 }
             }
-            EventView::StreamStart(_id) => {
+            EventView::StreamStart(stream_start) => {
+                gst_debug!(CAT, "Got a stream start event {:?}", stream_start);
+                let stream_identifier = StreamIdentifier {
+                    stream_id: stream_start.get_stream_id().to_string(),
+                    _group_id: stream_start.get_group_id(),
+                };
+
+                for (id, pad_handle) in self.src_pads.write().unwrap().iter_mut() {
+                    if !pad_handle.has_pushed_stream_start {
+                        Self::push_stream_start(&pad_handle.pad, &stream_identifier, id);
+                        pad_handle.has_pushed_stream_start = true;
+                    }
+                }
+
+                *self.stream_id.lock().unwrap() = Some(stream_identifier);
+
                 // Accept any StreamStart event
                 true
             }
             _ => {
                 // By default, pass any other event to all src pads
                 let src_pads = &self
-                    .internals
-                    .lock()
-                    .expect("Could not lock internals")
-                    .src_pads;
+                    .src_pads
+                    .read()
+                    .unwrap();
                 if src_pads.is_empty() {
                     // Return false if there is no src pad yet since this element does not handle it
                     return false;
                 }
 
-                src_pads.values().all(|p| p.push_event(event.clone()))
+                src_pads.values().all(|p| p.pad.push_event(event.clone()))
             }
         }
     }
@@ -179,14 +228,14 @@ impl RgbdDemux {
         element: &gst::Element,
         rgbd_caps: &gst::CapsRef,
     ) -> Result<(), RgbdDemuxingError> {
+        gst_debug!(CAT, "renegotiate_downstream_caps");
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = rgbd_caps.iter().next().ok_or_else(|| {
+        let rgbd_caps = rgbd_caps.iter().next().ok_or_else(||
             RgbdDemuxingError(
-                "Invalid `video/rgbd` caps for creation of additional src pads".to_string(),
-            )
-        })?;
+                "Invalid `video/rgbd` caps for creation of additional src pads".to_string())
+        )?;
 
-        // Determine what streams are contained within the caps
+        // Determine what streams are contained within the caps            )
         let streams = rgbd_caps
             .get::<String>("streams")
             .or_else(|err| {
@@ -215,8 +264,9 @@ impl RgbdDemux {
             })?;
 
         // Iterate over all streams, find their caps and push a CAPS negotiation event
+        let mut src_pads = self.src_pads.write().unwrap();
+        let mut flow_combiner = self.flow_combiner.lock().unwrap();
         for stream_name in streams.iter() {
-            let src_pads = { self.internals.lock().unwrap().src_pads.clone() };
             // Determine the appropriate caps for the stream
             let new_pad_caps = if stream_name.contains("meta") {
                 gst_info!(CAT, obj: element, "Got meta of name: {}", stream_name);
@@ -226,23 +276,26 @@ impl RgbdDemux {
                 self.extract_stream_caps(stream_name, &rgbd_caps, common_framerate)?
             };
 
-            let pad = match src_pads.get(&format!("src_{}", stream_name)) {
-                Some(p) => p.clone(),
-                None => self
-                    .create_new_src_pad(element, stream_name, None)
-                    .unwrap_or_else(|| {
-                        panic!("Could not create src pad for stream `{}`", stream_name)
-                    }),
+            let pad_name = format!("src_{}", stream_name);
+            let pad_handle = match src_pads.get_mut(&pad_name) {
+                Some(p) => p,
+                None => {
+                    Self::create_new_src_pad(element, &mut *src_pads, &mut *flow_combiner, stream_name, None);
+                    src_pads.get_mut(&pad_name).unwrap()
+                }
             };
 
-            // push a StreamStart event to tell downstream to expect output soon
-            pad.push_event(
-                gst::event::Event::new_stream_start(stream_name)
-                    .group_id(gst::util_group_id_next())
-                    .build(),
-            );
+            if !pad_handle.has_pushed_stream_start {
+                if let Some(sid) = &*self.stream_id.lock().unwrap() {
+                    Self::push_stream_start(&pad_handle.pad, sid, &pad_name);
+                    pad_handle.has_pushed_stream_start = true;
+                }
+            }
+
             // And a CAPS, so they know what they're dealing with
-            pad.push_event(gst::event::Event::new_caps(&new_pad_caps).build());
+            gst_debug!(CAT, "Pushing new caps event");
+            pad_handle.pad.push_event(gst::event::Event::new_caps(&new_pad_caps).build());
+            gst_debug!(CAT, "All done from here");
         }
         Ok(())
     }
@@ -312,14 +365,13 @@ impl RgbdDemux {
     /// * `new_pad_caps` - The CAPS that should be used on the new src pad.
     /// * `stream_name` - The name of the stream to create a src pad for.
     fn create_new_src_pad(
-        &self,
         element: &gst::Element,
+        src_pads: &mut SrcPads,
+        flow_combiner: &mut gst_base::UniqueFlowCombiner,
         stream_name: &str,
         template: Option<gst::PadTemplate>,
-    ) -> Option<gst::Pad> {
+    ) {
         gst_debug!(CAT, obj: element, "create_new_src_pad for {}", stream_name);
-        // Lock the internals
-        let internals = &mut *self.internals.lock().expect("Could not lock internals");
 
         // Create naming for the src pad according to the stream
         let new_src_pad_name = &format!("src_{}", stream_name);
@@ -330,44 +382,39 @@ impl RgbdDemux {
         // This scenario can happen when:
         // - gst-launch rbgddemux name=d d.src_depth ! ... d.src_depth ! ...
         // - An application calls request_pad with the same name twice
-        match internals.src_pads.get(&new_src_pad_name.to_string()) {
-            Some(_pad) => {
-                gst_error!(
-                    CAT,
-                    obj: element,
-                    "Pad `{}` already exists. Only one pad for each stream may be requested",
-                    new_src_pad_name
-                );
-                None
-            }
-            None => {
-                // Create the src pad with these caps
-                let new_src_pad = gst::Pad::new_from_template(
-                    &template.unwrap_or_else(|| {
-                        element
-                            .get_pad_template("src_%s")
-                            .expect("No src pad template registered in rgbddemux")
-                    }),
-                    Some(new_src_pad_name),
-                );
-
-                // Add the src pad to the element and activate it
-                element
-                    .add_pad(&new_src_pad)
-                    .expect("Could not add src pad in rgbddemux");
-                new_src_pad
-                    .set_active(true)
-                    .expect("Could not activate new src pad in rgbddemux");
-
-                // Add the new pad to the internals
-                internals.flow_combiner.add_pad(&new_src_pad);
-                internals
-                    .src_pads
-                    .insert(new_src_pad_name.to_string(), new_src_pad.clone());
-
-                Some(new_src_pad)
-            }
+        if src_pads.contains_key(new_src_pad_name) {
+            gst_error!(
+                CAT,
+                obj: element,
+                "Pad `{}` already exists. Only one pad for each stream may be requested",
+                new_src_pad_name
+            );
+            return;
         }
+
+        // Create the src pad with these caps
+        let new_src_pad = gst::Pad::new_from_template(
+            &template.unwrap_or_else(|| {
+                element
+                    .get_pad_template("src_%s")
+                    .expect("No src pad template registered in rgbddemux")
+            }),
+            Some(new_src_pad_name),
+        );
+
+        // Add the src pad to the element and activate it
+        element
+            .add_pad(&new_src_pad)
+            .expect("Could not add src pad in rgbddemux");
+        new_src_pad
+            .set_active(true)
+            .expect("Could not activate new src pad in rgbddemux");
+
+        // Add the new pad to the internals
+        flow_combiner.add_pad(&new_src_pad);
+        src_pads
+            .insert(new_src_pad_name.to_string(), PadHandle::new(new_src_pad));
+        gst_debug!(CAT, "Pad created");
     }
 
     /// Called whenever a new buffer is passed to the sink pad. This function splits the buffer in
@@ -381,13 +428,13 @@ impl RgbdDemux {
         main_buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Lock the internals
-        let internals = &mut *self
-            .internals
-            .lock()
+        let settings = self
+            .settings
+            .read()
             .expect("Failed to lock internals in rgbddemux");
 
         // Distribute the timestamp of the main buffer to the auxiliary buffers, if enabled
-        if internals.settings.distribute_timestamps {
+        if settings.distribute_timestamps {
             // Get timestamp of the main buffer
             let common_pts = main_buffer.get_pts();
             let common_dts = main_buffer.get_dts();
@@ -411,11 +458,13 @@ impl RgbdDemux {
             }
         }
 
-        // Go through all auxiliary buffers attached to the main buffer in order to extract them and push to the corresponding src pads
+        // Go through all auxiliary buffers attached to the main buffer in order to extract them and
+        // push to the corresponding src pads
+        let src_pads = self.src_pads.read().unwrap();
         for additional_buffer in rgbd::get_aux_buffers(&main_buffer) {
             // Push the additional buffer to the corresponding src pad
-            let _flow_combiner_result = internals.flow_combiner.update_flow(
-                self.push_buffer_to_corresponding_pad(&internals.src_pads, additional_buffer)
+            let _flow_combiner_result = self.flow_combiner.lock().unwrap().update_flow(
+                self.push_buffer_to_corresponding_pad(&*src_pads, additional_buffer)
                     .map_err(|e| {
                         gst_warning!(CAT, obj: element, "Failed to push a stacked buffer: {}", e);
                         gst::FlowError::Error
@@ -431,8 +480,8 @@ impl RgbdDemux {
         );
 
         // Push the main buffer to the corresponding src pad
-        let _ignore = internals.flow_combiner.update_flow(
-            self.push_buffer_to_corresponding_pad(&internals.src_pads, main_buffer)
+        let _ignore = self.flow_combiner.lock().unwrap().update_flow(
+            self.push_buffer_to_corresponding_pad(&*src_pads, main_buffer)
                 .map_err(|e| {
                     gst_warning!(CAT, obj: element, "Failed to push a main buffer: {}", e);
                     gst::FlowError::Error
@@ -448,7 +497,7 @@ impl RgbdDemux {
     /// * `buffer` - The buffer that should be pushed further downstream.
     fn push_buffer_to_corresponding_pad(
         &self,
-        src_pads: &HashMap<String, gst::Pad>,
+        src_pads: &HashMap<String, PadHandle>,
         buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, RgbdDemuxingError> {
         // Extract tag title from the buffer
@@ -467,7 +516,7 @@ impl RgbdDemux {
         // Check if there's a per-frame metadata buffer we need to push to the meta pad
         gst_debug!(CAT, "Pushing per-frame meta for {}", tag_title);
 
-        src_pad.push(buffer).map_err(|_| {
+        src_pad.pad.push(buffer).map_err(|_| {
             RgbdDemuxingError("Failed to push buffer onto its corresponding pad".to_string())
         })
     }
@@ -483,11 +532,10 @@ impl ObjectSubclass for RgbdDemux {
 
     fn new() -> Self {
         Self {
-            internals: Mutex::new(RgbdDemuxInternals {
-                src_pads: HashMap::new(),
-                flow_combiner: gst_base::UniqueFlowCombiner::new(),
-                settings: Settings::default(),
-            }),
+            src_pads: RwLock::new(HashMap::new()),
+            flow_combiner: Mutex::new(gst_base::UniqueFlowCombiner::new()),
+            settings: RwLock::new(Settings::default()),
+            stream_id: Mutex::new(None),
         }
     }
 
@@ -562,11 +610,10 @@ impl ObjectImpl for RgbdDemux {
         let element = obj
             .downcast_ref::<gst::Element>()
             .expect("Failed to cast `obj` to a gst::Element");
-        let settings = &mut self
-            .internals
-            .lock()
-            .expect("rgbddemux: Could not lock internals to access settings in `set_property()`")
-            .settings;
+        let mut settings = self
+            .settings
+            .write()
+            .expect("rgbddemux: Could not lock internals to access settings in `set_property()`");
 
         let property = &PROPERTIES[id];
         match *property {
@@ -587,10 +634,9 @@ impl ObjectImpl for RgbdDemux {
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
         let settings = &self
-            .internals
-            .lock()
-            .expect("rgbddemux: Could not lock internals to access settings in `set_property()`")
-            .settings;
+            .settings
+            .read()
+            .expect("rgbddemux: Could not lock internals to access settings in `set_property()`");
 
         let prop = &PROPERTIES[id];
         match *prop {
@@ -621,7 +667,7 @@ impl ElementImpl for RgbdDemux {
     ) -> Option<gst::Pad> {
         gst_debug!(CAT, obj: element, "Requesting new pad with name {:?}", name);
         // Get the pads name and reject any requests that are not for src pads
-        let name = name.unwrap_or_else(|| "src_%s".to_string());
+        let name = name?;
         if !name.starts_with("src_") {
             gst_error!(
                 CAT,
@@ -632,11 +678,32 @@ impl ElementImpl for RgbdDemux {
         }
 
         // Create the new pad and return it
-        self.create_new_src_pad(
+        let stream_name = &name[4..];
+
+        if stream_name == "%s" {
+            gst_error!(CAT, "%s is not a valid stream name, ignoring...");
+            return None;
+        }
+
+        let mut src_pads = self.src_pads.write().unwrap();
+        Self::create_new_src_pad(
             element,
-            &name[4..], // strip the src_ away
+            &mut *src_pads,
+            &mut *self.flow_combiner.lock().unwrap(),
+            stream_name, // strip the src_ away
             Some(templ.clone()),
-        )
+        );
+
+        let pad_handle = src_pads.get_mut(&format!("src_{}", stream_name))?;
+        if !pad_handle.has_pushed_stream_start {
+            if let Some(sid) = &*self.stream_id.lock().unwrap() {
+                Self::push_stream_start(&pad_handle.pad, sid, &name);
+                pad_handle.has_pushed_stream_start = true;
+            }
+        }
+
+        gst_debug!(CAT, "Pad request succeeded");
+        Some(pad_handle.pad.clone())
     }
 }
 

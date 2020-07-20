@@ -24,7 +24,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::sync::Mutex;
+use std::sync::{Mutex, RwLock};
 
 lazy_static! {
     static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
@@ -112,7 +112,7 @@ struct RgbdMux {
     /// List of sink pad names utilised for easy access under a Mutex
     sink_pads: Mutex<Vec<String>>,
     /// Settings based on properties of the element that are under a Mutex
-    settings: Mutex<Settings>,
+    settings: RwLock<Settings>,
     /// Mutex protecting the clock internals of the element
     clock_internals: Mutex<RgbdMuxClockInternals>,
     /// Contains stream formats that are requested by the downstream element as a HashMap<stream, format> under a Mutex
@@ -148,7 +148,7 @@ impl ObjectSubclass for RgbdMux {
     fn new() -> Self {
         Self {
             sink_pads: Mutex::new(Vec::new()),
-            settings: Mutex::new(Settings {
+            settings: RwLock::new(Settings {
                 drop_if_missing: DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
                 deadline_multiplier: DEFAULT_DEADLINE_MULTIPLIER,
                 drop_to_synchronise: DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS,
@@ -215,7 +215,7 @@ impl ObjectImpl for RgbdMux {
         let element = obj
             .downcast_ref::<gst_base::Aggregator>()
             .expect("Could not cast `rgbdmux` to Aggregator");
-        let settings = &mut self.settings.lock().expect("Could not lock settings");
+        let mut settings = self.settings.write().unwrap();
 
         let property = &PROPERTIES[id];
         match *property {
@@ -268,7 +268,10 @@ impl ObjectImpl for RgbdMux {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self.settings.lock().expect("Could not lock settings");
+        gst_debug!(CAT, "get_property: Locking settings for id {}", id);
+        let settings = &self.settings.read().map_err(|e| {
+            gst_error!(CAT, "Settings could not be locked: {:?}", e);
+        })?;
 
         let prop = &PROPERTIES[id];
         match *prop {
@@ -304,10 +307,13 @@ impl ElementImpl for RgbdMux {
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
         gst_debug!(CAT, obj: element, "release_pad: {}", pad_name);
-        self.sink_pads
-            .lock()
-            .expect("Could not lock sink pads")
-            .retain(|x| *x != pad_name);
+        {
+            gst_debug!(CAT, "release_pad: Locking sink_pads");
+            self.sink_pads
+                .lock()
+                .expect("Could not lock sink pads")
+                .retain(|x| *x != pad_name);
+        }
 
         // Renegotiate only if the element is not shutting down due to EOS
         let (state_result, _state_current, state_pending) = element.get_state(gst::CLOCK_TIME_NONE);
@@ -324,8 +330,10 @@ impl AggregatorImpl for RgbdMux {
         _timeout: bool,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Lock the settings
-        let settings = &self.settings.lock().expect("Could not lock settings");
+        gst_debug!(CAT, "aggregate - Locking settings...");
+        let settings = &self.settings.read().expect("Could not lock settings");
         // Get the list of available names
+        gst_debug!(CAT, "aggregate - Locking sink_pads...");
         let sink_pad_names = &self.sink_pads.lock().expect("Could not lock sink pads");
 
         if settings.drop_if_missing {
@@ -466,7 +474,7 @@ impl AggregatorImpl for RgbdMux {
     fn get_next_time(&self, _aggregator: &gst_base::Aggregator) -> gst::ClockTime {
         if self
             .settings
-            .lock()
+            .read()
             .expect("Could not lock settings")
             .drop_if_missing
         {
@@ -650,6 +658,7 @@ impl RgbdMux {
         sink_pad_names: &[String],
     ) {
         // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
+        gst_debug!(CAT, "drop_all_queued_buffers: Locking clock_internals...");
         self.clock_internals
             .lock()
             .expect("Could not lock clock internals")
@@ -701,6 +710,7 @@ impl RgbdMux {
         }
 
         // Update the current timestamp to CLOCK_TIME_NONE, i.e no deadline
+        gst_debug!(CAT, "check_synchronisation: Locking clock_internals...");
         self.clock_internals
             .lock()
             .expect("Could not lock clock internals")
@@ -774,6 +784,7 @@ impl RgbdMux {
             .expect("Could not get mutable reference to main buffer");
 
         // Update the current timestamp
+        gst_debug!(CAT, "mux_buffers: Locking clock_internals...");
         self.clock_internals
             .lock()
             .expect("Could not lock clock internals")
@@ -804,8 +815,8 @@ impl RgbdMux {
     /// Sends a gap event downstream.
     /// # Arguments
     /// * `aggregator` - The aggregator to drop all queued buffers for.
-    #[inline]
     fn send_gap_event(&self, aggregator: &gst_base::Aggregator) {
+        gst_debug!(CAT, "send_gap_event: Locking clock_internals...");
         let gap_event = gst::Event::new_gap(
             aggregator
                 .get_clock()
@@ -827,7 +838,6 @@ impl RgbdMux {
     /// # Arguments
     /// * `pad_caps` - A reference to the pad's CAPS.
     /// * `pad_name` - The name of the stream we're currently generating CAPS for.
-    #[inline]
     fn push_sink_caps_format(
         &self,
         pad_caps: &gst::Caps,
@@ -856,12 +866,14 @@ impl RgbdMux {
                     src_caps.set(&src_field_name, &value.get_some::<i32>().unwrap());
                 }
                 "framerate" => {
+                    gst_debug!(CAT, "push_sink_caps_format: Locking clock_internals...");
                     // Get locks on the internals
                     let clock_internals = &mut self
                         .clock_internals
                         .lock()
                         .expect("Could not lock clock internals");
-                    let settings = &self.settings.lock().expect("Could not lock settings");
+                    gst_debug!(CAT, "push_sink_caps_format: Locking settings...");
+                    let settings = &self.settings.read().expect("Could not lock settings");
 
                     // Update `framerate`
                     clock_internals.framerate = value.get_some::<gst::Fraction>().unwrap();
@@ -895,7 +907,10 @@ impl RgbdMux {
     /// pads on the muxer.
     /// # Arguments
     /// * `element` - The element that represents the `rgbdmux`.
+    /// # Important
+    /// Requires self.sink_pads to be unlocked.
     fn get_current_downstream_caps(&self, element: &gst::Element) -> gst::Caps {
+        gst_debug!(CAT, "get_current_downstream_caps: Locking sink_pads...");
         // First lock sink_pads, so that we may iterate it
         let sink_pads = &self.sink_pads.lock().expect("Could not lock sink pads");
 
@@ -906,6 +921,7 @@ impl RgbdMux {
             .collect::<Vec<&str>>()
             .join(",");
 
+        gst_debug!(CAT, "get_current_downstream_caps: Locking clock_internals...");
         let mut downstream_caps = gst::Caps::new_simple(
             "video/rgbd",
             &[
@@ -992,7 +1008,8 @@ impl RgbdMux {
             .collect::<HashMap<String, String>>()
     }
 
-    /// Determines what pad template to use for a new sink pad. It attaches a format to the CAPS if downstream element has such request.
+    /// Determines what pad template to use for a new sink pad. It attaches a format to the CAPS if
+    /// downstream element has such request.
     /// If there is no such request, the default sink pad template is returned.
     /// # Arguments
     /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
@@ -1004,6 +1021,7 @@ impl RgbdMux {
         aggregator: &gst_base::Aggregator,
         pad_name: &str,
     ) -> gstreamer::PadTemplate {
+        gst_debug!(CAT, "get_sink_pad_template_with_modified_format: Locking requested_stream_formats...");
         // Lock the stream formats requested by downstream element
         let requested_stream_formats = &mut *self
             .requested_stream_formats
