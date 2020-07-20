@@ -303,7 +303,7 @@ impl RgbdDemux {
     /// Extract CAPS for the given stream from the given rgbd_caps.
     /// # Arguments
     /// * `stream_name` - The name of the stream to extract CAPS for, e.g. `depth`.
-    /// * `rgbd_caps` - A referece to the `video/rgbd` CAPS, from which the stream's CAPS should be extracted.
+    /// * `rgbd_caps` - A reference to the `video/rgbd` CAPS, from which the stream's CAPS should be extracted.
     /// * `common_framerate` - The framerate of all the streams.
     fn extract_stream_caps(
         &self,
@@ -311,6 +311,8 @@ impl RgbdDemux {
         rgbd_caps: &gst::StructureRef,
         common_framerate: gst::Fraction,
     ) -> Result<gst::Caps, RgbdDemuxingError> {
+        // TODO: return "image/jpeg" CAPS if the CAPS type is "image/jpeg" (in addition to "video/x-raw" with "*jpeg*" as "format" of the stream)
+
         // Get the format of a stream
         let stream_format = rgbd_caps
             .get::<String>(&format!("{}_format", stream_name))
