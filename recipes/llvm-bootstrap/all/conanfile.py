@@ -84,9 +84,15 @@ class LlvmBootstrapConan(ConanFile):
         # libunwind options
         cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
-        cmake.configure(source_folder=f"llvm-{self.version}")
-        cmake.build()
-        cmake.install()
+        # Use clang to bootstrap llvm
+        env = {
+            "CC": "clang",
+            "CXX": "clang++",
+        }
+        with tools.environment_append(env):
+            cmake.configure(source_folder=f"llvm-{self.version}")
+            cmake.build()
+            cmake.install()
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
