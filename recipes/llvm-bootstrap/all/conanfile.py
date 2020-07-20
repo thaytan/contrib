@@ -9,7 +9,6 @@ class LlvmBootstrapConan(ConanFile):
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = ("cmake-bootstrap/[^3.17.3]",)
-
     requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
@@ -21,12 +20,12 @@ class LlvmBootstrapConan(ConanFile):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libunwind-{self.version}.src.tar.xz")
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
-        shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
-        shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))
-        shutil.move(f"compiler-rt-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
-        shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
-        shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
-        shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
+        shutil.move(f"clang-{self.version}.src", "clang")
+        shutil.move(f"lld-{self.version}.src", "lld")
+        shutil.move(f"compiler-rt-{self.version}.src", "compiler-rt")
+        shutil.move(f"libcxx-{self.version}.src", "libcxx")
+        shutil.move(f"libcxxabi-{self.version}.src", "libcxxabi")
+        shutil.move(f"libunwind-{self.version}.src", "libunwind")
 
     def build(self):
         cmake = CMake(self, build_type="Release")
@@ -45,7 +44,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["LLVM_BUILD_TESTS"] = False
 
         # LLVM enable options
-        cmake.definitions["LLVM_ENABLE_RUNTIMES"] = "compiler-rt;libcxx;libcxxabi;libunwind"
+        cmake.definitions["LLVM_ENABLE_RUNTIMES"] = "all"
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
         # cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
