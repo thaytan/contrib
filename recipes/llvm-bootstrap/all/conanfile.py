@@ -22,10 +22,10 @@ class LlvmBootstrapConan(ConanFile):
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
         shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))
-        shutil.move(f"compiler-rt-{self.version}.src", "compiler-rt")
-        shutil.move(f"libcxx-{self.version}.src", "libcxx")
-        shutil.move(f"libcxxabi-{self.version}.src", "libcxxabi")
-        shutil.move(f"libunwind-{self.version}.src", "libunwind")
+        shutil.move(f"compiler-rt-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
+        shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
+        shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
+        shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
         cmake = CMake(self, build_type="Release")
@@ -44,7 +44,6 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["LLVM_BUILD_TESTS"] = False
 
         # LLVM enable options
-        cmake.definitions["LLVM_ENABLE_RUNTIMES"] = "all"
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
         # cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
