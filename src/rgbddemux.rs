@@ -77,15 +77,27 @@ struct StreamIdentifier {
     _group_id: gst::GroupId,
 }
 
+/// A handle on the pad, which contains information related to the pad.
 struct PadHandle {
+    /// The actual pad.
     pad: gst::Pad,
+    /// A flag to indicate whether or not we have sent the "stream-start" event on the pad.
     has_pushed_stream_start: bool,
+    /// The name of the stream flowing on the pad.
+    stream_name: String,
 }
 impl PadHandle {
+    /// Creates a new PadHandle for the given `pad`.
+    /// # Arguments
+    /// * `pad` - The pad to create a handle for.
+    /// # Returns
+    /// A new instance of [PadHandle](struct.PadHandle.html) for the pad.
     fn new(pad: gst::Pad) -> Self {
+        let stream_name = pad.get_name().replace("src_", "");
         Self {
             pad,
             has_pushed_stream_start: false,
+            stream_name,
         }
     }
 }
@@ -119,8 +131,12 @@ impl Default for Settings {
 }
 
 impl RgbdDemux {
-    fn push_stream_start(pad: &gst::Pad, stream_identifier: &StreamIdentifier, pad_name: &str) {
-        let stream_name = pad_name.replace("src_", "");
+    /// Pushes a "stream-start" event on the given pad.
+    /// # Arguments
+    /// * `pad` - The pad to push the event on.
+    /// * `stream_identifier` - A stream identifier that uniquely identifies the current stream.
+    /// * `stream_name` - A unique name of the stream to push a "stream-start" for.
+    fn push_stream_start(pad: &gst::Pad, stream_identifier: &StreamIdentifier, stream_name: &str) {
         let stream_id = format!("{}/{}", stream_identifier.stream_id, stream_name);
         gst_debug!(CAT, "Pushing stream start event for stream {}", stream_id);
 
@@ -130,6 +146,37 @@ impl RgbdDemux {
                 .group_id(gst::util_group_id_next())
                 .build(),
         );
+    }
+
+    /// Tries to push a "stream-start" event on the given `pad_handle`, if we have already gotten
+    /// one from the upstream elements. If not, this function will do nothing.
+    /// # Arguments
+    /// * `pad_handle` - The pad we want to push the "stream-start" event on.
+    /// * `stream_id` - The stream identifier, that uniquely identifies the current stream.
+    /// * `name` - The name of the stream we want to push a "stream-start" for.
+    fn try_push_stream_start_on_pad(pad_handle: &mut PadHandle, stream_id: Option<&StreamIdentifier>) {
+        if !pad_handle.has_pushed_stream_start {
+            if let Some(sid) = stream_id {
+                Self::push_stream_start(&pad_handle.pad, sid, &pad_handle.stream_name);
+                pad_handle.has_pushed_stream_start = true;
+            }
+        }
+    }
+
+    /// Pushes the "stream-start" event on all pads in `self.src_pads` that have not yet seen a
+    /// "stream-start" event.
+    /// # Arguments
+    /// * `stream_identifier` - An instance of the [StreamIdentifier](struct.StreamIdentifier.html) struct that identifiers the stream we're currently working with.
+    /// # Remarks
+    /// * Requires `self.src_pads` to be exclusively locked for writing. Please ensure that it is
+    /// unlocked when calling this function.
+    fn push_stream_start_on_all_pads(&self, stream_identifier: &StreamIdentifier) {
+        for (_, pad_handle) in self.src_pads.write().unwrap().iter_mut() {
+            if !pad_handle.has_pushed_stream_start {
+                Self::push_stream_start(&pad_handle.pad, &stream_identifier, &pad_handle.stream_name);
+                pad_handle.has_pushed_stream_start = true;
+            }
+        }
     }
 
     /// Set the sink pad event and chain functions. This causes it to listen to GStreamer signals
@@ -191,12 +238,7 @@ impl RgbdDemux {
                     _group_id: stream_start.get_group_id(),
                 };
 
-                for (id, pad_handle) in self.src_pads.write().unwrap().iter_mut() {
-                    if !pad_handle.has_pushed_stream_start {
-                        Self::push_stream_start(&pad_handle.pad, &stream_identifier, id);
-                        pad_handle.has_pushed_stream_start = true;
-                    }
-                }
+                self.push_stream_start_on_all_pads(&stream_identifier);
 
                 *self.stream_id.lock().unwrap() = Some(stream_identifier);
 
@@ -285,12 +327,7 @@ impl RgbdDemux {
                 }
             };
 
-            if !pad_handle.has_pushed_stream_start {
-                if let Some(sid) = &*self.stream_id.lock().unwrap() {
-                    Self::push_stream_start(&pad_handle.pad, sid, &pad_name);
-                    pad_handle.has_pushed_stream_start = true;
-                }
-            }
+            Self::try_push_stream_start_on_pad(pad_handle, self.stream_id.lock().unwrap().as_ref());
 
             // And a CAPS, so they know what they're dealing with
             gst_debug!(CAT, "Pushing new caps event");
@@ -364,8 +401,10 @@ impl RgbdDemux {
     /// Create a new src pad on the `rgbddemux` for the stream with the given name.
     /// # Arguments
     /// * `element` - The element that represents the `rgbddemux` in GStreamer.
-    /// * `new_pad_caps` - The CAPS that should be used on the new src pad.
+    /// * `src_pads` - A mutable reference to the collection of pads currently present on the `rgbddemux`.
+    /// * `flow_combiner` - A mutable reference to the flow combiner that drives the `rgbddemux`.
     /// * `stream_name` - The name of the stream to create a src pad for.
+    /// * `template` - An optional template to use on the pod.
     fn create_new_src_pad(
         element: &gst::Element,
         src_pads: &mut SrcPads,
@@ -679,30 +718,18 @@ impl ElementImpl for RgbdDemux {
             return None;
         }
 
-        // Create the new pad and return it
-        let stream_name = &name[4..];
-
-        if stream_name == "%s" {
-            gst_error!(CAT, "%s is not a valid stream name, ignoring...");
-            return None;
-        }
-
+        // Create a new pad and return it
         let mut src_pads = self.src_pads.write().unwrap();
         Self::create_new_src_pad(
             element,
             &mut *src_pads,
             &mut *self.flow_combiner.lock().unwrap(),
-            stream_name, // strip the src_ away
+            &name[4..], // strip the src_ away
             Some(templ.clone()),
         );
 
-        let pad_handle = src_pads.get_mut(&format!("src_{}", stream_name))?;
-        if !pad_handle.has_pushed_stream_start {
-            if let Some(sid) = &*self.stream_id.lock().unwrap() {
-                Self::push_stream_start(&pad_handle.pad, sid, &name);
-                pad_handle.has_pushed_stream_start = true;
-            }
-        }
+        let pad_handle = src_pads.get_mut(&*name)?;
+        Self::try_push_stream_start_on_pad(pad_handle, self.stream_id.lock().unwrap().as_ref());
 
         gst_debug!(CAT, "Pad request succeeded");
         Some(pad_handle.pad.clone())
