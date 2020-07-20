@@ -45,7 +45,6 @@ class LlvmBootstrapConan(ConanFile):
 
         # LLVM enable options
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
-        # cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_ENABLE_RTTI"] = True
         cmake.definitions["LLVM_ENABLE_ZLIB"] = True
         cmake.definitions["LLVM_ENABLE_Z3_SOLVER"] = False
@@ -82,9 +81,6 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
-
-        # libunwind options
-        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
 
         cmake.configure(source_folder=f"llvm-{self.version}")
         cmake.build()

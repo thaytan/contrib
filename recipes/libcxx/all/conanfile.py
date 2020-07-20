@@ -47,17 +47,18 @@ class LibcxxConan(ConanFile):
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
 
         # libcxx options
-        cmake.definitions["LIBCXX_ENABLE_STATIC"] = False
-        cmake.definitions["LIBCXX_HAS_GCC_S_LIB"] = False
+        cmake.definitions["LIBCXX_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
         cmake.definitions["LIBCXX_USE_COMPILER_RT"] = True
 
         # libcxxabi options
+        cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
+        cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
-        cmake.definitions["LIBCXXABI_LINK_TESTS_WITH_SHARED_LIBCXX"] = True
 
         # libunwind options
+        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
         cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         cmake.configure(source_folder=f"llvm-{self.version}")
