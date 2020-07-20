@@ -20,7 +20,7 @@ class LlvmConan(ConanFile):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
 
     def build(self):
-        cmake = CMake(self, parallel=False)
+        cmake = CMake(self)
 
         # LLVM build options
         if self.settings.arch_build == "x86_64":
