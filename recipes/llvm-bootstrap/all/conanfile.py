@@ -67,6 +67,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
         cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
+        cmake.definitions["CLANG_BUILD_TOOLS"] = False
 
         # compiler-rt options
         cmake.definitions["COMPILER_RT_BUILD_SANITIZERS"] = False
