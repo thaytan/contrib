@@ -84,19 +84,41 @@ class LlvmBootstrapConan(ConanFile):
         # libunwind options
         cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
-        # Use clang to bootstrap llvm
-        env = {
-            "CC": "clang",
-            "CXX": "clang++",
-        }
-        with tools.environment_append(env):
-            cmake.configure(source_folder=f"llvm-{self.version}")
-            cmake.build()
-            cmake.install()
+        # Stage 0 build (lld, clang)
+        cmake.configure(source_folder=f"llvm-{self.version}", build_folder="stage0")
+        cmake.build(target="install-lld")
+        cmake.build(target="install-clang")
+        cmake.build(target="install-clang-resource-headers")
+        cmake.build(target="install-libcxx")
+        cmake.build(target="install-unwind")
+        cmake.build(target="install-compiler-rt")
+
+        # Use stage 0 lld and clang
+        cmake.definitions["LLVM_USE_LINKER"] = os.path.join(self.package_folder, "bin", "lld")
+        cmake.definitions["CMAKE_C_COMPILER"] = os.path.join(self.package_folder, "bin", "clang")
+        cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(self.package_folder, "bin", "clang++")
+
+        # Stage0 clang can actually create useful LTO libraries
+        cmake.definitions["LLVM_ENABLE_LTO"] = True
+
+        # Reduce memory usage (Needed for LTO)
+        cmake.definitions["CMAKE_JOB_POOL_LINK"] = "link"
+        cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
+
+        # Stage 1 build (libcxx, libcxxabi, libunwind)
+        cmake.configure(source_folder=f"llvm-{self.version}", build_folder="stage1")
+        cmake.build(target="install-libcxx")
+        cmake.build(target="install-unwind")
+        cmake.build(target="install-compiler-rt")
+
+        # Stage 2 build (whole llvm)
+        cmake.configure(source_folder=f"llvm-{self.version}", build_folder="stage2")
+        cmake.build()
+        cmake.install()
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
-        self.env_info.CFLAGS = "-flto"
-        self.env_info.CXXFLAGS = "-flto"
+        self.env_info.CFLAGS = "-flto -nostdinc"
+        self.env_info.CXXFLAGS = "-flto -nostdinc -nostdinc++"
         self.env_info.LDFLAGS = "-flto"
