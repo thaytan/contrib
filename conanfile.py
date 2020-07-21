@@ -9,8 +9,7 @@ class AiveroRgbDToolkit(ConanFile):
     description = "Package containing all open source RGB-D elements"
     url = "https://aivero.com"
     license = "MIT"
-    gst_version = tools.get_env("GST_VERSION", "1.16.2")
-    settings = "os", "arch", "compiler", "build_type"
+    settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = [
         "*.adoc",
     ]
@@ -23,9 +22,9 @@ class AiveroRgbDToolkit(ConanFile):
         self.requires("gst-k4a/[>=1.1.1]@%s/stable" % self.user)
         self.requires("gst-realsense/[>=2.1.1]@%s/stable" % self.user)
         self.requires("gstreamer-colorizer/[>=0.1.2]@%s/stable" % self.user)
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.gst_version, self.user))
-        self.requires("gstreamer-plugins-good/[~%s]@%s/stable" % (self.gst_version, self.user))
-        self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.gst_version, self.user))
+        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
+        self.requires("gstreamer-plugins-good/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
+        self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
 
     def package(self):
         self.copy(pattern="*.adoc*", dst=os.path.join(self.package_folder), keep_path=False)
