@@ -40,7 +40,7 @@ source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 Alternatively, you can use Aivero's artifactory instance at https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all[https://conan.aa.aivero.dev] to install the newest release straight from our CICD.
 
 First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
-that your default python version is 3.X and that pip installs packages for python 3. 
+that your default python version is 3.X and that pip installs packages for python 3.
 We build on conan with a non-standard profile, which you can keep updated using our https://gitlab.com/aivero/public/conan/conan-config[conan config]
 
 Please install conan by running:
@@ -54,8 +54,8 @@ pip install conan --user
 conan config install https://gitlab.com/aivero/public/conan/conan-config.git
 
 # Select one of the provided conan profiles as default:
-conan config set general.default_profile=linux_x86_64
-# conan config set general.default_profile=linux_armv8
+conan config set general.default_profile=linux_x86_64_release
+# conan config set general.default_profile=linux_armv8_release
 
 
 # And to ensure that the remote is configured properly:
