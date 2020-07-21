@@ -85,7 +85,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         # Stage 0 build (lld, clang)
-        cmake.configure(source_folder=f"llvm-{self.version}", build_folder="stage0")
+        cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
         cmake.build(target="install-lld")
         cmake.build(target="install-clang")
         cmake.build(target="install-clang-resource-headers")
@@ -106,15 +106,19 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
-        cmake.configure(source_folder=f"llvm-{self.version}", build_folder="stage1")
+        cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
         cmake.build(target="install-libcxx")
         cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
 
         # Stage 2 build (whole llvm)
-        cmake.configure(source_folder=f"llvm-{self.version}", build_folder="stage2")
-        cmake.build()
-        cmake.install()
+        env = {
+            "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
+        }
+        with tools.environment_append(env):
+            cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
+            cmake.build()
+            cmake.install()
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
