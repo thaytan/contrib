@@ -94,7 +94,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.build(target="install-compiler-rt")
 
         # Use stage 0 lld and clang
-        cmake.definitions["LLVM_USE_LINKER"] = os.path.join(self.package_folder, "bin", "lld")
+        cmake.definitions["LLVM_USE_LINKER"] = os.path.join(self.package_folder, "bin", "ld.lld")
         cmake.definitions["CMAKE_C_COMPILER"] = os.path.join(self.package_folder, "bin", "clang")
         cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(self.package_folder, "bin", "clang++")
 
