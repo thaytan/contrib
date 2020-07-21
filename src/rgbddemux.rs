@@ -355,8 +355,8 @@ impl RgbdDemux {
                 None => {
                     Self::create_new_src_pad(
                         element,
-                        &mut *src_pads,
-                        &mut *flow_combiner,
+                        &mut src_pads,
+                        &mut flow_combiner,
                         stream_name,
                         None,
                     );
@@ -523,7 +523,7 @@ impl RgbdDemux {
         for additional_buffer in rgbd::get_aux_buffers(&main_buffer) {
             // Push the additional buffer to the corresponding src pad
             let _flow_combiner_result = self.flow_combiner.lock().unwrap().update_flow(
-                self.push_buffer_to_corresponding_pad(&*src_pads, additional_buffer)
+                self.push_buffer_to_corresponding_pad(&src_pads, additional_buffer)
                     .map_err(|e| {
                         gst_warning!(CAT, obj: element, "Failed to push a stacked buffer: {}", e);
                         gst::FlowError::Error
@@ -540,7 +540,7 @@ impl RgbdDemux {
 
         // Push the main buffer to the corresponding src pad
         let _ignore = self.flow_combiner.lock().unwrap().update_flow(
-            self.push_buffer_to_corresponding_pad(&*src_pads, main_buffer)
+            self.push_buffer_to_corresponding_pad(&src_pads, main_buffer)
                 .map_err(|e| {
                     gst_warning!(CAT, obj: element, "Failed to push a main buffer: {}", e);
                     gst::FlowError::Error
@@ -740,13 +740,13 @@ impl ElementImpl for RgbdDemux {
         let mut src_pads = self.src_pads.write().unwrap();
         Self::create_new_src_pad(
             element,
-            &mut *src_pads,
-            &mut *self.flow_combiner.lock().unwrap(),
+            &mut src_pads,
+            &mut self.flow_combiner.lock().unwrap(),
             &name[4..], // strip the src_ away
             Some(templ.clone()),
         );
 
-        let pad_handle = src_pads.get_mut(&*name)?;
+        let pad_handle = src_pads.get_mut(&name)?;
         Self::try_push_stream_start_on_pad(pad_handle, self.stream_id.lock().unwrap().as_ref());
 
         gst_debug!(CAT, "Pad request succeeded");
