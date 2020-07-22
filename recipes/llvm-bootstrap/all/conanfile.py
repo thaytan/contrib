@@ -67,7 +67,6 @@ class LlvmBootstrapConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
         cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
-        cmake.definitions["CLANG_BUILD_TOOLS"] = False
 
         # compiler-rt options
         cmake.definitions["COMPILER_RT_BUILD_SANITIZERS"] = False
@@ -118,8 +117,12 @@ class LlvmBootstrapConan(ConanFile):
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
-            cmake.build()
-            cmake.install()
+            cmake.build(target="install-lld")
+            cmake.build(target="install-clang")
+            cmake.build(target="install-clang-resource-headers")
+            cmake.build(target="install-libcxx")
+            cmake.build(target="install-unwind")
+            cmake.build(target="install-compiler-rt")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
