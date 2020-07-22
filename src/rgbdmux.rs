@@ -24,7 +24,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::sync::Mutex;
+use std::sync::{Mutex, RwLock};
 
 lazy_static! {
     static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
@@ -112,7 +112,7 @@ struct RgbdMux {
     /// List of sink pad names utilised for easy access under a Mutex
     sink_pads: Mutex<Vec<String>>,
     /// Settings based on properties of the element that are under a Mutex
-    settings: Mutex<Settings>,
+    settings: RwLock<Settings>,
     /// Mutex protecting the clock internals of the element
     clock_internals: Mutex<RgbdMuxClockInternals>,
     /// Contains stream formats that are requested by the downstream element as a HashMap<stream, format> under a Mutex
@@ -148,7 +148,7 @@ impl ObjectSubclass for RgbdMux {
     fn new() -> Self {
         Self {
             sink_pads: Mutex::new(Vec::new()),
-            settings: Mutex::new(Settings {
+            settings: RwLock::new(Settings {
                 drop_if_missing: DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
                 deadline_multiplier: DEFAULT_DEADLINE_MULTIPLIER,
                 drop_to_synchronise: DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS,
@@ -215,7 +215,7 @@ impl ObjectImpl for RgbdMux {
         let element = obj
             .downcast_ref::<gst_base::Aggregator>()
             .expect("Could not cast `rgbdmux` to Aggregator");
-        let settings = &mut self.settings.lock().expect("Could not lock settings");
+        let mut settings = self.settings.write().unwrap();
 
         let property = &PROPERTIES[id];
         match *property {
@@ -268,7 +268,9 @@ impl ObjectImpl for RgbdMux {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self.settings.lock().expect("Could not lock settings");
+        let settings = &self.settings.read().map_err(|e| {
+            gst_error!(CAT, "Settings could not be locked: {:?}", e);
+        })?;
 
         let prop = &PROPERTIES[id];
         match *prop {
@@ -304,10 +306,12 @@ impl ElementImpl for RgbdMux {
         // Remove the pad from our internal reference HashMap
         let pad_name = pad.get_name().as_str().to_string();
         gst_debug!(CAT, obj: element, "release_pad: {}", pad_name);
-        self.sink_pads
-            .lock()
-            .expect("Could not lock sink pads")
-            .retain(|x| *x != pad_name);
+        {
+            self.sink_pads
+                .lock()
+                .expect("Could not lock sink pads")
+                .retain(|x| *x != pad_name);
+        }
 
         // Renegotiate only if the element is not shutting down due to EOS
         let (state_result, _state_current, state_pending) = element.get_state(gst::CLOCK_TIME_NONE);
@@ -324,7 +328,7 @@ impl AggregatorImpl for RgbdMux {
         _timeout: bool,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Lock the settings
-        let settings = &self.settings.lock().expect("Could not lock settings");
+        let settings = &self.settings.read().expect("Could not lock settings");
         // Get the list of available names
         let sink_pad_names = &self.sink_pads.lock().expect("Could not lock sink pads");
 
@@ -371,53 +375,33 @@ impl AggregatorImpl for RgbdMux {
         req_name: Option<&str>,
         _caps: Option<&gst::Caps>,
     ) -> Option<gst_base::AggregatorPad> {
-        match req_name {
-            Some(name) if name.starts_with("sink_") => {
-                let sink_pads = &mut self.sink_pads.lock().expect("Could not lock sink pads");
-                gst_debug!(CAT, obj: aggregator, "create_new_pad for name: {}", name);
-                // Create new sink pad from the template
-                let new_sink_pad = gst::Pad::new_from_template(
-                    &self.get_sink_pad_template_with_modified_format(aggregator, name),
-                    Some(name),
-                )
-                .downcast::<gst_base::AggregatorPad>()
-                .expect("Could not cast pad to AggregatorPad");
-
-                // Drop all buffers on already existing pads (if any)
-                for pad_name in sink_pads.iter() {
-                    loop {
-                        let pad = aggregator
-                            .get_static_pad(pad_name)
-                            .unwrap_or_else(|| {
-                                panic!("Could not get static pad with name {}", pad_name)
-                            })
-                            .downcast::<gst_base::AggregatorPad>()
-                            .expect("Could not downcast pad to AggregatorPad");
-                        if !pad.drop_buffer() {
-                            break;
-                        }
-                    }
-                }
-
-                // Insert the new sink pad name into the struct
-                sink_pads.push(name.to_string());
-
-                // Activate the sink pad
-                new_sink_pad
-                    .set_active(true)
-                    .expect("Failed to activate `rgbdmux` sink pad");
-
-                Some(new_sink_pad)
-            }
-            _ => {
-                gst_error!(
-                    CAT,
-                    obj: aggregator,
-                    "Invalid request pad name. Only sink pads may be requested."
-                );
-                None
-            }
+        let name = req_name?;
+        if !name.starts_with("sink_") {
+            return None;
         }
+
+        let sink_pads = &mut self.sink_pads.lock().expect("Could not lock sink pads");
+        gst_debug!(CAT, obj: aggregator, "create_new_pad for name: {}", name);
+        // Create new sink pad from the template
+        let new_sink_pad = gst::Pad::new_from_template(
+            &self.get_sink_pad_template_with_modified_format(aggregator, name),
+            Some(name),
+        )
+        .downcast::<gst_base::AggregatorPad>()
+        .expect("Could not cast pad to AggregatorPad");
+
+        // Drop all buffers on already existing pads (if any)
+        self.drop_all_queued_buffers(aggregator, sink_pads);
+
+        // Insert the new sink pad name into the struct
+        sink_pads.push(name.to_string());
+
+        // Activate the sink pad
+        new_sink_pad
+            .set_active(true)
+            .expect("Failed to activate `rgbdmux` sink pad");
+
+        Some(new_sink_pad)
     }
 
     /// This function is called during CAPS negotiation. It can be used to decide on a CAPS format
@@ -432,17 +416,11 @@ impl AggregatorImpl for RgbdMux {
         _caps: &gst::Caps,
     ) -> Result<gst::Caps, gst::FlowError> {
         gst_debug!(CAT, "update_src_caps");
-        // Check how many sink pads has been created
-        let no_sink_pads = {
-            self.sink_pads
-                .lock()
-                .expect("Could not lock sink pads")
-                .len()
-        };
         // if no sink pads are present, we're not ready to negotiate CAPS, otherwise do the negotiation
-        match no_sink_pads {
-            0 => Err(gst_base::AGGREGATOR_FLOW_NEED_DATA), // we're not ready to decide on CAPS yet
-            _ => Ok(self.get_current_downstream_caps(aggregator.upcast_ref::<gst::Element>())),
+        if self.sink_pads.lock().unwrap().is_empty() {
+            Err(gst_base::AGGREGATOR_FLOW_NEED_DATA) // we're not ready to decide on CAPS yet
+        } else {
+            Ok(self.get_current_downstream_caps(aggregator.upcast_ref::<gst::Element>()))
         }
     }
 
@@ -466,7 +444,7 @@ impl AggregatorImpl for RgbdMux {
     fn get_next_time(&self, _aggregator: &gst_base::Aggregator) -> gst::ClockTime {
         if self
             .settings
-            .lock()
+            .read()
             .expect("Could not lock settings")
             .drop_if_missing
         {
@@ -804,7 +782,6 @@ impl RgbdMux {
     /// Sends a gap event downstream.
     /// # Arguments
     /// * `aggregator` - The aggregator to drop all queued buffers for.
-    #[inline]
     fn send_gap_event(&self, aggregator: &gst_base::Aggregator) {
         let gap_event = gst::Event::new_gap(
             aggregator
@@ -827,7 +804,6 @@ impl RgbdMux {
     /// # Arguments
     /// * `pad_caps` - A reference to the pad's CAPS.
     /// * `pad_name` - The name of the stream we're currently generating CAPS for.
-    #[inline]
     fn push_sink_caps_format(
         &self,
         pad_caps: &gst::Caps,
@@ -861,7 +837,7 @@ impl RgbdMux {
                         .clock_internals
                         .lock()
                         .expect("Could not lock clock internals");
-                    let settings = &self.settings.lock().expect("Could not lock settings");
+                    let settings = &self.settings.read().expect("Could not lock settings");
 
                     // Update `framerate`
                     clock_internals.framerate = value.get_some::<gst::Fraction>().unwrap();
@@ -895,6 +871,8 @@ impl RgbdMux {
     /// pads on the muxer.
     /// # Arguments
     /// * `element` - The element that represents the `rgbdmux`.
+    /// # Important
+    /// Requires self.sink_pads to be unlocked.
     fn get_current_downstream_caps(&self, element: &gst::Element) -> gst::Caps {
         // First lock sink_pads, so that we may iterate it
         let sink_pads = &self.sink_pads.lock().expect("Could not lock sink pads");
@@ -992,7 +970,8 @@ impl RgbdMux {
             .collect::<HashMap<String, String>>()
     }
 
-    /// Determines what pad template to use for a new sink pad. It attaches a format to the CAPS if downstream element has such request.
+    /// Determines what pad template to use for a new sink pad. It attaches a format to the CAPS if
+    /// downstream element has such request.
     /// If there is no such request, the default sink pad template is returned.
     /// # Arguments
     /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
