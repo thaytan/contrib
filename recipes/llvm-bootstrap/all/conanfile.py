@@ -11,6 +11,10 @@ class LlvmBootstrapConan(ConanFile):
     build_requires = ("cmake-bootstrap/[^3.17.3]",)
     requires = (("generators/[^1.0.0]", "private"),)
 
+    def requirements(self):
+        if self.settings.os_build == "Linux" and self.settings.libc_build == "system":
+            self.requires("glibc-dev/2.27")
+
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
