@@ -153,7 +153,6 @@ impl RgbdDemux {
     /// # Arguments
     /// * `pad_handle` - The pad we want to push the "stream-start" event on.
     /// * `stream_id` - The stream identifier, that uniquely identifies the current stream.
-    /// * `name` - The name of the stream we want to push a "stream-start" for.
     fn try_push_stream_start_on_pad(
         pad_handle: &mut PadHandle,
         stream_id: Option<&StreamIdentifier>,
@@ -169,7 +168,7 @@ impl RgbdDemux {
     /// Pushes the "stream-start" event on all pads in `self.src_pads` that have not yet seen a
     /// "stream-start" event.
     /// # Arguments
-    /// * `stream_identifier` - An instance of the [StreamIdentifier](struct.StreamIdentifier.html) struct that identifiers the stream we're currently working with.
+    /// * `stream_identifier` - An instance of the [StreamIdentifier](struct.StreamIdentifier.html) struct that identifies the stream we're currently working with.
     /// # Remarks
     /// * Requires `self.src_pads` to be exclusively locked for writing. Please ensure that it is
     /// unlocked when calling this function.
@@ -178,7 +177,7 @@ impl RgbdDemux {
             if !pad_handle.has_pushed_stream_start {
                 Self::push_stream_start(
                     &pad_handle.pad,
-                    &stream_identifier,
+                    stream_identifier,
                     &pad_handle.stream_name,
                 );
                 pad_handle.has_pushed_stream_start = true;
@@ -308,7 +307,7 @@ impl RgbdDemux {
             )
         })?;
 
-        // Determine what streams are contained within the caps            )
+        // Determine what streams are contained within the caps
         let streams = rgbd_caps
             .get::<String>("streams")
             .or_else(|err| {
