@@ -127,6 +127,7 @@ class LlvmBootstrapConan(ConanFile):
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
+            cmake.build(target="install-llvm-config")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
