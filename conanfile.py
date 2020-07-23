@@ -12,6 +12,7 @@ class AiveroRgbDToolkit(ConanFile):
     settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = [
         "*.adoc",
+        "scripts/*"
     ]
     
     def set_version(self):
@@ -27,12 +28,13 @@ class AiveroRgbDToolkit(ConanFile):
         self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
 
     def package(self):
-        self.copy(pattern="*.adoc*", dst=os.path.join(self.package_folder), keep_path=False)
+        self.copy(pattern="*.adoc*", keep_path=False)
+        self.copy("*", src="scripts/", dst="scripts", keep_path=False)
 
     def deploy(self):
         install_path = os.getcwd()
         self.copy("*.adoc",  dst="readmes", keep_path=False)
-
+        self.copy("*", src="scripts/", dst="scripts", keep_path=False)
         # Gstreamer binaries
         self.copy_deps("*gst-inspect-1.0", dst="bin", keep_path=False)
         self.copy_deps("*gst-launch-1.0", dst="bin", keep_path=False)
