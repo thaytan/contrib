@@ -115,7 +115,7 @@ class LlvmBootstrapConan(ConanFile):
         cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
 
-        # Stage 1 build (lld, clang, libcxx, libcxxabi, libunwind)
+        # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
         }
