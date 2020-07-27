@@ -32,7 +32,7 @@ class LlvmBootstrapConan(ConanFile):
         shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
-        cmake = CMake(self)
+        cmake = CMake(self, build_type="Release")
 
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
