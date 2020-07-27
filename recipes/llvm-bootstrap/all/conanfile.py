@@ -32,7 +32,7 @@ class LlvmBootstrapConan(ConanFile):
         shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
-        cmake = CMake(self, build_type="Release")
+        cmake = CMake(self)
 
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
@@ -93,21 +93,24 @@ class LlvmBootstrapConan(ConanFile):
         cmake.build(target="install-lld")
         cmake.build(target="install-clang")
         cmake.build(target="install-clang-resource-headers")
+        cmake.build(target="install-ar")
         cmake.build(target="install-libcxx")
         cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
 
-        # Use stage 0 lld and clang
+        # Use stage 0 lld, clang, ar and ranlib
         cmake.definitions["LLVM_USE_LINKER"] = os.path.join(self.package_folder, "bin", "ld.lld")
         cmake.definitions["CMAKE_C_COMPILER"] = os.path.join(self.package_folder, "bin", "clang")
         cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(self.package_folder, "bin", "clang++")
+        cmake.definitions["CMAKE_AR"] = os.path.join(self.package_folder, "bin", "ar")
+        cmake.definitions["CMAKE_RANLIB"] = os.path.join(self.package_folder, "bin", "ranlib")
 
         # Stage0 clang can actually create useful LTO libraries
-        cmake.definitions["LLVM_ENABLE_LTO"] = True
+        cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
 
         # Reduce memory usage (Needed for LTO)
-        cmake.definitions["CMAKE_JOB_POOL_LINK"] = "link"
-        cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
+        # cmake.definitions["CMAKE_JOB_POOL_LINK"] = "link"
+        # cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
@@ -124,6 +127,7 @@ class LlvmBootstrapConan(ConanFile):
             cmake.build(target="install-lld")
             cmake.build(target="install-clang")
             cmake.build(target="install-clang-resource-headers")
+            cmake.build(target="install-ar")
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
@@ -132,7 +136,9 @@ class LlvmBootstrapConan(ConanFile):
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
+        self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
+        self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
         self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
-        self.env_info.CFLAGS = "-flto -nostdinc"
-        self.env_info.CXXFLAGS = "-flto -nostdinc -nostdinc++"
-        self.env_info.LDFLAGS = "-flto"
+        self.env_info.CFLAGS = "-flto=thin -nostdinc"
+        self.env_info.CXXFLAGS = "-flto=thin -nostdinc -nostdinc++"
+        self.env_info.LDFLAGS = "-flto=thin"
