@@ -88,12 +88,13 @@ class LlvmBootstrapConan(ConanFile):
         # libunwind options
         cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
-        # Stage 0 build (lld, clang)
+        # Stage 0 build (lld, clang, ar, libcxx)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
         cmake.build(target="install-lld")
         cmake.build(target="install-clang")
         cmake.build(target="install-clang-resource-headers")
         cmake.build(target="install-ar")
+        cmake.build(target="install-ranlib")
         cmake.build(target="install-libcxx")
         cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
@@ -128,6 +129,7 @@ class LlvmBootstrapConan(ConanFile):
             cmake.build(target="install-clang")
             cmake.build(target="install-clang-resource-headers")
             cmake.build(target="install-ar")
+            cmake.build(target="install-ranlib")
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
