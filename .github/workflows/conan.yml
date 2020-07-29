@@ -33,6 +33,7 @@ jobs:
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
         CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
     - name: Get Conan Data Path
+      if: ${{ always() }}
       run: echo '::set-env name=CONAN_DATA_PATH::$(~/.local/bin/conan config get storage.path)'
     - uses: actions/upload-artifact@v2
       if: ${{ always() }}
