@@ -22,6 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install qemu-user-static
+        run: sudo apt install qemu-user-static
+        if: ${{ contains(matrix.image_name, 'armv8') }}
+
       - name: Run tests
         run: docker build . --file ${{ matrix.image_name }}.Dockerfile
 
@@ -37,6 +41,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install qemu-user-static
+        run: sudo apt install qemu-user-static
+        if: ${{ contains(matrix.image_name, 'armv8') }}
 
       - name: Build image
         run: docker build . --file ${{ matrix.image_name }}.Dockerfile --tag aivero/conan:${{ matrix.image_name }}
