@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image_name: [bionic-x86_64-bootstrap,bionic-armv8-bootstrap]
+        image_name: [bionic-x86_64-bootstrap,bionic-x86_64,bionic-armv8-bootstrap,bionic-armv8]
     steps:
       - uses: actions/checkout@v2
 
@@ -33,7 +33,7 @@ jobs:
 
     strategy:
       matrix:
-        image_name: [bionic-x86_64-bootstrap,bionic-armv8-bootstrap]
+        image_name: [bionic-x86_64-bootstrap,bionic-x86_64,bionic-armv8-bootstrap,bionic-armv8]
 
     steps:
       - uses: actions/checkout@v2
