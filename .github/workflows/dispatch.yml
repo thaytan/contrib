@@ -5,7 +5,7 @@ jobs:
     name: Conan Dispatch
     runs-on: ubuntu-latest
     container:
-      image: aivero/conan:bionic-x86_64
+      image: aivero/conan:dispatch
     steps:
       - uses: actions/checkout@v2
         with:
