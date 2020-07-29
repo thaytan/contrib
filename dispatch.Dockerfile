@@ -7,6 +7,8 @@ RUN apt update && \
 FROM ubuntu:bionic
 COPY --from=builder /usr/local/bin/conan /usr/local/bin/conan
 COPY --from=builder /usr/local/lib/python3.6/dist-packages /usr/local/lib/python3.6/dist-packages
+RUN apt update && apt install --no-install-recommends -y software-properties-common
+RUN add-apt-repository ppa:git-core/ppa
 RUN apt update && \
-  apt install --no-install-recommends -y git nodejs python3-minimal python3-pkg-resources && \
-  rm -rf /var/lib/apt/lists/*
+  apt install --no-install-recommends -y git nodejs python3-minimal python3-pkg-resources
+RUN apt remove -y software-properties-common && apt autoremove -y && rm -rf /var/lib/apt/lists/*
