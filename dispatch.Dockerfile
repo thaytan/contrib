@@ -10,5 +10,5 @@ COPY --from=builder /usr/local/lib/python3.6/dist-packages /usr/local/lib/python
 RUN apt update && apt install --no-install-recommends -y software-properties-common
 RUN add-apt-repository ppa:git-core/ppa
 RUN apt update && \
-  apt install --no-install-recommends -y git nodejs python3-minimal python3-pkg-resources
+  apt install --no-install-recommends -y git python3-minimal python3-pkg-resources
 RUN apt remove -y software-properties-common && apt autoremove -y && rm -rf /var/lib/apt/lists/*
