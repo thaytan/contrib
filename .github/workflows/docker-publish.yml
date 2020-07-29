@@ -15,7 +15,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         image_name: [bionic-x86_64-bootstrap,bionic-x86_64,bionic-armv8-bootstrap,bionic-armv8]
@@ -32,7 +32,7 @@ jobs:
   push:
     needs: test
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: github.event_name == 'push'
 
     strategy:
