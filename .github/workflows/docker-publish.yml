@@ -21,7 +21,9 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/automated-testing/
   test:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        dockerfile: [bionic-x86_64.Dockerfile]
     steps:
       - uses: actions/checkout@v2
 
@@ -31,7 +33,7 @@ jobs:
             docker-compose --file docker-compose.test.yml build
             docker-compose --file docker-compose.test.yml run sut
           else
-            docker build . --file Dockerfile
+            docker build . --file ${{ matrix.dockerfile }}
           fi
 
   # Push image to GitHub Packages.
@@ -42,12 +44,16 @@ jobs:
 
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    
+    strategy:
+      matrix:
+        dockerfile: [bionic-x86_64.Dockerfile]
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Build image
-        run: docker build . --file bionic-x86_64.Dockerfile --tag $IMAGE_NAME
+        run: docker build . --file ${{ matrix.dockerfile }} --tag $IMAGE_NAME
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
