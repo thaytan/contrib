@@ -1,7 +1,7 @@
 # docker build -f bionic-armv8-bootstrap.Dockerfile .
 FROM multiarch/qemu-user-static AS qemu
 
-FROM ubuntu:bionic AS builder
+FROM arm64v8/ubuntu:bionic AS builder
 COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
 RUN apt update && \
     apt install --no-install-recommends -y python3-pip python3-setuptools gcc libpython3.6-dev
