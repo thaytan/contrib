@@ -40,9 +40,9 @@ jobs:
       with:
         name: build-logs
         path: |
-          - ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/meson-logs/*-log.txt
-          - ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/*/config.log
-          - ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/*/*/config.log
-          - ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/CMakeFiles/CMake*.log
-          - ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/*/*/cmake_bootstrap.log
+          ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/meson-logs/*-log.txt
+          ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/*/config.log
+          ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/*/*/config.log
+          ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/CMakeFiles/CMake*.log
+          ${{ env.CONAN_DATA_PATH }}/*/*/_/_/build/*/*/*/cmake_bootstrap.log
 
