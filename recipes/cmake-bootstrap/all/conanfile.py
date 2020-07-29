@@ -6,7 +6,7 @@ class CmakeBootstrapConan(ConanFile):
     name = "cmake-bootstrap"
     ninja_version = "1.10.0"
     description = "A cross-platform open-source make system + ninja"
-    license = "custom"
+    license = "custom", "Apache"
     settings = {"os_build": ["Linux", "Windows"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
 
     def source(self):
