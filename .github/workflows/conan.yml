@@ -33,6 +33,7 @@ jobs:
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
         CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
     - uses: actions/upload-artifact@v2
+      if: ${{ always() }}
       env:
         CONAN_DATA_PATH: $(~/.local/bin/conan config get storage.path)
       with:
