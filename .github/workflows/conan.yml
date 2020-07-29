@@ -6,20 +6,12 @@ jobs:
   build:
     name: ${{ github.event.client_payload.profile }}>${{ github.event.client_payload.package }}
     runs-on: ${{ github.event.client_payload.tags }}
+    container:
+      image: ${{ github.event.client_payload.docker_image }}
     steps:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.client_payload.ref }}
-    - name: Install apt dependencies
-      run: sudo apt install python3-setuptools
-      if: ${{ runner.os == 'Linux' }}
-    - name: Setup Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-      if: ${{ runner.os == 'Windows' }}
-    - name: Install pip dependencies
-      run: python3 -m pip install --upgrade pip conan
     - name: Conan Create
       uses: aivero/conan-action@test
       with:
