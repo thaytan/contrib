@@ -14,7 +14,7 @@ class CmakeBootstrapConan(ConanFile):
         tools.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
 
     def build(self):
-        self.run("python configure.py --bootstrap", cwd=os.path.join(self.build_folder, f"ninja-{self.ninja_version}"))
+        self.run("python3 configure.py --bootstrap", cwd=os.path.join(self.build_folder, f"ninja-{self.ninja_version}"))
 
         cmake = CMake(self)
         cmake.definitions["CMAKE_USE_OPENSSL"] = False
