@@ -4,10 +4,9 @@ from conans import *
 
 
 class MakeBootstrapConan(ConanFile):
-    name = "make"
+    name = "make-bootstrap"
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = "llvm-bootstrap/[^10.0.0]"
 
