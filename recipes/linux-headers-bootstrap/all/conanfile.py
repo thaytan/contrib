@@ -7,6 +7,7 @@ class LinuxHeadersBootstrapConan(ConanFile):
     description = "Linux system headers"
     license = "GPL-2.0-only"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
+    requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
         tools.get(f"https://cdn.kernel.org/pub/linux/kernel/v{self.version.split('.')[0]}.x/linux-{self.version}.tar.xz")
