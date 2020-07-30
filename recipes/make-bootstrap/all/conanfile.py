@@ -15,7 +15,7 @@ class MakeBootstrapConan(ConanFile):
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(configure_dir=f"{self.name}-{self.version}")
+        autotools.configure(configure_dir=f"make-{self.version}")
         autotools.make()
         autotools.install()
 
