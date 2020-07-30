@@ -2,11 +2,11 @@ import os
 from conans import *
 
 
-class LinuxHeadersConan(ConanFile):
-    name = "linux-headers"
+class LinuxHeadersBootstrapConan(ConanFile):
+    name = "linux-headers-bootstrap"
     description = "Linux system headers"
     license = "GPL-2.0-only"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
     build_requires = ("rsync-bootstrap/[^3.2.2]",)
 
     def source(self):
