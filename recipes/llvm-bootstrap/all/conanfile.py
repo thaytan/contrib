@@ -141,6 +141,7 @@ class LlvmBootstrapConan(ConanFile):
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
         self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
+        self.env_info.CPATH = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         self.env_info.CFLAGS = "-flto=thin -nostdinc"
         self.env_info.CXXFLAGS = "-flto=thin -nostdinc -nostdinc++"
         self.env_info.LDFLAGS = "-flto=thin"
