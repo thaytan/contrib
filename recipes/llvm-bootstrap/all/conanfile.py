@@ -13,7 +13,7 @@ class LlvmBootstrapConan(ConanFile):
 
     def requirements(self):
         if self.settings.os_build == "Linux" and self.settings.libc_build == "system":
-            self.requires("glibc-dev/2.27")
+            self.requires("glibc-bootstrap/2.27")
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
