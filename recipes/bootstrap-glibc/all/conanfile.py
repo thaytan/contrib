@@ -3,8 +3,8 @@ import os
 from conans import *
 
 
-class GlibcBootstrapConan(ConanFile):
-    name = "glibc-bootstrap"
+class BootstrapGlibcConan(ConanFile):
+    name = "bootstrap-glibc"
     description = "glibc bootstrap headers files"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
