@@ -11,4 +11,4 @@ readme = "README.md"
 
 
 [dependencies]
-k4a-sys = { git = "https://gitlab.com/aivero/public/k4a-sys", tag = "0.1.4" }
+k4a-sys = { git = "https://gitlab.com/aivero/public/k4a-sys", tag = "0.1.5" }
