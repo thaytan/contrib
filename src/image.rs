@@ -1,6 +1,7 @@
 use k4a_sys::*;
 
 use crate::error::{K4aError, Result};
+use std::convert::TryInto;
 
 /// Struct representation of [`Image`](../image/struct.Image.html) that wraps around `k4a_image_t`,
 /// which manages an image buffer and associated metadata.
@@ -24,13 +25,15 @@ impl Image {
     /// * `Ok(usize)` containing the size in bytes on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn get_buffer_size(&self) -> Result<usize> {
-        let size = unsafe { k4a_image_get_size(self.handle) };
+        let size: u64 = unsafe { k4a_image_get_size(self.handle) };
         if size == 0 {
             Err(K4aError::Failure(
                 "`Image` is invalid and has buffer of size 0",
             ))
         } else {
-            Ok(size)
+            Ok(size
+                .try_into()
+                .expect("Could not convert u64 into usize for `Image`"))
         }
     }
 

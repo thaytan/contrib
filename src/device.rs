@@ -4,6 +4,7 @@ use crate::calibration::Calibration;
 use crate::capture::Capture;
 use crate::error::{K4aError, Result};
 use crate::imu_sample::ImuSample;
+use std::convert::TryInto;
 
 /// Struct representation of a single
 /// [*Azure Kinect DK (K4A)*](https://azure.microsoft.com/en-in/services/kinect-dk/)
@@ -75,7 +76,7 @@ impl Device {
     /// * `Ok(String)` containing the serial number on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn get_serial_number(&self) -> Result<String> {
-        let mut serial_number_length = 0;
+        let mut serial_number_length: u64 = 0;
         match unsafe {
             k4a_device_get_serialnum(self.handle, std::ptr::null_mut(), &mut serial_number_length)
         } {
@@ -87,7 +88,7 @@ impl Device {
             }
         }
 
-        let mut serial_number = vec![0_u8; serial_number_length];
+        let mut serial_number = vec![0_u8; serial_number_length.try_into().unwrap()];
         match unsafe {
             k4a_device_get_serialnum(
                 self.handle,
@@ -358,7 +359,7 @@ impl Device {
     /// * `Ok(&[u8])` containing the raw calibration data on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn get_raw_calibration(&self) -> Result<&[u8]> {
-        let mut calibration_data_length = 0;
+        let mut calibration_data_length: u64 = 0;
         match unsafe {
             k4a_device_get_raw_calibration(
                 self.handle,
@@ -374,7 +375,7 @@ impl Device {
             }
         }
 
-        let mut calibration_data = vec![0_u8; calibration_data_length];
+        let mut calibration_data = vec![0_u8; calibration_data_length.try_into().unwrap()];
         match unsafe {
             k4a_device_get_raw_calibration(
                 self.handle,
@@ -383,7 +384,10 @@ impl Device {
             )
         } {
             k4a_buffer_result_t::K4A_BUFFER_RESULT_SUCCEEDED => Ok(unsafe {
-                std::slice::from_raw_parts(calibration_data.as_mut_ptr(), calibration_data_length)
+                std::slice::from_raw_parts(
+                    calibration_data.as_mut_ptr(),
+                    calibration_data_length.try_into().unwrap(),
+                )
             }),
             _ => Err(K4aError::Failure("Failed to acquire raw calibration data")),
         }
