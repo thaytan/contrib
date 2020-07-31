@@ -1,7 +1,6 @@
 use k4a_sys::*;
 
 use crate::camera_calibration::CameraCalibration;
-use crate::error::{K4aError, Result};
 use crate::extrinsics::Extrinsics;
 
 /// Struct representation of [`Calibration`](../calibration/struct.Calibration.html) that wraps

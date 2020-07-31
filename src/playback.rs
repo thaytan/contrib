@@ -4,6 +4,7 @@ use crate::calibration::Calibration;
 use crate::capture::Capture;
 use crate::error::{K4aError, Result};
 use crate::imu_sample::ImuSample;
+use std::convert::TryInto;
 
 /// Struct representation [`Playback`](../playback/struct.Playback.html) that wraps around
 /// `k4a_playback_t`, which is a handle to a recording opened for playback.
@@ -75,7 +76,7 @@ impl Playback {
     /// * `Ok(&[u8])` containing the raw calibration data on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn get_raw_calibration(&self) -> Result<&[u8]> {
-        let mut calibration_data_length = 0;
+        let mut calibration_data_length: u64 = 0;
         match unsafe {
             k4a_playback_get_raw_calibration(
                 self.handle,
@@ -91,7 +92,7 @@ impl Playback {
             }
         }
 
-        let mut calibration_data = vec![0_u8; calibration_data_length];
+        let mut calibration_data = vec![0_u8; calibration_data_length.try_into().unwrap()];
         match unsafe {
             k4a_playback_get_raw_calibration(
                 self.handle,
@@ -100,7 +101,10 @@ impl Playback {
             )
         } {
             k4a_buffer_result_t::K4A_BUFFER_RESULT_SUCCEEDED => Ok(unsafe {
-                std::slice::from_raw_parts(calibration_data.as_mut_ptr(), calibration_data_length)
+                std::slice::from_raw_parts(
+                    calibration_data.as_mut_ptr(),
+                    calibration_data_length.try_into().unwrap(),
+                )
             }),
             _ => Err(K4aError::Failure("Failed to acquire raw calibration data")),
         }
@@ -131,7 +135,7 @@ impl Playback {
     /// * `Ok(String)` containing the tag value on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn get_tag(&self, name: &String) -> Result<String> {
-        let mut tag_length = 0;
+        let mut tag_length: u64 = 0;
         match unsafe {
             k4a_playback_get_tag(
                 self.handle,
@@ -148,7 +152,7 @@ impl Playback {
             }
         }
 
-        let mut tag_value = vec![0_u8; tag_length];
+        let mut tag_value = vec![0_u8; tag_length.try_into().unwrap()];
         match unsafe {
             k4a_playback_get_tag(
                 self.handle,
