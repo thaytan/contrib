@@ -33,7 +33,6 @@ class BootstrapLlvmConan(ConanFile):
 
     def build(self):
         cmake = CMake(self, build_type="Release")
-https://github.com/aivero/conan-recipes/tree/master/recipes
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
