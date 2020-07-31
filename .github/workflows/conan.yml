@@ -24,17 +24,14 @@ jobs:
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
         CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
-    - name: Get Conan Data Path
-      if: ${{ always() }}
-      run: echo ::set-env name=CONAN_DATA_PATH::$(conan config get storage.path)
     - uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
         name: build-logs
         path: |
-          ${{ env.CONAN_DATA_PATH }}/**/build/**/meson-logs/*-log.txt
-          ${{ env.CONAN_DATA_PATH }}/**/build/**/config.log
-          ${{ env.CONAN_DATA_PATH }}/**/build/**/CMakeError.log
-          ${{ env.CONAN_DATA_PATH }}/**/build/**/CMakeOutput.log
-          ${{ env.CONAN_DATA_PATH }}/**/build/**/cmake_bootstrap.log
+          ${{ env.CONAN_PKG_PATH }}/build/**/meson-logs/*-log.txt
+          ${{ env.CONAN_PKG_PATH }}/build/**/config.log
+          ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
+          ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
+          ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
 
