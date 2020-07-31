@@ -3,17 +3,17 @@ import shutil
 from conans import *
 
 
-class LlvmBootstrapConan(ConanFile):
-    name = "llvm-bootstrap"
+class BootstrapLlvmConan(ConanFile):
+    name = "bootstrap-llvm"
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
-    build_requires = ("cmake-bootstrap/[^3.17.3]",)
+    build_requires = ("bootstrap-cmake/[^3.18.0]",)
     requires = (("generators/[^1.0.0]", "private"),)
 
     def requirements(self):
         if self.settings.os_build == "Linux" and self.settings.libc_build == "system":
-            self.requires("glibc-bootstrap/2.27")
+            self.requires("bootstrap-glibc/2.27")
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
@@ -33,7 +33,7 @@ class LlvmBootstrapConan(ConanFile):
 
     def build(self):
         cmake = CMake(self, build_type="Release")
-
+https://github.com/aivero/conan-recipes/tree/master/recipes
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
