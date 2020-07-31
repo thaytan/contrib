@@ -2,8 +2,8 @@ import os
 from conans import *
 
 
-class CmakeBootstrapConan(ConanFile):
-    name = "cmake-bootstrap"
+class BootstrapCMakeConan(ConanFile):
+    name = "bootstrap-cmake"
     ninja_version = "1.10.0"
     description = "A cross-platform open-source make system + ninja"
     license = "custom", "Apache"
