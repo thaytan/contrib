@@ -3,8 +3,8 @@ import os
 from conans import *
 
 
-class MakeBootstrapConan(ConanFile):
-    name = "make-bootstrap"
+class BootstrapMakeConan(ConanFile):
+    name = "bootstrap-make"
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
