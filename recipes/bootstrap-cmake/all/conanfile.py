@@ -14,16 +14,16 @@ class BootstrapCMakeConan(ConanFile):
         tools.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
 
     def build(self):
-        self.run("python3 configure.py --bootstrap", cwd=os.path.join(self.build_folder, f"ninja-{self.ninja_version}"))
+        cmake = CMake(self)
+        cmake.configure(source_folder=f"ninja-{self.ninja_version}")
+        cmake.build()
+        cmake.install()
 
         cmake = CMake(self)
         cmake.definitions["CMAKE_USE_OPENSSL"] = False
         cmake.configure(source_folder=f"cmake-{self.version}")
         cmake.build()
         cmake.install()
-
-    def package(self):
-        self.copy(os.path.join(f"ninja-{self.ninja_version}", "ninja"), "bin", keep_path=False)
 
     def package_info(self):
         self.env_info.CONAN_CMAKE_GENERATOR = "Ninja"
