@@ -133,6 +133,9 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
             cmake.build(target="install-llvm-config")
+        # Make lld default linker
+        with tools.chdir(os.path.join(self.package_folder, "bin")):
+            os.symlink("ld.lld", "ld")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
