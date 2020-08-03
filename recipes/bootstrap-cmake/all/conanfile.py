@@ -7,7 +7,7 @@ class BootstrapCMakeConan(ConanFile):
     ninja_version = "1.10.0"
     description = "A cross-platform open-source make system + ninja"
     license = "custom", "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
 
     def source(self):
         tools.get(f"https://github.com/ninja-build/ninja/archive/v{self.ninja_version}.tar.gz")
