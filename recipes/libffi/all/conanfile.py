@@ -10,7 +10,7 @@ class LibffiConan(ConanFile):
     requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
-        tools.get(f"https://github.com/libffi/libffi/archive/v{self.version}.tar.gz")
+        tools.get(f"https://github.com/libffi/libffi/releases/download/v{self.version}/libffi-{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -20,9 +20,7 @@ class LibffiConan(ConanFile):
             "--disable-docs",
             "--disable-shared",
         ]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            self.run("sh autogen.sh")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(args=args, configure_dir=f"{self.name}-{self.version}")
+        autotools.make()
+        autotools.install()
