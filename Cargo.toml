@@ -1,6 +1,6 @@
 [package]
 name = "librealsense2"
-version = "2.2.1"
+version = "2.2.2"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
 description = "Rust FFI bindings for librealsense"
 keywords = ["librealsense", "Rust", "FFI", "idiomatic", "safe"]
