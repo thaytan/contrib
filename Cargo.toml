@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 glib-sys = "0.10"
 glib = "0.10"
-gstreamer-sys = "0.8"
+gstreamer-sys = "0.9"
 gstreamer = "0.15"
 gstreamer-video-sys = "0.8"
 gstreamer-video = "0.15"
