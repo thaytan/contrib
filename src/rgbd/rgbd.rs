@@ -95,7 +95,7 @@ pub fn get_aux_buffers(main_buffer: &gst::Buffer) -> Vec<gst::Buffer> {
 pub fn get_aux_buffers_mut(main_buffer: &mut gst::BufferRef) -> Vec<gst::Buffer> {
     main_buffer
         .iter_meta_mut::<BufferMeta>()
-        .map(|meta| unsafe { gst::buffer::Buffer::from_glib_borrow(meta.buffer) })
+        .map(|meta| unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) })
         .collect()
 }
 

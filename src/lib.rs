@@ -21,6 +21,7 @@ extern crate gstreamer_base as gst_base;
 extern crate gstreamer_sys as gst_sys;
 
 extern crate capnp;
+#[allow(clippy::all)]
 pub(crate) mod camera_meta_capnp {
     #![allow(dead_code)]
     #![allow(clippy::redundant_field_names)]

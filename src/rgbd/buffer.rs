@@ -16,7 +16,6 @@
 use glib::translate::from_glib;
 use gst::meta::*;
 use gst::BufferRef;
-use gst::MiniObject;
 use std::fmt;
 
 use crate::rgbd::sys;
