@@ -184,7 +184,7 @@ impl ObjectSubclass for RgbdMux {
         }
 
         klass.add_pad_template(
-            gst::PadTemplate::new_with_gtype(
+            gst::PadTemplate::with_gtype(
                 "sink_%s",
                 gst::PadDirection::Sink,
                 gst::PadPresence::Request,
@@ -196,7 +196,7 @@ impl ObjectSubclass for RgbdMux {
 
         // src pad
         klass.add_pad_template(
-            gst::PadTemplate::new_with_gtype(
+            gst::PadTemplate::with_gtype(
                 "src",
                 gst::PadDirection::Src,
                 gst::PadPresence::Always,
@@ -383,7 +383,7 @@ impl AggregatorImpl for RgbdMux {
         let sink_pads = &mut self.sink_pads.lock().expect("Could not lock sink pads");
         gst_debug!(CAT, obj: aggregator, "create_new_pad for name: {}", name);
         // Create new sink pad from the template
-        let new_sink_pad = gst::Pad::new_from_template(
+        let new_sink_pad = gst::Pad::from_template(
             &self.get_sink_pad_template_with_modified_format(aggregator, name),
             Some(name),
         )
@@ -481,7 +481,7 @@ impl AggregatorImpl for RgbdMux {
                     .get_caps();
                 // Create CAPS query
                 let mut request_downstream_caps_query =
-                    gst::Query::new_caps(src_pad_template_caps.as_ref());
+                    gst::query::Caps::new(src_pad_template_caps.as_ref());
 
                 // Send the query and receive the sink CAPS of the downstream element
                 if src_pad.peer_query(&mut request_downstream_caps_query) {
@@ -783,7 +783,7 @@ impl RgbdMux {
     /// # Arguments
     /// * `aggregator` - The aggregator to drop all queued buffers for.
     fn send_gap_event(&self, aggregator: &gst_base::Aggregator) {
-        let gap_event = gst::Event::new_gap(
+        let gap_event = gst::event::Gap::builder(
             aggregator
                 .get_clock()
                 .expect("Could not get clock of `rgbdmux`")
@@ -940,7 +940,7 @@ impl RgbdMux {
         // Figure out the new caps the element should output
         let ds_caps = self.get_current_downstream_caps(element);
         // And send a CAPS event downstream
-        let caps_event = gst::Event::new_caps(&ds_caps).build();
+        let caps_event = gst::event::Caps::builder(&ds_caps).build();
         if !element.send_event(caps_event) {
             gst_error!(CAT, obj: element, "Failed to send CAPS negotiation event");
         }
@@ -1011,7 +1011,7 @@ impl RgbdMux {
                 }
 
                 // Return the pad template that was adjusted with new CAPS
-                return gst::PadTemplate::new_with_gtype(
+                return gst::PadTemplate::with_gtype(
                     "sink_%s",
                     default_sink_pad_template.get_property_direction(),
                     default_sink_pad_template.get_property_presence(),

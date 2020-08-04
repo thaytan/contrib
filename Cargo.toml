@@ -10,14 +10,15 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-glib = "0.9"
-gstreamer = "0.15"
-gstreamer-base = { version = "0.15", features = ["dox"] }
+glib = "0.10"
+gstreamer = "0.16"
+gstreamer-base = { version = "0.16", features = ["dox"] }
 lazy_static = "1.4"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "1.2.0"
+#tag = "1.2.0"
+branch = "update-glib"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]

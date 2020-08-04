@@ -142,8 +142,11 @@ impl RgbdDemux {
 
         // push a StreamStart event to tell downstream to expect output soon
         pad.push_event(
-            gst::event::Event::new_stream_start(stream_id.as_str())
-                .group_id(gst::util_group_id_next())
+            // gst::event::Event::new_stream_start(stream_id.as_str())
+            //     .group_id(gst::util_group_id_next())
+            //     .build(),
+            gst::event::StreamStart::builder(stream_id.as_str())
+                .group_id(gst::GroupId::next())
                 .build(),
         );
     }
@@ -211,32 +214,27 @@ impl RgbdDemux {
         }
     }
 
-    /// Set the sink pad event and chain functions. This causes it to listen to GStreamer signals
-    /// and take action correspondingly.
-    /// Each function is wrapped in catch_panic_pad_function(), which will
-    /// - Catch panics from the pad functions and instead of aborting the process
-    ///   it will simply convert them into an error message and poison the element
-    ///   instance
-    /// - Extract RgbdDemux struct from the object instance and pass it to us
-    /// # Arguments
-    /// * `sink_pad` - The sink pad for which the signals should be listened to.
-    fn set_sink_pad_functions(sink_pad: &gst::Pad) {
-        // Sink Event
-        sink_pad.set_event_function(|_, parent, event| {
-            RgbdDemux::catch_panic_pad_function(
-                parent,
-                || false,
-                |rgbd_demux, element| rgbd_demux.sink_event(element, event),
-            )
-        });
-        // Sink Chain
-        sink_pad.set_chain_function(|_, parent, buffer| {
-            RgbdDemux::catch_panic_pad_function(
-                parent,
-                || Err(gst::FlowError::Error),
-                |rgbd_demux, element| rgbd_demux.sink_chain(element, buffer),
-            )
-        });
+    fn create_sink_pad(element: &gst::Element) -> gst::Pad {
+        let templ = element
+            .get_pad_template("sink")
+            .expect("Failed to get sink pad template in rgbddemux");
+
+        gst::Pad::builder_with_template(&templ, Some("sink"))
+            .event_function(|_, parent, event| {
+                Self::catch_panic_pad_function(
+                    parent,
+                    || false,
+                    |rgbd_demux, element| rgbd_demux.sink_event(element, event),
+                )
+            })
+            .chain_function(|_, parent, buffer| {
+                Self::catch_panic_pad_function(
+                    parent,
+                    || Err(gst::FlowError::Error),
+                    |rgbd_demux, element| rgbd_demux.sink_chain(element, buffer),
+                )
+            })
+            .build()
     }
 
     /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
@@ -267,7 +265,7 @@ impl RgbdDemux {
                 gst_debug!(CAT, "Got a stream start event {:?}", stream_start);
                 let stream_identifier = StreamIdentifier {
                     stream_id: stream_start.get_stream_id().to_string(),
-                    _group_id: stream_start.get_group_id(),
+                    _group_id: stream_start.get_group_id().unwrap(),
                 };
 
                 self.push_stream_start_on_all_pads(&stream_identifier);
@@ -369,7 +367,7 @@ impl RgbdDemux {
             gst_debug!(CAT, "Pushing new caps event");
             pad_handle
                 .pad
-                .push_event(gst::event::Event::new_caps(&new_pad_caps).build());
+                .push_event(gst::event::Caps::builder(&new_pad_caps).build());
             gst_debug!(CAT, "All done from here");
         }
         Ok(())
@@ -472,7 +470,7 @@ impl RgbdDemux {
         }
 
         // Create the src pad with these caps
-        let new_src_pad = gst::Pad::new_from_template(
+        let new_src_pad = gst::Pad::from_template(
             &template.unwrap_or_else(|| {
                 element
                     .get_pad_template("src_%s")
@@ -649,14 +647,8 @@ impl ObjectImpl for RgbdDemux {
             .downcast_ref::<gst::Element>()
             .expect("Failed to cast `obj` to a gst::Element");
 
-        // Create sink pad from the template that is registered with the class
-        let templ = element
-            .get_pad_template("sink")
-            .expect("Failed to get sink pad template in rgbddemux");
-        let sink_pad = gst::Pad::new_from_template(&templ, Some("sink"));
-
-        // Set all sink pad functions
-        Self::set_sink_pad_functions(&sink_pad);
+        // Create sink pad from the template that is registered with the class and set all sink pad functions
+        let sink_pad = Self::create_sink_pad(element);
 
         // Add the sink pad to the element
         element
