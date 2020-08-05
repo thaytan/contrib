@@ -110,6 +110,8 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(self.package_folder, "bin", "clang++")
         cmake.definitions["CMAKE_AR"] = os.path.join(self.package_folder, "bin", "ar")
         cmake.definitions["CMAKE_RANLIB"] = os.path.join(self.package_folder, "bin", "ranlib")
+        cmake.definitions["LLVM_TABLEGEN"] = os.path.join(self.package_folder, "bin", "llvm-tblgen")
+        cmake.definitions["CLANG_TABLEGEN"] = os.path.join(self.package_folder, "bin", "clang-tblgen")
 
         # Stage0 clang can actually create useful LTO libraries
         cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
