@@ -82,6 +82,9 @@ class BootstrapLlvmConan(ConanFile):
         # libcxx options
         cmake.definitions["LIBCXX_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
+        # Use musl
+        if self.settings.libc_build == "musl":
+            cmake.definitions["LIBCXX_HAS_MUSL_LIBC"] = True
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
