@@ -20,7 +20,7 @@ class BootstrapNinjaConan(ConanFile):
         cmake.build()
 
     def package(self):
-        self.copy(os.path.join(f"{self.name}-{self.version}", "ninja"), "bin", keep_path=False)
+        self.copy("ninja", "bin")
 
     def package_info(self):
         self.env_info.CONAN_CMAKE_GENERATOR = "Ninja"
