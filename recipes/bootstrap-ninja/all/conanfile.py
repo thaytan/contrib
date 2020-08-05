@@ -18,7 +18,9 @@ class BootstrapNinjaConan(ConanFile):
         cmake.definitions["CMAKE_USE_OPENSSL"] = False
         cmake.configure(source_folder=f"ninja-{self.version}")
         cmake.build()
-        cmake.install()
+
+    def package(self):
+        self.copy(os.path.join(f"{self.name}-{self.version}", "ninja"), "bin", keep_path=False)
 
     def package_info(self):
         self.env_info.CONAN_CMAKE_GENERATOR = "Ninja"
