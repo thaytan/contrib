@@ -7,7 +7,7 @@ class BootstrapLlvmConan(ConanFile):
     name = "bootstrap-llvm"
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
     build_requires = ("bootstrap-cmake/[^3.18.0]",)
     requires = (("generators/[^1.0.0]", "private"),)
 
