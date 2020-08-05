@@ -103,6 +103,8 @@ class BootstrapLlvmConan(ConanFile):
         cmake.build(target="install-libcxx")
         cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
+        cmake.build(target="install-llvm-tblgen")
+        cmake.build(target="install-clang-tblgen")
 
         # Use stage 0 lld, clang, ar and ranlib
         cmake.definitions["LLVM_USE_LINKER"] = os.path.join(self.package_folder, "bin", "ld.lld")
@@ -141,6 +143,8 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
             cmake.build(target="install-llvm-config")
+            cmake.build(target="install-llvm-tblgen")
+            cmake.build(target="install-clang-tblgen")
         # Make lld default linker
         with tools.chdir(os.path.join(self.package_folder, "bin")):
             os.symlink("ld.lld", "ld")
