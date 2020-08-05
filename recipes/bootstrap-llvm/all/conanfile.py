@@ -42,8 +42,16 @@ class BootstrapLlvmConan(ConanFile):
         # LLVM build options
         if self.settings.arch_build == "x86_64":
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "X86"
+            arch = "x86_64"
         elif self.settings.arch_build == "armv8":
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
+            arch = "aarch64"
+        if self.settings.libc_build == "musl":
+            abi = "musl"
+        else:
+            abi = "gnu"
+        cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
+
         cmake.definitions["LLVM_BUILD_RUNTIME"] = True
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
@@ -82,7 +90,6 @@ class BootstrapLlvmConan(ConanFile):
         # libcxx options
         cmake.definitions["LIBCXX_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
-        # Use musl
         if self.settings.libc_build == "musl":
             cmake.definitions["LIBCXX_HAS_MUSL_LIBC"] = True
 
