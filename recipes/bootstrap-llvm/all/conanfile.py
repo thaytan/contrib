@@ -8,12 +8,15 @@ class BootstrapLlvmConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
-    build_requires = ("bootstrap-cmake/[^3.18.0]",)
+    build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
     requires = (("generators/[^1.0.0]", "private"),)
 
     def requirements(self):
-        if self.settings.os_build == "Linux" and self.settings.libc_build == "system":
-            self.requires("bootstrap-glibc/2.27")
+        if self.settings.os_build == "Linux":
+            if self.settings.libc_build == "system":
+                self.requires("bootstrap-glibc/2.27")
+            if self.settings.libc_build == "musl":
+                self.requires("bootstrap-musl/1.2.1")
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
