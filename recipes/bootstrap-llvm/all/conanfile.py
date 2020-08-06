@@ -34,6 +34,9 @@ class BootstrapLlvmConan(ConanFile):
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
         shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
+        if self.settings.libc_build == "musl":
+            tools.get(f"https://www.musl-libc.org/releases/musl-{self.musl_version}.tar.gz")
+
     def build(self):
         cmake = CMake(self, build_type="Release")
         # Reduce memory footprint of linking with gold linker
@@ -126,6 +129,26 @@ class BootstrapLlvmConan(ConanFile):
         # Reduce memory usage (Needed for LTO)
         # cmake.definitions["CMAKE_JOB_POOL_LINK"] = "link"
         # cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
+
+        # Build musl
+        if self.settings.libc_build == "musl":
+            vars = {
+                "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
+                "CC": os.path.join(self.package_folder, "bin", "clang"),
+                "CFLAGS": f"-nostdinc -isystem {os.path.join(self.package_folder, 'include')} -L{os.path.join(self.package_folder, "clang", self.version, "lib", "linux")}",
+                "LDFLAGS": f"-L{os.path.join(self.package_folder, "clang", self.version, "lib", "linux")}",
+                "TARGET": f"{arch}-linux-musl",
+                # "LIBRART_PATH": "/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux",
+                "LIBCC": f"-lclang_rt.builtins-{arch}",
+            }
+            autotools = AutoToolsBuildEnvironment(self)
+            autotools.configure(vars=vars, configure_dir=f"musl-{self.musl_version}")
+            autotools.make()
+            autotools.install()
+            with tools.chdir(os.path.join(self.package_folder, "bin")):
+                os.symlink(os.path.join("..", "lib", "libc.so"), "ldd")
+            with tools.chdir(os.path.join(self.package_folder, "lib")):
+                os.symlink(os.path.join("..", "lib", "libc.so"), f"ld-musl-{arch}.so.1")
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
