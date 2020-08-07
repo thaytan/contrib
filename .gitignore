@@ -6,3 +6,4 @@ Cargo.lock
 *.code-workspace
 build/
 cmake-build-*
+.vscode/

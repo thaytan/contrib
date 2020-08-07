@@ -22,19 +22,14 @@ Provide an easy access to all RS frames in GStreamer for further processing and 
 
 The pipeline below streams _depth_, _infra1_, _infra2_ and _color_ from a physical device specified by `RS_SERIAL`. These are then visualised in real-time via `glimagesink` for each stream.
 
-This example requires xref:rgbd:ROOT:pages$rgbd.adoc[`rgbddemux`] in order to demultiplex a single `video/rgbd` stream into multiple `video/x-raw` streams.
+This example requires xref:rgbd:ROOT:page$rgbd.adoc[rgbddemux] in order to demultiplex a single `video/rgbd` stream into multiple `video/x-raw` streams.
 
 [source,sourceCode,bash]
 ----
 export RS_SERIAL=XXXXXXXXXXXX
 
-gst-launch-1.0 rgbddemux name=rsdemux \
-realsensesrc serial=${RS_SERIAL} enable-depth=true enable-infra1=true enable-infra2=true enable-color=true ! \
-rsdemux.sink \
-rsdemux.src_depth ! queue ! glimagesink  \
-rsdemux.src_infra1 ! queue ! glimagesink \
-rsdemux.src_infra2 ! queue ! glimagesink \
-rsdemux.src_color ! queue ! glimagesink 
+gst-launch-1.0 realsensesrc serial=${RS_SERIAL} enable-depth=true ! rgbddemux name=d \
+d.src_depth ! queue ! videoconvert ! glimagesink
 ----
 
 
@@ -98,7 +93,7 @@ The `realsensesrc` produces `video/rgbd` https://gstreamer.freedesktop.org/docum
 * Frame data for *main stream*, typically the _depth_ stream.
 * A full GstBuffer for each *auxiliary stream*, e.g. _infra1_, _color_ or any of the meta streams. 
 
-The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:depthmeta:ROOT:pages$depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged using the `TagsMeta`.
+The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:depthmeta:ROOT:page$depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged using the `TagsMeta`.
 
 
 ==== Video Format
