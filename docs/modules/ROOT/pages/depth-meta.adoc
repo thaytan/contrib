@@ -60,9 +60,10 @@ All pads that transport a `video/rgbd` stream must utilise the custom
 first stream is considered to be the “main” stream and is therefore
 transported in the main buffer. There must always be at least one stream
 enabled. All additional streams are attached as meta to the main buffer.
-The following priority is currently applied for video/rgbd streams: `depth > infra1 > infra2 > color`, meaning that
-if there is a `depth` stream, it will always be the main stream. If only `infra1` and `color` are available, `infra1` will be
-the main stream.
+The following priority is currently applied for `video/rgbd` streams when streaming from a RealSense camera:
+`depth > infra1 > infra2 > color`, meaning that if there is a `depth` stream, it will always be the main stream. If
+only `infra1` and `color` are available, `infra1` will be the main stream. This priority depends on the camera, so
+please consult the individual documentation for more information.
 * *%s_format:* Format for each selected stream, e.g.
 `depth_format="Gray16_LE"`.
 * *%s_width:* Width for each selected stream, e.g. `depth_width=1280`.
