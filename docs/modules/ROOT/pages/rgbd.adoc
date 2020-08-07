@@ -8,66 +8,70 @@ GStreamer plugin for handling `video/rgbd` stream, namely demultiplexing with `r
 
 == Motivation
 
-The `rgbd` plugin was implemented to add support for depth video in GStreamer. Many depth video cameras produce multiple video streams simultaneously (e.g. Intel's RealSense and Microsoft's Azure Kinect). The `video/rgbd` CAPS add support for these synchronous raw streams and the `rgbd` plugin presents the interface between the `video/rgbd` stream and the rest of GStreamer.
+The `rgbd` plugin was implemented to add support for depth video in GStreamer. Many depth video cameras produce multiple
+video streams simultaneously (e.g. Intel's RealSense and Microsoft's Azure Kinect). The `video/rgbd` CAPS add support
+for these synchronous raw streams and the `rgbd` plugin presents the interface between the `video/rgbd` stream and the
+rest of GStreamer.
 
-## `video/rgbd`
-
-All pads that transport a `video/rgbd` stream must utilise the custom `video/rgbd` CAPS type. These caps always contain the following fields:
-
-* *streams* - This field contains transported streams with a certain priority, e.g. `depth > infra1 > infra2 > color`. The first stream in this comma separated string, e.g. "depth,infra2,color", is considered to be the main stream and is therefore transported in the main buffer. There must always be at least one stream enabled. All additional buffers are attached as meta to the main buffer.
-* *%s_format* - Format for each selected stream, e.g. depth_format="GRAY16_LE".
-* *%s_width* - Width for each selected stream, e.g. depth_width=1280.
-* *%s_height* - Height for each selected stream, e.g. depth_height=720.
-* *framerate* - Common framerate for all selected streams, e.g. framerate=30/1.
-
-Each buffer in `video/rgbd` CAPS transport contains the following:
-* Frame data for *main stream*, typically the _depth_ stream.
-* A full GstBuffer for each *auxiliary stream*, e.g. _color_ or any of the meta streams. 
-
-The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:depthmeta:ROOT:pages$depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged accordingly using the `TagsMeta`.
+For more information about the custom video/rgbd CAPS, please consult the documentation in
+xref:depthmeta:ROOT:page$depth-meta.adoc[Depth Meta].
 
 == General Overview
 
-This plugin allows conversion between `video/rgbd` and elementary streams. The `video/rgbd` is a format for packed stream that can contain multiple auxiliary streams attached to the main stream. Elementary stream is a stream, for which there is out-of-the-box support in GStreamer, e.g. `video/x-raw`, `image/jpeg` and `meta/x-klv`.
+This plugin allows conversion between `video/rgbd` and elementary streams. An elementary stream is a stream, for
+which there is out-of-the-box support in GStreamer, e.g. `video/x-raw`, `image/jpeg` and `meta/x-klv`.
 
-For this conversion, two elements were implemented.
+The rgbd plugin contains two elements:
+
 * `rgbddemux` - Splits a `video/rgbd` stream into one or more elementary streams.
 * `rgbdmux` - Combines one to many elementary streams into a single `video/rgbd` stream.
 
-Both elements rely on `video/rgbd` CAPS to determine what `streams` should be present. For `video/x-raw` streams, they also require `%s_format`, `%s_width` and `%s_height`. A `video/x-raw` stream with `%s_format="*jpeg*"` is treated accordingly as MJPG stream. 
-> TODO: `rgbddemux` currently does not fully support `image/jpeg`.
+Both elements rely on `video/rgbd` CAPS to determine what `streams` should be present. For `video/x-raw` streams, they
+also require `%s_format`, `%s_width` and `%s_height`. A `video/x-raw` stream with `%s_format="*jpeg*"` is treated
+accordingly as MJPG stream.
 
-A notable exception are metadata pads. Metadata pads are identified by their name, and *must end with "meta"*. Metadata are handled separately from video streams, and do not require `%s_format`, `%s_width` and `%s_height` fields to be present in the `video/rgbd` caps. All metadata are treated as `meta/x-klv`, but are *NOT* packed according to KLV standard.
+TODO:: `rgbddemux` currently does not fully support `image/jpeg`.
+
+A notable exception are metadata pads. Metadata pads are identified by their name, and *must end with "meta"*. Metadata
+are handled separately from video streams, and do not require `%s_format`, `%s_width` and `%s_height` fields to be
+present in the `video/rgbd` caps. All metadata are treated as `meta/x-klv`, but are *NOT* packed according to KLV
+standard.
 
 == Minimal GStreamer Pipeline
 
-Below is an example of demultiplexing, multiplexing and demultiplexing again a `video/rgbd` stream, which is sourced by xref:realsense:ROOT:pages$realsense.adoc[`realsensesrc`]. This should demonstrate both elements working by visualising `video/x-raw` _depth_ and _color_ streams by the use of `glimagesink`s. Furthermore, a `camerameta` stream is treated as `meta/x-klv` and dumped into `fakesink`.
+The first example shows how to demux and display a `video/rgbd` stream from a
+xref:realsense:ROOT:page$realsense.adoc[realsensesrc] in a `glimagesink`:
 
 [source,sourceCode,bash]
 ----
 export RS_SERIAL=XXXXXXXXXXXX
 
-gst-launch-1.0 rgbddemux name=rsdemux1 rgbdmux name=rsmux rgbddemux name=rsdemux2 \
-realsensesrc serial=${REALSENSE_SERIAL} enable-depth=true enable-color=true attach-camera-meta=true ! \
-rsdemux1.sink \
-rsdemux1.src_depth ! queue ! rsmux.sink_depth \
-rsdemux1.src_color ! queue ! rsmux.sink_color \
-rsdemux1.src_camerameta ! queue ! rsmux.sink_camerameta \
-rsmux.src ! \
-rsdemux2.sink \
-rsdemux2.src_depth ! queue ! glimagesink \
-rsdemux2.src_color ! queue ! glimagesink \
-rsdemux2.src_camerameta ! queue ! fakesink
+gst-launch-1.0 realsensesrc serial=${REALSENSE_SERIAL} ! rgbddemux name=d \
+d.src_depth ! queue ! videoconvert ! glimagesink
 ----
 
+The second example demonstrates how both the `rgbddemux` and `rgbdmux` works by demuxing, muxing and ``fakesink``'ing a
+`video/rgbd` stream:
+
+[source, demux-mux-fs, bash]
+----
+export RS_SERIAL=XXXXXXXXXXXX
+
+gst-launch-1.0 rgbdmux name=m \
+realsensesrc serial=${REALSENSE_SERIAL} ! rgbddemux name=d \
+d.src_depth ! queue ! m.sink_depth \
+m. ! fakesink
+----
 
 == `rgbddemux`
 
-This element utilises https://gstreamer.freedesktop.org/documentation/gstreamer/gstelement.html[GstElement] as a base class.
+This element utilises https://gstreamer.freedesktop.org/documentation/gstreamer/gstelement.html[GstElement] as a base
+class.
 
 === Pads and CAPS
 
-The `rgbddemux` has a single `.sink` pad and arbitrary number of `.src_%s` pads, which must be requested from the element. Here, `%s` indicates the name of the stream, e.g. _depth_ or _color_.
+The `rgbddemux` has a single `.sink` pad and arbitrary number of `.src_%s` pads, which must be requested from the
+element. Here, `%s` indicates the name of the stream, e.g. _depth_ or _color_.
 
 ----
 SINK template: 'sink'
@@ -84,16 +88,20 @@ SRC template: 'src_%s'
         image/jpeg
 ----
 
-The `rgbddemux` maps `video/rgbd` CAPS to a set of `video/x-raw`, `meta/x-klv` or `image/jpeg` CAPS. It utilises the following rules when applying the mapping:
+The `rgbddemux` maps `video/rgbd` CAPS to a set of `video/x-raw`, `meta/x-klv` or `image/jpeg` CAPS. It utilises the
+following rules when applying the mapping:
 
 . If a stream name contains "meta", create a single `meta/x-klv` `.src_%s` pad for it.
 . Otherwise, `video/x-raw` is expected for all other entries in the `streams`-field of `video/rgbd` CAPS.
     .. If `%s_format` contains "jpeg", create a single `image/jpeg` `.src_%s` pad for it.
-    .. For all other streams, `%s_format`, `%s_width` and `%s_height` are mapped to a single `video/x-raw` `.src_%s` pad for it, alongside the common `framerate`, which is shared across all streams.
+    .. For all other streams, `%s_format`, `%s_width` and `%s_height` are mapped to a single `video/x-raw` `.src_%s`
+pad for it, alongside the common `framerate`, which is shared across all streams.
 
 When using this element, make sure to request only streams that are contained in `streams` CAPS.
-* If there is a *request for a `.src_%s` pad, which is NOT included* in the `video/rgbd` `streams` field, *the element will block* and produce no data.
-* If a stream is included in `video/rgbd`, but no pad is requested for it, the stream will be ignored and the buffers dropped.
+* If there is a *request for a `.src_%s` pad, which is NOT included* in the `video/rgbd` `streams` field, *the element
+will block* and produce no data.
+* If a stream is included in `video/rgbd`, but no pad is requested for it, the stream will be ignored and the buffers
+dropped.
 
 Furthermore, make sure to *follow all `.src_%s` pads* with an immediate *`queue`*.
 
@@ -101,21 +109,29 @@ Furthermore, make sure to *follow all `.src_%s` pads* with an immediate *`queue`
 
 The `rgbddemux` accepts `video/rgbd` upstream CAPS with arbitrary fields.
 
-The CAPS negotiation with downstream elements begins once `.src_%s` pad is requested. This element is strict about its CAPS with downstream element, as these are based on the fixated upstream `video/rgbd` CAPS, hence any downstream element needs to adjust its CAPS accordingly.
+The CAPS negotiation with downstream elements begins once `.src_%s` pad is requested. This element is strict about its
+CAPS with downstream element, as these are based on the fixated upstream `video/rgbd` CAPS, hence any downstream element
+needs to adjust its CAPS accordingly.
 
-TODO:: Implement CAPS negotiation on the `video/rgbd`-side, such that downstream elements can have some requests/preferences on the format and such.
+TODO:: Implement CAPS negotiation on the `video/rgbd`-side, such that downstream elements can have some
+requests/preferences on the format and such.
 
 === Signalling
 
-If the element discovers a stream in the `streams`-field, for which a pad was not requested, a `pad-added` signal will be fired to notify the pipeline that a stream is available on the given pad. The `pad-added` signal will be immediately followed by a `STREAM_START` event and subsequent caps negotiation.
+If the element discovers a stream in the `streams`-field, for which a pad was not requested, a `pad-added` signal will
+be fired to notify the pipeline that a stream is available on the given pad. The `pad-added` signal will be immediately
+followed by a `STREAM_START` event and subsequent caps negotiation.
 
 == `rgbdmux`
 
-This element utilises https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html[GstAggregator] as a base class.
+This element utilises https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html[GstAggregator] as a base
+class.
 
 === Pads and CAPS
 
-The `rgbdmux` has arbitrary number of `.sink_%s` pads and a single `.src` pad. All `.sink_%s` pads must be requested from the element. Similar to `rgbddemux`, `%s` indicates the name of the stream, e.g. _depth_ or _color_. All pads are of https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html#GstAggregatorPad[GstAggregatorPad] type.
+The `rgbdmux` has arbitrary number of `.sink_%s` pads and a single `.src` pad. All `.sink_%s` pads must be requested
+from the element. Similar to `rgbddemux`, `%s` indicates the name of the stream, e.g. _depth_ or _color_. All pads are
+of https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html#GstAggregatorPad[GstAggregatorPad] type.
 
 ----
 SINK template: 'sink_%s'
@@ -132,16 +148,21 @@ SRC template: 'src'
         video/rgbd
 ----
 
-The `rgbdmux` performs opposite mapping of CAPS from arbitrary number of `video/x-raw`, `image/jpeg` or `meta/x-klv` streams to a single `video/rgbd`.
+The `rgbdmux` performs opposite mapping of CAPS from arbitrary number of `video/x-raw`, `image/jpeg` or `meta/x-klv`
+streams to a single `video/rgbd`.
 
 For each `.sink_%s` pad that was requested, this element performs the following:
 . Add `%s` stream name to `streams` of `video/rgbd` CAPS.
-. If CAPS contain `format`, `width` or `height`, map them to `%s_format`, `%s_width` and `%s_height` in `video/rgbd` CAPS for the specific stream.
+. If CAPS contain `format`, `width` or `height`, map them to `%s_format`, `%s_width` and `%s_height` in `video/rgbd`
+CAPS for the specific stream.
 . Pass `framerate` from `.sink_%s` CAPS to `.src` CAPS. It is expected that all `.sink_%s` pads share a common framerate.
 
 === Behaviour
 
-Muxing a video-stream, especially after transport across the internet, comes with some issues. We need to be able to handle frames that are late - or missing entirely. The `rgbdmux` element is based on GStreamer's `Aggregator`, which handles some of this for us, but the default behaviour of that element is to wait indefinitely for late frames. We have therefore extended this with custom behaviour, which can be controlled with the following properties:
+Muxing a video-stream, especially after transport across the internet, comes with some issues. We need to be able to
+handle frames that are late - or missing entirely. The `rgbdmux` element is based on GStreamer's `Aggregator`, which
+handles some of this for us, but the default behaviour of that element is to wait indefinitely for late frames. We have
+therefore extended this with custom behaviour, which can be controlled with the following properties:
 
 * `deadline-multiplier` - Controls the deadline of the late buffers. It is used in correspondence with:
 * `drop-if-missing` - Enables deadline-based aggregation. If any of the buffers do not make it before the deadline, all
@@ -159,10 +180,13 @@ assumption that a human consumer may have different requirements for the stream 
 
 === CAPS Negotiation
 
-The `rgbdmux` accepts `video/x-raw`, `image/jpeg` or `meta/x-klv` upstream CAPS with arbitrary fields, once a `.sink_%s` pad is requested.
+The `rgbdmux` accepts `video/x-raw`, `image/jpeg` or `meta/x-klv` upstream CAPS with arbitrary fields, once a `.sink_%s`
+pad is requested.
 
-The CAPS negotiation with downstream element is strict, as these `video/rgbd` CAPS are based on the fixated upstream CAPS from all pads combined, hence any downstream element needs to adjust its CAPS accordingly.
+The CAPS negotiation with downstream element is strict, as these `video/rgbd` CAPS are based on the fixated upstream
+CAPS from all pads combined, hence any downstream element needs to adjust its CAPS accordingly.
 
-The downstream CAPS are re-negotiated each time a new `.sink_%s` pad is requested in order to allow dynamic pipeline linking.
+The downstream CAPS are re-negotiated each time a new `.sink_%s` pad is requested in order to allow dynamic pipeline
+linking.
 
 // end::rgbd[]
