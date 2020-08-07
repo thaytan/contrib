@@ -33,10 +33,6 @@ Furthermore, link:depth_meta[gst-depth-meta] is utilised to attach a
 used by other elements to identify each buffer. Said tag is attached
 using the `TagsMeta`.
 
-The `video/rgbd` is not formally defined in any of the GStreamer
-elements, but simply emerges because we have implemented as series of
-elements that accept and operate on `video/rgbd` CAPS.
-
 ==== Example Buffer Structure
 
 The following structure outlines how buffers can be tagged and stacked,
@@ -64,6 +60,10 @@ All pads that transport a `video/rgbd` stream must utilise the custom
 first stream is considered to be the “main” stream and is therefore
 transported in the main buffer. There must always be at least one stream
 enabled. All additional streams are attached as meta to the main buffer.
+The following priority is currently applied for `video/rgbd` streams when streaming from a RealSense camera:
+`depth > infra1 > infra2 > color`, meaning that if there is a `depth` stream, it will always be the main stream. If
+only `infra1` and `color` are available, `infra1` will be the main stream. This priority depends on the camera, so
+please consult the individual documentation for more information.
 * *%s_format:* Format for each selected stream, e.g.
 `depth_format="Gray16_LE"`.
 * *%s_width:* Width for each selected stream, e.g. `depth_width=1280`.
@@ -71,5 +71,17 @@ enabled. All additional streams are attached as meta to the main buffer.
 * *framerate:* Common framerate for all selected streams, e.g.
 `framerate=30/1`.
 
+Each buffer in `video/rgbd` CAPS transport contains the following:
+
+* Frame data for *main stream*, typically the _depth_ stream.
+* A full GstBuffer for each *auxiliary stream*, e.g. _color_ or any of the meta streams.
+
+The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta`
+described in xref:depthmeta:ROOT:page$depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream*
+and *auxiliary streams*, are tagged accordingly using the `TagsMeta`.
+
+The `video/rgbd` is not formally defined in any of the GStreamer
+elements, but simply emerges because we have implemented as series of
+elements that accept and operate on `video/rgbd` CAPS.
 
 // end::depth_meta[]
