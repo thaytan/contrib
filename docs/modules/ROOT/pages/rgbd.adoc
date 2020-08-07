@@ -40,7 +40,7 @@ standard.
 == Minimal GStreamer Pipeline
 
 The first example shows how to demux and display a `video/rgbd` stream from a
-xref:realsense:ROOT:page$realsense.adoc[`realsensesrc`] in a `glimagesink`:
+xref:realsense:ROOT:page$realsense.adoc[realsensesrc] in a `glimagesink`:
 
 [source,sourceCode,bash]
 ----
