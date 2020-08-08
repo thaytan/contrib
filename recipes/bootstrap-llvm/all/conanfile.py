@@ -8,7 +8,7 @@ class BootstrapLlvmConan(ConanFile):
     musl_version = "1.2.0"
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
+    settings = {"build_type": ["RelWithDebInfo"], "os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
     build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
     requires = (("generators/[^1.0.0]", "private"),)
 
@@ -39,7 +39,7 @@ class BootstrapLlvmConan(ConanFile):
             tools.get(f"https://www.musl-libc.org/releases/musl-{self.musl_version}.tar.gz")
 
     def build(self):
-        cmake = CMake(self, build_type="Release")
+        cmake = CMake(self)
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
@@ -106,11 +106,11 @@ class BootstrapLlvmConan(ConanFile):
 
         # Stage 0 build (lld, clang, ar, libcxx)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
-        cmake.build(target="install-lld")
         cmake.build(target="install-clang")
         cmake.build(target="install-clang-resource-headers")
         cmake.build(target="install-ar")
         cmake.build(target="install-ranlib")
+        cmake.build(target="install-lld")
         cmake.build(target="install-libcxx")
         cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
@@ -132,6 +132,7 @@ class BootstrapLlvmConan(ConanFile):
         # cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         # Build musl
+        cxxflags = ""
         if self.settings.libc_build == "musl":
             vars = {
                 "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
@@ -150,6 +151,8 @@ class BootstrapLlvmConan(ConanFile):
                 os.symlink(os.path.join("..", "lib", "libc.so"), "ldd")
             with tools.chdir(os.path.join(self.package_folder, "lib")):
                 os.symlink(os.path.join("..", "lib", "libc.so"), f"ld-musl-{arch}.so.1")
+            # GVN causes segmentation fault during recursion higher than 290
+            cxxflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
@@ -160,14 +163,15 @@ class BootstrapLlvmConan(ConanFile):
         # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
+            "CXXFLAGS": cxxflags,
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
-            cmake.build(target="install-lld")
             cmake.build(target="install-clang")
             cmake.build(target="install-clang-resource-headers")
             cmake.build(target="install-ar")
             cmake.build(target="install-ranlib")
+            cmake.build(target="install-lld")
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
