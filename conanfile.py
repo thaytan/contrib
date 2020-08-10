@@ -26,8 +26,9 @@ class AiveroRgbDToolkit(ConanFile):
         self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
         self.requires("gstreamer-plugins-good/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
         self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
+        self.requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
 
-    def package(self):
+    def package(self):  
         self.copy(pattern="*.adoc*", keep_path=False)
         self.copy("*", src="scripts/", dst="scripts", keep_path=False)
 
