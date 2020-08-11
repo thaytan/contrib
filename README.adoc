@@ -91,6 +91,57 @@ with tools.chdir(install_path):
     self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
 ----
 
+
+=== Install as docker
+
+The aivero-rgbd-toolkit can also be run inside a docker container. The `+docker+` subfolder contains an example `+Dockerfile+` and `+docker-compose.yml+` that can be used to build and run a container.
+
+WARNING: You will not be able to access the X server, preventing you from showing any GUI, unless you explicitly configure both docker and your xserver. How to do this is out of scope for this readme.
+
+NOTE: It is imperative to bind mound the `+/dev+` folder into the container and to run in `+--privileged+` mode to allow accessing the hardware. Furthermore, you still need to install the udev rules as per <<udev-rules>>.
+
+==== Docker
+
+[source,bash]
+----
+cd docker
+
+# specify the tag or branch to use from https://gitlab.com/aivero/public/aivero-rgbd-toolkit
+docker build --build-arg=OS_VERSION=bionic --build-arg=RGBD_TOOLKIT_VERSION=1.5.1 -t aivero-rgbd-toolkit .
+
+# Enter the container and run:
+
+docker run --rm -ti -v /home/aivero/aivero-rgbd-toolkit/docker/data:/root/data --privileged -v /dev:/dev aivero-rgbd-toolkit:latest /bin/bash
+source aivero_environment.sh
+
+# Test it, by inspecting the realsensesrc
+gst-inspect-1.0 realsensesrc
+
+----
+
+==== docker-compose
+[source,bash]
+----
+cd docker
+
+# specify the tag or branch to use from https://gitlab.com/aivero/public/aivero-rgbd-toolkit inside the docker-compose.yml
+docker-compose build
+
+# Specify the command you want to run, the specified `tail -f /dev/null` does nothing and simply prevents the container from exiting
+docker-compose up -d
+
+# Test it, by inspecting the realsensesrc
+docker-compose exec rgbdtoolkits /bin/bash
+# inside container
+source aivero_environment.sh
+
+# Test it, by inspecting the realsensesrc
+gst-inspect-1.0 realsensesrc
+----
+
+---
+
+[[udev-rules]]
 === Setup permission (udev rules)
 
 In order to use physical RealSense or K4A devices without being 'root', you will first need to setup udev rules. For this, you can execute script(s) corresponding to your device(s):
