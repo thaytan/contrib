@@ -100,14 +100,10 @@ class BootstrapLlvmConan(ConanFile):
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
-        if self.settings.libc_build == "musl":
-            cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
+        cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
 
         # libunwind options
-        if self.settings.libc_build == "musl":
-            cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
-        else:
-            cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
+        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
 
         # Stage 0 build (lld, clang, ar, libcxx)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
@@ -131,10 +127,6 @@ class BootstrapLlvmConan(ConanFile):
 
         # Stage0 clang can actually create useful LTO libraries
         cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
-
-        # Reduce memory usage (Needed for LTO)
-        # cmake.definitions["CMAKE_JOB_POOL_LINK"] = "link"
-        # cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         # Build musl
         ldflags = "-static-libgcc"
@@ -197,7 +189,4 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.CPATH = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         self.env_info.CFLAGS = "-flto=thin -nostdinc"
         self.env_info.CXXFLAGS = "-flto=thin -nostdinc -nostdinc++"
-        if self.settings.libc_build == "musl":
-            self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin"
-        else:
-            self.env_info.LDFLAGS = "-flto=thin"
+        self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin"
