@@ -190,8 +190,8 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
         self.env_info.CPATH = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         if self.settings.libc_build == "musl":
-            self.env_info.CFLAGS = "-Wl,-Bstatic -flto=thin -nostdinc"
-            self.env_info.CXXFLAGS = "-Wl,-Bstatic -flto=thin -nostdinc -nostdinc++"
+            self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc"
+            self.env_info.CXXFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc -nostdinc++"
         else:
             self.env_info.CFLAGS = "-flto=thin -nostdinc"
             self.env_info.CXXFLAGS = "-flto=thin -nostdinc -nostdinc++"
