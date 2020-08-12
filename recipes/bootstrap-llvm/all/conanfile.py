@@ -102,7 +102,8 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
 
         # libunwind options
-        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
+        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = True
+        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = True
 
         # Stage 0 build (lld, clang, ar, libcxx)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
@@ -132,7 +133,7 @@ class BootstrapLlvmConan(ConanFile):
         # cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         # Build musl
-        cxxflags = ""
+        cxxflags = "-static-libgcc"
         if self.settings.libc_build == "musl":
             vars = {
                 "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
@@ -152,7 +153,7 @@ class BootstrapLlvmConan(ConanFile):
             with tools.chdir(os.path.join(self.package_folder, "lib")):
                 os.symlink(os.path.join("..", "lib", "libc.so"), f"ld-musl-{arch}.so.1")
             # GVN causes segmentation fault during recursion higher than 290
-            cxxflags = "-static-libgcc -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
+            cxxflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
