@@ -135,7 +135,7 @@ class BootstrapLlvmConan(ConanFile):
         # cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         # Build musl
-        cxxflags = "-static-libgcc"
+        cflags = "-static-libgcc"
         if self.settings.libc_build == "musl":
             vars = {
                 "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
@@ -155,12 +155,13 @@ class BootstrapLlvmConan(ConanFile):
             with tools.chdir(os.path.join(self.package_folder, "lib")):
                 os.symlink(os.path.join("..", "lib", "libc.so"), f"ld-musl-{arch}.so.1")
             # GVN causes segmentation fault during recursion higher than 290
-            cxxflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
+            cflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
-            "CXXFLAGS": cxxflags,
+            "CFLAGS": cflags,
+            "CXXFLAGS": cflags,
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
