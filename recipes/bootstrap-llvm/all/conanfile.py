@@ -104,8 +104,10 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
 
         # libunwind options
-        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = True
-        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
+        if self.settings.libc_build == "musl":
+            cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
+        else:
+            cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         # Stage 0 build (lld, clang, ar, libcxx)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
@@ -135,7 +137,7 @@ class BootstrapLlvmConan(ConanFile):
         # cmake.definitions["CMAKE_JOB_POOLS"] = "link=1"
 
         # Build musl
-        cflags = "-static-libgcc"
+        ldflags = "-static-libgcc"
         if self.settings.libc_build == "musl":
             vars = {
                 "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
@@ -155,13 +157,12 @@ class BootstrapLlvmConan(ConanFile):
             with tools.chdir(os.path.join(self.package_folder, "lib")):
                 os.symlink(os.path.join("..", "lib", "libc.so"), f"ld-musl-{arch}.so.1")
             # GVN causes segmentation fault during recursion higher than 290
-            cflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
+            ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
-            "CFLAGS": cflags,
-            "CXXFLAGS": cflags,
+            "LDFLAGS": ldflags,
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
@@ -194,10 +195,9 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.LD = os.path.join(self.package_folder, "bin", "lld")
         self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
         self.env_info.CPATH = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
+        self.env_info.CFLAGS = "-flto=thin -nostdinc"
+        self.env_info.CXXFLAGS = "-flto=thin -nostdinc -nostdinc++"
         if self.settings.libc_build == "musl":
-            self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc"
-            self.env_info.CXXFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc -nostdinc++"
+            self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin"
         else:
-            self.env_info.CFLAGS = "-flto=thin -nostdinc"
-            self.env_info.CXXFLAGS = "-flto=thin -nostdinc -nostdinc++"
-        self.env_info.LDFLAGS = "-flto=thin"
+            self.env_info.LDFLAGS = "-flto=thin"
