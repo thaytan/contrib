@@ -156,16 +156,17 @@ class BootstrapLlvmConan(ConanFile):
             cxxflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
-        cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
-        cmake.build(target="install-libcxx")
-        cmake.build(target="install-unwind")
-        cmake.build(target="install-compiler-rt")
-
-        # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
             "CXXFLAGS": cxxflags,
         }
+        with tools.environment_append(env):
+            cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
+            cmake.build(target="install-libcxx")
+            cmake.build(target="install-unwind")
+            cmake.build(target="install-compiler-rt")
+
+        # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
             cmake.build(target="install-clang")
