@@ -103,7 +103,7 @@ class BootstrapLlvmConan(ConanFile):
 
         # libunwind options
         cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = True
-        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = True
+        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
 
         # Stage 0 build (lld, clang, ar, libcxx)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
