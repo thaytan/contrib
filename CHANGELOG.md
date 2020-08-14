@@ -4,16 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2020-08-21
+### Changed
+
+- Fall back to the default pad event handling - fixes EOS not being forwarded correctly in ~50% if cases. Credit to @slomo for the fix.
+
 ## [0.5.0] - 2020-07-22
 
 ### Changed
 
-- Re-implemented the stream-id generation on rgbddemux, so that it follows the GStreamer 
+- Re-implemented the stream-id generation on rgbddemux, so that it follows the GStreamer
 documentation:
 
-> The stream_id should be a unique string that consists of the upstream stream-id, / as separator 
-> and a unique stream-id for this specific stream. A new stream-id should only be created for a 
-> stream if the upstream stream is split into (potentially) multiple new streams, e.g. in a demuxer, 
+> The stream_id should be a unique string that consists of the upstream stream-id, / as separator
+> and a unique stream-id for this specific stream. A new stream-id should only be created for a
+> stream if the upstream stream is split into (potentially) multiple new streams, e.g. in a demuxer,
 > but not for every single element in the pipeline.
 
 ## [0.4.1] - 2020-07-01
