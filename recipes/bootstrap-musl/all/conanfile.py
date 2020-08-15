@@ -15,4 +15,5 @@ class BootstrapMuslConan(ConanFile):
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(configure_dir=f"musl-{self.version}")
+        autotools.make(target="install-libs")
         autotools.make(target="install-headers")
