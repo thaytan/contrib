@@ -134,20 +134,15 @@ class BootstrapLlvmConan(ConanFile):
             vars = {
                 "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
                 "CC": os.path.join(self.package_folder, "bin", "clang"),
-                "CFLAGS": f"-nostdinc -isystem {os.path.join(self.package_folder, 'include')} -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
-                "LDFLAGS": f"-L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
+                "CFLAGS": f"-flto=thin -nostdinc -isystem {os.path.join(self.package_folder, 'include')} -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
+                "LDFLAGS": f"-flto=thin -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
                 "TARGET": f"{arch}-linux-musl",
                 # "LIBRART_PATH": "/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux",
                 "LIBCC": f"-lclang_rt.builtins-{arch}",
             }
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(vars=vars, configure_dir=f"musl-{self.musl_version}")
-            autotools.make()
             autotools.install()
-            with tools.chdir(os.path.join(self.package_folder, "bin")):
-                os.symlink(os.path.join("..", "lib", "libc.so"), "ldd")
-            with tools.chdir(os.path.join(self.package_folder, "lib")):
-                os.symlink(os.path.join("..", "lib", "libc.so"), f"ld-musl-{arch}.so.1")
             # GVN causes segmentation fault during recursion higher than 290
             ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
@@ -187,6 +182,9 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.LD = os.path.join(self.package_folder, "bin", "lld")
         self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
         self.env_info.CPATH = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
-        self.env_info.CFLAGS = "-flto=thin -nostdinc"
-        self.env_info.CXXFLAGS = "-flto=thin -nostdinc -nostdinc++"
-        self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin"
+        if self.settings.libc_build == "musl":
+            self.env_info.CFLAGS = "-static -flto=thin -nostdinc"
+            self.env_info.CXXFLAGS = "-static -flto=thin -nostdinc -nostdinc++ "
+        else:
+            self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc"
+            self.env_info.CXXFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc -nostdinc++"
