@@ -278,14 +278,8 @@ impl RgbdDemux {
                 true
             }
             _ => {
-                // By default, pass any other event to all src pads
-                let src_pads = &self.src_pads.read().unwrap();
-                if src_pads.is_empty() {
-                    // Return false if there is no src pad yet since this element does not handle it
-                    return false;
-                }
-
-                src_pads.values().all(|p| p.pad.push_event(event.clone()))
+                let sink_pad = element.get_static_pad("sink").unwrap();
+                sink_pad.event_default(Some(element), event)
             }
         }
     }
