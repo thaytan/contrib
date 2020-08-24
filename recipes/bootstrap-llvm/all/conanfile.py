@@ -134,8 +134,8 @@ class BootstrapLlvmConan(ConanFile):
             vars = {
                 "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
                 "CC": os.path.join(self.package_folder, "bin", "clang"),
-                "CFLAGS": f"-flto=thin -nostdinc -isystem {os.path.join(self.package_folder, 'include')} -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
-                "LDFLAGS": f"-flto=thin -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
+                "CFLAGS": f"-nostdinc -isystem {os.path.join(self.package_folder, 'include')} -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
+                "LDFLAGS": f"-L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
                 "TARGET": f"{arch}-linux-musl",
                 # "LIBRART_PATH": "/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux",
                 "LIBCC": f"-lclang_rt.builtins-{arch}",
