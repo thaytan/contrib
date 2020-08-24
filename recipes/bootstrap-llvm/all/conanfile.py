@@ -131,7 +131,7 @@ class BootstrapLlvmConan(ConanFile):
         # Build musl
         ldflags = "-static-libgcc"
         if self.settings.libc_build == "musl":
-            vars = {
+            env = {
                 "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
                 "CC": os.path.join(self.package_folder, "bin", "clang"),
                 "CFLAGS": f"-nostdinc -isystem {os.path.join(self.package_folder, 'include')} -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
@@ -141,8 +141,8 @@ class BootstrapLlvmConan(ConanFile):
                 "LIBCC": f"-lclang_rt.builtins-{arch}",
             }
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(vars=vars, configure_dir=f"musl-{self.musl_version}")
-            autotools.make(target="install", args=['CFLAGS_AUTO=" -O2 -pipe"'])
+            autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
+            autotools.make(target="install-libs", args=['CFLAGS_AUTO=" -O2 -pipe"'])
             # GVN causes segmentation fault during recursion higher than 290
             ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
