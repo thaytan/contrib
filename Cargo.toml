@@ -1,6 +1,6 @@
 [package]
 name = "librealsense2-sys"
-version = "0.5.0"
+version = "0.5.2"
 authors = ["Niclas Moeslund Overby <noverby@prozum.dk>"]
 description = "Rust FFI bindings for librealsense"
 keywords = ["librealsense", "Rust", "FFI", "generated", "unsafe"]
@@ -10,5 +10,5 @@ edition = "2018"
 readme = "README.md"
 
 [build-dependencies]
-pkg-config = "0.3.14"
-bindgen = "0.54.1"
+pkg-config = "0.3.18"
+bindgen = "0.55.0"
