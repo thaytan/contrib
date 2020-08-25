@@ -51,8 +51,10 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc_build == "musl":
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl"].rootpath, "include")}
             abi = "musl"
         else:
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")}
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
 
@@ -150,6 +152,7 @@ class BootstrapLlvmConan(ConanFile):
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
             "LDFLAGS": ldflags,
+            "CXXFLAGS": f"-nostdinc -nostdinc++ -isystem {os.path.join(self.package_folder, 'include')} -isystem {libc_inc}",
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
