@@ -149,10 +149,12 @@ class BootstrapLlvmConan(ConanFile):
             ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
+        libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
+        clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
             "LDFLAGS": ldflags,
-            "CXXFLAGS": f" -nostdinc -nostdinc++ -isystem {os.path.join(self.package_folder, 'include', 'c++', 'v1')} -isystem {libc_inc}",
+            "CXXFLAGS": f" -nostdinc -nostdinc++ -isystem {libcxx_inc} -isystem {clang_inc} -isystem {libc_inc}",
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
@@ -183,11 +185,15 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
         self.env_info.LD = os.path.join(self.package_folder, "bin", "lld")
-        self.env_info.CPLUS_INCLUDE_PATH = os.path.join(self.package_folder, "include", "c++", "v1")
-        self.env_info.CPATH = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
+
         if self.settings.libc_build == "musl":
-            self.env_info.CFLAGS = "-static -flto=thin -nostdinc"
-            self.env_info.CXXFLAGS = "-static -flto=thin -nostdinc -nostdinc++ "
+            static_flags = "-static"
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl"].rootpath, "include")
         else:
-            self.env_info.CFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc"
-            self.env_info.CXXFLAGS = "-static-libgcc -Wl,-Bstatic -flto=thin -nostdinc -nostdinc++"
+            static_flags = "-static-libgcc -Wl,-Bstatic"
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")
+        clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
+        libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
+
+        self.env_info.CFLAGS = f"{static_flags} -flto=thin -nostdinc -isystem {clang_inc} -isystem {libc_inc}"
+        self.env_info.CXXFLAGS = f"{static_flags} -flto=thin -nostdinc -nostdinc++ -isystem {libcxx_inc} -isystem {clang_inc} -isystem {libc_inc}"
