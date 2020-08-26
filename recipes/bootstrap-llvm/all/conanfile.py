@@ -154,13 +154,13 @@ class BootstrapLlvmConan(ConanFile):
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
             "LDFLAGS": ldflags,
-            "CXXFLAGS": f"-nostdinc -nostdinc++ -I{libcxx_inc} -I{clang_inc} -I{libc_inc}",
+            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
-        cmake.build(target="install-libcxx")
-        cmake.build(target="install-unwind")
-        cmake.build(target="install-compiler-rt")
+            cmake.build(target="install-libcxx")
+            cmake.build(target="install-unwind")
+            cmake.build(target="install-compiler-rt")
 
         # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         with tools.environment_append(env):
