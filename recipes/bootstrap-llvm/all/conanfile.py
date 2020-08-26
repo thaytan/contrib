@@ -154,7 +154,7 @@ class BootstrapLlvmConan(ConanFile):
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
             "LDFLAGS": ldflags,
-            "CXXFLAGS": f" -nostdinc -nostdinc++ -isystem {clang_inc} -isystem {libc_inc} -isystem {libcxx_inc}",
+            "CXXFLAGS": f" -nostdinc -nostdinc++ -isystem {libc_inc} -isystem {libcxx_inc} -isystem {clang_inc}",
         }
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
