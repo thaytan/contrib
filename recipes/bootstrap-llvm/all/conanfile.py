@@ -162,7 +162,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
-        env["CXXFLAGS"] += " -isystem {clang_inc}"
+        env["CXXFLAGS"] += f" -isystem {clang_inc}"
 
         with tools.environment_append(env):
             # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
