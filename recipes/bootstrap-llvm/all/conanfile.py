@@ -162,17 +162,19 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
+        env["CXXFLAGS"] += " -isystem {clang_inc}"
+
         with tools.environment_append(env):
             # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
-            cmake.build(target="install-libcxx")
-            cmake.build(target="install-unwind")
-            cmake.build(target="install-compiler-rt")
             cmake.build(target="install-clang")
             cmake.build(target="install-clang-resource-headers")
             cmake.build(target="install-ar")
             cmake.build(target="install-ranlib")
             cmake.build(target="install-lld")
+            cmake.build(target="install-libcxx")
+            cmake.build(target="install-unwind")
+            cmake.build(target="install-compiler-rt")
             cmake.build(target="install-llvm-config")
             cmake.build(target="install-llvm-tblgen")
         # Make lld default linker
