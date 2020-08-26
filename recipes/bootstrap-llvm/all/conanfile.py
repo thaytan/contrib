@@ -144,7 +144,7 @@ class BootstrapLlvmConan(ConanFile):
             }
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
-            autotools.make(target="install-libs", args=['CFLAGS_AUTO=" -O2 -pipe"'])
+            autotools.make(target="install-libs")
             # GVN causes segmentation fault during recursion higher than 290
             ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
