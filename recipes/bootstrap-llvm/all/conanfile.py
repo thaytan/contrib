@@ -40,6 +40,11 @@ class BootstrapLlvmConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
+
+        # Install stage 0 to build directory
+        stage0_folder = os.path.join(self.build_folder, f"stage0-{self.version}-install")
+        cmake.definitions["CMAKE_INSTALL_PREFIX"] = stage0_folder
+
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
@@ -119,13 +124,17 @@ class BootstrapLlvmConan(ConanFile):
         cmake.build(target="install-compiler-rt")
         cmake.build(target="install-llvm-tblgen")
 
+        # Install stage 1 to build directory
+        stage0_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
+        cmake.definitions["CMAKE_INSTALL_PREFIX"] = stage1_folder
+
         # Use stage 0 lld, clang, ar and ranlib
-        cmake.definitions["LLVM_USE_LINKER"] = os.path.join(self.package_folder, "bin", "ld.lld")
-        cmake.definitions["CMAKE_C_COMPILER"] = os.path.join(self.package_folder, "bin", "clang")
-        cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(self.package_folder, "bin", "clang++")
-        cmake.definitions["CMAKE_AR"] = os.path.join(self.package_folder, "bin", "ar")
-        cmake.definitions["CMAKE_RANLIB"] = os.path.join(self.package_folder, "bin", "ranlib")
-        cmake.definitions["LLVM_TABLEGEN"] = os.path.join(self.package_folder, "bin", "llvm-tblgen")
+        cmake.definitions["LLVM_USE_LINKER"] = os.path.join(stage0_folder, "bin", "ld.lld")
+        cmake.definitions["CMAKE_C_COMPILER"] = os.path.join(stage0_folder, "bin", "clang")
+        cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(stage0_folder, "bin", "clang++")
+        cmake.definitions["CMAKE_AR"] = os.path.join(stage0_folder, "bin", "ar")
+        cmake.definitions["CMAKE_RANLIB"] = os.path.join(stage0_folder, "bin", "ranlib")
+        cmake.definitions["LLVM_TABLEGEN"] = os.path.join(stage0_folder, "bin", "llvm-tblgen")
 
         # Stage0 clang can actually create useful LTO libraries
         cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
@@ -134,10 +143,10 @@ class BootstrapLlvmConan(ConanFile):
         ldflags = "-static-libgcc"
         if self.settings.libc_build == "musl":
             env = {
-                "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
-                "CC": os.path.join(self.package_folder, "bin", "clang"),
-                "CFLAGS": f"-nostdinc -isystem {os.path.join(self.package_folder, 'include')} -L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
-                "LDFLAGS": f"-L{os.path.join(self.package_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
+                "LD_LIBRARY_PATH": os.path.join(stage0_folder, "lib"),
+                "CC": os.path.join(stage0_folder, "bin", "clang"),
+                "CFLAGS": f"-nostdinc -isystem {os.path.join(stage0_folder, 'include')} -L{os.path.join(stage0_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
+                "LDFLAGS": f"-L{os.path.join(stage0_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
                 "TARGET": f"{arch}-linux-musl",
                 # "LIBRART_PATH": "/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux",
                 "LIBCC": f"-lclang_rt.builtins-{arch}",
@@ -148,10 +157,10 @@ class BootstrapLlvmConan(ConanFile):
             # GVN causes segmentation fault during recursion higher than 290
             ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
-        libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-        clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
+        libcxx_inc = os.path.join(stage0_folder, "include", "c++", "v1")
+        clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
         env = {
-            "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
+            "LD_LIBRARY_PATH": os.path.join(stage0_folder, "lib"),
             "LDFLAGS": ldflags,
             "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc} -H",
         }
@@ -162,13 +171,12 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
-        env["CXXFLAGS"] = f"-isystem {libc_inc} -H"
+        # Install stage 2 to package directory
+        cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
+
         with tools.environment_append(env):
             # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
-            # Remove conflicting libcxx header files
-            for header in ["stddef.h", "limits.h"]:
-                os.remove(os.path.join(libcxx_inc, header))
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
