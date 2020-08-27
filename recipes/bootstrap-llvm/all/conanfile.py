@@ -98,6 +98,8 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
         if self.settings.libc_build == "musl":
             cmake.definitions["LIBCXX_HAS_MUSL_LIBC"] = True
+        # libcxx headers conflics with installed libcxx headers
+        cmake.definitions["LIBCXX_INSTALL_HEADERS"] = False
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
@@ -147,9 +149,6 @@ class BootstrapLlvmConan(ConanFile):
             autotools.make(target="install-libs")
             # GVN causes segmentation fault during recursion higher than 290
             ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
-
-        # libcxx headers conflics with installed libcxx headers
-        cmake.definitions["LIBCXX_INSTALL_HEADERS"] = False
 
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
