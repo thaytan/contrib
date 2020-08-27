@@ -125,7 +125,7 @@ class BootstrapLlvmConan(ConanFile):
         cmake.build(target="install-llvm-tblgen")
 
         # Install stage 1 to build directory
-        stage0_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
+        stage1_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = stage1_folder
 
         # Use stage 0 lld, clang, ar and ranlib
