@@ -148,11 +148,12 @@ class BootstrapLlvmConan(ConanFile):
             # GVN causes segmentation fault during recursion higher than 290
             ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
+        libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         env = {
             "LD_LIBRARY_PATH": os.path.join(self.package_folder, "lib"),
             "LDFLAGS": ldflags,
-            "CXXFLAGS": f"-isystem {clang_inc} -isystem {libc_inc}",
+            "CXXFLAGS": f"-isystem {libcxx_inc} -isystem {clang_inc} -isystem {libc_inc}",
         }
         with tools.environment_append(env):
             # Stage 1 build (libcxx, libcxxabi, libunwind)
@@ -160,6 +161,8 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
+
+        env["CXXFLAGS"] = f"-isystem {clang_inc} -isystem {libc_inc}"
 
         with tools.environment_append(env):
             # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
