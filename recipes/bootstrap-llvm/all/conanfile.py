@@ -162,12 +162,13 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
-        # libcxx headers conflics with installed libcxx headers
-        tools.rmdir(libcxx_inc)
-
         with tools.environment_append(env):
             # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
+
+            # libcxx headers conflics with installed libcxx headers
+            tools.rmdir(libcxx_inc)
+
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
