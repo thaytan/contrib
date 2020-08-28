@@ -162,7 +162,7 @@ class BootstrapLlvmConan(ConanFile):
         env = {
             "LD_LIBRARY_PATH": os.path.join(stage0_folder, "lib"),
             "LDFLAGS": ldflags,
-            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc} -H",
+            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
         }
         with tools.environment_append(env):
             # Stage 1 build (libcxx, libcxxabi, libunwind)
