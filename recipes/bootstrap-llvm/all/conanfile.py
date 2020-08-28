@@ -159,9 +159,10 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
 
         # Use stage 0 libs and includes to build stage 1
+        libcxx_inc = os.path.join(stage0_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage0_folder, "lib")
         env = {
-            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libc_inc}",
+            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
             "LDFLAGS": f"{ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
 
