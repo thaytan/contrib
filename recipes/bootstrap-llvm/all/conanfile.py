@@ -131,7 +131,7 @@ class BootstrapLlvmConan(ConanFile):
         # Build musl
         clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
         clang_lib = os.path.join(stage0_folder, "lib", "clang", self.version, "lib", "linux")
-        ldflags = f"-static-libgcc"
+        ldflags = "-static-libgcc"
         if self.settings.libc_build == "musl":
             env = {
                 "CC": os.path.join(stage0_folder, "bin", "clang"),
@@ -145,7 +145,7 @@ class BootstrapLlvmConan(ConanFile):
             autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
             autotools.make(target="install-libs")
             # GVN causes segmentation fault during recursion higher than 290
-            ldflags += "-Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
+            ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
         # Use stage 0 lld, clang, ar and ranlib
         cmake.definitions["LLVM_USE_LINKER"] = os.path.join(stage0_folder, "bin", "ld.lld")
