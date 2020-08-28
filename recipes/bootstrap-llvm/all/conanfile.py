@@ -176,13 +176,11 @@ class BootstrapLlvmConan(ConanFile):
         # Install stage 2 to package directory
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
-        # Use stage 1 libs and includes to build stage 2
-        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
+        # Use stage 1 libs to build stage 2
         clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
-        libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage1_folder, "lib")
         env = {
-            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
+            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libc_inc}",
             "LDFLAGS": f"{ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
 
