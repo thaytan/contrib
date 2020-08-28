@@ -159,10 +159,9 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
 
         # Use stage 0 libs and includes to build stage 1
-        libcxx_inc = os.path.join(stage0_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage0_folder, "lib")
         env = {
-            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
+            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libc_inc}",
             "LDFLAGS": f"{ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
 
@@ -179,10 +178,7 @@ class BootstrapLlvmConan(ConanFile):
         # Use stage 1 libs to build stage 2
         clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
         libcxx_lib = os.path.join(stage1_folder, "lib")
-        env = {
-            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libc_inc}",
-            "LDFLAGS": f"{ldflags} -L{clang_lib} -L{libcxx_lib}",
-        }
+        env["LDFLAGS"] = f"{ldflags} -L{clang_lib} -L{libcxx_lib}"
 
         # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         with tools.environment_append(env):
