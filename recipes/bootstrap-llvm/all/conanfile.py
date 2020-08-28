@@ -128,25 +128,15 @@ class BootstrapLlvmConan(ConanFile):
         stage1_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = stage1_folder
 
-        # Use stage 0 lld, clang, ar and ranlib
-        cmake.definitions["LLVM_USE_LINKER"] = os.path.join(stage0_folder, "bin", "ld.lld")
-        cmake.definitions["CMAKE_C_COMPILER"] = os.path.join(stage0_folder, "bin", "clang")
-        cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(stage0_folder, "bin", "clang++")
-        cmake.definitions["CMAKE_AR"] = os.path.join(stage0_folder, "bin", "ar")
-        cmake.definitions["CMAKE_RANLIB"] = os.path.join(stage0_folder, "bin", "ranlib")
-        cmake.definitions["LLVM_TABLEGEN"] = os.path.join(stage0_folder, "bin", "llvm-tblgen")
-
-        # Stage0 clang can actually create useful LTO libraries
-        cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
-
         # Build musl
-        ldflags = "-static-libgcc"
+        clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
+        clang_lib = os.path.join(stage0_folder, "lib", "clang", self.version, "lib", "linux")
+        ldflags = f"-static-libgcc"
         if self.settings.libc_build == "musl":
             env = {
-                "LD_LIBRARY_PATH": os.path.join(stage0_folder, "lib"),
                 "CC": os.path.join(stage0_folder, "bin", "clang"),
-                "CFLAGS": f"-nostdinc -isystem {os.path.join(stage0_folder, 'include')} -L{os.path.join(stage0_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
-                "LDFLAGS": f"-L{os.path.join(stage0_folder, 'lib', 'clang', self.version, 'lib', 'linux')}",
+                "CFLAGS": f"-isystem {clang_inc}",
+                "LDFLAGS": f"-L{clang_lib}",
                 "TARGET": f"{arch}-linux-musl",
                 # "LIBRART_PATH": "/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux",
                 "LIBCC": f"-lclang_rt.builtins-{arch}",
@@ -155,17 +145,29 @@ class BootstrapLlvmConan(ConanFile):
             autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
             autotools.make(target="install-libs")
             # GVN causes segmentation fault during recursion higher than 290
-            ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
+            ldflags += "-Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
+        # Use stage 0 lld, clang, ar and ranlib
+        cmake.definitions["LLVM_USE_LINKER"] = os.path.join(stage0_folder, "bin", "ld.lld")
+        cmake.definitions["CMAKE_C_COMPILER"] = os.path.join(stage0_folder, "bin", "clang")
+        cmake.definitions["CMAKE_CXX_COMPILER"] = os.path.join(stage0_folder, "bin", "clang++")
+        cmake.definitions["CMAKE_AR"] = os.path.join(stage0_folder, "bin", "ar")
+        cmake.definitions["CMAKE_RANLIB"] = os.path.join(stage0_folder, "bin", "ranlib")
+        cmake.definitions["LLVM_TABLEGEN"] = os.path.join(stage0_folder, "bin", "llvm-tblgen")
+
+        # Stage 0 clang can actually create useful LTO libraries
+        cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
+
+        # Use stage 0 libs and includes to build stage 1
         libcxx_inc = os.path.join(stage0_folder, "include", "c++", "v1")
-        clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
+        libcxx_lib = os.path.join(stage0_folder, "lib")
         env = {
-            "LD_LIBRARY_PATH": os.path.join(stage0_folder, "lib"),
-            "LDFLAGS": ldflags,
             "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
+            "LDFLAGS": f"{ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
+
+        # Stage 1 build (libcxx, libcxxabi, libunwind)
         with tools.environment_append(env):
-            # Stage 1 build (libcxx, libcxxabi, libunwind)
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
@@ -174,8 +176,18 @@ class BootstrapLlvmConan(ConanFile):
         # Install stage 2 to package directory
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
+        # Use stage 1 libs and includes to build stage 2
+        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
+        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
+        libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
+        libcxx_lib = os.path.join(stage1_folder, "lib")
+        env = {
+            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
+            "LDFLAGS": f"{ldflags} -L{clang_lib} -L{libcxx_lib}",
+        }
+
+        # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         with tools.environment_append(env):
-            # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
             cmake.build(target="install-libcxx")
             cmake.build(target="install-unwind")
