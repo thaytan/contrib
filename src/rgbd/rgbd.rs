@@ -162,13 +162,13 @@ pub fn get_tag(buffer: &gst::BufferRef) -> Result<String, gst::ErrorMessage> {
 /// # Arguments
 /// * `buffer` - The buffer to remove the tags from.
 pub fn clear_tags(buffer: &mut gst::BufferRef) {
-    loop {
-        let tag = buffer.get_meta_mut::<TagsMeta>();
-        match tag {
-            Some(t) => t.remove(),
-            None => break,
+    buffer.foreach_meta_mut(|meta| {
+        if meta.as_ref().downcast_ref::<TagsMeta>().is_some() {
+            Err(true)
+        } else {
+            Ok(true)
         }
-    }
+    });
 }
 
 /// Replaces all existing tags of `buffer` with `tag`.
