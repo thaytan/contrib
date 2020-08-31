@@ -284,16 +284,14 @@ pub fn get_video_info(
     let stream_height = get_field::<i32>(caps, &format!("{}_height", stream_name), "i32")?;
     let stream_format = get_field::<&str>(caps, &format!("{}_format", stream_name), "str")?;
 
-    let caps = gst::Caps::new_simple(
-        "video/x-raw",
-        &[
-            ("format", &stream_format),
-            ("width", &stream_width),
-            ("height", &stream_height),
-            ("framerate", &framerate),
-        ],
-    );
-    gstreamer_video::VideoInfo::from_caps(&caps).map_err(|_| RgbdError::NoVideoInfo)
+    gstreamer_video::VideoInfo::builder(
+        stream_format.parse().map_err(|_| RgbdError::NoVideoInfo)?,
+        stream_width as u32,
+        stream_height as u32,
+    )
+    .fps(framerate)
+    .build()
+    .map_err(|_| RgbdError::NoVideoInfo)
 }
 
 /// Aligns `buffer` to u16, such that it can be used to store depth video.
