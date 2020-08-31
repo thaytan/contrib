@@ -17,7 +17,7 @@
 use glib::subclass;
 use gst::prelude::*;
 use gst::subclass::prelude::*;
-use gst_depth_meta::rgbd;
+use gst_depth_meta::{rgbd, BufferMeta};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -188,21 +188,16 @@ impl RgbdDemux {
     /// Timestamps all auxiliary buffers with the timestamps found in the given `main_buffer`.
     /// # Arguments
     /// * `main_buffer` - A reference to the main `video/rgbd` buffer.
-    fn timestamp_aux_buffers_from_main(main_buffer: &gst::Buffer) {
+    fn timestamp_aux_buffers_from_main(main_buffer: &mut gst::BufferRef) {
         // Get timestamp of the main buffer
         let common_pts = main_buffer.get_pts();
         let common_dts = main_buffer.get_dts();
         let common_duration = main_buffer.get_duration();
 
-        // Get a mutable reference to the main buffer
-        // Note: I could not figure out a better/easier way of doing that. Please let me know if you find some.
-        let main_buffer_mut_ref = unsafe { gst::BufferRef::from_mut_ptr(main_buffer.as_mut_ptr()) };
-
         // Go through all auxiliary buffers
-        for additional_buffer in &mut rgbd::get_aux_buffers_mut(main_buffer_mut_ref) {
+        for mut meta in main_buffer.iter_meta_mut::<BufferMeta>() {
             // Make the buffer mutable so that we can edit its timestamps
-            let additional_buffer = additional_buffer.get_mut()
-            .expect("rgbddemux: Cannot get mutable reference to an auxiliary buffer when distributing timestamps.");
+            let additional_buffer = meta.buffer_mut();
 
             // Distribute the timestamp of the main buffer to the auxiliary buffers
             additional_buffer.set_pts(common_pts);
@@ -500,7 +495,7 @@ impl RgbdDemux {
     fn sink_chain(
         &self,
         element: &gst::Element,
-        main_buffer: gst::Buffer,
+        mut main_buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Lock the internals
         let settings = self
@@ -510,7 +505,7 @@ impl RgbdDemux {
 
         // Distribute the timestamp of the main buffer to the auxiliary buffers, if enabled
         if settings.distribute_timestamps {
-            Self::timestamp_aux_buffers_from_main(&main_buffer);
+            Self::timestamp_aux_buffers_from_main(main_buffer.make_mut());
         }
 
         // Go through all auxiliary buffers attached to the main buffer in order to extract them and
