@@ -142,9 +142,6 @@ impl RgbdDemux {
 
         // push a StreamStart event to tell downstream to expect output soon
         pad.push_event(
-            // gst::event::Event::new_stream_start(stream_id.as_str())
-            //     .group_id(gst::util_group_id_next())
-            //     .build(),
             gst::event::StreamStart::builder(stream_id.as_str())
                 .group_id(gst::GroupId::next())
                 .build(),
