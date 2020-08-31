@@ -190,7 +190,7 @@ pub trait RgbdTimestamps: BaseSrcImpl {
         // Determine the common timestamp (computed only once for the main buffer)
         if is_buffer_main {
             // This mode utilises the current running time to determine the timestamps
-            let running_time = get_running_time(base_src);
+            let running_time = base_src.get_current_running_time();
 
             // The timestamp is also based on whether the element is live or not
             if base_src.is_live() {
@@ -253,13 +253,12 @@ pub trait RgbdTimestamps: BaseSrcImpl {
                     // For live mode, get the offset of the first frame based on the camera timestamp and current running time
                     // Make sure the timestamp is positive as gst::ClockTime uses u64 internally
                     // Furthermore, assign `is_camera_ahead_of_gstreamer` for future reference
-                    if camera_timestamp > get_running_time(base_src) {
-                        timestamp_internals.stream_start_offset =
-                            camera_timestamp - get_running_time(base_src);
+                    let running_time = base_src.get_current_running_time();
+                    if camera_timestamp > running_time {
+                        timestamp_internals.stream_start_offset = camera_timestamp - running_time;
                         timestamp_internals.is_camera_ahead_of_gstreamer = true;
                     } else {
-                        timestamp_internals.stream_start_offset =
-                            get_running_time(base_src) - camera_timestamp;
+                        timestamp_internals.stream_start_offset = running_time - camera_timestamp;
                         timestamp_internals.is_camera_ahead_of_gstreamer = false;
                     }
                 } else {
@@ -327,13 +326,12 @@ pub trait RgbdTimestamps: BaseSrcImpl {
                 // For live mode, get the offset of the first frame based on the camera timestamp and current running time
                 // Make sure the timestamp is positive as gst::ClockTime uses u64 internally
                 // Furthermore, assign `is_camera_ahead_of_gstreamer` for future reference
-                if camera_timestamp > get_running_time(base_src) {
-                    timestamp_internals.stream_start_offset =
-                        camera_timestamp - get_running_time(base_src);
+                let running_time = base_src.get_current_running_time();
+                if camera_timestamp > running_time {
+                    timestamp_internals.stream_start_offset = camera_timestamp - running_time;
                     timestamp_internals.is_camera_ahead_of_gstreamer = true;
                 } else {
-                    timestamp_internals.stream_start_offset =
-                        get_running_time(base_src) - camera_timestamp;
+                    timestamp_internals.stream_start_offset = running_time - camera_timestamp;
                     timestamp_internals.is_camera_ahead_of_gstreamer = false;
                 }
             } else {
@@ -366,21 +364,5 @@ pub trait RgbdTimestamps: BaseSrcImpl {
             // Add otherwise
             camera_timestamp + timestamp_internals.stream_start_offset
         }
-    }
-}
-
-/// Get the running time of the element as a difference between the element's clock time
-/// and its base time. Returns GST_CLOCK_TIME_NONE if the element has no clock or invalid base time.
-///
-/// # Arguments
-/// * `base_src` - Element with BaseSrc parent.
-///
-/// # Returns
-/// * `gst::ClockTime` containing the running time of the element or `gst::CLOCK_TIME_NONE` if element has no clock yet.
-fn get_running_time(base_src: &gst_base::BaseSrc) -> gst::ClockTime {
-    if let Some(clock) = base_src.get_clock() {
-        clock.get_time() - base_src.get_base_time()
-    } else {
-        gst::CLOCK_TIME_NONE
     }
 }
