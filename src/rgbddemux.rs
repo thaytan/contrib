@@ -262,7 +262,9 @@ impl RgbdDemux {
                 gst_debug!(CAT, "Got a stream start event {:?}", stream_start);
                 let stream_identifier = StreamIdentifier {
                     stream_id: stream_start.get_stream_id().to_string(),
-                    _group_id: stream_start.get_group_id().unwrap(),
+                    _group_id: stream_start
+                        .get_group_id()
+                        .unwrap_or_else(|| gst::GroupId::next()),
                 };
 
                 self.push_stream_start_on_all_pads(&stream_identifier);
