@@ -11,10 +11,10 @@ readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-glib = "0.9"
-gstreamer = "0.15"
-gstreamer-base = "0.15"
-gstreamer-video = "0.15"
+glib = "0.10"
+gstreamer = "0.16"
+gstreamer-base = "0.16"
+gstreamer-video = "0.16"
 lazy_static = "1.4"
 capnp = "0.12"
 

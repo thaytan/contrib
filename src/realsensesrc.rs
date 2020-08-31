@@ -23,6 +23,7 @@ use std::{
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
+use gst_base::subclass::base_src::CreateSuccess;
 use gst_base::subclass::prelude::*;
 
 use camera_meta::Distortion;
@@ -317,8 +318,9 @@ impl BaseSrcImpl for RealsenseSrc {
         &self,
         element: &gst_base::BaseSrc,
         _offset: u64,
+        _buffer: Option<&mut gst::BufferRef>,
         _length: u32,
-    ) -> Result<gst::Buffer, gst::FlowError> {
+    ) -> Result<CreateSuccess, gst::FlowError> {
         let internals = &mut *self.internals.lock().expect("Failed to lock internals");
         let settings = &internals.settings;
         let streams = &settings.streams;
@@ -408,19 +410,20 @@ impl BaseSrcImpl for RealsenseSrc {
             self.attach_camera_meta(element, &mut output_buffer, camera_meta)?;
         }
 
-        Ok(output_buffer)
+        Ok(CreateSuccess::NewBuffer(output_buffer))
     }
 
-    fn fixate(&self, element: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
+    fn fixate(&self, element: &gst_base::BaseSrc, mut caps: gst::Caps) -> gst::Caps {
         let settings = &self
             .internals
             .lock()
             .expect("Could not lock internals")
             .settings;
 
-        let mut caps = gst::Caps::truncate(caps);
+        caps.truncate();
         {
             let caps = caps.make_mut();
+
             let s = caps
                 .get_mut_structure(0)
                 .expect("Failed to read the realsensesrc CAPS");
@@ -487,7 +490,7 @@ impl BaseSrcImpl for RealsenseSrc {
             // Fixate the framerate
             s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
             // Send bus message to notify about a potential change in latency.
-            let _ = element.post_message(&gst::Message::new_latency().src(Some(element)).build());
+            let _ = element.post_message(gst::message::Latency::builder().src(element).build());
             // Update buffer duration for `RgbdTimestamps` trait
             self.set_buffer_duration(settings.streams.framerate as f32);
         }
@@ -585,7 +588,7 @@ impl RealsenseSrc {
         gst_info!(
             CAT,
             obj: element,
-            "RealSense stream source has the following calibration:\n{}",
+            "RealSense stream source has the following calibration:\n{:?}",
             camera_meta
         );
 
