@@ -783,15 +783,18 @@ impl RgbdMux {
     /// # Arguments
     /// * `aggregator` - The aggregator to drop all queued buffers for.
     fn send_gap_event(&self, aggregator: &gst_base::Aggregator) {
+        let clock_internals = self
+            .clock_internals
+            .lock()
+            .expect("Could not lock clock internals");
+
+        if clock_internals.previous_timestamp == gst::CLOCK_TIME_NONE {
+            return;
+        }
+
         let gap_event = gst::Event::new_gap(
-            aggregator
-                .get_clock()
-                .expect("Could not get clock of `rgbdmux`")
-                .get_time(),
-            self.clock_internals
-                .lock()
-                .expect("Could not lock clock internals")
-                .frameset_duration,
+            clock_internals.previous_timestamp + clock_internals.frameset_duration,
+            clock_internals.frameset_duration,
         )
         .build();
         if !aggregator.send_event(gap_event) {
@@ -848,7 +851,7 @@ impl RgbdMux {
                         // `deadline-multiplier` property
                         let (num, den): (i32, i32) = clock_internals.framerate.into();
                         let frame_duration = std::time::Duration::from_secs_f32(
-                            settings.deadline_multiplier * (num as f32 / den as f32),
+                            settings.deadline_multiplier * (den as f32 / num as f32),
                         );
                         gst::ClockTime::from_nseconds(frame_duration.as_nanos() as u64)
                     } else {
