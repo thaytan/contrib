@@ -783,23 +783,28 @@ impl RgbdMux {
     /// # Arguments
     /// * `aggregator` - The aggregator to drop all queued buffers for.
     fn send_gap_event(&self, aggregator: &gst_base::Aggregator) {
-        let clock_internals = self
+        let clock_internals = &mut self
             .clock_internals
             .lock()
             .expect("Could not lock clock internals");
 
+        // Make sure the previous timestamp is valid
         if clock_internals.previous_timestamp == gst::CLOCK_TIME_NONE {
             return;
         }
 
-        let gap_event = gst::Event::new_gap(
-            clock_internals.previous_timestamp + clock_internals.frameset_duration,
-            clock_internals.frameset_duration,
-        )
-        .build();
+        // Compute the expected timestamp of the missing buffer
+        let new_timestamp = clock_internals.previous_timestamp + clock_internals.frameset_duration;
+
+        // Create and send the GAP event
+        let gap_event =
+            gst::Event::new_gap(new_timestamp, clock_internals.frameset_duration).build();
         if !aggregator.send_event(gap_event) {
             gst_error!(CAT, obj: aggregator, "Failed to send gap event");
         }
+
+        // Update previous timestamp, in case this function gets called multiple times in a row
+        clock_internals.previous_timestamp = new_timestamp;
     }
 
     /// Extracts the relevant fields from the pad's CAPS and converts them into a tuple containing
