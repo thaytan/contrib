@@ -81,21 +81,7 @@ pub fn attach_aux_buffer_and_tag(
 pub fn get_aux_buffers(main_buffer: &gst::Buffer) -> Vec<gst::Buffer> {
     main_buffer
         .iter_meta::<BufferMeta>()
-        .map(|meta| unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) })
-        .collect()
-}
-
-/// Get all auxiliary buffers attached to the `main_buffer`.
-///
-/// # Arguments
-/// * `main_buffer` - The main buffer to remove auxiliary buffers from.
-///
-/// # Returns
-/// * Vec<gst::Buffer> containing the mutable auxiliary buffers.
-pub fn get_aux_buffers_mut(main_buffer: &mut gst::BufferRef) -> Vec<gst::Buffer> {
-    main_buffer
-        .iter_meta_mut::<BufferMeta>()
-        .map(|meta| unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) })
+        .map(|meta| meta.buffer_owned())
         .collect()
 }
 
@@ -204,34 +190,25 @@ pub fn remove_aux_buffers_with_tags(
     main_buffer: &mut gst::BufferRef,
     tags: &[&str],
 ) -> Result<(), gst::ErrorMessage> {
-    // Allocate a vector for saving the buffers that should not be removed
-    let mut remaining_buffers: Vec<gst::Buffer> = vec![];
-
     // Loop over all auxiliary buffers
-    #[allow(clippy::while_let_loop)]
-    loop {
-        // Check if there are any auxiliary buffers left, break if not
-        let meta = match main_buffer.get_meta_mut::<BufferMeta>() {
-            Some(meta) => meta,
-            None => break,
-        };
-        let auxiliary_buffer = unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) };
+    main_buffer.foreach_meta_mut(|meta| {
+        if let Some(meta) = meta.as_ref().downcast_ref::<BufferMeta>() {
+            let auxiliary_buffer = meta.buffer();
+            let tag = match get_tag(&auxiliary_buffer) {
+                Err(_) => return Ok(true),
+                Ok(tag) => tag,
+            };
 
-        if tags.contains(&get_tag(&auxiliary_buffer)?) {
-            // Remove buffers with the corresponding tags
-            meta.remove();
+            if tags.contains(&&*tag) {
+                // Remove buffers with the corresponding tags
+                Err(true)
+            } else {
+                Ok(true)
+            }
         } else {
-            // Keep buffers that do not match the tag
-            remaining_buffers.push(auxiliary_buffer);
-            // Remove it from the list, so that it can be reattached again
-            meta.remove();
+            Ok(true)
         }
-    }
-
-    // Return the remaining buffers back
-    for buffer in &mut remaining_buffers {
-        BufferMeta::add(main_buffer, buffer);
-    }
+    });
 
     // Return Ok() if everything went fine
     Ok(())
