@@ -301,25 +301,19 @@ pub fn get_video_info(
 /// * `Ok` - If the buffer is properly aligned to u16.
 /// * `Err` - If not.
 pub fn to_depth_buffer(buffer: &[u8]) -> Result<&[u16], RgbdError> {
-    let (head, in_data_u16, tail) = unsafe { buffer.align_to::<u16>() };
-    // Ensure that the frame's byte was correctly aligned to a u16 slice. If head or tail is
-    // non-empty, it means that the buffer was not correctly aligned and we therefore return an
-    // error.
-    if !head.is_empty() || !tail.is_empty() {
-        return Err(RgbdError::BufferNotAligned);
-    }
-    Ok(in_data_u16)
+    use byte_slice_cast::*;
+
+    buffer
+        .as_slice_of::<u16>()
+        .map_err(|_| RgbdError::BufferNotAligned)
 }
 
 pub fn to_depth_buffer_mut(buffer: &mut [u8]) -> Result<&mut [u16], RgbdError> {
-    let (head, in_data_u16, tail) = unsafe { buffer.align_to_mut::<u16>() };
-    // Ensure that the frame's byte was correctly aligned to a u16 slice. If head or tail is
-    // non-empty, it means that the buffer was not correctly aligned and we therefore return an
-    // error.
-    if !head.is_empty() || !tail.is_empty() {
-        return Err(RgbdError::BufferNotAligned);
-    }
-    Ok(in_data_u16)
+    use byte_slice_cast::*;
+
+    buffer
+        .as_mut_slice_of::<u16>()
+        .map_err(|_| RgbdError::BufferNotAligned)
 }
 
 #[cfg(test)]

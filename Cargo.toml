@@ -16,6 +16,7 @@ gstreamer-video = "0.16"
 gstreamer-base = "0.16"
 capnp = "0.12"
 lazy_static = "1.0"
+byte-slice-cast = "0.3"
 
 [build-dependencies]
 pkg-config = "0.3"
