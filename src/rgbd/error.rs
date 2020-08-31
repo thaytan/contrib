@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use std::borrow::Cow;
 
 /// RvlError represents all possible errors that may occur during RVL encoding in GStreamer.
@@ -51,17 +52,17 @@ impl From<RgbdError> for glib::BoolError {
         glib::BoolError::new(Cow::from(e.to_string()), "?", "?", 0)
     }
 }
+
+lazy_static! {
+    static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
+        "rgbd",
+        gst::DebugColorFlags::empty(),
+        Some("RGBD convenience functions"),
+    );
+}
+
 impl From<RgbdError> for gst::LoggableError {
     fn from(e: RgbdError) -> Self {
-        gst::LoggableError::new(
-            gst::DebugCategory::get("rgbd").unwrap_or_else(|| {
-                gst::DebugCategory::new(
-                    "rgbd",
-                    gst::DebugColorFlags::empty(),
-                    Some("RGBD convenience functions"),
-                )
-            }),
-            glib::BoolError::from(e),
-        )
+        gst::LoggableError::new(*CAT, glib::BoolError::from(e))
     }
 }
