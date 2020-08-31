@@ -133,19 +133,15 @@ pub fn tag_buffer(buffer: &mut gst::BufferRef, tag: &str) -> Result<(), gst::Err
 /// # Returns
 /// * `Ok(&str)` with tag on success.
 /// * `Err(gst::ErrorMessage)` on failure, if buffer has invalid tag.
-pub fn get_tag(buffer: &gst::Buffer) -> Result<&str, gst::ErrorMessage> {
+pub fn get_tag(buffer: &gst::BufferRef) -> Result<String, gst::ErrorMessage> {
     // Get TagList from GstBuffer
-    let tag_list = unsafe {
-        gst::tags::TagList::from_glib_none(
-            buffer
-                .get_meta::<TagsMeta>()
-                .ok_or(gst_error_msg!(
-                    gst::ResourceError::Failed,
-                    ["Buffer {:?} has no tags", buffer]
-                ))?
-                .tags,
-        )
-    };
+    let tag_list = buffer
+        .get_meta::<TagsMeta>()
+        .ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            ["Buffer {:?} has no tags", buffer]
+        ))?
+        .get_tag_list();
 
     // Get the title tag from TagList
     let tag = tag_list.get::<gst::tags::Title>().ok_or(gst_error_msg!(
@@ -158,7 +154,7 @@ pub fn get_tag(buffer: &gst::Buffer) -> Result<&str, gst::ErrorMessage> {
     ))?;
 
     // Return it as string slice
-    Ok(Box::leak(Box::from(tag)))
+    Ok(String::from(tag))
 }
 
 /// Remove all tags of a `buffer`.
