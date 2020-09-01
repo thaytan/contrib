@@ -5,7 +5,7 @@ class BootstrapLibcConan(ConanFile):
     name = "bootstrap-libc"
     description = "Virtual bootstrap libc package"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "libc_build": ["system", "musl"]}
+    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
 
     def requirements(self):
         if self.settings.os_build == "Linux":
