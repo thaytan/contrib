@@ -102,6 +102,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
 
         # libunwind options
+        cmake.definitions["LIBUNWIND_USE_COMPILER_RT"] = True
         if self.settings.libc_build == "musl":
             cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
         else:
