@@ -97,6 +97,7 @@ class BootstrapLlvmConan(ConanFile):
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
+        cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
         if self.settings.libc_build == "musl":
             cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
 
