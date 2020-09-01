@@ -41,13 +41,6 @@ class BootstrapLlvmConan(ConanFile):
     def build(self):
         cmake = CMake(self)
 
-        # Install stage 0 to build directory
-        stage0_folder = os.path.join(self.build_folder, f"stage0-{self.version}-install")
-        cmake.definitions["CMAKE_INSTALL_PREFIX"] = stage0_folder
-
-        # Reduce memory footprint of linking with gold linker
-        cmake.definitions["LLVM_USE_LINKER"] = "gold"
-
         # LLVM build options
         if self.settings.arch_build == "x86_64":
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "X86"
@@ -85,10 +78,7 @@ class BootstrapLlvmConan(ConanFile):
 
         # clang options
         cmake.definitions["CLANG_VENDOR"] = "Aivero"
-        cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
-        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
-        cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
         cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
         cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
@@ -107,45 +97,50 @@ class BootstrapLlvmConan(ConanFile):
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
-        cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
+        if self.settings.libc_build == "musl":
+            cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
 
         # libunwind options
-        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
+        if self.settings.libc_build == "musl":
+            cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
+        else:
+            cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
-        # Stage 0 build (lld, clang, ar, libcxx)
+        # Use libcxx, libunwind, compiler-rt by default
+        cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
+        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
+        cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
+
+        ###########
+        # Stage 0 #
+        ###########
+
+        # Install stage 0 to build directory
+        stage0_folder = os.path.join(self.build_folder, f"stage0-{self.version}-install")
+        cmake.definitions["CMAKE_INSTALL_PREFIX"] = stage0_folder
+
+        # Reduce memory footprint of linking with gold linker
+        cmake.definitions["LLVM_USE_LINKER"] = "gold"
+
+        # Stage 0 build (lld, clang, ar, unwind)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
         cmake.build(target="install-clang")
         cmake.build(target="install-clang-resource-headers")
         cmake.build(target="install-ar")
         cmake.build(target="install-ranlib")
         cmake.build(target="install-lld")
+        cmake.build(target="install-llvm-tblgen")
         cmake.build(target="install-libcxx")
         cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
-        cmake.build(target="install-llvm-tblgen")
+
+        ###########
+        # Stage 1 #
+        ###########
 
         # Install stage 1 to build directory
         stage1_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = stage1_folder
-
-        # Build musl
-        clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
-        clang_lib = os.path.join(stage0_folder, "lib", "clang", self.version, "lib", "linux")
-        ldflags = "-static-libgcc"
-        if self.settings.libc_build == "musl":
-            env = {
-                "CC": os.path.join(stage0_folder, "bin", "clang"),
-                "CFLAGS": f"-isystem {clang_inc}",
-                "LDFLAGS": f"-L{clang_lib}",
-                "TARGET": f"{arch}-linux-musl",
-                # "LIBRART_PATH": "/usr/lib/llvm-10/lib/clang/10.0.0/lib/linux",
-                "LIBCC": f"-lclang_rt.builtins-{arch}",
-            }
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
-            autotools.make(target="install-libs")
-            # GVN causes segmentation fault during recursion higher than 290
-            ldflags += " -Wl,-Bstatic,-mllvm,-gvn-max-recurse-depth=250"
 
         # Use stage 0 lld, clang, ar and ranlib
         cmake.definitions["LLVM_USE_LINKER"] = os.path.join(stage0_folder, "bin", "ld.lld")
@@ -158,13 +153,14 @@ class BootstrapLlvmConan(ConanFile):
         # Stage 0 clang can actually create useful LTO libraries
         cmake.definitions["LLVM_ENABLE_LTO"] = "Thin"
 
-        # Use stage 0 libs and includes to build stage 1
-        libcxx_inc = os.path.join(stage0_folder, "include", "c++", "v1")
-        libcxx_lib = os.path.join(stage0_folder, "lib")
+        # Statically link everything with musl
+        cflags = ""
+        if self.settings.libc_build == "musl":
+            cflags = "-static"
         env = {
-            "LD_LIBRARY_PATH": libcxx_lib,
-            "CXXFLAGS": f"-Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc} -H",
-            "LDFLAGS": f"{ldflags} -L{clang_lib} -L{libcxx_lib}",
+            "CFLAGS": cflags,
+            "CXXLAGS": cflags,
+            "LDFLAGS": cflags,
         }
 
         # Stage 1 build (libcxx, libcxxabi, libunwind)
@@ -174,14 +170,41 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
+        # Build musl
+        ldflags = ""
+        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
+        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
+        if self.settings.libc_build == "musl":
+            env = {
+                "CC": os.path.join(stage0_folder, "bin", "clang"),
+                "CFLAGS": f"-isystem {clang_inc}",
+                "LDFLAGS": f"-L{clang_lib}",
+                "TARGET": f"{arch}-linux-musl",
+                "LIBCC": f"-lclang_rt.builtins-{arch}",
+            }
+            autotools = AutoToolsBuildEnvironment(self)
+            autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
+            autotools.make(target="install-libs")
+            cflags = "-static"
+            # GVN causes segmentation fault during recursion higher than 290
+            ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
+
+        ###########
+        # Stage 2 #
+        ###########
+
         # Install stage 2 to package directory
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
-        # Use stage 1 libs to build stage 2
-        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
+        # Use stage 1 libs
+        libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage1_folder, "lib")
-        env["LDFLAGS"] = f"{ldflags} -L{clang_lib} -L{libcxx_lib}"
-        env["LD_LIBRARY_PATH"] = libcxx_lib
+        env = {
+            "LD_LIBRARY_PATH": libcxx_lib,
+            "CFLAGS": cflags,
+            "CXXFLAGS": f"{cflags} -Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
+            "LDFLAGS": f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}",
+        }
 
         # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
         with tools.environment_append(env):
@@ -211,7 +234,7 @@ class BootstrapLlvmConan(ConanFile):
             static_flags = "-static"
             libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl"].rootpath, "include")
         else:
-            static_flags = "-static-libgcc -Wl,-Bstatic"
+            static_flags = "-Wl,-Bstatic"
             libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
