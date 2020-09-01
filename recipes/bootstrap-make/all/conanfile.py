@@ -7,8 +7,8 @@ class BootstrapMakeConan(ConanFile):
     name = "bootstrap-make"
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
-    build_requires = "llvm-bootstrap/[^10.0.0]"
+    settings = {"build_type": ["RelWithDebInfo"], "os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
+    build_requires = "llvm-bootstrap/[^10.0.1]"
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/make/make-{self.version}.tar.gz")
