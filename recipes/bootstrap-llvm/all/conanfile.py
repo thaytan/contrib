@@ -10,14 +10,7 @@ class BootstrapLlvmConan(ConanFile):
     license = "custom"
     settings = {"build_type": ["RelWithDebInfo"], "os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
     build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
-    requires = (("generators/[^1.0.0]", "private"),)
-
-    def requirements(self):
-        if self.settings.os_build == "Linux":
-            if self.settings.libc_build == "system":
-                self.requires("bootstrap-glibc/[~2.27]")
-            if self.settings.libc_build == "musl":
-                self.requires("bootstrap-musl/[~1.2.1]")
+    requires = (("generators/[^1.0.0]", "private"), "bootstrap-libc/[^1.0.0]")
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
@@ -80,6 +73,9 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["CLANG_VENDOR"] = "Aivero"
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
+        cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
+        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
+        cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
         cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
 
@@ -91,6 +87,7 @@ class BootstrapLlvmConan(ConanFile):
         # libcxx options
         cmake.definitions["LIBCXX_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
+        cmake.definitions["LIBCXX_USE_COMPILER_RT"] = True
         if self.settings.libc_build == "musl":
             cmake.definitions["LIBCXX_HAS_MUSL_LIBC"] = True
 
@@ -107,11 +104,6 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
         else:
             cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
-
-        # Use libcxx, libunwind, compiler-rt by default
-        cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
-        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
-        cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
 
         ###########
         # Stage 0 #
