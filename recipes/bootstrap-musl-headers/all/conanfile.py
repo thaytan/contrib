@@ -3,14 +3,14 @@ import os
 from conans import *
 
 
-class BootstrapMuslConan(ConanFile):
-    name = "bootstrap-musl"
+class BootstrapMuslHeadersConan(ConanFile):
+    name = "bootstrap-musl-headers"
     description = "Lightweight implementation of C standard library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build"
     requires = (
         ("generators/[^1.0.0]", "private"),
-        "linux-headers-bootstrap/[^5.4.50]",
+        "bootstrap-linux-headers/[^5.4.50]",
     )
 
     def source(self):
