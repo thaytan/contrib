@@ -42,10 +42,10 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc_build == "musl":
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
             abi = "musl"
         else:
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
 
@@ -226,10 +226,10 @@ class BootstrapLlvmConan(ConanFile):
 
         if self.settings.libc_build == "musl":
             static_flags = "-static"
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
         else:
             static_flags = "-Wl,-Bstatic"
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
 
