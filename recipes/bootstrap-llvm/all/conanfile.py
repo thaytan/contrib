@@ -164,7 +164,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
-        # Build musl
+        # Build musl (LTO TODO)
         ldflags = ""
         clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
         clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
