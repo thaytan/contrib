@@ -17,8 +17,8 @@ lazy_static = "1.4"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-#tag = "1.2.0"
-branch = "update-glib"
+tag = "1.4.0"
+
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
