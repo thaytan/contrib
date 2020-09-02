@@ -9,8 +9,8 @@ class BootstrapLlvmConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = ("bootstrap-libc-headers/[^1.0.0]", "bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
-    requires = (("generators/[^1.0.0]", "private"),)
+    build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
+    requires = (("generators/[^1.0.0]", "private"), "bootstrap-libc-headers/[^1.0.0]")
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
@@ -179,7 +179,6 @@ class BootstrapLlvmConan(ConanFile):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
             autotools.make(target="install-libs")
-            cflags = "-static"
             # GVN causes segmentation fault during recursion higher than 290
             ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
 
@@ -195,7 +194,7 @@ class BootstrapLlvmConan(ConanFile):
         libcxx_lib = os.path.join(stage1_folder, "lib")
         env = {
             "LD_LIBRARY_PATH": libcxx_lib,
-            "CFLAGS": cflags,
+            "CFLAGS": cflags,  # Needed for tests
             "CXXFLAGS": f"{cflags} -Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
             "LDFLAGS": f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
