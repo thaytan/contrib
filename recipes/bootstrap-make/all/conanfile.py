@@ -8,7 +8,6 @@ class BootstrapMakeConan(ConanFile):
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    requires = (("generators/[^1.0.0]", "private"), "bootstrap-libc/[^1.0.0]")
     build_requires = "bootstrap-libc-headers/[^1.0.0]"
     requires = (("generators/[^1.0.0]", "private"),)
 
