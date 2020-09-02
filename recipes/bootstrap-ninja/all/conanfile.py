@@ -8,7 +8,7 @@ class BootstrapNinjaConan(ConanFile):
     description = "Small build system with a focus on speed"
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = ("bootstrap-libc-headers/[^1.0.0]",)
+    build_requires = ("bootstrap-libc-headers/[^1.0.0]", "bootstrap-cmake/[^3.18.0]")
     requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
