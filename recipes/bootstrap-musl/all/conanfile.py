@@ -8,7 +8,10 @@ class BootstrapMuslConan(ConanFile):
     description = "Lightweight implementation of C standard library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build"
-    requires = (("generators/[^1.0.0]", "private"),)
+    requires = (
+        ("generators/[^1.0.0]", "private"),
+        "linux-headers-bootstrap/[^5.4.50]",
+    )
 
     def source(self):
         tools.get(f"https://www.musl-libc.org/releases/musl-{self.version}.tar.gz")
