@@ -10,7 +10,7 @@ class BootstrapLlvmConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("bootstrap-libc-headers/[^1.0.0]", "bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
-    requires = ("generators/[^1.0.0]", "private")
+    requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
