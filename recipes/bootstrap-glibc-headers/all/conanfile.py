@@ -3,14 +3,14 @@ import os
 from conans import *
 
 
-class BootstrapGlibcConan(ConanFile):
-    name = "bootstrap-glibc"
+class BootstrapGlibcHeadersConan(ConanFile):
+    name = "bootstrap-glibc-headers"
     description = "glibc bootstrap headers files"
     license = "GPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
+    settings = "build_type", "compiler", "arch_build", "os_build"
     requires = (
         ("generators/[^1.0.0]", "private"),
-        "linux-headers-bootstrap/[^5.4.50]",
+        "bootstrap-linux-headers/[^5.4.50]",
     )
 
     def source(self):
