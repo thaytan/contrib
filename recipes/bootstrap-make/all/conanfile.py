@@ -7,8 +7,10 @@ class BootstrapMakeConan(ConanFile):
     name = "bootstrap-make"
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
-    settings = {"build_type": ["RelWithDebInfo"], "os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = (("generators/[^1.0.0]", "private"), "bootstrap-libc/[^1.0.0]")
+    build_requires = "bootstrap-libc-headers/[^1.0.0]"
+    requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/make/make-{self.version}.tar.gz")
