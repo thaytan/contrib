@@ -4,8 +4,6 @@ jobs:
   dispatch:
     name: Conan Dispatch
     runs-on: ubuntu-latest
-    container:
-      image: aivero/conan:dispatch
     steps:
       - uses: actions/checkout@v2
         with:
