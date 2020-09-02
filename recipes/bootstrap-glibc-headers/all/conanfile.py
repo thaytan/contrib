@@ -25,4 +25,5 @@ class BootstrapGlibcHeadersConan(ConanFile):
         pathlib.Path(os.path.join(self.package_folder, "include", "gnu", "stubs.h")).touch()
 
     def package_info(self):
+        print(self.env_info.CFLAGS)
         self.env_info.CPATH.append(os.path.join(self.package_folder, "include"))
