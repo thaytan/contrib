@@ -1,9 +1,9 @@
 from conans import *
 
 
-class BootstrapLibcConan(ConanFile):
-    name = "bootstrap-libc"
-    description = "Virtual bootstrap libc package"
+class BootstrapLibcHeadersConan(ConanFile):
+    name = "bootstrap-libc-headers"
+    description = "Virtual bootstrap libc headers package"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
 
