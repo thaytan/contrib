@@ -17,7 +17,7 @@
 use glib::subclass;
 use gst::prelude::*;
 use gst::subclass::prelude::*;
-use gst_depth_meta::rgbd;
+use gst_depth_meta::{rgbd, BufferMeta};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -142,8 +142,8 @@ impl RgbdDemux {
 
         // push a StreamStart event to tell downstream to expect output soon
         pad.push_event(
-            gst::event::Event::new_stream_start(stream_id.as_str())
-                .group_id(gst::util_group_id_next())
+            gst::event::StreamStart::builder(stream_id.as_str())
+                .group_id(gst::GroupId::next())
                 .build(),
         );
     }
@@ -188,21 +188,16 @@ impl RgbdDemux {
     /// Timestamps all auxiliary buffers with the timestamps found in the given `main_buffer`.
     /// # Arguments
     /// * `main_buffer` - A reference to the main `video/rgbd` buffer.
-    fn timestamp_aux_buffers_from_main(main_buffer: &gst::Buffer) {
+    fn timestamp_aux_buffers_from_main(main_buffer: &mut gst::BufferRef) {
         // Get timestamp of the main buffer
         let common_pts = main_buffer.get_pts();
         let common_dts = main_buffer.get_dts();
         let common_duration = main_buffer.get_duration();
 
-        // Get a mutable reference to the main buffer
-        // Note: I could not figure out a better/easier way of doing that. Please let me know if you find some.
-        let main_buffer_mut_ref = unsafe { gst::BufferRef::from_mut_ptr(main_buffer.as_mut_ptr()) };
-
         // Go through all auxiliary buffers
-        for additional_buffer in &mut rgbd::get_aux_buffers_mut(main_buffer_mut_ref) {
+        for mut meta in main_buffer.iter_meta_mut::<BufferMeta>() {
             // Make the buffer mutable so that we can edit its timestamps
-            let additional_buffer = additional_buffer.get_mut()
-            .expect("rgbddemux: Cannot get mutable reference to an auxiliary buffer when distributing timestamps.");
+            let additional_buffer = meta.buffer_mut();
 
             // Distribute the timestamp of the main buffer to the auxiliary buffers
             additional_buffer.set_pts(common_pts);
@@ -211,32 +206,27 @@ impl RgbdDemux {
         }
     }
 
-    /// Set the sink pad event and chain functions. This causes it to listen to GStreamer signals
-    /// and take action correspondingly.
-    /// Each function is wrapped in catch_panic_pad_function(), which will
-    /// - Catch panics from the pad functions and instead of aborting the process
-    ///   it will simply convert them into an error message and poison the element
-    ///   instance
-    /// - Extract RgbdDemux struct from the object instance and pass it to us
-    /// # Arguments
-    /// * `sink_pad` - The sink pad for which the signals should be listened to.
-    fn set_sink_pad_functions(sink_pad: &gst::Pad) {
-        // Sink Event
-        sink_pad.set_event_function(|_, parent, event| {
-            RgbdDemux::catch_panic_pad_function(
-                parent,
-                || false,
-                |rgbd_demux, element| rgbd_demux.sink_event(element, event),
-            )
-        });
-        // Sink Chain
-        sink_pad.set_chain_function(|_, parent, buffer| {
-            RgbdDemux::catch_panic_pad_function(
-                parent,
-                || Err(gst::FlowError::Error),
-                |rgbd_demux, element| rgbd_demux.sink_chain(element, buffer),
-            )
-        });
+    fn create_sink_pad(element: &gst::Element) -> gst::Pad {
+        let templ = element
+            .get_pad_template("sink")
+            .expect("Failed to get sink pad template in rgbddemux");
+
+        gst::Pad::builder_with_template(&templ, Some("sink"))
+            .event_function(|_, parent, event| {
+                Self::catch_panic_pad_function(
+                    parent,
+                    || false,
+                    |rgbd_demux, element| rgbd_demux.sink_event(element, event),
+                )
+            })
+            .chain_function(|_, parent, buffer| {
+                Self::catch_panic_pad_function(
+                    parent,
+                    || Err(gst::FlowError::Error),
+                    |rgbd_demux, element| rgbd_demux.sink_chain(element, buffer),
+                )
+            })
+            .build()
     }
 
     /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
@@ -267,7 +257,9 @@ impl RgbdDemux {
                 gst_debug!(CAT, "Got a stream start event {:?}", stream_start);
                 let stream_identifier = StreamIdentifier {
                     stream_id: stream_start.get_stream_id().to_string(),
-                    _group_id: stream_start.get_group_id(),
+                    _group_id: stream_start
+                        .get_group_id()
+                        .unwrap_or_else(|| gst::GroupId::next()),
                 };
 
                 self.push_stream_start_on_all_pads(&stream_identifier);
@@ -363,7 +355,7 @@ impl RgbdDemux {
             gst_debug!(CAT, "Pushing new caps event");
             pad_handle
                 .pad
-                .push_event(gst::event::Event::new_caps(&new_pad_caps).build());
+                .push_event(gst::event::Caps::builder(&new_pad_caps).build());
             gst_debug!(CAT, "All done from here");
         }
         Ok(())
@@ -466,7 +458,7 @@ impl RgbdDemux {
         }
 
         // Create the src pad with these caps
-        let new_src_pad = gst::Pad::new_from_template(
+        let new_src_pad = gst::Pad::from_template(
             &template.unwrap_or_else(|| {
                 element
                     .get_pad_template("src_%s")
@@ -497,7 +489,7 @@ impl RgbdDemux {
     fn sink_chain(
         &self,
         element: &gst::Element,
-        main_buffer: gst::Buffer,
+        mut main_buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Lock the internals
         let settings = self
@@ -507,7 +499,7 @@ impl RgbdDemux {
 
         // Distribute the timestamp of the main buffer to the auxiliary buffers, if enabled
         if settings.distribute_timestamps {
-            Self::timestamp_aux_buffers_from_main(&main_buffer);
+            Self::timestamp_aux_buffers_from_main(main_buffer.make_mut());
         }
 
         // Go through all auxiliary buffers attached to the main buffer in order to extract them and
@@ -643,14 +635,8 @@ impl ObjectImpl for RgbdDemux {
             .downcast_ref::<gst::Element>()
             .expect("Failed to cast `obj` to a gst::Element");
 
-        // Create sink pad from the template that is registered with the class
-        let templ = element
-            .get_pad_template("sink")
-            .expect("Failed to get sink pad template in rgbddemux");
-        let sink_pad = gst::Pad::new_from_template(&templ, Some("sink"));
-
-        // Set all sink pad functions
-        Self::set_sink_pad_functions(&sink_pad);
+        // Create sink pad from the template that is registered with the class and set all sink pad functions
+        let sink_pad = Self::create_sink_pad(element);
 
         // Add the sink pad to the element
         element
