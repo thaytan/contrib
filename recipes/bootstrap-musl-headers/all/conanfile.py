@@ -20,3 +20,6 @@ class BootstrapMuslHeadersConan(ConanFile):
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(configure_dir=f"musl-{self.version}")
         autotools.make(target="install-headers")
+
+    def package_info(self):
+        self.env_info.CPATH.append(os.path.join(self.package_folder, "include"))
