@@ -1,3 +1,6 @@
 versions:
   "5.4.50":
     folder: all
+    profiles:
+      - Linux-x86_64
+      - Linux-armv8

@@ -6,7 +6,7 @@ class BootstrapLinuxHeadersConan(ConanFile):
     name = "bootstrap-linux-headers"
     description = "Linux system headers"
     license = "GPL-2.0-only"
-    settings = {"build_type": ["RelWithDebInfo"], "os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system", "musl"]}
+    settings = "build_type", "compiler", "arch_build", "os_build"
     requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
