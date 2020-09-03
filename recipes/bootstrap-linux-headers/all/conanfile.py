@@ -17,3 +17,6 @@ class BootstrapLinuxHeadersConan(ConanFile):
         with tools.chdir(f"linux-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.make(target="headers_install", args=[f"ARCH={arch}", f'INSTALL_HDR_PATH="{self.package_folder}"'])
+
+    def package_info(self):
+        self.env_info.CPATH.append(os.path.join(self.package_folder, "include"))
