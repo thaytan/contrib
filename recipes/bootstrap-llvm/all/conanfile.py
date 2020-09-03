@@ -211,6 +211,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-ar")
             cmake.build(target="install-ranlib")
             cmake.build(target="install-strip")
+            cmake.build(target="install-objcopy")
             cmake.build(target="install-lld")
             cmake.build(target="install-llvm-config")
             cmake.build(target="install-llvm-tblgen")
@@ -231,7 +232,7 @@ class BootstrapLlvmConan(ConanFile):
             static_flags = "-static"
             libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
         else:
-            static_flags = "-Wl,-Bstatic"
+            static_flags = ""
             libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
