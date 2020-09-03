@@ -7,7 +7,7 @@ class BootstrapMuslHeadersConan(ConanFile):
     name = "bootstrap-musl-headers"
     description = "Lightweight implementation of C standard library"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = (
         ("generators/[^1.0.0]", "private"),
         "bootstrap-linux-headers/[^5.4.50]",
