@@ -122,7 +122,7 @@ class BootstrapLlvmConan(ConanFile):
         cmake.build(target="install-clang-resource-headers")
         cmake.build(target="install-ar")
         cmake.build(target="install-ranlib")
-        cmake.build(target="install-llvm-objcopy")
+        cmake.build(target="install-strip")
         cmake.build(target="install-lld")
         cmake.build(target="install-llvm-tblgen")
         cmake.build(target="install-libcxx")
@@ -210,7 +210,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-clang-resource-headers")
             cmake.build(target="install-ar")
             cmake.build(target="install-ranlib")
-            cmake.build(target="install-llvm-objcopy")
+            cmake.build(target="install-strip")
             cmake.build(target="install-lld")
             cmake.build(target="install-llvm-config")
             cmake.build(target="install-llvm-tblgen")
@@ -224,6 +224,8 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
         self.env_info.LD = os.path.join(self.package_folder, "bin", "lld")
+        self.env_info.STRIP = os.path.join(self.package_folder, "bin", "strip")
+        self.env_info.OBJCOPY = os.path.join(self.package_folder, "bin", "objcopy")
 
         if self.settings.libc_build == "musl":
             static_flags = "-static"
