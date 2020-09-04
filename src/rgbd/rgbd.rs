@@ -150,7 +150,7 @@ pub fn get_tag(buffer: &gst::BufferRef) -> Result<String, gst::ErrorMessage> {
 pub fn clear_tags(buffer: &mut gst::BufferRef) {
     buffer.foreach_meta_mut(|meta| {
         if meta.as_ref().downcast_ref::<TagsMeta>().is_some() {
-            Err(true)
+            Ok(false)
         } else {
             Ok(true)
         }
@@ -201,7 +201,7 @@ pub fn remove_aux_buffers_with_tags(
 
             if tags.contains(&&*tag) {
                 // Remove buffers with the corresponding tags
-                Err(true)
+                Ok(false)
             } else {
                 Ok(true)
             }
