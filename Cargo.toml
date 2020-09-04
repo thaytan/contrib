@@ -12,7 +12,7 @@ readme = "README.md"
 [dependencies]
 glib = "0.10"
 gstreamer = "0.16"
-gstreamer-base = { version = "0.16", features = ["dox"] }
+gstreamer-base = { version = "0.16", features = ["v1_14_1"] }
 lazy_static = "1.4"
 
 [dependencies.gstreamer-depth-meta]
