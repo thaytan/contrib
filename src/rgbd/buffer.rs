@@ -16,7 +16,6 @@
 use glib::translate::from_glib;
 use gst::meta::*;
 use gst::BufferRef;
-use gst::MiniObject;
 use std::fmt;
 
 use crate::rgbd::sys;
@@ -57,6 +56,27 @@ impl BufferMeta {
     pub fn get(buffer: &BufferRef) -> &BufferMeta {
         unsafe { &*sys::buffer_meta_get(buffer.as_mut_ptr()) }
     }
+
+    /// Get the contained buffer
+    pub fn buffer(&self) -> &gst::BufferRef {
+        unsafe { gst::BufferRef::from_ptr(self.buffer) }
+    }
+
+    /// Get a mutable reference to the contained buffer, if possible, or make it mutable first
+    pub fn buffer_mut(&mut self) -> &mut gst::BufferRef {
+        unsafe {
+            if gst_sys::gst_mini_object_is_writable(self.buffer as *mut _) == glib_sys::GFALSE {
+                self.buffer =
+                    gst_sys::gst_mini_object_make_writable(self.buffer as *mut _) as *mut _;
+            }
+            gst::BufferRef::from_mut_ptr(self.buffer)
+        }
+    }
+
+    /// Get the contained buffer
+    pub fn buffer_owned(&self) -> gst::Buffer {
+        unsafe { gst::Buffer::from_glib_none(self.buffer) }
+    }
 }
 
 unsafe impl MetaAPI for BufferMeta {
@@ -70,7 +90,7 @@ unsafe impl MetaAPI for BufferMeta {
 impl fmt::Debug for BufferMeta {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("BufferMeta")
-            .field("buffer", &self.buffer)
+            .field("buffer", &self.buffer())
             .finish()
     }
 }

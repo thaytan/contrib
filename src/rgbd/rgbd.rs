@@ -81,21 +81,7 @@ pub fn attach_aux_buffer_and_tag(
 pub fn get_aux_buffers(main_buffer: &gst::Buffer) -> Vec<gst::Buffer> {
     main_buffer
         .iter_meta::<BufferMeta>()
-        .map(|meta| unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) })
-        .collect()
-}
-
-/// Get all auxiliary buffers attached to the `main_buffer`.
-///
-/// # Arguments
-/// * `main_buffer` - The main buffer to remove auxiliary buffers from.
-///
-/// # Returns
-/// * Vec<gst::Buffer> containing the mutable auxiliary buffers.
-pub fn get_aux_buffers_mut(main_buffer: &mut gst::BufferRef) -> Vec<gst::Buffer> {
-    main_buffer
-        .iter_meta_mut::<BufferMeta>()
-        .map(|meta| unsafe { gst::buffer::Buffer::from_glib_borrow(meta.buffer) })
+        .map(|meta| meta.buffer_owned())
         .collect()
 }
 
@@ -133,19 +119,15 @@ pub fn tag_buffer(buffer: &mut gst::BufferRef, tag: &str) -> Result<(), gst::Err
 /// # Returns
 /// * `Ok(&str)` with tag on success.
 /// * `Err(gst::ErrorMessage)` on failure, if buffer has invalid tag.
-pub fn get_tag(buffer: &gst::Buffer) -> Result<&str, gst::ErrorMessage> {
+pub fn get_tag(buffer: &gst::BufferRef) -> Result<String, gst::ErrorMessage> {
     // Get TagList from GstBuffer
-    let tag_list = unsafe {
-        gst::tags::TagList::from_glib_none(
-            buffer
-                .get_meta::<TagsMeta>()
-                .ok_or(gst_error_msg!(
-                    gst::ResourceError::Failed,
-                    ["Buffer {:?} has no tags", buffer]
-                ))?
-                .tags,
-        )
-    };
+    let tag_list = buffer
+        .get_meta::<TagsMeta>()
+        .ok_or(gst_error_msg!(
+            gst::ResourceError::Failed,
+            ["Buffer {:?} has no tags", buffer]
+        ))?
+        .get_tag_list();
 
     // Get the title tag from TagList
     let tag = tag_list.get::<gst::tags::Title>().ok_or(gst_error_msg!(
@@ -158,7 +140,7 @@ pub fn get_tag(buffer: &gst::Buffer) -> Result<&str, gst::ErrorMessage> {
     ))?;
 
     // Return it as string slice
-    Ok(Box::leak(Box::from(tag)))
+    Ok(String::from(tag))
 }
 
 /// Remove all tags of a `buffer`.
@@ -166,13 +148,13 @@ pub fn get_tag(buffer: &gst::Buffer) -> Result<&str, gst::ErrorMessage> {
 /// # Arguments
 /// * `buffer` - The buffer to remove the tags from.
 pub fn clear_tags(buffer: &mut gst::BufferRef) {
-    loop {
-        let tag = buffer.get_meta_mut::<TagsMeta>();
-        match tag {
-            Some(t) => t.remove(),
-            None => break,
+    buffer.foreach_meta_mut(|meta| {
+        if meta.as_ref().downcast_ref::<TagsMeta>().is_some() {
+            Ok(false)
+        } else {
+            Ok(true)
         }
-    }
+    });
 }
 
 /// Replaces all existing tags of `buffer` with `tag`.
@@ -208,34 +190,25 @@ pub fn remove_aux_buffers_with_tags(
     main_buffer: &mut gst::BufferRef,
     tags: &[&str],
 ) -> Result<(), gst::ErrorMessage> {
-    // Allocate a vector for saving the buffers that should not be removed
-    let mut remaining_buffers: Vec<gst::Buffer> = vec![];
-
     // Loop over all auxiliary buffers
-    #[allow(clippy::while_let_loop)]
-    loop {
-        // Check if there are any auxiliary buffers left, break if not
-        let meta = match main_buffer.get_meta_mut::<BufferMeta>() {
-            Some(meta) => meta,
-            None => break,
-        };
-        let auxiliary_buffer = unsafe { gst::buffer::Buffer::from_glib_none(meta.buffer) };
+    main_buffer.foreach_meta_mut(|meta| {
+        if let Some(meta) = meta.as_ref().downcast_ref::<BufferMeta>() {
+            let auxiliary_buffer = meta.buffer();
+            let tag = match get_tag(&auxiliary_buffer) {
+                Err(_) => return Ok(true),
+                Ok(tag) => tag,
+            };
 
-        if tags.contains(&get_tag(&auxiliary_buffer)?) {
-            // Remove buffers with the corresponding tags
-            meta.remove();
+            if tags.contains(&&*tag) {
+                // Remove buffers with the corresponding tags
+                Ok(false)
+            } else {
+                Ok(true)
+            }
         } else {
-            // Keep buffers that do not match the tag
-            remaining_buffers.push(auxiliary_buffer);
-            // Remove it from the list, so that it can be reattached again
-            meta.remove();
+            Ok(true)
         }
-    }
-
-    // Return the remaining buffers back
-    for buffer in &mut remaining_buffers {
-        BufferMeta::add(main_buffer, buffer);
-    }
+    });
 
     // Return Ok() if everything went fine
     Ok(())
@@ -284,16 +257,14 @@ pub fn get_video_info(
     let stream_height = get_field::<i32>(caps, &format!("{}_height", stream_name), "i32")?;
     let stream_format = get_field::<&str>(caps, &format!("{}_format", stream_name), "str")?;
 
-    let caps = gst::Caps::new_simple(
-        "video/x-raw",
-        &[
-            ("format", &stream_format),
-            ("width", &stream_width),
-            ("height", &stream_height),
-            ("framerate", &framerate),
-        ],
-    );
-    gstreamer_video::VideoInfo::from_caps(&caps).map_err(|_| RgbdError::NoVideoInfo)
+    gstreamer_video::VideoInfo::builder(
+        stream_format.parse().map_err(|_| RgbdError::NoVideoInfo)?,
+        stream_width as u32,
+        stream_height as u32,
+    )
+    .fps(framerate)
+    .build()
+    .map_err(|_| RgbdError::NoVideoInfo)
 }
 
 /// Aligns `buffer` to u16, such that it can be used to store depth video.
@@ -303,25 +274,19 @@ pub fn get_video_info(
 /// * `Ok` - If the buffer is properly aligned to u16.
 /// * `Err` - If not.
 pub fn to_depth_buffer(buffer: &[u8]) -> Result<&[u16], RgbdError> {
-    let (head, in_data_u16, tail) = unsafe { buffer.align_to::<u16>() };
-    // Ensure that the frame's byte was correctly aligned to a u16 slice. If head or tail is
-    // non-empty, it means that the buffer was not correctly aligned and we therefore return an
-    // error.
-    if !head.is_empty() || !tail.is_empty() {
-        return Err(RgbdError::BufferNotAligned);
-    }
-    Ok(in_data_u16)
+    use byte_slice_cast::*;
+
+    buffer
+        .as_slice_of::<u16>()
+        .map_err(|_| RgbdError::BufferNotAligned)
 }
 
 pub fn to_depth_buffer_mut(buffer: &mut [u8]) -> Result<&mut [u16], RgbdError> {
-    let (head, in_data_u16, tail) = unsafe { buffer.align_to_mut::<u16>() };
-    // Ensure that the frame's byte was correctly aligned to a u16 slice. If head or tail is
-    // non-empty, it means that the buffer was not correctly aligned and we therefore return an
-    // error.
-    if !head.is_empty() || !tail.is_empty() {
-        return Err(RgbdError::BufferNotAligned);
-    }
-    Ok(in_data_u16)
+    use byte_slice_cast::*;
+
+    buffer
+        .as_mut_slice_of::<u16>()
+        .map_err(|_| RgbdError::BufferNotAligned)
 }
 
 #[cfg(test)]

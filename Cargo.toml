@@ -7,14 +7,16 @@ license = "Apache 2.0"
 edition = "2018"
 
 [dependencies]
-glib-sys = "0.9"
-glib = "0.9"
-gstreamer-sys = "0.8"
-gstreamer = "0.15"
-gstreamer-video-sys = "0.8"
-gstreamer-video = "0.15"
-gstreamer-base = "0.15"
+glib-sys = "0.10"
+glib = "0.10"
+gstreamer-sys = "0.9"
+gstreamer = "0.16"
+gstreamer-video-sys = "0.9"
+gstreamer-video = "0.16"
+gstreamer-base = "0.16"
 capnp = "0.12"
+lazy_static = "1.0"
+byte-slice-cast = "0.3"
 
 [build-dependencies]
 pkg-config = "0.3"
