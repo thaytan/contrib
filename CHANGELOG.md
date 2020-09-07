@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Fixed
 
-- Timestamps in GAP events - use proper timestamps instead of current running time.
+- Timestamps in GAP events - use proper timestamps instead of current clock time.
 - Fix incorrect computation of the frame duration for GAP event.
 
 ## [0.5.1] - 2020-08-21
