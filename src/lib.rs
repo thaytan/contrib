@@ -23,6 +23,7 @@ extern crate gstreamer_video as gst_video;
 extern crate librealsense2 as rs2;
 #[macro_use]
 extern crate lazy_static;
+extern crate rgbd_timestamps;
 
 mod d400_limits;
 mod enabled_streams;

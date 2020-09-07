@@ -26,8 +26,9 @@ use gst_base::prelude::*;
 use gst_base::subclass::base_src::CreateSuccess;
 use gst_base::subclass::prelude::*;
 
+use ::rgbd_timestamps::*;
 use camera_meta::Distortion;
-use gst_depth_meta::{camera_meta, camera_meta::*, rgbd, rgbd_timestamps::*};
+use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
 use rs2::high_level_utils::StreamInfo;
 
 use crate::errors::*;

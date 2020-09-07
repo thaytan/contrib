@@ -14,7 +14,7 @@
 // Boston, MA 02110-1301, USA.
 
 use glib::subclass;
-use gst_depth_meta::rgbd_timestamps::TimestampMode;
+use rgbd_timestamps::timestamp_mode::TimestampMode;
 
 use crate::settings::*;
 

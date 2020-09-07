@@ -20,7 +20,13 @@ capnp = "0.12"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "1.4.0"
+branch = "separate-timestamps-as-dylib"
+# tag = "2.0.0"
+
+[dependencies.rgbd-timestamps]
+git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
+branch = "separate-timestamps-as-dylib"
+# tag = "2.0.0"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
