@@ -1,8 +1,9 @@
-image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
+include:
+  - project: 'aivero/cloud/cicd'
+    file: 'conan-ci.yml'
+variables:
+  SPECIFICS: '/rust'
 
-stages:
-  - test
-  - doc
 
 variables:
   CONAN_DATA_PATH: "$CI_PROJECT_DIR/conan_data"
@@ -24,6 +25,7 @@ before_script:
 
 test:
   stage: test
+  image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
   tags:
    - x86_64
   script:
@@ -32,7 +34,8 @@ test:
     - cargo test --verbose
 
 pages:
-  stage: doc
+  stage: test
+  image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
   tags:
     - x86_64
   script:

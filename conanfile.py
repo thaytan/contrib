@@ -44,10 +44,11 @@ class RgbdTimestampsConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
-        self.build_requires("rust/[>=1.40.0]@%s/stable" % self.user)
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
 
     def requirements(self):
+        # Rust must be a requirement here (not a build requirement) because we are dynamically linking to libstd
+        self.requires("rust/[>=1.40.0]@%s/stable" % self.user)
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
         self.requires("capnproto/[>=0.7.0]@%s/stable" % self.user)
 
@@ -60,7 +61,7 @@ class RgbdTimestampsConan(ConanFile):
             print('Invalid build_type selected')
 
     def package(self):
-        self.copy(pattern="*rgbd_timestamps.so",
+        self.copy(pattern="*.so",
                   dst=os.path.join(self.package_folder, "lib"), keep_path=False)
 
     def package_info(self):

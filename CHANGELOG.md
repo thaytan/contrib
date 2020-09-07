@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Module `rgbd-timestamps` is now separated into a new package with *"cdylib"* crate type.
+- Module `rgbd-timestamps` is now separated into a new package with *"dylib"* crate type.
   - This change comes from the requirement of making `GstTimestampMode` a part of shared library, such that it does not get registered multiple times by both `realsensesrc` and `k4asrc`.
     - Attempt for fixing this was previously introduced in 1.0.2. However, the approach used in this version is wrong.
   - Added corresponding conanfile for packaging it.
