@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.5.3] - 2020-09-07
+## [0.5.4] - 2020-09-07
 ### Fixed
 
 - Timestamps in GAP events - use proper timestamps instead of current clock time.
@@ -20,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Updated
 
 - Update GStreamer bindings version and various minor cleanups/fixes.
->>>>>>> CHANGELOG.md
 
 ## [0.5.1] - 2020-08-21
 ### Changed

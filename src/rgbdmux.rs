@@ -819,7 +819,7 @@ impl RgbdMux {
             clock_internals.gap_timestamp + clock_internals.frameset_duration;
 
         // Create and send the GAP event
-        let gap_event = gst::Event::new_gap(
+        let gap_event = gst::event::Gap::builder(
             clock_internals.gap_timestamp,
             clock_internals.frameset_duration,
         )
@@ -874,10 +874,6 @@ impl RgbdMux {
 
                     // If deadline based aggregation is selected, update the `frameset_duration`
                     clock_internals.frameset_duration = if settings.drop_if_missing {
-                        // HERE
-                        //
-                        //
-                        //
                         // Update also the `frameset_duration` based on `framerate` and
                         // `deadline-multiplier` property
                         let (num, den): (i32, i32) = clock_internals.framerate.into();
