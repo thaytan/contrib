@@ -26,6 +26,7 @@ use camera_meta::Distortion;
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
+use gst_base::subclass::base_src::CreateSuccess;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd, rgbd_timestamps::*};
 use k4a::calibration::Calibration;
@@ -189,7 +190,7 @@ impl BaseSrcImpl for K4aSrc {
         self.parent_stop(base_src)
     }
 
-    fn fixate(&self, base_src: &gst_base::BaseSrc, caps: gst::Caps) -> gst::Caps {
+    fn fixate(&self, base_src: &gst_base::BaseSrc, mut caps: gst::Caps) -> gst::Caps {
         // Lock the internals
         let internals = &mut self
             .internals
@@ -197,7 +198,7 @@ impl BaseSrcImpl for K4aSrc {
             .expect("k4asrc: Cannot lock internals in `fixate()`");
         let desired_streams = &internals.settings.desired_streams;
 
-        let mut caps = gst::Caps::truncate(caps);
+        caps.truncate();
         {
             // Map caps to mutable structure
             let caps = caps
@@ -314,8 +315,9 @@ impl BaseSrcImpl for K4aSrc {
         &self,
         base_src: &gst_base::BaseSrc,
         _offset: u64,
+        _buffer: Option<&mut gst::BufferRef>,
         _length: u32,
-    ) -> Result<gst::Buffer, gst::FlowError> {
+    ) -> Result<CreateSuccess, gst::FlowError> {
         // Lock the internals
         let internals = &mut self
             .internals
@@ -402,7 +404,7 @@ impl BaseSrcImpl for K4aSrc {
             self.attach_camera_meta(base_src, &mut output_buffer, camera_meta)?;
         }
 
-        Ok(output_buffer)
+        Ok(CreateSuccess::NewBuffer(output_buffer))
     }
 
     fn is_seekable(&self, _base_src: &gst_base::BaseSrc) -> bool {
