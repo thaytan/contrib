@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.5.4] - 2020-09-07
+### Fixed
+
+- Timestamps in GAP events - use proper timestamps instead of current clock time.
+- Fix incorrect computation of the frame duration for GAP event.
+
 ## [0.5.3] - 2020-09-04
 ### Fixed
 
