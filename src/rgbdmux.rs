@@ -804,6 +804,11 @@ impl RgbdMux {
         if clock_internals.gap_timestamp == gst::CLOCK_TIME_NONE {
             // Make sure the previous timestamp is valid first
             if clock_internals.previous_timestamp == gst::CLOCK_TIME_NONE {
+                gst_warning!(
+                        CAT,
+                        obj: aggregator,
+                        "GAP event could not be sent, because the previous frameset timestamp is invalid",
+                    );
                 return;
             }
             clock_internals.gap_timestamp = clock_internals.previous_timestamp;
