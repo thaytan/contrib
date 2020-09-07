@@ -17,7 +17,7 @@
 use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate};
 use crate::settings::*;
 use glib::subclass;
-use gst_depth_meta::rgbd_timestamps::TimestampMode;
+use rgbd_timestamps::timestamp_mode::TimestampMode;
 
 lazy_static! {
 /// All properties that `k4asrc` element supports.

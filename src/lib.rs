@@ -24,6 +24,7 @@ extern crate gstreamer_video as gst_video;
 #[macro_use]
 extern crate lazy_static;
 extern crate k4a;
+extern crate rgbd_timestamps;
 
 pub mod enums;
 mod error;
