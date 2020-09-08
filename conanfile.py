@@ -63,7 +63,8 @@ class K4aSrcConan(ConanFile):
             print('Invalid build_type selected')
 
     def package(self):
-        self.copy(pattern="*.so", dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"), keep_path=False)
+        self.copy(pattern="*.so", excludes="*k4asrc.so", dst=os.path.join(self.package_folder, "lib"), keep_path=False)
+        self.copy(pattern="*k4asrc.so", dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"), keep_path=False)
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
