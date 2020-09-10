@@ -13,7 +13,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::rgbd_timestamps::TimestampMode;
+use crate::timestamp_mode::TimestampMode;
 
 /// A struct that contains data associated with timestamps.
 #[derive(Debug, Clone, Copy)]

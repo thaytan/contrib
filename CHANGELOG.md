@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2020-Sep-07
+
+### Changed
+
+- Module `rgbd-timestamps` is now separated into a new package with *"dylib"* crate type.
+  - This change comes from the requirement of making `GstTimestampMode` a part of shared library, such that it does not get registered multiple times by both `realsensesrc` and `k4asrc`.
+    - Attempt for fixing this was previously introduced in 1.0.2. However, the approach used in this version is wrong.
+  - Added corresponding conanfile for packaging it.
+  - The repository is now structured as a workspace containing two packages.
+    - Note that this is a breaking change. Packages utilising the rgbd-timestamps module must now include it as an extra dependency, whilst having access to librgbd_timestamps.so shared object.
+
 ## [1.4.0] - 2020-Sep-04
 
 ### Changed

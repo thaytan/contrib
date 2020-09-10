@@ -1,40 +1,46 @@
-image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
-
-stages:
-  - test
-  - doc
-
+include:
+  - project: 'aivero/cloud/cicd'
+    file: 'conan-ci.yml'
 variables:
-  CONAN_DATA_PATH: "$CI_PROJECT_DIR/conan_data"
-  CONAN_ARCH: x86_64
-  CARGO_HUSKY_DONT_INSTALL_HOOKS: "true"
-
-before_script:
-  - conan --version
-  - conan config install https://gitlab.com/aivero/public/conan/conan-config.git
-  - conan profile update settings.compiler.libcxx=libstdc++11 linux_x86_64
-  - conan config set general.default_profile=linux_$CONAN_ARCH
-  - conan config set storage.path=${CONAN_DATA_PATH}
-  - echo -e "[credential]\n\thelper = store" > ~/.gitconfig
-  - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com" > ~/.git-credentials
-  - conan install . aivero/stable -if build
-  - source build/env.sh
+  SPECIFICS: '/rust'
 
 # scripts inspired by: https://users.rust-lang.org/t/my-gitlab-config-docs-tests/16396
 
 test:
   stage: test
+  image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
   tags:
    - x86_64
+  before_script:
+    - conan --version
+    - conan config install https://gitlab.com/aivero/public/conan/conan-config.git
+    - conan profile update settings.compiler.libcxx=libstdc++11 linux_x86_64
+    - conan config set general.default_profile=linux_x86_64
+    - conan config set storage.path=${CI_PROJECT_DIR}/conan_data
+    - echo -e "[credential]\n\thelper = store" > ~/.gitconfig
+    - echo "https://gitlab-ci-token:${CI_PROJECT_DIR}/conan_data@gitlab.com" > ~/.git-credentials
+    - conan install . aivero/stable -if build
+    - source build/env.sh
   script:
     - rustc --version
     - cargo --version
     - cargo test --verbose
 
 pages:
-  stage: doc
+  stage: test
+  image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
   tags:
     - x86_64
+  before_script:
+    - conan --version
+    - conan config install https://gitlab.com/aivero/public/conan/conan-config.git
+    - conan profile update settings.compiler.libcxx=libstdc++11 linux_x86_64
+    - conan config set general.default_profile=linux_x86_64
+    - conan config set storage.path=${CI_PROJECT_DIR}/conan_data
+    - echo -e "[credential]\n\thelper = store" > ~/.gitconfig
+    - echo "https://gitlab-ci-token:${CI_PROJECT_DIR}/conan_data@gitlab.com" > ~/.git-credentials
+    - conan install . aivero/stable -if build
+    - source build/env.sh
   script:
     - cargo doc --no-deps
     - mv target/doc public
