@@ -3,7 +3,6 @@
 
 from conans import ConanFile, tools
 import os
-from datetime import datetime
 
 def get_version():
     git = tools.Git()
@@ -34,9 +33,6 @@ class RgbdConan(ConanFile):
     ]
 
     def source(self):
-        # Override the version supplied to GStreamer, as specified in lib.rs
-        tools.replace_path_in_file(file_path="src/lib.rs", search="\"2017-12-01\"",
-                                   replace=("\"%s\"" % datetime.now().strftime("%Y-%m-%d")))
         # Override the package version defined in the Cargo.toml file
         tools.replace_path_in_file(file_path="Cargo.toml", search=(
                     "[package]\nname = \"%s\"\nversion = \"0.0.0-ohmyconanpleaseoverwriteme\"" % self.name), replace=(
