@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, tools
-from datetime import datetime
 import os
 
 def get_version():
@@ -44,12 +43,11 @@ class K4aSrcConan(ConanFile):
 
     def requirements(self):
         self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
+        self.requires("rgbd-timestamps/[>=2.0.0]@%s/stable" % self.user)
         self.requires("k4a/[>=1.4.0]@%s/stable" % self.user)
         self.requires("capnproto/[>=0.7.0]@%s/stable" % self.user)
 
     def source(self):
-        # Override the version supplied to GStreamer, as specified in lib.rs
-        tools.replace_path_in_file(file_path="src/lib.rs", search="\"2019-12-04\"", replace=("\"%s\"" % datetime.now().strftime("%Y-%m-%d")))
         # Override the package version defined in the Cargo.toml file
         tools.replace_path_in_file(file_path="Cargo.toml", search=("[package]\nname = \"%s\"\nversion = \"0.0.0-ohmyconanpleaseoverwriteme\"" % self.name), replace=("[package]\nname = \"%s\"\nversion = \"%s\"" % (self.name, make_cargo_version(self.version))))
 
@@ -62,7 +60,8 @@ class K4aSrcConan(ConanFile):
             print('Invalid build_type selected')
 
     def package(self):
-        self.copy(pattern="*.so", dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"), keep_path=False)
+        self.copy(pattern="*.so", excludes="*k4asrc.so", dst=os.path.join(self.package_folder, "lib"), keep_path=False)
+        self.copy(pattern="*k4asrc.so", dst=os.path.join(self.package_folder, "lib", "gstreamer-1.0"), keep_path=False)
 
     def package_info(self):
         self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))

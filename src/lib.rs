@@ -24,6 +24,7 @@ extern crate gstreamer_video as gst_video;
 #[macro_use]
 extern crate lazy_static;
 extern crate k4a;
+extern crate rgbd_timestamps;
 
 pub mod enums;
 mod error;
@@ -49,5 +50,5 @@ gst_plugin_define!(
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_REPOSITORY"),
-    "2019-12-04" // This date is replaced with Python's datetime.now() during a conan create run.
+    env!("BUILD_REL_DATE")
 );
