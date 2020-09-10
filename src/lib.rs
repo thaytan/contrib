@@ -23,6 +23,7 @@ extern crate gstreamer_video as gst_video;
 extern crate librealsense2 as rs2;
 #[macro_use]
 extern crate lazy_static;
+extern crate rgbd_timestamps;
 
 mod d400_limits;
 mod enabled_streams;
@@ -46,5 +47,5 @@ gst_plugin_define!(
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_NAME"),
     env!("CARGO_PKG_REPOSITORY"),
-    "2017-12-01"
+    env!("BUILD_REL_DATE")
 );
