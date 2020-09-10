@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, tools
-from datetime import datetime
 import os
 
 def get_version():
@@ -49,8 +48,6 @@ class K4aSrcConan(ConanFile):
         self.requires("capnproto/[>=0.7.0]@%s/stable" % self.user)
 
     def source(self):
-        # Override the version supplied to GStreamer, as specified in lib.rs
-        tools.replace_path_in_file(file_path="src/lib.rs", search="\"2019-12-04\"", replace=("\"%s\"" % datetime.now().strftime("%Y-%m-%d")))
         # Override the package version defined in the Cargo.toml file
         tools.replace_path_in_file(file_path="Cargo.toml", search=("[package]\nname = \"%s\"\nversion = \"0.0.0-ohmyconanpleaseoverwriteme\"" % self.name), replace=("[package]\nname = \"%s\"\nversion = \"%s\"" % (self.name, make_cargo_version(self.version))))
 
