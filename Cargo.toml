@@ -32,6 +32,8 @@ tag = "2.2.3"
 
 [build-dependencies]
 capnpc = "0.12"
+gst-plugin-version-helper = "0.2"
+
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
