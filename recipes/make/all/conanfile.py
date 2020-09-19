@@ -6,7 +6,7 @@ from conans import *
 class MakeConan(ConanFile):
     name = "make"
     description = "GNU make utility to maintain groups of programs"
-    license = "GPL"
+    license = "GPL3"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = "bootstrap-llvm/[^10.0.1]", "bootstrap-make/[^4.3]"
     requires = (("generators/[^1.0.0]", "private"),)
