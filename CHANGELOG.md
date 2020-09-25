@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `rgbdmux`
     - Downstream requests for video format are now correctly sent to the upstream element(s).
     - Forwarding of EOS - EOS is now send in `aggregate()` when all sink pads are marked as EOS.
+    - Output CAPS for MJPG stream, i.e. format is now properly specified for downstream elements.
 
 
 ## [0.5.4] - 2020-09-07

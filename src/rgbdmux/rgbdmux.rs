@@ -762,16 +762,22 @@ impl RgbdMux {
     /// # Arguments
     /// * `pad_caps` - A reference to the pad's CAPS.
     /// * `pad_name` - The name of the stream we're currently generating CAPS for.
-    fn push_sink_caps_format(
+    fn elementary_caps_to_rgbd(
         &self,
         pad_caps: &gst::Caps,
         pad_name: &str,
         src_caps: &mut gst::StructureRef,
     ) {
-        let pad_caps = pad_caps.iter().next().expect("rgbdmux: Got empty CAPS");
         let stream_name = &pad_name[5..];
+        
+        // Set the format for MJPG stream
+        if pad_caps.is_subset(gst::Caps::new_simple("image/jpeg", &[]).as_ref()) {
+            let src_field_name = format!("{}_{}", stream_name, "format");
+            src_caps.set(&src_field_name, &"image/jpeg");
+        }
 
         // Filter out all CAPS we don't care about and map those we do into strings
+        let pad_caps = pad_caps.iter().next().expect("rgbdmux: Got empty CAPS");
         for (field, value) in pad_caps.iter() {
             match field {
                 "format" => {
@@ -865,7 +871,7 @@ impl RgbdMux {
                 })
                 .get_current_caps();
             if let Some(pc) = pad_caps {
-                self.push_sink_caps_format(&pc, pad_name, mut_caps)
+                self.elementary_caps_to_rgbd(&pc, pad_name, mut_caps)
             }
         }
 
