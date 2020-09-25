@@ -14,23 +14,24 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use std::error::Error;
-use std::{fmt, fmt::Display, fmt::Formatter};
-
-/// Custom error of `rgbdmux` element
-#[derive(Debug, Clone)]
-pub struct RgbdMuxError(pub String);
-
-impl Error for RgbdMuxError {}
-
-impl Display for RgbdMuxError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "RGB-D Muxing Error: {}", self.0)
-    }
+/// A handle on the pad, which contains information related to the pad.
+pub struct DemuxPad {
+    /// The actual pad.
+    pub pad: gst::Pad,
+    /// A flag to indicate whether or not we have sent the "stream-start" event on the pad.
+    pub pushed_stream_start: bool,
 }
 
-impl From<gst::ErrorMessage> for RgbdMuxError {
-    fn from(error: gst::ErrorMessage) -> RgbdMuxError {
-        RgbdMuxError(format!("{}", error))
+impl DemuxPad {
+    /// Creates a new DemuxPad for the given `pad`.
+    /// # Arguments
+    /// * `pad` - The pad to create a handle for.
+    /// # Returns
+    /// A new instance of [DemuxPad](struct.DemuxPad.html) for the pad.
+    pub fn new(pad: gst::Pad) -> Self {
+        Self {
+            pad,
+            pushed_stream_start: false,
+        }
     }
 }

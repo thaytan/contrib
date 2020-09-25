@@ -23,6 +23,7 @@ extern crate gstreamer_depth_meta as gst_depth_meta;
 #[macro_use]
 extern crate lazy_static;
 
+mod common;
 mod rgbddemux;
 mod rgbdmux;
 

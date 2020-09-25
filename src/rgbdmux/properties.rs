@@ -16,18 +16,13 @@
 
 use glib::{subclass::Property, ParamFlags, ParamSpec};
 
-/// A flag that determines what to do if one of the sink pads does not
-/// receive a buffer within the aggregation deadline. If set to true,
-/// all other buffers will be dropped.
-const DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING: bool = false;
-/// A flag that determines what to do if the timestamps (pts) of the
-/// received buffers differ. If set to true, the buffers that are
-/// behind, i.e. those that have the smallest pts, get dropped.
-const DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS: bool = true;
-/// Default deadline multiplier for the deadline based aggregation
+/// Default value for to `drop-to-synchronise` property
+const DEFAULT_DROP_TO_SYNCHRONISE: bool = true;
+/// Default value for to `drop-if-missing` property
+const DEFAULT_DROP_IF_MISSING: bool = false;
+/// Default value for to `deadline-multiplier` property
 const DEFAULT_DEADLINE_MULTIPLIER: f32 = 2.50;
-/// A flag that determines whether to send gap events if buffers are
-/// explicitly dropped
+/// Default value for to `send-gap-events` property
 const DEFAULT_SEND_GAP_EVENTS: bool = false;
 
 pub static PROPERTIES: [Property; 4] = [
@@ -36,7 +31,7 @@ pub static PROPERTIES: [Property; 4] = [
             name,
             "Drop buffers to synchronise streams",
             "Determines what to do if the timestamps (pts) of the received buffers differ. If set to true, the buffers that are behind, i.e. those that have the smallest pts, get dropped.",
-            DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS,
+            DEFAULT_DROP_TO_SYNCHRONISE,
             ParamFlags::READWRITE,
         )
     }),
@@ -45,7 +40,7 @@ pub static PROPERTIES: [Property; 4] = [
             name,
             "Drop all buffers in one is missing",
             "If enabled, deadline based aggregation is employed with the `deadline-multiplier` property determining the duration of the deadline. If enabled and one of the sink pads does not receive a buffer within the aggregation deadline, all other buffers are dropped.",
-            DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
+            DEFAULT_DROP_IF_MISSING,
             ParamFlags::READWRITE,
         )
     }),
@@ -71,19 +66,24 @@ pub static PROPERTIES: [Property; 4] = [
     }),
 ];
 
-/// A struct containing properties that are under mutex
+/// A struct containing properties of `rgbdmux` element
 pub struct Settings {
+    /// Analogous to `drop-if-missing` property
     pub drop_if_missing: bool,
+    /// Analogous to `deadline-multiplier` property
     pub deadline_multiplier: f32,
+    /// Analogous to `drop-to-synchronise` property
     pub drop_to_synchronise: bool,
+    /// Analogous to `send-gap-events` property
     pub send_gap_events: bool,
 }
+
 impl Default for Settings {
     fn default() -> Self {
         Self {
-            drop_if_missing: DEFAULT_DROP_ALL_BUFFERS_IF_ONE_IS_MISSING,
+            drop_if_missing: DEFAULT_DROP_IF_MISSING,
             deadline_multiplier: DEFAULT_DEADLINE_MULTIPLIER,
-            drop_to_synchronise: DEFAULT_DROP_BUFFERS_TO_SYNCHRONISE_STREAMS,
+            drop_to_synchronise: DEFAULT_DROP_TO_SYNCHRONISE,
             send_gap_events: DEFAULT_SEND_GAP_EVENTS,
         }
     }

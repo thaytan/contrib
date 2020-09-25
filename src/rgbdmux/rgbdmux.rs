@@ -26,10 +26,11 @@ use std::sync::{Mutex, RwLock};
 use super::clock_internals::*;
 use super::error::*;
 use super::properties::*;
+use crate::common::*;
 
 lazy_static! {
     /// Debug category for 'rgbdmux' element.
-    static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
+    pub(crate) static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
         "rgbdmux",
         gst::DebugColorFlags::empty(),
         Some("RGB-D Muxer"),
@@ -38,11 +39,11 @@ lazy_static! {
 
 /// A struct representation of the `rgbdmux` element.
 struct RgbdMux {
-    /// Settings based on properties of the element that are under RwLock.
+    /// Settings based on properties of the element.
     settings: RwLock<Settings>,
-    /// Clock internals of the element protected by RwLock.
+    /// Clock internals of the element.
     clock_internals: RwLock<ClockInternals>,
-    /// List of sink pad names utilised for easy access under a Mutex.
+    /// List of sink pad names that this muxer contains.
     sink_pad_names: Mutex<Vec<String>>,
     /// Contains stream formats that are requested by the downstream element as a HashMap<stream, format> under a Mutex.
     requested_stream_formats: Mutex<HashMap<String, String>>,
@@ -69,18 +70,16 @@ impl ObjectSubclass for RgbdMux {
         klass.set_metadata(
             "RGB-D Muxer",
             "Muxer/RGB-D",
-            "Muxes multiple `video/x-raw` into a single `video/rgbd`",
+            "Muxes multiple elementary streams into a single `video/rgbd` stream",
             "Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
 
         klass.install_properties(&PROPERTIES);
 
-        // sink pads
+        // Sink pads
         let mut sink_caps = gst::Caps::new_simple("video/x-raw", &[]);
         {
-            let sink_caps = sink_caps
-                .get_mut()
-                .expect("Could not get mutable reference to sink_caps");
+            let sink_caps = sink_caps.get_mut().unwrap();
             sink_caps.append(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
             sink_caps.append(gst::Caps::new_simple("image/jpeg", &[]));
         }
@@ -93,10 +92,10 @@ impl ObjectSubclass for RgbdMux {
                 &sink_caps,
                 gst_base::AggregatorPad::static_type(),
             )
-            .expect("Could not add sink-pad template to class"),
+            .expect("rgbdmux: Failed to add 'sink_%s' pad template"),
         );
 
-        // src pad
+        // Src pad
         klass.add_pad_template(
             gst::PadTemplate::with_gtype(
                 "src",
@@ -105,126 +104,13 @@ impl ObjectSubclass for RgbdMux {
                 &gst::Caps::new_simple("video/rgbd", &[]),
                 gst_base::AggregatorPad::static_type(),
             )
-            .expect("Could not add src-pad template to class"),
+            .expect("rgbdmux: Failed to add 'src' pad template"),
         );
     }
 }
 
-impl ObjectImpl for RgbdMux {
-    glib_object_impl!();
-
-    fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
-        let element = obj
-            .downcast_ref::<gst_base::Aggregator>()
-            .expect("Could not cast `rgbdmux` to Aggregator");
-        let mut settings = self.settings.write().unwrap();
-
-        let property = &PROPERTIES[id];
-        match *property {
-            subclass::Property("drop-to-synchronise", ..) => {
-                let drop_to_synchronise = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `drop-to-synchronise` due to incorrect type: {:?}", err));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `drop-to-synchronise` from {} to {}",
-                    settings.drop_to_synchronise,
-                    drop_to_synchronise
-                );
-                settings.drop_to_synchronise = drop_to_synchronise;
-            }
-            subclass::Property("drop-if-missing", ..) => {
-                let drop_if_missing = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `drop_if_missing` due to incorrect type: {:?}", err));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `drop-if-missing` from {} to {}",
-                    settings.drop_if_missing,
-                    drop_if_missing
-                );
-                settings.drop_if_missing = drop_if_missing;
-            }
-            subclass::Property("deadline-multiplier", ..) => {
-                let deadline_multiplier = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `deadline-multiplier` due to incorrect type: {:?}", err));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `deadline-multiplier` from {} to {}",
-                    settings.deadline_multiplier,
-                    deadline_multiplier
-                );
-                settings.deadline_multiplier = deadline_multiplier;
-            }
-            subclass::Property("send-gap-events", ..) => {
-                let send_gap_events = value.get_some().unwrap_or_else(|err| panic!("rgbdmux: Failed to set property `send-gap-events` due to incorrect type: {:?}", err));
-                gst_info!(
-                    CAT,
-                    obj: element,
-                    "Changing property `send-gap-events` from {} to {}",
-                    settings.send_gap_events,
-                    send_gap_events
-                );
-                settings.send_gap_events = send_gap_events;
-            }
-            _ => unimplemented!("Property is not implemented"),
-        };
-    }
-
-    fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self.settings.read().map_err(|e| {
-            gst_error!(CAT, "Settings could not be locked: {:?}", e);
-        })?;
-
-        let prop = &PROPERTIES[id];
-        match *prop {
-            subclass::Property("drop-to-synchronise", ..) => {
-                Ok(settings.drop_to_synchronise.to_value())
-            }
-            subclass::Property("drop-if-missing", ..) => Ok(settings.drop_if_missing.to_value()),
-            subclass::Property("deadline-multiplier", ..) => {
-                Ok(settings.deadline_multiplier.to_value())
-            }
-            subclass::Property("send-gap-events", ..) => Ok(settings.send_gap_events.to_value()),
-            _ => unimplemented!("Property is not implemented"),
-        }
-    }
-}
-
-impl ElementImpl for RgbdMux {
-    /// This function provides a custom implementation to what should happen when request pads are
-    /// released.
-    /// # Arguments
-    /// * `element` - The element that represents `rgbdmux` in GStreamer.
-    /// * `pad` - The pad that is soon to be released.
-    fn release_pad(&self, element: &gst::Element, pad: &gst::Pad) {
-        // De-activate the pad
-        pad.set_active(false)
-            .unwrap_or_else(|_| panic!("Could not deactivate a sink-pad: {:?}", pad));
-
-        // Remove the pad from the element
-        element
-            .remove_pad(pad)
-            .unwrap_or_else(|_| panic!("Could not remove a sink-pad: {:?}", pad));
-
-        // Remove the pad from our internal reference HashMap
-        let pad_name = pad.get_name().as_str().to_string();
-        gst_debug!(CAT, obj: element, "release_pad: {}", pad_name);
-        {
-            self.sink_pad_names
-                .lock()
-                .unwrap()
-                .retain(|x| *x != pad_name);
-        }
-
-        // Mark src pad for reconfiguration and let the base class renegotiate right before the next call to aggregate()
-        let src_pad = element
-            .get_static_pad("src")
-            .expect("Subclass of GstAggregator must have a src pad");
-        src_pad.mark_reconfigure();
-    }
-}
-
 impl AggregatorImpl for RgbdMux {
-    /// Called when buffers are queued on all sinkpads. Classes should iterate the GstElement->sinkpads and peek or steal 
+    /// Called when buffers are queued on all sinkpads. Classes should iterate the GstElement->sinkpads and peek or steal
     /// buffers from the GstAggregatorPad.
     /// # Arguments
     /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
@@ -304,7 +190,7 @@ impl AggregatorImpl for RgbdMux {
         // Create new sink pad from the template
         let new_sink_pad = gst::Pad::from_template(templ, Some(name))
             .downcast::<gst_base::AggregatorPad>()
-            .expect("Could not cast pad to AggregatorPad");
+            .expect("rgbdmux: Could not cast GstPad to GstAggregatorPad");
 
         // Insert the new sink pad name into the struct
         sink_pad_names.push(name.to_string());
@@ -312,7 +198,7 @@ impl AggregatorImpl for RgbdMux {
         // Activate the sink pad
         new_sink_pad
             .set_active(true)
-            .expect("Failed to activate `rgbdmux` sink pad");
+            .expect("rgbdmux: Failed to activate sink pad");
 
         Some(new_sink_pad)
     }
@@ -347,12 +233,7 @@ impl AggregatorImpl for RgbdMux {
     /// # Arguments
     /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
     fn get_next_time(&self, aggregator: &gst_base::Aggregator) -> gst::ClockTime {
-        if self
-            .settings
-            .read()
-            .expect("Could not lock settings")
-            .drop_if_missing
-        {
+        if self.settings.read().unwrap().drop_if_missing {
             let clock_internals = self.clock_internals.read().unwrap();
             if clock_internals.previous_timestamp != gst::CLOCK_TIME_NONE {
                 // Return deadline for the aggregation
@@ -376,11 +257,11 @@ impl AggregatorImpl for RgbdMux {
                 // Get the src_pad used for sending the query to the linked downstream element
                 let src_pad = aggregator
                     .get_static_pad("src")
-                    .expect("Element must have a src pad to receive a src_query");
+                    .expect("rgbdmux: Element must have a src pad to receive a src_query");
                 // Get the default CAPS from the src pad template
                 let src_pad_template_caps = aggregator
                     .get_pad_template("src")
-                    .expect("Could not find src-pad template")
+                    .expect("rgbdmux: Could not find src-pad template")
                     .get_caps();
                 // Create CAPS query
                 let mut request_downstream_caps_query =
@@ -392,7 +273,7 @@ impl AggregatorImpl for RgbdMux {
                         // Before extraction, intersect with src pad template caps
                         let requested_caps = requested_caps.intersect(
                             &src_pad_template_caps
-                                .expect("Rgbdmux defines a src pad template with caps"),
+                                .expect("rgbdmux: Element defines a src pad template with caps"),
                         );
                         // Extract formats from these caps for use when creating new CAPS
                         *self.requested_stream_formats.lock().unwrap() =
@@ -424,10 +305,7 @@ impl AggregatorImpl for RgbdMux {
             gst::QueryView::Caps(mut caps_query) => {
                 if let Some(filter) = caps_query.get_filter() {
                     let mut result = filter.copy();
-                    let requested_stream_formats = &self
-                        .requested_stream_formats
-                        .lock()
-                        .expect("Could not lock reqested_stream_formats");
+                    let requested_stream_formats = &self.requested_stream_formats.lock().unwrap();
                     let stream_name = &aggregator_pad.get_name()[5..];
 
                     for filter_caps in result.get_mut().unwrap().iter_mut() {
@@ -465,6 +343,40 @@ impl AggregatorImpl for RgbdMux {
         self.requested_stream_formats.lock().unwrap().clear();
 
         self.parent_stop(aggregator)
+    }
+}
+
+impl ElementImpl for RgbdMux {
+    /// This function provides a custom implementation to what should happen when request pads are
+    /// released.
+    /// # Arguments
+    /// * `element` - The element that represents `rgbdmux` in GStreamer.
+    /// * `pad` - The pad that is soon to be released.
+    fn release_pad(&self, element: &gst::Element, pad: &gst::Pad) {
+        // De-activate the pad
+        pad.set_active(false)
+            .unwrap_or_else(|_| panic!("Could not deactivate a sink pad: {:?}", pad));
+
+        // Remove the pad from the element
+        element
+            .remove_pad(pad)
+            .unwrap_or_else(|_| panic!("Could not remove a sink pad: {:?}", pad));
+
+        // Remove the pad from our internal reference HashMap
+        let pad_name = pad.get_name().as_str().to_string();
+        gst_debug!(CAT, obj: element, "release_pad: {}", pad_name);
+        {
+            self.sink_pad_names
+                .lock()
+                .unwrap()
+                .retain(|x| *x != pad_name);
+        }
+
+        // Mark src pad for reconfiguration and let the base class renegotiate right before the next call to aggregate()
+        let src_pad = element
+            .get_static_pad("src")
+            .expect("rgbdmux: Subclass of GstAggregator must have a src pad");
+        src_pad.mark_reconfigure();
     }
 }
 
@@ -558,7 +470,7 @@ impl RgbdMux {
             .get_static_pad(pad_name)
             .unwrap_or_else(|| panic!("Could not get static pad with name {}", pad_name))
             .downcast::<gst_base::AggregatorPad>()
-            .expect("Could not downcast pad to AggregatorPad")
+            .expect("rgbdmux: Cannot downcast GstPad to GstAggregatorPad")
     }
 
     /// Get a buffer from the pad with the given `pad_name` on the given `aggregator`. This function
@@ -569,14 +481,14 @@ impl RgbdMux {
     fn get_tagged_buffer(
         aggregator: &gst_base::Aggregator,
         pad_name: &str,
-    ) -> Result<gst::Buffer, MuxError> {
+    ) -> Result<gst::Buffer, RgbdMuxError> {
         // Get the sink pad given its name
         let sink_pad = Self::get_aggregator_pad(aggregator, pad_name);
 
         // Extract a buffer from the given sink pad
         let mut buffer = sink_pad
             .pop_buffer()
-            .ok_or_else(|| MuxError("No buffer queued on one of the pads".to_string()))?;
+            .ok_or_else(|| RgbdMuxError("No buffer queued on one of the pads".to_string()))?;
 
         // Get a mutable reference to the buffer
         let buffer_mut = {
@@ -614,7 +526,8 @@ impl RgbdMux {
 
         // Truncate "sink_" prefix and tag the buffer
         let stream_name = &pad_name[5..];
-        rgbd::tag_buffer(buffer_mut, stream_name).expect("An empty buffer could not be tagged");
+        rgbd::tag_buffer(buffer_mut, stream_name)
+            .expect("rgbdmux: An empty buffer could not be tagged");
         buffer
     }
 
@@ -624,13 +537,13 @@ impl RgbdMux {
     /// * `sink_pad_names` - The vector containing all sink pad names.
     /// * `send_gap_event` - A flag that determines whether to send gap event when buffers are dropped.
     /// # Returns
-    /// * `Err(MuxError)` - If one or more buffers are missing.
+    /// * `Err(RgbdMuxError)` - If one or more buffers are missing.
     fn drop_buffers_if_one_missing(
         &self,
         aggregator: &gst_base::Aggregator,
         sink_pad_names: &[String],
         send_gap_event: bool,
-    ) -> Result<(), MuxError> {
+    ) -> Result<(), RgbdMuxError> {
         #![allow(clippy::assign_op_pattern)]
         // First check if any of the sink pads have any buffer queued
         if !sink_pad_names
@@ -638,7 +551,7 @@ impl RgbdMux {
             .map(|sink_pad_name| Self::get_aggregator_pad(aggregator, sink_pad_name).has_buffer())
             .any(|x| x)
         {
-            return Err(MuxError("No buffers are queued, skipping".to_string()));
+            return Err(RgbdMuxError("No buffers are queued, skipping".to_string()));
         }
 
         // If yes, iterate over all sink pads and figure out if any is missing
@@ -670,7 +583,7 @@ impl RgbdMux {
                 }
 
                 // Return Err
-                return Err(MuxError(
+                return Err(RgbdMuxError(
                     "One of the pads did not have a queued buffer. Dropped all other buffers."
                         .to_string(),
                 ));
@@ -705,13 +618,13 @@ impl RgbdMux {
     /// * `sink_pad_names` - The vector containing all sink pad names.
     /// * `send_gap_event` - A flag that determines whether to send gap event when buffers are dropped.
     /// # Returns
-    /// * `Err(MuxError)` - If frames are not synchronised.
+    /// * `Err(RgbdMuxError)` - If frames are not synchronised.
     fn check_synchronisation(
         &self,
         aggregator: &gst_base::Aggregator,
         sink_pad_names: &[String],
         send_gap_event: bool,
-    ) -> Result<(), MuxError> {
+    ) -> Result<(), RgbdMuxError> {
         #![allow(clippy::assign_op_pattern)]
         // Get timestamps of buffers queued on the sink pads
         let mut timestamps: Vec<(String, gst::ClockTime)> =
@@ -723,7 +636,7 @@ impl RgbdMux {
                 obj: aggregator,
                 "Synchronisation failed because no buffer is queued."
             );
-            return Err(MuxError(
+            return Err(RgbdMuxError(
                 "Synchronisation failed because no buffer is queued.".to_string(),
             ));
         }
@@ -770,7 +683,7 @@ impl RgbdMux {
         );
 
         // Return error
-        Err(MuxError(
+        Err(RgbdMuxError(
             "Dropped buffers to synchronise the streams".to_string(),
         ))
     }
@@ -855,7 +768,7 @@ impl RgbdMux {
         pad_name: &str,
         src_caps: &mut gst::StructureRef,
     ) {
-        let pad_caps = pad_caps.iter().next().expect("Got empty CAPS in rgbdmux");
+        let pad_caps = pad_caps.iter().next().expect("rgbdmux: Got empty CAPS");
         let stream_name = &pad_name[5..];
 
         // Filter out all CAPS we don't care about and map those we do into strings
@@ -937,7 +850,7 @@ impl RgbdMux {
         let mut_caps = downstream_caps
             .make_mut()
             .get_mut_structure(0)
-            .expect("Could not get mutable CAPS in rgbdmux");
+            .expect("rgbdmux: Could not get mutable CAPS");
 
         // Map the caps into their corresponding stream formats
         for pad_name in sink_pad_names.iter() {
@@ -975,7 +888,7 @@ impl RgbdMux {
         // Iterate over all fields in the input CAPS and retain only the format field
         caps.iter()
             .next()
-            .expect("Downstream element of rgbdmux has not CAPS")
+            .expect("rgbdmux: Downstream element has not CAPS")
             .iter()
             .filter_map(|(field, value)| {
                 if !field.contains("_format") {
@@ -988,6 +901,54 @@ impl RgbdMux {
                 }
             })
             .collect::<HashMap<String, String>>()
+    }
+}
+
+impl ObjectImpl for RgbdMux {
+    glib_object_impl!();
+
+    fn set_property(&self, _obj: &glib::Object, id: usize, value: &glib::Value) {
+        let mut settings = self.settings.write().unwrap();
+
+        match PROPERTIES[id] {
+            subclass::Property(prop @ "drop-to-synchronise", ..) => {
+                let drop_to_synchronise =
+                    get_property_and_debug(*CAT, value, prop, settings.drop_to_synchronise);
+                settings.drop_to_synchronise = drop_to_synchronise;
+            }
+            subclass::Property(prop @ "drop-if-missing", ..) => {
+                let drop_if_missing =
+                    get_property_and_debug(*CAT, value, prop, settings.drop_if_missing);
+                settings.drop_if_missing = drop_if_missing;
+            }
+            subclass::Property(prop @ "deadline-multiplier", ..) => {
+                let deadline_multiplier =
+                    get_property_and_debug(*CAT, value, prop, settings.deadline_multiplier);
+                settings.deadline_multiplier = deadline_multiplier;
+            }
+            subclass::Property(prop @ "send-gap-events", ..) => {
+                let send_gap_events =
+                    get_property_and_debug(*CAT, value, prop, settings.send_gap_events);
+                settings.send_gap_events = send_gap_events;
+            }
+            _ => unimplemented!("Property is not implemented"),
+        };
+    }
+
+    fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
+        let settings = self.settings.read().unwrap();
+
+        match PROPERTIES[id] {
+            subclass::Property("drop-to-synchronise", ..) => {
+                Ok(settings.drop_to_synchronise.to_value())
+            }
+            subclass::Property("drop-if-missing", ..) => Ok(settings.drop_if_missing.to_value()),
+            subclass::Property("deadline-multiplier", ..) => {
+                Ok(settings.deadline_multiplier.to_value())
+            }
+            subclass::Property("send-gap-events", ..) => Ok(settings.send_gap_events.to_value()),
+            _ => unimplemented!("Property is not implemented"),
+        }
     }
 }
 

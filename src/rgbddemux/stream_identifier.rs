@@ -14,23 +14,18 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use std::error::Error;
-use std::{fmt, fmt::Display, fmt::Formatter};
-
-/// Custom error of `rgbdmux` element
-#[derive(Debug, Clone)]
-pub struct RgbdMuxError(pub String);
-
-impl Error for RgbdMuxError {}
-
-impl Display for RgbdMuxError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "RGB-D Muxing Error: {}", self.0)
-    }
+/// A struct that identifies a stream.
+pub struct StreamIdentifier {
+    /// The id of the stream.
+    pub stream_id: String,
+    /// The group id of the stream.
+    pub group_id: gst::GroupId,
 }
 
-impl From<gst::ErrorMessage> for RgbdMuxError {
-    fn from(error: gst::ErrorMessage) -> RgbdMuxError {
-        RgbdMuxError(format!("{}", error))
+impl StreamIdentifier {
+    pub fn build_stream_start_event(&self, stream_name: impl std::fmt::Display) -> gst::Event {
+        gst::event::StreamStart::builder(&format!("{}/{}", self.stream_id, stream_name))
+            .group_id(self.group_id)
+            .build()
     }
 }

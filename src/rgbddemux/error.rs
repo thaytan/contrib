@@ -17,20 +17,29 @@
 use std::error::Error;
 use std::{fmt, fmt::Display, fmt::Formatter};
 
-/// Custom error of `rgbdmux` element
+use super::rgbddemux::CAT;
+
+/// Custom error of `rgbddemux` element
 #[derive(Debug, Clone)]
-pub struct RgbdMuxError(pub String);
+pub struct RgbdDemuxError(pub String);
 
-impl Error for RgbdMuxError {}
+impl Error for RgbdDemuxError {}
 
-impl Display for RgbdMuxError {
+impl Display for RgbdDemuxError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "RGB-D Muxing Error: {}", self.0)
+        write!(f, "RGB-D Demuxing Error: {}", self.0)
     }
 }
 
-impl From<gst::ErrorMessage> for RgbdMuxError {
-    fn from(error: gst::ErrorMessage) -> RgbdMuxError {
-        RgbdMuxError(format!("{}", error))
+impl From<RgbdDemuxError> for gst::FlowError {
+    fn from(error: RgbdDemuxError) -> Self {
+        gst_error!(CAT, "{}", error);
+        gst::FlowError::Error
+    }
+}
+
+impl From<gst::ErrorMessage> for RgbdDemuxError {
+    fn from(error: gst::ErrorMessage) -> RgbdDemuxError {
+        RgbdDemuxError(format!("{}", error))
     }
 }

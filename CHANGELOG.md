@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored elements into submodules
 - `rgbdmux`
   - Default value for property `drop-if-missing` to *false*
+- `rgbddemux`
+  - Changed presence of src pad to *sometimes* instead of *request*
 
 ### Fixed
 
