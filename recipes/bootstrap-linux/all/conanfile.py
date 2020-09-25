@@ -2,11 +2,10 @@ import os
 from conans import *
 
 
-class BootstrapLinuxDevConan(ConanFile):
+class BootstrapLinuxConan(ConanFile):
     description = "Linux development package"
-    license = "GPL-2.0-only"
+    license = "GPL-2.0"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    create_dev_packge = False
 
     def source(self):
         tools.get(f"https://cdn.kernel.org/pub/linux/kernel/v{self.version.split('.')[0]}.x/linux-{self.version}.tar.xz")
