@@ -36,14 +36,14 @@ lazy_static! {
     );
 }
 
-/// Hashmap of source pads of the demuxer, where key is the name of the stream flowing on that pad.
+/// Hashmap of source pads of the demuxer, where key is the name of the stream flowing through that pad.
 pub type SrcPads = HashMap<String, DemuxPad>;
 
 /// A struct representation of the `rgbddemux` element.
 struct RgbdDemux {
     /// Settings based on properties of the element.
     settings: RwLock<Settings>,
-    /// List of source pads of this demuxer.
+    /// List of source pads on this demuxer.
     src_pads: RwLock<SrcPads>,
     /// Utility struct that handles GstFlowReturn combinations with multiple source pads.
     flow_combiner: Mutex<gst_base::UniqueFlowCombiner>,
@@ -215,7 +215,6 @@ impl RgbdDemux {
             })?
             .unwrap_or_default();
         let streams = streams.split(',').collect::<Vec<&str>>();
-
         if streams.is_empty() {
             return Err(RgbdDemuxError(
                 "Cannot detect any streams in `video/rgbd` caps under field `streams`".to_string(),
@@ -232,28 +231,10 @@ impl RgbdDemux {
                 ))
             })?;
 
-        // Remove pads that are no longer needed for the new CAPS
         let mut src_pads = self.src_pads.write().unwrap();
-        src_pads.retain(|stream_name, src_pad| {
-            if !streams
-                .iter()
-                .any(|&caps_stream| caps_stream == stream_name)
-            {
-                // De-activate the pad
-                src_pad.pad.set_active(false).unwrap_or_else(|_| {
-                    panic!("Could not deactivate a src pad: {:?}", src_pad.pad)
-                });
 
-                // Remove the pad from the element
-                element
-                    .remove_pad(&src_pad.pad)
-                    .unwrap_or_else(|_| panic!("Could not remove a src pad: {:?}", src_pad.pad));
-
-                false
-            } else {
-                true
-            }
-        });
+        // Remove pads that are no longer needed for the new CAPS
+        Self::remove_unneeded_pads(element, &mut src_pads, &streams);
 
         // Iterate over all streams, find their caps and push a CAPS negotiation event
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
@@ -300,7 +281,6 @@ impl RgbdDemux {
             })?
             .unwrap_or_default();
 
-        // TODO: return "image/jpeg" CAPS if the CAPS type is "image/jpeg" (instead of "video/x-raw" with "*jpeg*" as "format" of the stream, as it is a non-standard GStreamer format)
         // Return "image/jpeg" CAPS if the format is MJPG
         if stream_format.contains("jpeg") {
             return Ok(gst::Caps::new_simple("image/jpeg", &[]));
@@ -336,6 +316,39 @@ impl RgbdDemux {
                 ("framerate", &common_framerate),
             ],
         ))
+    }
+
+    /// Remove pads from `src_pads` that are no longer needed in a set of `allowed_streams`.
+    /// Note that this function removes the pads both from element and `src_pads`.
+    /// # Arguments
+    /// * `element` - The element that represents `rgbddemux` in GStreamer.
+    /// * `src_pads` - List of current source pads.
+    /// * `allowed_streams` - List of allowed streams, e.g. based on upstream CAPS.
+    fn remove_unneeded_pads(
+        element: &gst::Element,
+        src_pads: &mut SrcPads,
+        allowed_streams: &[&str],
+    ) {
+        src_pads.retain(|stream_name, src_pad| {
+            if !allowed_streams
+                .iter()
+                .any(|&caps_stream| caps_stream == stream_name)
+            {
+                // De-activate the pad
+                src_pad.pad.set_active(false).unwrap_or_else(|_| {
+                    panic!("Could not deactivate a src pad: {:?}", src_pad.pad)
+                });
+
+                // Remove the pad from the element
+                element
+                    .remove_pad(&src_pad.pad)
+                    .unwrap_or_else(|_| panic!("Could not remove a src pad: {:?}", src_pad.pad));
+
+                false
+            } else {
+                true
+            }
+        });
     }
 
     /// Create a new src pad on the `rgbddemux` for the stream with the given name.

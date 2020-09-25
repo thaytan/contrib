@@ -182,12 +182,17 @@ impl AggregatorImpl for RgbdMux {
     ) -> Option<gst_base::AggregatorPad> {
         let name = req_name?;
         if !name.starts_with("sink_") {
+            gst_error!(
+                CAT,
+                obj: aggregator,
+                "Pad was requested with an invalid name, please use template 'sink_%s'"
+            );
             return None;
         }
+        gst_debug!(CAT, obj: aggregator, "Creating new {} pad", name);
 
-        let mut sink_pad_names = self.sink_pad_names.lock().unwrap();
-        gst_debug!(CAT, obj: aggregator, "create_new_pad for name: {}", name);
         // Create new sink pad from the template
+        let mut sink_pad_names = self.sink_pad_names.lock().unwrap();
         let new_sink_pad = gst::Pad::from_template(templ, Some(name))
             .downcast::<gst_base::AggregatorPad>()
             .expect("rgbdmux: Could not cast GstPad to GstAggregatorPad");
@@ -214,8 +219,9 @@ impl AggregatorImpl for RgbdMux {
         aggregator: &gst_base::Aggregator,
         _caps: &gst::Caps,
     ) -> Result<gst::Caps, gst::FlowError> {
-        gst_debug!(CAT, "update_src_caps");
+        gst_debug!(CAT, "Updating src CAPS");
         let sink_pad_names = self.sink_pad_names.lock().unwrap();
+
         // if no sink pads are present, we're not ready to negotiate CAPS, otherwise do the negotiation
         if sink_pad_names.is_empty() {
             Err(gst_base::AGGREGATOR_FLOW_NEED_DATA) // we're not ready to decide on CAPS yet
@@ -769,7 +775,6 @@ impl RgbdMux {
         src_caps: &mut gst::StructureRef,
     ) {
         let stream_name = &pad_name[5..];
-        
         // Set the format for MJPG stream
         if pad_caps.is_subset(gst::Caps::new_simple("image/jpeg", &[]).as_ref()) {
             let src_field_name = format!("{}_{}", stream_name, "format");
