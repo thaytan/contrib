@@ -4,7 +4,6 @@ from conans import *
 
 
 class MakeConan(ConanFile):
-    name = "make"
     description = "GNU make utility to maintain groups of programs"
     license = "GPL3"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
