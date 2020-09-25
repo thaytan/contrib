@@ -259,7 +259,7 @@ impl RgbdDemux {
                     stream_id: stream_start.get_stream_id().to_string(),
                     _group_id: stream_start
                         .get_group_id()
-                        .unwrap_or_else(|| gst::GroupId::next()),
+                        .unwrap_or_else(gst::GroupId::next),
                 };
 
                 self.push_stream_start_on_all_pads(&stream_identifier);
@@ -295,13 +295,10 @@ impl RgbdDemux {
 
         // Determine what streams are contained within the caps
         let streams = rgbd_caps
-            .get::<String>("streams")
-            .or_else(|err| {
-                Err(RgbdDemuxingError(format!(
+            .get::<String>("streams").map_err(|err| RgbdDemuxingError(format!(
                     "No `streams` field detected in `video/rgbd` caps: {:?}",
                     err
-                )))
-            })?
+                )))?
             .unwrap_or_default();
         let streams = streams.split(',').collect::<Vec<&str>>();
 
@@ -313,13 +310,10 @@ impl RgbdDemux {
 
         // Get a common framerate for all streams
         let common_framerate = rgbd_caps
-            .get_some::<gst::Fraction>("framerate")
-            .or_else(|err| {
-                Err(RgbdDemuxingError(format!(
+            .get_some::<gst::Fraction>("framerate").map_err(|err| RgbdDemuxingError(format!(
                     "Cannot detect any `framerate` in `video/rgbd` caps: {:?}",
                     err
-                )))
-            })?;
+                )))?;
 
         // Iterate over all streams, find their caps and push a CAPS negotiation event
         let mut src_pads = self.src_pads.write().unwrap();
@@ -376,13 +370,10 @@ impl RgbdDemux {
 
         // Get the format of a stream
         let stream_format = rgbd_caps
-            .get::<String>(&format!("{}_format", stream_name))
-            .or_else(|err| {
-                Err(RgbdDemuxingError(format!(
+            .get::<String>(&format!("{}_format", stream_name)).map_err(|err| RgbdDemuxingError(format!(
                     "Cannot detect any `format` in `video/rgbd` caps for `{}` stream: {:?}",
                     stream_name, err
-                )))
-            })?
+                )))?
             .unwrap_or_default();
 
         // Return "image/jpeg" CAPS if the format is MJPG
@@ -392,23 +383,17 @@ impl RgbdDemux {
 
         // Get the width of a stream
         let stream_width = rgbd_caps
-            .get_some::<i32>(&format!("{}_width", stream_name))
-            .or_else(|err| {
-                Err(RgbdDemuxingError(format!(
+            .get_some::<i32>(&format!("{}_width", stream_name)).map_err(|err| RgbdDemuxingError(format!(
                     "Cannot detect any `width` in `video/rgbd` caps for `{}` stream: {:?}",
                     stream_name, err
-                )))
-            })?;
+                )))?;
 
         // Get the height of a stream
         let stream_height = rgbd_caps
-            .get_some::<i32>(&format!("{}_height", stream_name))
-            .or_else(|err| {
-                Err(RgbdDemuxingError(format!(
+            .get_some::<i32>(&format!("{}_height", stream_name)).map_err(|err| RgbdDemuxingError(format!(
                     "Cannot detect any `height` in `video/rgbd` caps for `{}` stream: {:?}",
                     stream_name, err
-                )))
-            })?;
+                )))?;
 
         // Create caps for the new src pad
         Ok(gst::Caps::new_simple(
@@ -420,6 +405,7 @@ impl RgbdDemux {
                 ("framerate", &common_framerate),
             ],
         ))
+       
     }
 
     /// Create a new src pad on the `rgbddemux` for the stream with the given name.

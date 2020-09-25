@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2020-09-XX
+
+### Changed
+
+- Refactored elements into submodules
+- `rgbdmux`
+  - Default value for property `drop-if-missing` to *false*
+
+### Fixed
+
+- Several review comments from Sebastian Dröge for both `rgbdmux` and `rgbddemux`. Thank you for your feedback!
+  - Refactored mutexes to eliminate known places of possible deadlocks.
+  - `rgbdmux`
+    - Downstream requests for video format are now correctly sent to the upstream element(s).
+    - Forwarding of EOS - EOS is now send in `aggregate()` when all sink pads are marked as EOS.
+
 
 ## [0.5.4] - 2020-09-07
 ### Fixed
