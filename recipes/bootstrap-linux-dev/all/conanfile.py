@@ -2,12 +2,11 @@ import os
 from conans import *
 
 
-class BootstrapLinuxHeadersConan(ConanFile):
-    name = "bootstrap-linux-headers"
-    description = "Linux system headers"
+class BootstrapLinuxDevConan(ConanFile):
+    description = "Linux development package"
     license = "GPL-2.0-only"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    requires = (("generators/[^1.0.0]", "private"),)
+    create_dev_packge = False
 
     def source(self):
         tools.get(f"https://cdn.kernel.org/pub/linux/kernel/v{self.version.split('.')[0]}.x/linux-{self.version}.tar.xz")
