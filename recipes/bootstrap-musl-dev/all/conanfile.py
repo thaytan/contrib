@@ -1,17 +1,11 @@
-import os
-
 from conans import *
 
 
-class BootstrapMuslHeadersConan(ConanFile):
-    name = "bootstrap-musl-headers"
+class BootstrapMuslDevConan(ConanFile):
     description = "Lightweight implementation of C standard library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    requires = (
-        ("generators/[^1.0.0]", "private"),
-        "bootstrap-linux-headers/[^5.4.50]",
-    )
+    requires = ("bootstrap-linux-dev/[^5.4.50]",)
 
     def source(self):
         tools.get(f"https://www.musl-libc.org/releases/musl-{self.version}.tar.gz")
