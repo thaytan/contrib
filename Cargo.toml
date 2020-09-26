@@ -19,14 +19,14 @@ lazy_static = "1.4"
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
 tag = "2.0.0"
 
+[build-dependencies]
+gst-plugin-version-helper = "0.2"
+
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
 version = "1"
 default-features = false # Disable features which are enabled by default
 features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
-
-[build-dependencies]
-gst-plugin-version-helper = "0.2"
 
 [lib]
 name = "gstrgbd"

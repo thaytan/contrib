@@ -146,7 +146,7 @@ impl RgbdDemux {
             EventView::Caps(caps) => {
                 gst_debug!(CAT, obj: element, "Got a new caps event: {:?}", caps);
                 // Create src pads according to the received upstream CAPS
-                match self.create_pads_from_caps(element, caps.get_caps()) {
+                match self.create_src_pads_from_sink_caps(element, caps.get_caps()) {
                     Ok(_) => {
                         gst_debug!(CAT, "Caps successfully renegotiated");
                         true
@@ -186,8 +186,8 @@ impl RgbdDemux {
     /// Create additional src pads, which happens as a result of a CAPS renegotiation.
     /// # Arguments
     /// * `element` - The element that represents `rgbddemux` in GStreamer.
-    /// * `rgbd_caps` - The CAPS that we should create src pads for.
-    fn create_pads_from_caps(
+    /// * `rgbd_caps` - The sink CAPS that we should create src pads for.
+    fn create_src_pads_from_sink_caps(
         &self,
         element: &gst::Element,
         rgbd_caps: &gst::CapsRef,
@@ -334,6 +334,13 @@ impl RgbdDemux {
                 .iter()
                 .any(|&caps_stream| caps_stream == stream_name)
             {
+                gst_debug!(
+                    CAT,
+                    obj: element,
+                    "Removing pad for {} stream as it is no longer needed in the newly negotiated streams {:?}",
+                    stream_name, allowed_streams
+                );
+
                 // De-activate the pad
                 src_pad.pad.set_active(false).unwrap_or_else(|_| {
                     panic!("Could not deactivate a src pad: {:?}", src_pad.pad)
@@ -395,29 +402,34 @@ impl RgbdDemux {
             Some(new_src_pad_name),
         );
 
-        // Add and activate the pad
+        // Add the pad to the element
         element
             .add_pad(&pad)
             .expect("rgbdmux: Could not add src pad to the element");
-        pad.set_active(true)
-            .expect("rgbdmux: Could not activate new src pad");
-
-        // Add it to the flow combiner
-        flow_combiner.add_pad(&pad);
-        // Push CAPS event, so that downstream element know what data they're dealing with
-        gst_debug!(CAT, "Pushing a new caps event for {} stream", stream_name);
-        pad.push_event(gst::event::Caps::builder(&new_pad_caps).build());
 
         // Create a DemuxPad from it
-        let mut new_src_pad = DemuxPad::new(pad);
+        let mut pad_handle = DemuxPad::new(pad);
 
         // Push stream-start event to indicate beginning of the stream
         if let Some(stream_identifier) = self.stream_identifier.lock().unwrap().as_ref() {
-            Self::push_stream_start(&mut new_src_pad, stream_name, &stream_identifier);
+            Self::push_stream_start(&mut pad_handle, stream_name, &stream_identifier);
         }
 
-        // Add the new pad to the internals
-        src_pads.insert(new_src_pad_name.to_string(), new_src_pad);
+        // Push CAPS event, so that downstream element know what data they're dealing with
+        gst_debug!(CAT, "Pushing a new caps event for {} stream", stream_name);
+        pad_handle
+            .pad
+            .push_event(gst::event::Caps::builder(&new_pad_caps).build());
+
+        // Activate the pad
+        pad_handle
+            .pad
+            .set_active(true)
+            .expect("rgbdmux: Could not activate new src pad");
+
+        // Finally, add the new pad to the internals
+        flow_combiner.add_pad(&pad_handle.pad);
+        src_pads.insert(stream_name.to_string(), pad_handle);
 
         gst_debug!(
             CAT,
@@ -453,7 +465,7 @@ impl RgbdDemux {
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
         for aux_buffer in rgbd::get_aux_buffers(&main_buffer) {
             let flow_combiner_result = flow_combiner.update_flow(
-                self.push_buffer_to_corresponding_pad(&src_pads, aux_buffer)
+                self.push_buffer_to_corresponding_pad(element, &src_pads, aux_buffer)
                     .map_err(|e| {
                         gst_warning!(CAT, obj: element, "Failed to push auxiliary buffers: {}", e);
                         gst::FlowError::Error
@@ -466,7 +478,7 @@ impl RgbdDemux {
 
         // Push the main buffer to the corresponding src pad
         flow_combiner.update_flow(
-            self.push_buffer_to_corresponding_pad(&src_pads, main_buffer)
+            self.push_buffer_to_corresponding_pad(element, &src_pads, main_buffer)
                 .map_err(|e| {
                     gst_warning!(CAT, obj: element, "Failed to push main buffer: {}", e);
                     gst::FlowError::Error
@@ -481,6 +493,7 @@ impl RgbdDemux {
     /// * `buffer` - The buffer that should be pushed further downstream.
     fn push_buffer_to_corresponding_pad(
         &self,
+        element: &gst::Element,
         src_pads: &HashMap<String, DemuxPad>,
         buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, RgbdDemuxError> {
@@ -488,26 +501,39 @@ impl RgbdDemux {
         let tag_title = rgbd::get_tag(&buffer)?;
 
         // Match the tag title with a corresponding src pad
-        let src_pad = src_pads
-            .get(&(format!("src_{}", tag_title)))
-            .ok_or_else(|| {
-                RgbdDemuxError(format!(
-                    "No corresponding pad for buffer with tag title `{}` exists",
+        if let Some(src_pad) = src_pads.get(&tag_title) {
+            // Do not attempt to push buffers, if pad is not linked
+            if !src_pad.pad.is_linked() {
+                gst_debug!(
+                    CAT,
+                    obj: element,
+                    "Buffer {} is not pushed because its pad is not linked",
                     tag_title
-                ))
-            })?;
+                );
+                return Ok(gst::FlowSuccess::Ok);
+            }
 
-        // Do not attempt to push buffers, if pad is not linked
-        if !src_pad.pad.is_linked() {
-            return Ok(gst::FlowSuccess::Ok);
+            // Attempt to push a buffer to the pad
+            gst_trace!(
+                CAT,
+                obj: element,
+                "Pushing buffer for stream {} to the corresponding pad",
+                tag_title
+            );
+            src_pad.pad.push(buffer).map_err(|_| {
+                RgbdDemuxError("Failed to push buffer onto its corresponding pad".to_string())
+            })
+        } else {
+            // We cannot push the buffer if we do not know its destination.
+            // Instead of throwing an exception, provide a warning and process all other buffers.
+            gst_warning!(
+                CAT,
+                obj: element,
+                "Cannot push buffer tagged as {} because no corresponding pad was created. Please check that upstream 'video/rgbd' CAPS contain all streams that are attached to the main buffer.",
+                tag_title
+            );
+            Ok(gst::FlowSuccess::Ok)
         }
-
-        // Check if there's a per-frame metadata buffer we need to push to the meta pad
-        gst_debug!(CAT, "Pushing per-frame meta for {}", tag_title);
-
-        src_pad.pad.push(buffer).map_err(|_| {
-            RgbdDemuxError("Failed to push buffer onto its corresponding pad".to_string())
-        })
     }
 
     /// Push a stream-start event on the given pad, so that downstream can expect data flow.
@@ -522,7 +548,7 @@ impl RgbdDemux {
         stream_identifier: &StreamIdentifier,
     ) {
         if src_pad.pushed_stream_start {
-            gst_trace!(CAT, "Stream start event for stream {} was already pushed this streaming session, skipping", stream_name);
+            gst_debug!(CAT, "Stream start event for stream {} was already pushed this streaming session, skipping", stream_name);
             return;
         }
 

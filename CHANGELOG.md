@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - This allowed to make use of FlowCombiner in sink chain, which was disabled until now.
     - Group ID of upstream is now used during pushing of stream-start events.
     - Unneeded src pads are now removed if new sink CAPS were negotiated.
+    - Internal src pads now contain the name of the stream instead of the pad name, as it was not consistent with the documentation.
 
 ## [0.5.4] - 2020-Sep-07
 
