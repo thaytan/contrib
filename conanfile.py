@@ -29,6 +29,7 @@ class RgbdConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = [
         "Cargo.toml",
+        "build.rs",
         "src/*",
     ]
 
