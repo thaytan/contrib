@@ -8,6 +8,7 @@ keywords = ["RGB-D", "Demux", "Mux", "GStreamer", "Rust"]
 repository = "https://gitlab.com/aivero/public/gstreamer/gst-rgbd"
 edition = "2018"
 readme = "README.md"
+build = "build.rs"
 
 [dependencies]
 glib = "0.10"
