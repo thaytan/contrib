@@ -4,13 +4,13 @@ from conans import *
 
 
 class BootstrapLlvmConan(ConanFile):
-    name = "bootstrap-llvm"
     musl_version = "1.2.0"
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
-    requires = (("generators/[^1.0.0]", "private"), "bootstrap-libc-headers/[^1.0.0]")
+    requires = "bootstrap-libc-headers/[^1.0.0]"
+    no_dev_pkg = True
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
