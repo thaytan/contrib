@@ -2,12 +2,10 @@ from conans import *
 
 
 class LibffiConan(ConanFile):
-    name = "libffi"
     description = "A portable, high level programming interface to various calling conventions"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"], "libc_build": ["system"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("llvm-bootstrap/[^10.0.0]", "make/[^4.3]")
-    requires = (("generators/[^1.0.0]", "private"),)
 
     def source(self):
         tools.get(f"https://github.com/libffi/libffi/releases/download/v{self.version}/libffi-{self.version}.tar.gz")
