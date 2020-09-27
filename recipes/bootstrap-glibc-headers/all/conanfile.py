@@ -4,14 +4,11 @@ from conans import *
 
 
 class BootstrapGlibcHeadersConan(ConanFile):
-    name = "bootstrap-glibc-headers"
-    description = "glibc bootstrap headers files"
+    description = "glibc bootstrap headers"
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    requires = (
-        ("generators/[^1.0.0]", "private"),
-        "bootstrap-linux-headers/[^5.4.50]",
-    )
+    requires = ("bootstrap-linux-headers/[^5.4.50]",)
+    no_dev_pkg = True
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/glibc/glibc-{self.version}.tar.xz")
