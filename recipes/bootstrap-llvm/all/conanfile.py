@@ -224,7 +224,7 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
-        self.env_info.LD = os.path.join(self.package_folder, "bin", "lld")
+        self.env_info.LD = os.path.join(self.package_folder, "bin", "ld")
         self.env_info.STRIP = os.path.join(self.package_folder, "bin", "strip")
         self.env_info.OBJCOPY = os.path.join(self.package_folder, "bin", "objcopy")
 
