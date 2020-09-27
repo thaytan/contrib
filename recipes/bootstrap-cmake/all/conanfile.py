@@ -3,7 +3,6 @@ from conans import *
 
 
 class BootstrapCMakeConan(ConanFile):
-    name = "bootstrap-cmake"
     description = "A cross-platform open-source make system + ninja"
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
