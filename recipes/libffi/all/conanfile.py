@@ -12,10 +12,6 @@ class LibffiConan(ConanFile):
 
     def build(self):
         args = [
-            "--quiet",
-            "--disable-debug",
-            "--disable-dependency-tracking",
-            "--disable-docs",
             "--disable-shared",
         ]
         autotools = AutoToolsBuildEnvironment(self)
