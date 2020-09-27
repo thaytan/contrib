@@ -12,6 +12,7 @@ class LibffiConan(ConanFile):
 
     def build(self):
         args = [
+            "--disable-dependency-tracking",
             "--disable-shared",
         ]
         autotools = AutoToolsBuildEnvironment(self)
