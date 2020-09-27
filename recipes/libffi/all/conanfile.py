@@ -2,7 +2,7 @@ from conans import *
 
 
 class LibffiConan(ConanFile):
-    description = "A portable, high level programming interface to various calling conventions"
+    description = "Portable foreign function interface library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("llvm-bootstrap/[^10.0.0]", "make/[^4.3]")
