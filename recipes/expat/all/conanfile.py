@@ -14,7 +14,7 @@ class ExpatConan(ConanFile):
         tools.get(f"https://github.com/libexpat/libexpat/releases/download/R_{self.version.replace('.', '_')}/expat-{self.version}.tar.bz2")
 
     def build(self):
-        args = ["--disable-static"]
+        args = ["--disable-shared"]
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(f"{self.name}-{self.version}", args=args)
         autotools.install()
