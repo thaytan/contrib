@@ -6,7 +6,6 @@ class BootstrapLinuxHeadersConan(ConanFile):
     description = "Linux headers"
     license = "GPL2"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    no_dev_pkg = True
 
     def source(self):
         tools.get(f"https://cdn.kernel.org/pub/linux/kernel/v{self.version.split('.')[0]}.x/linux-{self.version}.tar.xz")
