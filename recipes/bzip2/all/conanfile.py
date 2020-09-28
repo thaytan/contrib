@@ -4,12 +4,12 @@ from conans import *
 
 
 class Bzip2Conan(ConanFile):
-    name = "bzip2"
     description = "A high-quality data compression program"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
+        "bootstrap-llvm/[^10.0.1]",
+        "make/[^4.3]",
     )
 
     def source(self):
