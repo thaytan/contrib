@@ -3,8 +3,8 @@ from conans import *
 
 
 class BootstrapLinuxHeadersConan(ConanFile):
-    description = "Linux header files"
-    license = "GPL-2.0"
+    description = "Linux headers"
+    license = "GPL2"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     no_dev_pkg = True
 
