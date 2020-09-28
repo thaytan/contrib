@@ -200,9 +200,11 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-llvm-config")
             cmake.build(target="install-llvm-tblgen")
 
-        # Make lld default linker
+        # Make lld, clang, clang++ default
         with tools.chdir(os.path.join(self.package_folder, "bin")):
             os.symlink("ld.lld", "ld")
+            os.symlink("clang", "cc")
+            os.symlink("clang++", "c++")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
