@@ -18,5 +18,5 @@ class BootstrapGlibcHeadersConan(ConanFile):
         autotools.configure(configure_dir=f"glibc-{self.version}")
         autotools.make(target="install-headers")
 
-        # install-headers does not create include/gnu/stubs.h file
+        # install-headers does not create include/gnu/stubs.h
         pathlib.Path(os.path.join(self.package_folder, "include", "gnu", "stubs.h")).touch()
