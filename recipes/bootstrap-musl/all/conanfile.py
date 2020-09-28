@@ -1,11 +1,11 @@
 from conans import *
 
 
-class BootstrapMuslHeadersConan(ConanFile):
+class BootstrapMuslConan(ConanFile):
     description = "Lightweight implementation of C standard library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    requires = ("bootstrap-linux-headers/[^5.4.50]",)
+    requires = ("bootstrap-linux-headers-dev/[^5.4.50]",)
     no_dev_pkg = True
 
     def source(self):
@@ -13,5 +13,5 @@ class BootstrapMuslHeadersConan(ConanFile):
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(configure_dir=f"musl-{self.version}")
-        autotools.make(target="install-headers")
+        autotools.configure(f"musl-{self.version}", ["--disable-shared"])
+        autotools.install()
