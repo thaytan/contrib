@@ -9,8 +9,7 @@ class BootstrapLlvmConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
-    requires = "bootstrap-libc-headers/[^1.0.0]"
-    no_dev_pkg = True
+    requires = "bootstrap-libc/[^1.0.0]"
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
@@ -27,9 +26,6 @@ class BootstrapLlvmConan(ConanFile):
         shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
         shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
-
-        if self.settings.libc_build == "musl":
-            tools.get(f"https://www.musl-libc.org/releases/musl-{self.musl_version}.tar.gz")
 
     def build(self):
         cmake = CMake(self)
@@ -165,24 +161,6 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
-        # Build musl (LTO TODO)
-        ldflags = ""
-        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
-        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
-        if self.settings.libc_build == "musl":
-            env = {
-                "CC": os.path.join(stage0_folder, "bin", "clang"),
-                "CFLAGS": f"-isystem {clang_inc}",
-                "LDFLAGS": f"-L{clang_lib}",
-                "TARGET": f"{arch}-linux-musl",
-                "LIBCC": f"-lclang_rt.builtins-{arch}",
-            }
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(vars=env, configure_dir=f"musl-{self.musl_version}")
-            autotools.make(target="install-libs")
-            # GVN causes segmentation fault during recursion higher than 290
-            ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
-
         ###########
         # Stage 2 #
         ###########
@@ -191,6 +169,12 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
         # Use stage 1 libs
+        ldflags = ""
+        # GVN causes segmentation fault during recursion higher than 290
+        if self.settings.libc_build == "musl":
+            ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
+        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
+        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
         libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage1_folder, "lib")
         env = {
@@ -215,6 +199,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-lld")
             cmake.build(target="install-llvm-config")
             cmake.build(target="install-llvm-tblgen")
+
         # Make lld default linker
         with tools.chdir(os.path.join(self.package_folder, "bin")):
             os.symlink("ld.lld", "ld")
