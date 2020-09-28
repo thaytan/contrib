@@ -2,7 +2,6 @@ from conans import *
 
 
 class ExpatConan(ConanFile):
-    name = "expat"
     description = "An XML parser library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
@@ -17,6 +16,5 @@ class ExpatConan(ConanFile):
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools.configure(args=args)
-            autotools.install()
+        autotools.configure(f"{self.name}-{self.version}", args=args)
+        autotools.install()
