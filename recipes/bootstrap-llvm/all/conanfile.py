@@ -224,5 +224,15 @@ class BootstrapLlvmConan(ConanFile):
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
 
-        self.env_info.CFLAGS = f"{static_flags} -flto=thin -nostdinc -isystem {clang_inc} -isystem {libc_inc}"
-        self.env_info.CXXFLAGS = f"{static_flags} -flto=thin -nostdinc -nostdinc++ -isystem {libcxx_inc} -isystem {clang_inc} -isystem {libc_inc}"
+        cflags = f" {static_flags} -flto=thin -nostdinc -isystem {clang_inc} -isystem {libc_inc} "
+        cxxflags = f" {static_flags} -flto=thin -nostdinc -nostdinc++ -Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc} "
+
+        # Set compiler flags without overwriting existing flags
+        if self.env_info.CFLAGS:
+            self.env_info.CFLAGS += cflags
+        else:
+            self.env_info.CFLAGS = cflags
+        if self.env_info.CXXFLAGS:
+            self.env_info.CXXFLAGS += cxxflags
+        else:
+            self.env_info.CXXFLAGS = cxxflags
