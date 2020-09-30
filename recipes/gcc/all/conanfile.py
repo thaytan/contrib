@@ -8,8 +8,10 @@ class GccConan(ConanFile):
     license = "custom", "FDL", "GPL", "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
+        "binutils/[^2.35]",
         "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
+        "zlib/[^1.2.11]",
         "mpfr/[^4.1.0]",
         "gmp/[^6.2.0]",
         "mpc/[^1.1.0]",
