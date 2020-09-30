@@ -10,12 +10,16 @@ class BinutilsConan(ConanFile):
     build_requires = (
         "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
+        "zlib/[^1.2.11]",
     )
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/binutils/binutils-{self.version}.tar.xz")
 
     def build(self):
+        env = {
+            "CFLAGS": "-fPIC " + os.environ["CFLAGS"],
+        }
         args = [
             "--enable-deterministic-archives",
             "--enable-gold",
@@ -31,7 +35,7 @@ class BinutilsConan(ConanFile):
             "--with-system-zlib",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.configure(f"{self.name}-{self.version}", args, vars=env)
         autotools.make(target="configure-host")
         autotools.make([f"tooldir={self.package_folder}"])
         autotools.install([f"tooldir={self.package_folder}"])
