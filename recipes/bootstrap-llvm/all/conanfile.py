@@ -196,6 +196,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-ranlib")
             cmake.build(target="install-strip")
             cmake.build(target="install-objcopy")
+            cmake.build(target="install-nm")
             cmake.build(target="install-lld")
             cmake.build(target="install-llvm-config")
             cmake.build(target="install-llvm-tblgen")
