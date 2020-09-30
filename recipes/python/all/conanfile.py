@@ -23,6 +23,10 @@ class PythonConan(ConanFile):
         tools.get(f"https://www.python.org/ftp/python/{self.version}/Python-{self.version}.tar.xz")
 
     def build(self):
+        # Python build scripts handles LTO
+        env = {
+            "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", ""),
+        }
         args = [
             "--with-openssl=" + self.deps_cpp_info["openssl"].rootpath,
             "--with-computed-gotos",
@@ -34,11 +38,10 @@ class PythonConan(ConanFile):
             "--enable-loadable-sqlite-extensions",
             "--without-ensurepip",
         ]
-        with tools.chdir("Python-" + self.version):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"Python-{self.version}", args, vars=env)
+        autotools.make()
+        autotools.install()
         os.symlink("python3.8", os.path.join(self.package_folder, "bin", "python"))
 
     def package_info(self):
