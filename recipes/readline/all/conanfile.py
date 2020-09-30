@@ -4,13 +4,12 @@ from conans import *
 
 
 class ReadlineConan(ConanFile):
-    name = "readline"
     description = "GNU readline library"
-    license = "GPL-3.0-or-later"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
-    build_requires = ("cc/[^1.0.0]",)
-    requires = (
-        "base/[^1.0.0]",
+    license = "GPL3"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    build_requires = (
+        "bootstrap-llvm/[^10.0.1]",
+        "make/[^4.3]",
         "ncurses/[^6.1]",
     )
 
@@ -18,7 +17,9 @@ class ReadlineConan(ConanFile):
         tools.get(f"https://ftp.gnu.org/gnu/readline/readline-{self.version}.tar.gz")
 
     def build(self):
+        args = [
+            "--disable-shared",
+        ]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools.configure()
-            autotools.install()
+        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.install()
