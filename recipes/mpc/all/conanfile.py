@@ -1,20 +1,15 @@
-import os
-
 from conans import *
 
 
 class MpcConan(ConanFile):
-    name = "mpc"
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "bootstrap-cc/[^1.0.0]",
+        "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
-    )
-    requires = (
-        "base/[^1.0.0]",
-        "mpfr/[^4.0.2]",
+        "mpfr/[^4.1.0]",
+        "gmp/[^6.2.0]",
     )
 
     def source(self):
@@ -22,10 +17,9 @@ class MpcConan(ConanFile):
 
     def build(self):
         args = [
-            "--disable-static",
+            "--disable-shared",
         ]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.make(target="install-strip")
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.make()
+        autotools.install()
