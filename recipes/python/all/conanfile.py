@@ -4,7 +4,6 @@ from conans import *
 
 
 class PythonConan(ConanFile):
-    name = "python"
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
