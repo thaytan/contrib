@@ -46,6 +46,11 @@ class LibcxxConan(ConanFile):
         if self.settings.libc_build == "musl":
             cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
 
+        # libunwind options
+        cmake.definitions["LIBUNWIND_USE_COMPILER_RT"] = True
+        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = True
+        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
+
         env = {"CXXFLAGS": ""}
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}")
