@@ -30,7 +30,6 @@ class PerlConan(ConanFile):
         with tools.chdir(f"{self.name}5-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             self.run("./Configure " + " ".join(args))
-            autotools.configure(args=args)
             autotools.make()
             autotools.install()
 
