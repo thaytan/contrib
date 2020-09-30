@@ -50,6 +50,7 @@ class GccConan(ConanFile):
             "--enable-default-pie",
             "--enable-default-ssp",
             "--enable-cet=auto",
+            f"--with-gmp={self.deps_cpp_info['gmp'].rootpath}",
         ]
         if self.settings.arch_build == "x86_64":
             target = "x86_64-linux-gnu"
