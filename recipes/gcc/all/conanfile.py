@@ -22,6 +22,9 @@ class GccConan(ConanFile):
         tools.get(f"https://ftp.gnu.org/gnu/gcc/gcc-{self.version}/gcc-{self.version}.tar.xz")
 
     def build(self):
+        env = {
+            "NM": os.path.join(self.deps_cpp_info["bootstrap-llvm"].rootpath, "bin", "nm"),
+        }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
             "--disable-bootstrap",
@@ -55,6 +58,6 @@ class GccConan(ConanFile):
         args.append(f"--build={target}")
         args.append(f"--host={target}")
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.configure(f"{self.name}-{self.version}", args, vars=env)
         autotools.make()
         autotools.install()
