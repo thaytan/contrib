@@ -12,6 +12,7 @@ class LibcxxConan(ConanFile):
         "bootstrap-cmake/[^3.18.0]",
         "bootstrap-ninja/[^1.10.0]",
         "python/[^3.8.5]",
+        "libunwind/[^10.0.1]",
     )
 
     def source(self):
