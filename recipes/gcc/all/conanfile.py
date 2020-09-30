@@ -26,7 +26,6 @@ class GccConan(ConanFile):
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
             "--disable-bootstrap",
             "--enable-languages=c,c++,objc,obj-c++",
-            "--enable-shared",
             "--enable-threads=posix",
             "--with-system-zlib",
             "--with-isl",
