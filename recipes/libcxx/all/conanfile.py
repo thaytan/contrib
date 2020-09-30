@@ -23,6 +23,7 @@ class LibcxxConan(ConanFile):
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
+        shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
         cmake = CMake(self)
