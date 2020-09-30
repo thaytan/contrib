@@ -7,13 +7,10 @@ class TclConan(ConanFile):
     name = "tcl"
     description = "The Tcl scripting language"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "base/[^1.0.0]",
-        "autotools/[^1.0.0]",
-    )
-    requires = (
-        "base/[^1.0.0]",
+        "bootstrap-llvm/[^10.0.1]",
+        "make/[^4.3]",
         "zlib/[^1.2.11]",
     )
 
@@ -21,7 +18,12 @@ class TclConan(ConanFile):
         tools.get(f"https://downloads.sourceforge.net/sourceforge/tcl/tcl{self.version}-src.tar.gz")
 
     def build(self):
+        env = {"CFLAGS": f" -lm {os.environ['CFLAGS']}"}
+        args = [
+            "--disable-shared",
+            "--enable-threads",
+            "--enable-64bit",
+        ]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(os.path.join(f"{self.name, self.version)}{"unix"}"):
-            autotools.configure()
-            autotools.install()
+        autotools.configure(os.path.join(f"{self.name}{self.version}", "unix"), args, vars=env)
+        autotools.install()
