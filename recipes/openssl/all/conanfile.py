@@ -10,6 +10,7 @@ class OpensslConan(ConanFile):
     build_requires = (
         "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
+        "perl/[^5.30.0]",
     )
 
     def source(self):
