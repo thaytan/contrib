@@ -8,6 +8,7 @@ class GccConan(ConanFile):
     license = "custom", "FDL", "GPL", "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
+        "binutils/[^2.35]",
         "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
         "zlib/[^1.2.11]",
@@ -21,13 +22,17 @@ class GccConan(ConanFile):
         tools.get(f"https://ftp.gnu.org/gnu/gcc/gcc-{self.version}/gcc-{self.version}.tar.xz")
 
     def build(self):
+        env = {
+            "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", ""),
+            "CXXFLAGS": os.environ["CXXFLAGS"].replace("-flto=thin", ""),
+            "LDFLAGS": os.environ["LDFLAGS"].replace("-flto=thin", ""),
+        }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
             "--disable-bootstrap",
             "--enable-languages=c,c++,objc,obj-c++",
             "--enable-threads=posix",
             "--with-system-zlib",
-            "--with-isl",
             "--disable-multilib",
             "--enable-__cxa_atexit",
             "--disable-libunwind-exceptions",
@@ -36,7 +41,6 @@ class GccConan(ConanFile):
             "--disable-libssp",
             "--enable-gnu-unique-object",
             "--enable-linker-build-id",
-            "--enable-lto",
             "--enable-install-libiberty",
             "--with-linker-hash-style=gnu",
             "--enable-gnu-indirect-function",
@@ -57,6 +61,6 @@ class GccConan(ConanFile):
         args.append(f"--build={target}")
         args.append(f"--host={target}")
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.configure(f"{self.name}-{self.version}", args, vars=env)
         autotools.make()
         autotools.install()
