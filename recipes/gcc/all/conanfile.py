@@ -9,7 +9,6 @@ class GccConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "bootstrap-llvm/[^10.0.1]",
-        "binutils/[^2.35]",
         "make/[^4.3]",
         "zlib/[^1.2.11]",
         "mpfr/[^4.1.0]",
@@ -22,9 +21,6 @@ class GccConan(ConanFile):
         tools.get(f"https://ftp.gnu.org/gnu/gcc/gcc-{self.version}/gcc-{self.version}.tar.xz")
 
     def build(self):
-        env = {
-            "OBJDUMP": os.path.join(self.deps_cpp_info["binutils"].rootpath, "bin", "objdump"),
-        }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
             "--disable-bootstrap",
@@ -41,7 +37,6 @@ class GccConan(ConanFile):
             "--enable-gnu-unique-object",
             "--enable-linker-build-id",
             "--enable-lto",
-            "--enable-plugin",
             "--enable-install-libiberty",
             "--with-linker-hash-style=gnu",
             "--enable-gnu-indirect-function",
@@ -62,6 +57,6 @@ class GccConan(ConanFile):
         args.append(f"--build={target}")
         args.append(f"--host={target}")
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args, vars=env)
+        autotools.configure(f"{self.name}-{self.version}", args)
         autotools.make()
         autotools.install()
