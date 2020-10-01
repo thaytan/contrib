@@ -8,8 +8,8 @@ class GccConan(ConanFile):
     license = "custom", "FDL", "GPL", "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "binutils/[^2.35]",
         "bootstrap-llvm/[^10.0.1]",
+        "binutils/[^2.35]",
         "make/[^4.3]",
         "zlib/[^1.2.11]",
         "mpfr/[^4.1.0]",
@@ -23,7 +23,7 @@ class GccConan(ConanFile):
 
     def build(self):
         env = {
-            "NM": os.path.join(self.deps_cpp_info["bootstrap-llvm"].rootpath, "bin", "nm"),
+            "OBJDUMP": os.path.join(self.deps_cpp_info["bootstrap-llvm"].rootpath, "bin", "objdump"),
         }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
