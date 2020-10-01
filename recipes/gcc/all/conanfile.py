@@ -23,7 +23,7 @@ class GccConan(ConanFile):
 
     def build(self):
         env = {
-            "OBJDUMP": os.path.join(self.deps_cpp_info["bootstrap-llvm"].rootpath, "bin", "objdump"),
+            "OBJDUMP": os.path.join(self.deps_cpp_info["binutils"].rootpath, "bin", "objdump"),
         }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
