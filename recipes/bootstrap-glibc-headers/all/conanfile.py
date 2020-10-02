@@ -19,3 +19,15 @@ class BootstrapGlibcHeadersConan(ConanFile):
 
         # install-headers does not create include/gnu/stubs.h
         pathlib.Path(os.path.join(self.package_folder, "include", "gnu", "stubs.h")).touch()
+
+    def package_info(self):
+        cflags = f" -idirafter {os.path.join(self.package_folder, 'include')} "
+
+        if self.env_info.CFLAGS:
+            self.env_info.CFLAGS += cflags
+        else:
+            self.env_info.CFLAGS = cflags
+        if self.env_info.CXXFLAGS:
+            self.env_info.CXXFLAGS += cflags
+        else:
+            self.env_info.CXXFLAGS = cflags
