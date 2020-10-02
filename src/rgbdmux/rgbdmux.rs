@@ -560,7 +560,6 @@ impl RgbdMux {
         sink_pad_names: &[String],
         send_gap_event: bool,
     ) -> Result<(), RgbdMuxError> {
-        #![allow(clippy::assign_op_pattern)]
         // First check if any of the sink pads have any buffer queued
         if !sink_pad_names
             .iter()
@@ -640,7 +639,6 @@ impl RgbdMux {
         sink_pad_names: &[String],
         send_gap_event: bool,
     ) -> Result<(), RgbdMuxError> {
-        #![allow(clippy::assign_op_pattern)]
         let mut timestamps: Vec<(String, gst::ClockTime)> =
             self.get_timestamps(aggregator, sink_pad_names);
 
