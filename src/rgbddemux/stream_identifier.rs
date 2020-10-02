@@ -14,33 +14,18 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-#[macro_use]
-extern crate glib;
-#[macro_use]
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
-extern crate gstreamer_depth_meta as gst_depth_meta;
-#[macro_use]
-extern crate lazy_static;
-
-mod common;
-mod rgbddemux;
-mod rgbdmux;
-
-fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    rgbdmux::register(plugin)?;
-    rgbddemux::register(plugin)?;
-    Ok(())
+/// A struct that identifies a stream.
+pub struct StreamIdentifier {
+    /// The id of the stream.
+    pub stream_id: String,
+    /// The group id of the stream.
+    pub group_id: gst::GroupId,
 }
 
-gst_plugin_define!(
-    rgbd,
-    env!("CARGO_PKG_DESCRIPTION"),
-    plugin_init,
-    env!("CARGO_PKG_VERSION"),
-    "LGPL",
-    env!("CARGO_PKG_NAME"),
-    env!("CARGO_PKG_NAME"),
-    env!("CARGO_PKG_REPOSITORY"),
-    env!("BUILD_REL_DATE")
-);
+impl StreamIdentifier {
+    pub fn build_stream_start_event(&self, stream_name: impl std::fmt::Display) -> gst::Event {
+        gst::event::StreamStart::builder(&format!("{}/{}", self.stream_id, stream_name))
+            .group_id(self.group_id)
+            .build()
+    }
+}

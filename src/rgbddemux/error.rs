@@ -14,33 +14,32 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-#[macro_use]
-extern crate glib;
-#[macro_use]
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
-extern crate gstreamer_depth_meta as gst_depth_meta;
-#[macro_use]
-extern crate lazy_static;
+use std::error::Error;
+use std::{fmt, fmt::Display, fmt::Formatter};
 
-mod common;
-mod rgbddemux;
-mod rgbdmux;
+use super::rgbddemux::CAT;
 
-fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    rgbdmux::register(plugin)?;
-    rgbddemux::register(plugin)?;
-    Ok(())
+/// Custom error of `rgbddemux` element
+#[derive(Debug, Clone)]
+pub struct RgbdDemuxError(pub String);
+
+impl Error for RgbdDemuxError {}
+
+impl Display for RgbdDemuxError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "RGB-D Demuxing Error: {}", self.0)
+    }
 }
 
-gst_plugin_define!(
-    rgbd,
-    env!("CARGO_PKG_DESCRIPTION"),
-    plugin_init,
-    env!("CARGO_PKG_VERSION"),
-    "LGPL",
-    env!("CARGO_PKG_NAME"),
-    env!("CARGO_PKG_NAME"),
-    env!("CARGO_PKG_REPOSITORY"),
-    env!("BUILD_REL_DATE")
-);
+impl From<RgbdDemuxError> for gst::FlowError {
+    fn from(error: RgbdDemuxError) -> Self {
+        gst_error!(CAT, "{}", error);
+        gst::FlowError::Error
+    }
+}
+
+impl From<gst::ErrorMessage> for RgbdDemuxError {
+    fn from(error: gst::ErrorMessage) -> RgbdDemuxError {
+        RgbdDemuxError(format!("{}", error))
+    }
+}

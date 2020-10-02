@@ -30,8 +30,6 @@ Both elements rely on `video/rgbd` CAPS to determine what `streams` should be pr
 also require `%s_format`, `%s_width` and `%s_height`. A `video/x-raw` stream with `%s_format="*jpeg*"` is treated
 accordingly as MJPG stream.
 
-TODO:: `rgbddemux` currently does not fully support `image/jpeg`.
-
 A notable exception are metadata pads. Metadata pads are identified by their name, and *must end with "meta"*. Metadata
 are handled separately from video streams, and do not require `%s_format`, `%s_width` and `%s_height` fields to be
 present in the `video/rgbd` caps. All metadata are treated as `meta/x-klv`, but are *NOT* packed according to KLV
@@ -80,7 +78,7 @@ SINK template: 'sink'
         video/rgbd
 
 SRC template: 'src_%s'
-    Availability: On request
+    Availability: Sometimes
     Capabilities:
         video/x-raw
         meta/x-klv
@@ -97,10 +95,10 @@ following rules when applying the mapping:
     .. For all other streams, `%s_format`, `%s_width` and `%s_height` are mapped to a single `video/x-raw` `.src_%s`
 pad for it, alongside the common `framerate`, which is shared across all streams.
 
-When using this element, make sure to request only streams that are contained in `streams` CAPS.
-* If there is a *request for a `.src_%s` pad, which is NOT included* in the `video/rgbd` `streams` field, *the element
-will block* and produce no data.
-* If a stream is included in `video/rgbd`, but no pad is requested for it, the stream will be ignored and the buffers
+When using this element, make sure to link only pads that are created based on entries contained in `streams` CAPS.
+* If there is a *request for linking with a `.src_%s` pad, which is NOT included* in the `video/rgbd` `streams` field,
+*the element will block* and produce no data.
+* If a stream is included in `video/rgbd`, but no pad is is connected to such stream, it will be ignored and the buffers
 dropped.
 
 Furthermore, make sure to *follow all `.src_%s` pads* with an immediate *`queue`*.
@@ -109,7 +107,7 @@ Furthermore, make sure to *follow all `.src_%s` pads* with an immediate *`queue`
 
 The `rgbddemux` accepts `video/rgbd` upstream CAPS with arbitrary fields.
 
-The CAPS negotiation with downstream elements begins once `.src_%s` pad is requested. This element is strict about its
+The CAPS negotiation with downstream elements begins once `.src_%s` pads are created. This element is strict about its
 CAPS with downstream element, as these are based on the fixated upstream `video/rgbd` CAPS, hence any downstream element
 needs to adjust its CAPS accordingly.
 

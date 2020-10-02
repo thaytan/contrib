@@ -14,33 +14,23 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-#[macro_use]
-extern crate glib;
-#[macro_use]
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
-extern crate gstreamer_depth_meta as gst_depth_meta;
-#[macro_use]
-extern crate lazy_static;
+use std::error::Error;
+use std::{fmt, fmt::Display, fmt::Formatter};
 
-mod common;
-mod rgbddemux;
-mod rgbdmux;
+/// Custom error of `rgbdmux` element
+#[derive(Debug, Clone)]
+pub struct RgbdMuxError(pub String);
 
-fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    rgbdmux::register(plugin)?;
-    rgbddemux::register(plugin)?;
-    Ok(())
+impl Error for RgbdMuxError {}
+
+impl Display for RgbdMuxError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "RGB-D Muxing Error: {}", self.0)
+    }
 }
 
-gst_plugin_define!(
-    rgbd,
-    env!("CARGO_PKG_DESCRIPTION"),
-    plugin_init,
-    env!("CARGO_PKG_VERSION"),
-    "LGPL",
-    env!("CARGO_PKG_NAME"),
-    env!("CARGO_PKG_NAME"),
-    env!("CARGO_PKG_REPOSITORY"),
-    env!("BUILD_REL_DATE")
-);
+impl From<gst::ErrorMessage> for RgbdMuxError {
+    fn from(error: gst::ErrorMessage) -> RgbdMuxError {
+        RgbdMuxError(format!("{}", error))
+    }
+}

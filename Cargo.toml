@@ -8,6 +8,7 @@ keywords = ["RGB-D", "Demux", "Mux", "GStreamer", "Rust"]
 repository = "https://gitlab.com/aivero/public/gstreamer/gst-rgbd"
 edition = "2018"
 readme = "README.md"
+build = "build.rs"
 
 [dependencies]
 glib = "0.10"
@@ -17,8 +18,10 @@ lazy_static = "1.4"
 
 [dependencies.gstreamer-depth-meta]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "1.4.0"
+tag = "2.1.0"
 
+[build-dependencies]
+gst-plugin-version-helper = "0.2"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
