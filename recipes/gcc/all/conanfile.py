@@ -25,7 +25,6 @@ class GccConan(ConanFile):
         env = {
             "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", ""),
             "CXXFLAGS": os.environ["CXXFLAGS"].replace("-flto=thin", ""),
-            "LDFLAGS": os.environ["LDFLAGS"].replace("-flto=thin", ""),
         }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
