@@ -218,24 +218,13 @@ class BootstrapLlvmConan(ConanFile):
         self.env_info.STRIP = os.path.join(self.package_folder, "bin", "strip")
         self.env_info.OBJCOPY = os.path.join(self.package_folder, "bin", "objcopy")
 
+        static_flags = ""
         if self.settings.libc_build == "musl":
             static_flags = "-static"
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
-        else:
-            static_flags = ""
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-
         cflags = f" -nostdinc -idirafter {clang_inc} {static_flags} -flto=thin -nostdinc "
         cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
-        # Set compiler flags without overwriting existing flags
-        if self.env_info.CFLAGS:
-            self.env_info.CFLAGS += cflags
-        else:
-            self.env_info.CFLAGS = cflags
-        if self.env_info.CXXFLAGS:
-            self.env_info.CXXFLAGS += cxxflags
-        else:
-            self.env_info.CXXFLAGS = cxxflags
+        self.env_info.CFLAGS += cflags
+        self.env_info.CXXFLAGS += cxxflags
