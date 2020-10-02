@@ -388,15 +388,12 @@ pub trait RgbdTimestamps: BaseSrcImpl {
         let timestamp_internals = self.get_timestamp_internals();
         let timestamp_internals = &mut *timestamp_internals.lock().unwrap();
 
-        // We increase the sequence number only on main buffers
+        // Compute the appropriate timestamp and increment the sequence number (only on main buffers)
         if is_buffer_main {
+            timestamp_internals.frameset_common_timestamp =
+                timestamp_internals.sequence_number * timestamp_internals.buffer_duration;
             timestamp_internals.sequence_number += 1;
         }
-
-        // Compute the appropriate timestamp
-        // Sequence number is decremented to begin with timestamp of 0 (because main buffers are always stamped first)
-        let timestamp =
-            (timestamp_internals.sequence_number - 1) * timestamp_internals.buffer_duration;
 
         // Return the timestamp
         if base_src.is_live() {
@@ -404,10 +401,10 @@ pub trait RgbdTimestamps: BaseSrcImpl {
             if timestamp_internals.stream_start_offset == gst::CLOCK_TIME_NONE {
                 timestamp_internals.stream_start_offset = base_src.get_current_running_time();
             }
-            timestamp_internals.stream_start_offset + timestamp
+            timestamp_internals.stream_start_offset + timestamp_internals.frameset_common_timestamp
         } else {
             // For non-live mode, no offset is needed as start from 0
-            timestamp
+            timestamp_internals.frameset_common_timestamp
         }
     }
 }
