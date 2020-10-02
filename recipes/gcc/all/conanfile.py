@@ -24,7 +24,7 @@ class GccConan(ConanFile):
     def build(self):
         env = {
             "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", ""),
-            "CXXFLAGS": os.environ["CFLAGS"] + " -nostdinc++ ",  # Don't include libcxx headers
+            "CXXFLAGS": os.environ["CXXFLAGS"].replace("-flto=thin", ""),
         }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
