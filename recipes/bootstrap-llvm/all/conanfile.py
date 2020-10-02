@@ -38,10 +38,8 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc_build == "musl":
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
             abi = "musl"
         else:
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
 
@@ -180,7 +178,7 @@ class BootstrapLlvmConan(ConanFile):
         env = {
             "LD_LIBRARY_PATH": libcxx_lib,
             "CFLAGS": cflags,  # Needed for tests
-            "CXXFLAGS": f"{cflags} -Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc}",
+            "CXXFLAGS": f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc}",
             "LDFLAGS": f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
 
@@ -229,8 +227,8 @@ class BootstrapLlvmConan(ConanFile):
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
 
-        cflags = f" {static_flags} -flto=thin -nostdinc -isystem {clang_inc} -isystem {libc_inc} "
-        cxxflags = f" {static_flags} -flto=thin -nostdinc -nostdinc++ -Xclang -internal-isystem -Xclang {libcxx_inc} -Xclang -internal-isystem -Xclang {clang_inc} -Xclang -internal-isystem -Xclang {libc_inc} "
+        cflags = f" -nostdinc -idirafter {clang_inc} {static_flags} -flto=thin -nostdinc "
+        cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
         # Set compiler flags without overwriting existing flags
         if self.env_info.CFLAGS:
