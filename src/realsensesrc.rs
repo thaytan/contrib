@@ -14,16 +14,15 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use std::collections::HashMap;
 use std::{
+    collections::HashMap,
     convert::TryInto,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
 };
 
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
-use gst_base::subclass::base_src::CreateSuccess;
 use gst_base::subclass::prelude::*;
 
 use ::rgbd_timestamps::*;
@@ -37,26 +36,38 @@ use crate::rs_meta::rs_meta_serialization::*;
 use crate::settings::*;
 
 lazy_static! {
-    static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
+    pub static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
         "realsensesrc",
         gst::DebugColorFlags::empty(),
         Some("Realsense Source"),
     );
 }
 
-/// A struct representation of the `realsensesrc` element
+/// A struct representation of the `realsensesrc` element.
 struct RealsenseSrc {
+    /// Reconfigurable properties of the element that are protected under RwLock.
+    settings: RwLock<Settings>,
+    /// Mutex-protected internals of the element containing stream-relevant data.
     internals: Mutex<RealsenseSrcInternals>,
     /// Contains timestamp internals utilised by `RgbdTimestamps` trait.
     timestamp_internals: Arc<Mutex<TimestampInternals>>,
 }
 
-/// Internals of the element that are under Mutex
+/// Internals of the element that are under Mutex.
 struct RealsenseSrcInternals {
-    settings: Settings,
+    /// Current state of the RealSense pipeline.
     state: State,
     /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`, otherwise empty.
     camera_meta_serialised: Vec<u8>,
+}
+
+impl Default for RealsenseSrcInternals {
+    fn default() -> Self {
+        Self {
+            state: State::Stopped,
+            camera_meta_serialised: Vec::default(),
+        }
+    }
 }
 
 /// An enum containing the current state of the RealSense pipeline
@@ -65,49 +76,345 @@ enum State {
     Started { pipeline: rs2::pipeline::Pipeline },
 }
 
-impl RealsenseSrcInternals {
-    /// Configure the realsense pipeline, checking the settings for the realsensesrc to verify that the user of the plugin has specified a valid configuration.
-    /// # Returns
-    /// - Ok(rs2::config::Config) if realsenesrc could be configured to use serial or rosbag
-    /// - Err() if
-    ///   - Neither serial, nor rosbag_location are specified
-    ///   - BOTH serial and rosbag_location are specified
-    ///   - No streams are enabled
-    /// # Panics
-    /// - Does not panic
-    fn configure(&self) -> Result<rs2::config::Config, RealsenseError> {
-        let settings = &self.settings;
+impl ObjectSubclass for RealsenseSrc {
+    const NAME: &'static str = "realsensesrc";
+    type ParentType = gst_base::PushSrc;
+    type Instance = gst::subclass::ElementInstanceStruct<Self>;
+    type Class = subclass::simple::ClassStruct<Self>;
 
-        // Create new RealSense device config
+    glib_object_subclass!();
+
+    fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
+        klass.set_metadata(
+            "Realsense Source",
+            "Source/RGB-D/Realsense",
+            "Stream `video/rgbd` from a RealSense device",
+            "Niclas Moeslund Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
+        );
+
+        // Install properties for streaming from RealSense
+        klass.install_properties(PROPERTIES.as_ref());
+
+        // Create src pad template with `video/rgbd` caps
+        let src_caps = gst::Caps::new_simple(
+            "video/rgbd",
+            &[
+                // List of available streams meant for indicating their respective priority
+                (
+                    "streams",
+                    &"depth,infra1,infra2,color,depthmeta,infra1meta,infra2meta,colormeta,camerameta",
+                ),
+                (
+                    "framerate",
+                    &gst::FractionRange::new(
+                        gst::Fraction::new(MIN_FRAMERATE, 1),
+                        gst::Fraction::new(MAX_FRAMERATE, 1),
+                    ),
+                ),
+            ],
+        );
+        klass.add_pad_template(
+            gst::PadTemplate::new(
+                "src",
+                gst::PadDirection::Src,
+                gst::PadPresence::Always,
+                &src_caps,
+            )
+            .expect("Could not add src pad template in realsensesrc"),
+        );
+    }
+
+    fn new() -> Self {
+        Self {
+            settings: RwLock::new(Settings::default()),
+            internals: Mutex::new(RealsenseSrcInternals::default()),
+            timestamp_internals: Arc::new(Mutex::new(TimestampInternals::default())),
+        }
+    }
+}
+
+impl BaseSrcImpl for RealsenseSrc {
+    /// Initialise resources and prepare to produce data.
+    /// # Arguments
+    /// * `base_src` - Representation of `realsensesrc` element.
+    fn start(&self, base_src: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
+        // Specify log severity level for RealSense
+        rs2::log::log_to_console(rs2::rs2_log_severity::RS2_LOG_SEVERITY_ERROR).map_err(|e| {
+            gst_error_msg!(
+                gst::ResourceError::OpenRead,
+                (&format!("Cannot log librealsense to console: {}", e))
+            )
+        })?;
+
+        // Make sure that the set properties are viable
+        let config = self.configure()?;
+
+        // Configure and start RealSense pipeline
+        self.init_realsense_pipeline(base_src, config)?;
+
+        // Update buffer duration for `RgbdTimestamps` trait
+        self.set_buffer_duration(self.settings.read().unwrap().streams.framerate as f32);
+
+        gst_info!(CAT, obj: base_src, "Streaming started");
+        // Chain up parent implementation
+        self.parent_start(base_src)
+    }
+
+    /// Close and reset resources.
+    /// # Arguments
+    /// * `base_src` - Representation of `realsensesrc` element.
+    fn stop(&self, base_src: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
+        // Reset internals
+        self.stop_rs_and_reset()?;
+
+        // Chain up parent implementation
+        self.parent_stop(base_src)
+    }
+
+    /// Called during negotiation if CAPS need fixating. Here we decide on the CAPS based on selected properties.
+    /// # Arguments
+    /// * `base_src` - Representation of `realsensesrc` element.
+    /// * `caps` - CAPS that need to be fixated.
+    fn fixate(&self, base_src: &gst_base::BaseSrc, mut caps: gst::Caps) -> gst::Caps {
+        caps.truncate();
+        {
+            let caps = caps.make_mut();
+
+            let s = caps
+                .get_mut_structure(0)
+                .expect("Failed to read the realsensesrc CAPS");
+
+            // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
+            // The first stream in this string is contained in the main buffer
+            let mut selected_streams = String::new();
+            let settings = self.settings.read().unwrap();
+
+            if settings.streams.enabled_streams.depth {
+                // Add `depth` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"depth,");
+                s.set("depth_format", &gst_video::VideoFormat::Gray16Le.to_str());
+                s.set("depth_width", &settings.streams.depth_resolution.width);
+                s.set("depth_height", &settings.streams.depth_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"depthmeta,");
+                }
+            }
+            if settings.streams.enabled_streams.infra1 {
+                // Add `infra1` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"infra1,");
+                s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_str());
+                s.set("infra1_width", &settings.streams.depth_resolution.width);
+                s.set("infra1_height", &settings.streams.depth_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"infra1meta,");
+                }
+            }
+            if settings.streams.enabled_streams.infra2 {
+                // Add `infra2` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"infra2,");
+                s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_str());
+                s.set("infra2_width", &settings.streams.depth_resolution.width);
+                s.set("infra2_height", &settings.streams.depth_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"infra2meta,");
+                }
+            }
+            if settings.streams.enabled_streams.color {
+                // Add `color` stream with its format, width and height into the caps if enabled
+                selected_streams.push_str(&"color,");
+                s.set("color_format", &gst_video::VideoFormat::Rgb.to_str());
+                s.set("color_width", &settings.streams.color_resolution.width);
+                s.set("color_height", &settings.streams.color_resolution.height);
+                if settings.include_per_frame_metadata {
+                    selected_streams.push_str(&"colormeta,");
+                }
+            }
+
+            // Add `camerameta` into `streams`, if enabled
+            if settings.attach_camera_meta {
+                selected_streams.push_str("camerameta,");
+            }
+
+            // Pop the last ',' contained in streams (not really necessary, but nice)
+            selected_streams.pop();
+
+            // Finally add the streams to the caps
+            s.set("streams", &selected_streams.as_str());
+
+            // Fixate the framerate
+            s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
+        }
+
+        // Chain up parent implementation
+        self.parent_fixate(base_src, caps)
+    }
+
+    /// Handle a requested query. Here we explicitely handle Latency query.
+    /// # Arguments
+    /// * `base_src` - Representation of `realsensesrc` element.
+    /// * `query` - The query that was requested.
+    fn query(&self, base_src: &gst_base::BaseSrc, query: &mut gst::QueryRef) -> bool {
+        use gst::QueryView;
+        match query.view_mut() {
+            QueryView::Latency(ref mut q) => {
+                let settings = self.settings.read().unwrap();
+                let framerate: u64 = if let Ok(f) = settings.streams.framerate.try_into() {
+                    f
+                } else {
+                    gst_error!(
+                        CAT,
+                        obj: base_src,
+                        "Could not convert framerate: {} into u64",
+                        settings.streams.framerate
+                    );
+                    return false;
+                };
+                drop(settings);
+
+                // Setting latency to minimum of 1 frame - 1/framerate
+                let latency = if let Some(l) = gst::SECOND.mul_div_floor(1, framerate) {
+                    l
+                } else {
+                    // Return early if we are (most likely) dividing by zero.
+                    gst_error!(
+                        CAT,
+                        obj: base_src,
+                        "Could not compute latency, tried to divide 1/{}",
+                        framerate
+                    );
+                    return false;
+                };
+                gst_debug!(CAT, obj: base_src, "Returning latency {}", latency);
+                // Return latency
+                q.set(base_src.is_live(), latency, gst::CLOCK_TIME_NONE);
+                true
+            }
+            _ => BaseSrcImplExt::parent_query(self, base_src, query),
+        }
+    }
+
+    /// This determines if the source can seek. Seeking during rosbag playback is currently NOT supported.
+    /// # Arguments
+    /// * `_base_src` - Representation of `realsensesrc` element.
+    fn is_seekable(&self, _base_src: &gst_base::BaseSrc) -> bool {
+        false
+    }
+}
+
+impl PushSrcImpl for RealsenseSrc {
+    /// Create a new buffer that will be pushed downstream.
+    /// # Arguments
+    /// * `push_src` - Representation of `realsensesrc` element.
+    fn create(&self, push_src: &gst_base::PushSrc) -> Result<gst::Buffer, gst::FlowError> {
+        // Get new frames from RealSense pipeline
+        let frames = self.get_frameset()?;
+
+        // Create the output buffer
+        let mut output_buffer = gst::buffer::Buffer::new();
+
+        // Embed the frames in output_buffer
+        {
+            let settings = &self.settings.read().unwrap();
+            let streams = &settings.streams;
+
+            // Attach `depth` frame if enabled
+            if streams.enabled_streams.depth {
+                self.attach_frame_to_buffer(
+                    push_src,
+                    settings,
+                    &mut output_buffer,
+                    &frames,
+                    "depth",
+                    -1,
+                    rs2::rs2_stream::RS2_STREAM_DEPTH,
+                    &[],
+                )?;
+            }
+
+            // Attach `infra1` frame if enabled
+            if streams.enabled_streams.infra1 {
+                self.attach_frame_to_buffer(
+                    push_src,
+                    settings,
+                    &mut output_buffer,
+                    &frames,
+                    "infra1",
+                    1,
+                    rs2::rs2_stream::RS2_STREAM_INFRARED,
+                    &[streams.enabled_streams.depth],
+                )?;
+            }
+
+            // Attach `infra2` frame if enabled
+            if streams.enabled_streams.infra2 {
+                self.attach_frame_to_buffer(
+                    push_src,
+                    settings,
+                    &mut output_buffer,
+                    &frames,
+                    "infra2",
+                    2,
+                    rs2::rs2_stream::RS2_STREAM_INFRARED,
+                    &[
+                        streams.enabled_streams.depth,
+                        streams.enabled_streams.infra1,
+                    ],
+                )?;
+            }
+
+            // Attach `color` frame if enabled
+            if streams.enabled_streams.color {
+                self.attach_frame_to_buffer(
+                    push_src,
+                    settings,
+                    &mut output_buffer,
+                    &frames,
+                    "color",
+                    -1,
+                    rs2::rs2_stream::RS2_STREAM_COLOR,
+                    &[
+                        streams.enabled_streams.depth,
+                        streams.enabled_streams.infra1,
+                        streams.enabled_streams.infra2,
+                    ],
+                )?;
+            }
+
+            // Attach Cap'n Proto serialised `CameraMeta` if enabled
+            if settings.attach_camera_meta {
+                // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
+                let camera_meta = self
+                    .internals
+                    .lock()
+                    .unwrap()
+                    .camera_meta_serialised
+                    .clone();
+                self.attach_camera_meta(push_src, &mut output_buffer, camera_meta)?;
+            }
+        }
+
+        Ok(output_buffer)
+    }
+}
+
+impl RealsenseSrc {
+    /// Configure the RealSense pipeline, while making sure the settings are valid.
+    /// # Returns
+    /// * `Ok(rs2::config::Config)` if realsenesrc could be configured to use serial or rosbag
+    /// * `Err(RealsenseError)` if
+    ///   * Neither serial, nor rosbag_location are specified
+    ///   * BOTH serial and rosbag_location are specified
+    ///   * No streams are enabled
+    fn configure(&self) -> Result<rs2::config::Config, RealsenseError> {
+        // Create new RealSense config
         let config = rs2::config::Config::new()?;
 
-        // Make sure the pipeline has started
-        if let State::Started { .. } = self.state {
+        // Make sure the pipeline has not started yet
+        if let State::Started { .. } = self.internals.lock().unwrap().state {
             unreachable!("Element has already started");
         }
 
-        // Either `serial` or `rosbag-location` must be specified
-        match (&settings.serial, &settings.rosbag_location) {
-            (None, None) => {
-                return Err(RealsenseError("Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!".to_string()));
-            }
-            // Make sure that only one stream source is selected
-            (Some(serial), Some(rosbag_location)) => {
-                return Err(RealsenseError(format!("Both `serial`: {:?} and `rosbag-location`: {:?} are defined. Only one of these can be defined!", serial, rosbag_location)))
-            }
-            // A serial is specified. We attempt to open a live recording from the camera
-            (Some(serial), _) => {
-                // Enable the selected streams
-                Self::enable_streams(&config, &settings)?;
-
-                // Enable device with the given serial number and device configuration
-                config.enable_device(&serial)?;
-            }
-            // A serial was not specified, but a ROSBAG was, attempt to load that instead
-            (None, Some(rosbag)) => {
-                config.enable_device_from_file_repeat_option(&rosbag, settings.loop_rosbag)?;
-            }
-        }
+        let settings = self.settings.read().unwrap();
 
         // At least one stream must be enabled
         if !settings.streams.enabled_streams.any() {
@@ -116,14 +423,39 @@ impl RealsenseSrcInternals {
             ));
         }
 
+        // Either `serial` or `rosbag-location` must be specified
+        match (&settings.serial, &settings.rosbag_location) {
+            // Stream from a physical camera
+            (Some(serial), None) => {
+                // Enable the selected streams
+                Self::enable_streams(&config, &settings)?;
+
+                // Enable device with the given serial number and device configuration
+                config.enable_device(&serial)?;
+            }
+            // Stream from rosbag
+            (None, Some(rosbag)) => {
+                config.enable_device_from_file_repeat_option(&rosbag, settings.loop_rosbag)?;
+            }
+            // Make sure that exactly one stream source is selected
+            (None, None) => {
+                return Err(RealsenseError("Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!".to_string()));
+            }
+            (Some(serial), Some(rosbag_location)) => {
+                return Err(RealsenseError(format!("Both `serial`: {:?} and `rosbag-location`: {:?} are defined. Only one of these can be defined!", serial, rosbag_location)))
+            }
+        }
+
         Ok(config)
     }
 
-    /// Enable all the streams that has their associated property set to `true`. This function
-    /// returns an error if any streams cannot be enabled.
+    /// Enable all the streams that has their associated property set to `true`.
     /// # Arguments
     /// * `config` - The realsense configuration, which may be used to enable streams.
     /// * `settings` - The settings for the realsensesrc, which in this case specifies which streams to enable.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(StreamEnableError)` if any of the streams cannot be enabled.
     fn enable_streams(
         config: &rs2::config::Config,
         settings: &Settings,
@@ -178,386 +510,21 @@ impl RealsenseSrcInternals {
         }
         Ok(())
     }
-}
 
-impl ObjectSubclass for RealsenseSrc {
-    const NAME: &'static str = "realsensesrc";
-    type ParentType = gst_base::BaseSrc;
-    type Instance = gst::subclass::ElementInstanceStruct<Self>;
-    type Class = subclass::simple::ClassStruct<Self>;
-
-    glib_object_subclass!();
-
-    fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
-        klass.set_metadata(
-            "Realsense Source",
-            "Source/RGB-D/Realsense",
-            "Stream `video/rgbd` from a RealSense device",
-            "Niclas Moeslund Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
-        );
-
-        // Install properties for streaming from RealSense
-        klass.install_properties(PROPERTIES.as_ref());
-
-        // Create src pad template with `video/rgbd` caps
-        let src_caps = gst::Caps::new_simple(
-            "video/rgbd",
-            &[
-                // List of available streams meant for indicating their respective priority
-                (
-                    "streams",
-                    &"depth,infra1,infra2,color,depthmeta,infra1meta,infra2meta,colormeta,camerameta",
-                ),
-                (
-                    "framerate",
-                    &gst::FractionRange::new(
-                        gst::Fraction::new(MIN_FRAMERATE, 1),
-                        gst::Fraction::new(MAX_FRAMERATE, 1),
-                    ),
-                ),
-            ],
-        );
-        klass.add_pad_template(
-            gst::PadTemplate::new(
-                "src",
-                gst::PadDirection::Src,
-                gst::PadPresence::Always,
-                &src_caps,
-            )
-            .expect("Could not add src pad template in realsensesrc"),
-        );
-    }
-
-    fn new() -> Self {
-        Self {
-            internals: Mutex::new(RealsenseSrcInternals {
-                settings: Settings::default(),
-                state: State::Stopped,
-                camera_meta_serialised: Vec::default(),
-            }),
-            timestamp_internals: Arc::new(Mutex::new(TimestampInternals::default())),
-        }
-    }
-}
-
-impl ElementImpl for RealsenseSrc {}
-
-impl BaseSrcImpl for RealsenseSrc {
-    fn start(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
-        // Lock the internals
-        let internals = &mut self
-            .internals
-            .lock()
-            .expect("Failed to obtain internals lock.");
-
-        // Specify realsense log severity level
-        rs2::log::log_to_console(rs2::rs2_log_severity::RS2_LOG_SEVERITY_ERROR).map_err(|e| {
-            gst_error_msg!(
-                gst::ResourceError::OpenRead,
-                [&format!("Cannot log librealsense to console: {}", e)]
-            )
-        })?;
-
-        // Make sure that the set properties are viable
-        let config = internals.configure().map_err(|e| {
-            let err_msg = format!("Failed to configure librealsense2 pipeline due to: {:?}", e);
-            gst_error!(CAT, obj: element, "{}", &err_msg);
-            gst_error_msg!(gst::ResourceError::Settings, (&err_msg))
-        })?;
-
-        let pipeline = self
-            .prepare_and_start_librealsense_pipeline(element, &config, internals)
-            .map_err(|e| {
-                let err_msg = match e.0.as_str() {
-                    "No device connected" => ConfigError::DeviceNotFound(
-                        internals.settings.serial.as_ref().unwrap().clone(),
-                    ),
-                    "Couldn't resolve requests" => {
-                        ConfigError::InvalidRequest(internals.settings.streams.clone())
-                    }
-                    _ => ConfigError::Other(e.0),
-                };
-                gst_error!(CAT, obj: element, "{}", &err_msg);
-                gst_error_msg!(gst::ResourceError::Settings, ("{}", err_msg))
-            })?;
-        internals.state = State::Started { pipeline };
-
-        gst_info!(CAT, obj: element, "Streaming started");
-        Ok(())
-    }
-
-    fn stop(&self, element: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
-        let state = &mut self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .state;
-
-        match state {
-            State::Started { ref pipeline } => {
-                pipeline.stop().map_err(|e| {
-                    gst_error_msg!(
-                        gst::ResourceError::Settings,
-                        ["RealSense pipeline could not be stopped: {:?}", e]
-                    )
-                })?;
-                *state = State::Stopped;
-            }
-            State::Stopped => {
-                unreachable!("Element is not yet started");
-            }
-        }
-
-        self.parent_stop(element)
-    }
-
-    fn is_seekable(&self, _element: &gst_base::BaseSrc) -> bool {
-        false
-    }
-
-    fn create(
-        &self,
-        element: &gst_base::BaseSrc,
-        _offset: u64,
-        _buffer: Option<&mut gst::BufferRef>,
-        _length: u32,
-    ) -> Result<CreateSuccess, gst::FlowError> {
-        let internals = &mut *self.internals.lock().expect("Failed to lock internals");
-        let settings = &internals.settings;
-        let streams = &settings.streams;
-
-        // Get the RealSense pipeline
-        let pipeline = match internals.state {
-            State::Started { ref pipeline } => pipeline,
-            State::Stopped => {
-                unreachable!("Element is not yet started");
-            }
-        };
-
-        let frames = pipeline
-            .wait_for_frames(internals.settings.wait_for_frames_timeout)
-            .map_err(|_| gst::FlowError::Eos)?;
-
-        // Create the output buffer
-        let mut output_buffer = gst::buffer::Buffer::new();
-
-        // Attach `depth` frame if enabled
-        if streams.enabled_streams.depth {
-            self.attach_frame_to_buffer(
-                element,
-                settings,
-                &mut output_buffer,
-                &frames,
-                "depth",
-                -1,
-                rs2::rs2_stream::RS2_STREAM_DEPTH,
-                &[],
-            )?;
-        }
-
-        // Attach `infra1` frame if enabled
-        if streams.enabled_streams.infra1 {
-            self.attach_frame_to_buffer(
-                element,
-                settings,
-                &mut output_buffer,
-                &frames,
-                "infra1",
-                1,
-                rs2::rs2_stream::RS2_STREAM_INFRARED,
-                &[streams.enabled_streams.depth],
-            )?;
-        }
-
-        // Attach `infra2` frame if enabled
-        if streams.enabled_streams.infra2 {
-            self.attach_frame_to_buffer(
-                element,
-                settings,
-                &mut output_buffer,
-                &frames,
-                "infra2",
-                2,
-                rs2::rs2_stream::RS2_STREAM_INFRARED,
-                &[
-                    streams.enabled_streams.depth,
-                    streams.enabled_streams.infra1,
-                ],
-            )?;
-        }
-
-        // Attach `color` frame if enabled
-        if streams.enabled_streams.color {
-            self.attach_frame_to_buffer(
-                element,
-                settings,
-                &mut output_buffer,
-                &frames,
-                "color",
-                -1,
-                rs2::rs2_stream::RS2_STREAM_COLOR,
-                &[
-                    streams.enabled_streams.depth,
-                    streams.enabled_streams.infra1,
-                    streams.enabled_streams.infra2,
-                ],
-            )?;
-        }
-
-        // Attach Cap'n Proto serialised `CameraMeta` if enabled
-        if settings.attach_camera_meta {
-            // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
-            let camera_meta = internals.camera_meta_serialised.clone();
-            self.attach_camera_meta(element, &mut output_buffer, camera_meta)?;
-        }
-
-        Ok(CreateSuccess::NewBuffer(output_buffer))
-    }
-
-    fn fixate(&self, element: &gst_base::BaseSrc, mut caps: gst::Caps) -> gst::Caps {
-        let settings = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .settings;
-
-        caps.truncate();
-        {
-            let caps = caps.make_mut();
-
-            let s = caps
-                .get_mut_structure(0)
-                .expect("Failed to read the realsensesrc CAPS");
-
-            // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
-            // The first stream in this string is contained in the main buffer
-            let mut selected_streams = String::new();
-
-            if settings.streams.enabled_streams.depth {
-                // Add `depth` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"depth,");
-                s.set(
-                    "depth_format",
-                    &gst_video::VideoFormat::Gray16Le.to_string(),
-                );
-                s.set("depth_width", &settings.streams.depth_resolution.width);
-                s.set("depth_height", &settings.streams.depth_resolution.height);
-                if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"depthmeta,");
-                }
-            }
-            if settings.streams.enabled_streams.infra1 {
-                // Add `infra1` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"infra1,");
-                s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_string());
-                s.set("infra1_width", &settings.streams.depth_resolution.width);
-                s.set("infra1_height", &settings.streams.depth_resolution.height);
-                if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"infra1meta,");
-                }
-            }
-            if settings.streams.enabled_streams.infra2 {
-                // Add `infra2` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"infra2,");
-                s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_string());
-                s.set("infra2_width", &settings.streams.depth_resolution.width);
-                s.set("infra2_height", &settings.streams.depth_resolution.height);
-                if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"infra2meta,");
-                }
-            }
-            if settings.streams.enabled_streams.color {
-                // Add `color` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"color,");
-                s.set("color_format", &gst_video::VideoFormat::Rgb.to_string());
-                s.set("color_width", &settings.streams.color_resolution.width);
-                s.set("color_height", &settings.streams.color_resolution.height);
-                if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"colormeta,");
-                }
-            }
-
-            // Add `camerameta` into `streams`, if enabled
-            if settings.attach_camera_meta {
-                selected_streams.push_str("camerameta,");
-            }
-
-            // Pop the last ',' contained in streams (not really necessary, but nice)
-            selected_streams.pop();
-
-            // Finally add the streams to the caps
-            s.set("streams", &selected_streams.as_str());
-
-            // Fixate the framerate
-            s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
-            // Send bus message to notify about a potential change in latency.
-            let _ = element.post_message(gst::message::Latency::builder().src(element).build());
-            // Update buffer duration for `RgbdTimestamps` trait
-            self.set_buffer_duration(settings.streams.framerate as f32);
-        }
-        self.parent_fixate(element, caps)
-    }
-
-    // Handle queries such as the Latency query
-    fn query(&self, element: &gst_base::BaseSrc, query: &mut gst::QueryRef) -> bool {
-        use gst::QueryView;
-        let settings = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .settings;
-
-        match query.view_mut() {
-            QueryView::Latency(ref mut q) => {
-                let framerate: u64 = if let Ok(f) = settings.streams.framerate.try_into() {
-                    f
-                } else {
-                    gst_error!(
-                        CAT,
-                        obj: element,
-                        "Could not convert framerate: {} into u64",
-                        settings.streams.framerate
-                    );
-                    return false;
-                };
-
-                // Setting latency to minimum of 1 frame - 1/framerate
-                let latency = if let Some(l) = gst::SECOND.mul_div_floor(1, framerate) {
-                    l
-                } else {
-                    // Return early if we are (most likely) dividing by zero.
-                    gst_error!(
-                        CAT,
-                        obj: element,
-                        "Could not compute latency, tried to divide 1/{}",
-                        framerate
-                    );
-                    return false;
-                };
-                gst_debug!(CAT, obj: element, "Returning latency {}", latency);
-                // Return latency
-                q.set(element.is_live(), latency, gst::CLOCK_TIME_NONE);
-                true
-            }
-            _ => BaseSrcImplExt::parent_query(self, element, query),
-        }
-    }
-}
-
-impl RealsenseSrc {
     /// Prepare a librealsense pipeline, which can read frames from a RealSense camera, using the
-    /// given `config` and `settings`. If the preparation succeeds, the pipeline is started. The
-    /// function returns a `RealsenseError` if any of those operations fails.
+    /// given `config` and `settings`. If the preparation succeeds, the pipeline is started.
     /// # Arguments
+    /// * `base_src` - Representation of `realsensesrc` element.
     /// * `config` - The librealsense configuration to use for the camera.
-    /// * `internals` - The internals of the realsensesrc.
-    fn prepare_and_start_librealsense_pipeline(
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(RealsenseError)` if resolving `config` fails.
+    fn init_realsense_pipeline(
         &self,
-        element: &gst_base::BaseSrc,
-        config: &rs2::config::Config,
-        internals: &mut RealsenseSrcInternals,
-    ) -> Result<rs2::pipeline::Pipeline, RealsenseError> {
-        let settings = &mut internals.settings;
+        base_src: &gst_base::BaseSrc,
+        config: rs2::config::Config,
+    ) -> Result<(), RealsenseError> {
+        let mut settings = self.settings.write().unwrap();
 
         // Get context and a list of connected devices
         let context = rs2::context::Context::new()?;
@@ -572,7 +539,20 @@ impl RealsenseSrc {
         let pipeline = rs2::pipeline::Pipeline::new(&context)?;
 
         // Make sure that the config can be resolved
-        config.resolve(&pipeline)?;
+        // Note that these variants are obtained directly from librealsense as strings,
+        // here we just expand the error messages to make the user informed in a better way.
+        config.resolve(&pipeline).map_err(|e| {
+            let err = e.get_message();
+            match err.as_str() {
+                "No device connected" => {
+                    ConfigError::DeviceNotFound(settings.serial.as_ref().unwrap().clone())
+                }
+                "Couldn't resolve requests" => {
+                    ConfigError::InvalidRequest(settings.streams.clone())
+                }
+                _ => ConfigError::Other(err),
+            }
+        })?;
 
         // Start the RealSense pipeline
         let pipeline_profile = pipeline.start_with_config(&config)?;
@@ -580,7 +560,7 @@ impl RealsenseSrc {
         // If playing from a rosbag recording, check whether the correct properties were selected
         // and update them
         if settings.rosbag_location.is_some() {
-            self.configure_rosbag_settings(&mut *settings, &pipeline_profile)?;
+            self.configure_rosbag_settings(&mut settings, &pipeline_profile)?;
         }
 
         // Extract and print camera meta
@@ -588,10 +568,15 @@ impl RealsenseSrc {
             Self::get_camera_meta(&settings.streams.enabled_streams, &pipeline_profile)?;
         gst_info!(
             CAT,
-            obj: element,
+            obj: base_src,
             "RealSense stream source has the following calibration:\n{:?}",
             camera_meta
         );
+
+        let mut internals = self.internals.lock().unwrap();
+
+        // Update state and get access to pipeline
+        internals.state = State::Started { pipeline };
 
         // Setup camera meta for transport, if enabled
         if settings.attach_camera_meta {
@@ -601,7 +586,7 @@ impl RealsenseSrc {
                 .map_err(|err| RealsenseError(format!("Cannot serialise camera meta: {}", err)))?;
         }
 
-        Ok(pipeline)
+        Ok(())
     }
 
     /// Configure the device with the given `serial` with the JSON file specified on the given
@@ -610,6 +595,12 @@ impl RealsenseSrc {
     /// * `devices` - A list of all available devices.
     /// * `serial` - The serial number of the device to configure.
     /// * `json_location` - The absolute path to the file containing the JSON configuration.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(RealsenseError)` if
+    ///     * Invalid `serial` is passed
+    ///     * Json file cannot be read
+    ///     * Json config is invalid
     fn load_json(
         devices: &[rs2::device::Device],
         serial: &str,
@@ -643,11 +634,36 @@ impl RealsenseSrc {
         Ok(())
     }
 
+    /// Get a new set of synchronised frames from RealSense pipeline.
+    /// # Returns
+    /// * `Ok(Vec<rs2::frame::Frame>)` on success.
+    /// * `Err(gst::FlowError::Eos)` if no new frames are available.
+    /// # Panics
+    /// * If RealSense pipeline has not yet started
+    fn get_frameset(&self) -> Result<Vec<rs2::frame::Frame>, gst::FlowError> {
+        let internals = self.internals.lock().unwrap();
+
+        // Get RealSense pipeline
+        let pipeline = match internals.state {
+            State::Started { ref pipeline } => pipeline,
+            State::Stopped => {
+                unreachable!("RealSense pipeline is not yet initialised");
+            }
+        };
+
+        // Wait for frames
+        Ok(pipeline
+            .wait_for_frames(self.settings.read().unwrap().wait_for_frames_timeout)
+            .map_err(|_| gst::FlowError::Eos)?)
+    }
+
     /// Attempt to read the metadata from the given frame and serialize it using CapnProto. If this
     /// function returns `None`, it prints a warning to console that explains the issue.
     /// # Arguments
     /// * `frame` - The frame to read and serialize metadata for.
-    /// * `element` - The element that represents the realsensesrc.
+    /// # Returns
+    /// * `Ok(Vec<u8>)` on success.
+    /// * `Err(gst::FlowError::Eos)` if metadata cannot be acquired.
     fn get_frame_meta(&self, frame: &rs2::frame::Frame) -> Result<Vec<u8>, RealsenseError> {
         let frame_meta = frame.get_metadata()?;
         capnp_serialize(frame_meta).map_err(|e| {
@@ -664,9 +680,12 @@ impl RealsenseSrc {
     /// * `buffer` - The gst::Buffer to which the metadata should be added.
     /// * `frame_meta` - A byte vector containing the serialized metadata.
     /// * `tag` - The tag of the stream.
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(RealsenseError)` if `frame_meta` cannot be attached to the `buffer`.
     fn add_per_frame_metadata(
         &self,
-        element: &gst_base::BaseSrc,
+        push_src: &gst_base::PushSrc,
         buffer: &mut gst::BufferRef,
         frame_meta: Vec<u8>,
         tag: &str,
@@ -675,7 +694,12 @@ impl RealsenseSrc {
         let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
 
         // Set timestamps using `RgbdTimestamps` trait
-        self.set_rgbd_timestamp(element, buffer, false, gst::CLOCK_TIME_NONE);
+        self.set_rgbd_timestamp(
+            push_src.upcast_ref::<gst_base::BaseSrc>(),
+            buffer,
+            false,
+            gst::CLOCK_TIME_NONE,
+        );
 
         // Attach the meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(buffer, &mut frame_meta_buffer, &format!("{}meta", tag))?;
@@ -684,10 +708,10 @@ impl RealsenseSrc {
     }
 
     /// Extract a frame from the RealSense camera, outputting it in `output_buffer` on the given
-    /// `base_src`. This function outputs the frame as main buffer if `previous_streams` is empty or
+    /// `push_src`. This function outputs the frame as main buffer if `previous_streams` is empty or
     /// all `false` and as a meta buffer if `previous_streams` contains any `true`s.
     /// # Arguments
-    /// * `base_src` - The element that represents the `realsensesrc`.
+    /// * `push_src` - The element that represents the `realsensesrc`.
     /// * `settings` - The settings for the `realsensesrc`.
     /// * `output_buffer` - The buffer which the frames should be extracted into.
     /// * `frames` - A collection of frames that was extracted from the RealSense camera (or ROSBAG)
@@ -700,7 +724,7 @@ impl RealsenseSrc {
     #[allow(clippy::too_many_arguments)]
     fn attach_frame_to_buffer(
         &self,
-        base_src: &gst_base::BaseSrc,
+        push_src: &gst_base::PushSrc,
         settings: &Settings,
         output_buffer: &mut gst::Buffer,
         frames: &[rs2::frame::Frame],
@@ -720,13 +744,8 @@ impl RealsenseSrc {
             .map_err(|e| RealsenseError(e.get_message()))?;
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_data);
 
-        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
-            gst::ResourceError::Failed,
-            [
-                "Cannot get mutable reference to the buffer for {} stream",
-                tag
-            ]
-        ))?;
+        // Newly allocated buffer is mutable, no need for error handling
+        let buffer_mut_ref = buffer.get_mut().unwrap();
 
         // Determine whether any of the previous streams is enabled
         let is_buffer_main = !previous_streams.iter().any(|stream| *stream);
@@ -737,7 +756,12 @@ impl RealsenseSrc {
         );
 
         // Set timestamps using `RgbdTimestamps` trait
-        self.set_rgbd_timestamp(base_src, buffer_mut_ref, is_buffer_main, camera_timestamp);
+        self.set_rgbd_timestamp(
+            push_src.upcast_ref::<gst_base::BaseSrc>(),
+            buffer_mut_ref,
+            is_buffer_main,
+            camera_timestamp,
+        );
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_buffer_main {
@@ -763,7 +787,7 @@ impl RealsenseSrc {
             // Attempt to read the RealSense per-frame metadata, otherwise set frame_meta to None
             let md = self.get_frame_meta(frame)?;
             self.add_per_frame_metadata(
-                base_src,
+                push_src,
                 output_buffer.get_mut().ok_or(gst_error_msg!(
                     gst::ResourceError::Failed,
                     [
@@ -784,11 +808,9 @@ impl RealsenseSrc {
     /// error. If different stream resolutions or a different framerate were selected, this
     /// function updates them appropriately based on the information contained within the rosbag
     /// recording.
-    ///
     /// # Arguments
-    /// * `stream_settings` - The settings selected for the streams.
+    /// * `settings` - The configured properties of the element
     /// * `pipeline_profile` - The profile of the current realsense pipeline.
-    ///
     /// # Returns
     /// * `Ok()` if all enabled streams are available. Settings for these streams might get updated.
     /// * `Err(RealsenseError)` if an enabled stream is not available in rosbag recording.
@@ -799,7 +821,7 @@ impl RealsenseSrc {
     ) -> Result<(), RealsenseError> {
         let stream_settings = &mut settings.streams;
         // Get information about the streams in the rosbag recording.
-        let streams_info = rs2::high_level_utils::get_info_all_streams(pipeline_profile)?;
+        let stream_infos = rs2::high_level_utils::get_info_all_streams(pipeline_profile)?;
 
         // Create a struct of enabled streams that is later used to check whether some of the
         // enabled streams if not contained in the rosbag recording.
@@ -811,7 +833,7 @@ impl RealsenseSrc {
         };
 
         // Iterate over all streams contained in the rosbag recording
-        for stream_info in streams_info.iter() {
+        for stream_info in &stream_infos {
             self.update_settings_from_rosbag(
                 stream_info,
                 stream_settings,
@@ -836,11 +858,12 @@ impl RealsenseSrc {
 
     /// Update stream resolutions or framerate if there is a conflict between settings and the
     /// rosbag recording.
-    ///
     /// # Arguments
     /// * `stream_info` - The information of a stream obtained from rosbag recording.
     /// * `stream_settings` - The settings selected for the streams.
     /// * `rosbag_enabled_streams` - A list of what streams are enabled in the rosbag.
+    /// # Panics
+    /// * If `stream_info` with invalid index is passed in.
     fn update_settings_from_rosbag(
         &self,
         stream_info: &StreamInfo,
@@ -920,10 +943,10 @@ impl RealsenseSrc {
     ///
     /// # Arguments
     /// * `stream_id` - The identifier of the stream.
+    /// * `stream_info` - The informaton about the stream from rosbag recording.
     /// * `stream_settings_enabled` - Determines whether the stream enabled.
     /// * `stream_settings_resolution` - The selected resolution of the stream.
     /// * `stream_settings_framerate` - The selected framerate of the stream.
-    /// * `stream_info` - The informaton about the stream from rosbag recording.
     fn update_stream(
         &self,
         stream_id: &str,
@@ -1036,7 +1059,7 @@ impl RealsenseSrc {
     /// Sets up the serialised CameraMeta from Realsense PipelineProfile.
     ///
     /// # Arguments
-    /// * `internals` - The internals of the element that contain settings and timestamp internals.
+    /// * `desired_streams` - List of desired streams.
     /// * `pipeline_profile` - RealSense PipelineProfile.
     ///
     /// # Returns
@@ -1236,8 +1259,7 @@ impl RealsenseSrc {
     /// Attach Cap'n Proto serialised CameraMeta to `output_buffer`.
     ///
     /// # Arguments
-    /// * `timestamp` - The timestamp of the buffer.
-    /// * `frame_duration` - The duration of the buffer.
+    /// * `push_src` - Representation of `realsensesrc` element.
     /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
     /// * `camera_meta` - Serialised CameraMeta to attach to the `output_buffer`.
     ///
@@ -1246,7 +1268,7 @@ impl RealsenseSrc {
     /// * `Err(RealsenseError)` on failure.
     fn attach_camera_meta(
         &self,
-        element: &gst_base::BaseSrc,
+        push_src: &gst_base::PushSrc,
         output_buffer: &mut gst::Buffer,
         camera_meta: Vec<u8>,
     ) -> Result<(), RealsenseError> {
@@ -1264,7 +1286,12 @@ impl RealsenseSrc {
         ))?;
 
         // Set timestamps using `RgbdTimestamps` trait
-        self.set_rgbd_timestamp(element, buffer_mut_ref, false, gst::CLOCK_TIME_NONE);
+        self.set_rgbd_timestamp(
+            push_src.upcast_ref::<gst_base::BaseSrc>(),
+            buffer_mut_ref,
+            false,
+            gst::CLOCK_TIME_NONE,
+        );
 
         // Attach the camera_meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
@@ -1342,6 +1369,35 @@ impl RealsenseSrc {
             _ => false,
         })
     }
+
+    /// Stop RealSense pipeline and reset internals (except for settings).
+    /// # Returns
+    /// * Ok() on success.
+    /// * Err(gst::ErrorMessage) if RealSense pipeline could not be stopped.
+    /// # Panics
+    /// * If RealSense pipeline is already stopped, which should never occur.
+    fn stop_rs_and_reset(&self) -> Result<(), gst::ErrorMessage> {
+        let mut internals = self.internals.lock().unwrap();
+
+        match internals.state {
+            State::Started { ref pipeline } => {
+                pipeline.stop().map_err(|e| {
+                    gst_error_msg!(
+                        gst::ResourceError::Settings,
+                        ["RealSense pipeline could not be stopped: {:?}", e]
+                    )
+                })?;
+            }
+            State::Stopped => {
+                unreachable!("Stop is requested even though the element has not yet started");
+            }
+        }
+
+        *internals = RealsenseSrcInternals::default();
+        *self.timestamp_internals.lock().unwrap() = TimestampInternals::default();
+
+        Ok(())
+    }
 }
 
 impl RgbdTimestamps for RealsenseSrc {
@@ -1349,6 +1405,8 @@ impl RgbdTimestamps for RealsenseSrc {
         self.timestamp_internals.clone()
     }
 }
+
+impl ElementImpl for RealsenseSrc {}
 
 impl ObjectImpl for RealsenseSrc {
     glib_object_impl!();
@@ -1367,11 +1425,7 @@ impl ObjectImpl for RealsenseSrc {
         let element = obj
             .downcast_ref::<gst_base::BaseSrc>()
             .expect("Could not cast realsensesrc to BaseSrc");
-        let settings = &mut self
-            .internals
-            .lock()
-            .expect("Could not obtain lock internals mutex")
-            .settings;
+        let mut settings = self.settings.write().unwrap();
 
         let property = &PROPERTIES[id];
         match *property {
@@ -1697,11 +1751,7 @@ impl ObjectImpl for RealsenseSrc {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        let settings = &self
-            .internals
-            .lock()
-            .expect("Could not lock internals")
-            .settings;
+        let settings = &self.settings.read().unwrap();
 
         let prop = &PROPERTIES[id];
         match *prop {

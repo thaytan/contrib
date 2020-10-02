@@ -13,7 +13,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-/// Helper structs that contains information about what streams are enabled
+/// Helper struct that contains information about what streams are enabled
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct EnabledStreams {
     pub(crate) depth: bool,

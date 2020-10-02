@@ -35,7 +35,7 @@ d.src_depth ! queue ! videoconvert ! glimagesink
 
 == Description
 
-The `realsensesrc` element utilises https://gstreamer.freedesktop.org/documentation/base/gstbasesrc.html[GstBaseSrc] as a base class.
+The `realsensesrc` element utilises https://gstreamer.freedesktop.org/documentation/base/gstpushsrc.html[GstPushSrc] as a base class.
 
 
 === Pads and CAPS

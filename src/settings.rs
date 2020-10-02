@@ -168,15 +168,21 @@ impl StreamId {
     /// * `&str` containing the ID of the stream.
     pub(crate) fn from_rs2_stream(rs2_stream: rs2::rs2_stream, index: i32) -> Self {
         match rs2_stream {
-            rs2::rs2_stream::RS2_STREAM_DEPTH => StreamId::Depth,
-            rs2::rs2_stream::RS2_STREAM_INFRARED => match index {
-                1 => StreamId::Infra1,
-                2 => StreamId::Infra2,
-                _ => unreachable!("Each RealSense device has only two infrared streams"),
-            },
-            rs2::rs2_stream::RS2_STREAM_COLOR => StreamId::Color,
-            _ => unimplemented!("Other RealSense streams are not supported"),
-        }
+    rs2::rs2_stream::RS2_STREAM_DEPTH => match index {
+        i if i<1 => StreamId::Depth,
+        _ => unreachable!("Each RealSense device has only one depth stream, the selected stream index of {} is invalid", index)
+    }
+    rs2::rs2_stream::RS2_STREAM_INFRARED => match index {
+        1 => StreamId::Infra1,
+        2 => StreamId::Infra2,
+        _ => unreachable!("Each RealSense device has only two infrared streams"),
+    },
+    rs2::rs2_stream::RS2_STREAM_COLOR =>  match index {
+        i if i<1 => StreamId::Color,
+        _ => unreachable!("Each RealSense device has only one color stream, the selected stream index of {} is invalid", index)
+    }
+    _ => unimplemented!("Other RealSense streams are not supported"),
+}
     }
 
     pub(crate) fn to_rs2_stream(self) -> (rs2::rs2_stream, i32) {
