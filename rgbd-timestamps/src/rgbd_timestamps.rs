@@ -165,6 +165,10 @@ pub trait RgbdTimestamps: BaseSrcImpl {
                     camera_timestamp,
                 )
             }
+            FrameCounting => {
+                // Variant `TimestampMode::FrameCounting`
+                self.determine_timestamp_frame_counting(base_src, is_buffer_main)
+            }
         }
     }
 
@@ -364,6 +368,43 @@ pub trait RgbdTimestamps: BaseSrcImpl {
         } else {
             // Add otherwise
             camera_timestamp + timestamp_internals.stream_start_offset
+        }
+    }
+
+    /// Determine the `TimestampMode::FrameCounting` timestamp to use for a buffer.
+    ///
+    /// # Arguments
+    /// * `base_src` - Element utilising the trait.
+    /// * `is_buffer_main` - A flag that determines whether the buffer is main or not. Set to *false* for auxiliary streams.
+    ///
+    /// # Returns
+    /// * `gst::ClockTime` containing the timestamp.
+    fn determine_timestamp_frame_counting(
+        &self,
+        base_src: &gst_base::BaseSrc,
+        is_buffer_main: bool,
+    ) -> gst::ClockTime {
+        // Get mutable reference to timestamp internals
+        let timestamp_internals = self.get_timestamp_internals();
+        let timestamp_internals = &mut *timestamp_internals.lock().unwrap();
+
+        // Compute the appropriate timestamp and increment the sequence number (only on main buffers)
+        if is_buffer_main {
+            timestamp_internals.frameset_common_timestamp =
+                timestamp_internals.sequence_number * timestamp_internals.buffer_duration;
+            timestamp_internals.sequence_number += 1;
+        }
+
+        // Return the timestamp
+        if base_src.is_live() {
+            // For live mode, we must offset all timestamps based on the running time of the first frame
+            if timestamp_internals.stream_start_offset == gst::CLOCK_TIME_NONE {
+                timestamp_internals.stream_start_offset = base_src.get_current_running_time();
+            }
+            timestamp_internals.stream_start_offset + timestamp_internals.frameset_common_timestamp
+        } else {
+            // For non-live mode, no offset is needed as start from 0
+            timestamp_internals.frameset_common_timestamp
         }
     }
 }

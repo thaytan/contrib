@@ -26,10 +26,14 @@ pub struct TimestampInternals {
     pub frameset_common_timestamp: gst::ClockTime,
     /// Contains duration of each buffer.
     pub buffer_duration: gst::ClockTime,
-    /// A flag that determines whether camera clock is ahead of GStreamer clock. If true, the extracted camera
-    /// timestamps have a value that is larger than the running time of the GStreamer pipeline. This flag is
-    /// used to determine whether to add or subtract the stream start offset from camera timestamps.
+    /// A flag that determines whether camera clock is ahead of GStreamer clock at the beginning of streaming.
+    /// If true, the extracted camera timestamps have a value that is larger than the running time of the
+    /// GStreamer pipeline. This flag is used to determine whether to add or subtract the stream start offset
+    /// from camera timestamps.
     pub is_camera_ahead_of_gstreamer: bool,
+    /// The sequence number of the current frameset being processed. This is used for FrameCounting timestamp
+    /// mode.
+    pub sequence_number: u64,
 }
 
 /// Implentation of Default trait for TimestampInternals.
@@ -41,6 +45,7 @@ impl Default for TimestampInternals {
             stream_start_offset: gst::CLOCK_TIME_NONE,
             timestamp_mode: TimestampMode::default(),
             is_camera_ahead_of_gstreamer: bool::default(),
+            sequence_number: 0,
         }
     }
 }

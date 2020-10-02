@@ -18,7 +18,7 @@ use glib::*;
 /// Timestamp mode, which is used to determine the timestamps of outgoing buffers.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, GEnum)]
 #[repr(u32)]
-#[genum(type_name = "GstTimestampMode")]
+#[genum(type_name = "GstRgbdTimestampMode")]
 pub enum TimestampMode {
     /// Don't do any timestamping.
     #[genum(name = "Ignore: Do not apply timestamp to any buffer", nick = "ignore")]
@@ -47,6 +47,12 @@ pub enum TimestampMode {
         nick = "camera_individual"
     )]
     CameraIndividual = 4,
+    /// Timestamp all buffers based on counting frames and the negotiated framerate.
+    #[genum(
+        name = "FrameCounting: Generate timestamps by counting frames and the negotiated framerate. Apply timestamps to buffers of all streams. A common timestamp is applied to all buffers that belong to a single frameset.",
+        nick = "frame_counting"
+    )]
+    FrameCounting = 5,
 }
 
 /// Implentation of Default trait for TimestampMode, which returns `TimestampMode::CameraCommon`.
