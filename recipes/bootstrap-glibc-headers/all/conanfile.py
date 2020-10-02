@@ -23,11 +23,5 @@ class BootstrapGlibcHeadersConan(ConanFile):
     def package_info(self):
         cflags = f" -idirafter {os.path.join(self.package_folder, 'include')} "
 
-        if self.env_info.CFLAGS:
-            self.env_info.CFLAGS += cflags
-        else:
-            self.env_info.CFLAGS = cflags
-        if self.env_info.CXXFLAGS:
-            self.env_info.CXXFLAGS += cflags
-        else:
-            self.env_info.CXXFLAGS = cflags
+        self.env_info.CFLAGS += cflags
+        self.env_info.CXXFLAGS += cflags
