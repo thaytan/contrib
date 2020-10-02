@@ -23,8 +23,8 @@ class GccConan(ConanFile):
 
     def build(self):
         env = {
-            "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", ""),
-            "CXXFLAGS": os.environ["CXXFLAGS"].replace("-flto=thin", ""),
+            "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", "").replace("-Xclang -internal-isystem -Xclang", "-isystem"),
+            "CXXFLAGS": os.environ["CXXFLAGS"].replace("-flto=thin", "").replace("-Xclang -internal-isystem -Xclang", "-isystem"),
         }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
