@@ -124,8 +124,7 @@ impl AggregatorImpl for RgbdMux {
         // Return EOS if all upstream pads are marked as EOS
         if sink_pad_names
             .iter()
-            .map(|pad_name| Self::get_aggregator_pad(aggregator, pad_name).is_eos())
-            .all(|is_eos| is_eos)
+            .all(|pad_name| Self::get_aggregator_pad(aggregator, pad_name).is_eos())
         {
             return Err(gst::FlowError::Eos);
         }
@@ -135,12 +134,14 @@ impl AggregatorImpl for RgbdMux {
             let settings = self.settings.read().unwrap();
             // Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers.
             if settings.drop_if_missing {
-                let ret = self.drop_buffers_if_one_missing(
-                    aggregator,
-                    &sink_pad_names,
-                    settings.send_gap_events,
-                );
-                if ret.is_err() {
+                if self
+                    .drop_buffers_if_one_missing(
+                        aggregator,
+                        &sink_pad_names,
+                        settings.send_gap_events,
+                    )
+                    .is_err()
+                {
                     return Ok(gst::FlowSuccess::Ok);
                 }
             }
@@ -420,40 +421,18 @@ impl RgbdMux {
 
         // Update the current timestamp (make sure the timestamp is valid)
         let mut clock_internals = self.clock_internals.write().unwrap();
-        let main_buffer_timestamp = main_buffer_mut.get_pts();
-        clock_internals.previous_timestamp = if main_buffer_timestamp != gst::CLOCK_TIME_NONE {
-            main_buffer_timestamp
-        } else {
-            gst::CLOCK_TIME_NONE
-        };
+        clock_internals.previous_timestamp = main_buffer_mut.get_pts();
 
         // Iterate over all other sink pads, excluding the first one (already processed)
         // For each pad, get a tagged buffer and attach it to the main buffer
         // If a sink pad has no buffer queued, create an empty GAP buffer and attach it to the main buffer as well
         for sink_pad_name in sink_pad_names.iter().skip(1) {
-            match Self::get_tagged_buffer(aggregator, sink_pad_name) {
-                Ok(mut buffer) => {
-                    {
-                        if clock_internals.previous_timestamp == gst::CLOCK_TIME_NONE {
-                            clock_internals.previous_timestamp =
-                                buffer.get_mut().unwrap().get_pts();
-                        }
-                    }
-                    BufferMeta::add(main_buffer_mut, &mut buffer);
-                }
-                Err(_) => {
-                    gst_warning!(
-                        CAT,
-                        obj: aggregator,
-                        "No buffer is queued on auxiliary `{}` pad. Attaching GAP buffer with corresponding tag to the main buffer.",
-                        sink_pad_name
-                    );
-                    BufferMeta::add(
-                        main_buffer_mut,
-                        &mut Self::new_tagged_gap_buffer(&sink_pad_names[0]),
-                    );
-                }
-            }
+            self.attach_aux_buffers(
+                aggregator,
+                &mut clock_internals,
+                sink_pad_name,
+                main_buffer_mut,
+            );
         }
 
         // Reset GAP event flag on successful aggregation
@@ -461,6 +440,44 @@ impl RgbdMux {
 
         gst_debug!(CAT, obj: aggregator, "A frameset was muxed.");
         main_buffer
+    }
+
+    /// Get a tagged buffer from pad `sink_pad_name` and attach it to `main_buffer`. If a sink pad has no buffer queued,
+    /// create an empty GAP buffer and attach it to the main buffer as well.
+    /// # Arguments
+    /// * `aggregator` - The aggregator to consider.
+    /// * `sink_pad_names` - The vector containing all sink pad names.
+    /// * `clock_internals` - Mutable reference to the clock internals of `rgbdmux`.
+    /// * `main_buffer` - Mutable reference to the main buffer to which we attach all auxiliary buffers.
+    fn attach_aux_buffers(
+        &self,
+        aggregator: &gst_base::Aggregator,
+        clock_internals: &mut ClockInternals,
+        sink_pad_name: &String,
+        main_buffer: &mut gst::BufferRef,
+    ) {
+        match Self::get_tagged_buffer(aggregator, sink_pad_name) {
+            Ok(mut buffer) => {
+                {
+                    if clock_internals.previous_timestamp == gst::CLOCK_TIME_NONE {
+                        clock_internals.previous_timestamp = buffer.get_mut().unwrap().get_pts();
+                    }
+                }
+                BufferMeta::add(main_buffer, &mut buffer);
+            }
+            Err(_) => {
+                gst_warning!(
+                    CAT,
+                    obj: aggregator,
+                    "No buffer is queued on auxiliary `{}` pad. Attaching GAP buffer with corresponding tag to the main buffer.",
+                    sink_pad_name
+                );
+                BufferMeta::add(
+                    main_buffer,
+                    &mut Self::new_tagged_gap_buffer(&sink_pad_name),
+                );
+            }
+        }
     }
 
     /// Get a pad with the given `pad_name` on the given `aggregator`.
@@ -497,12 +514,10 @@ impl RgbdMux {
             .ok_or_else(|| RgbdMuxError("No buffer queued on one of the pads".to_string()))?;
 
         // Get a mutable reference to the buffer
-        let buffer_mut = {
-            if let Some(buffer_mut) = buffer.get_mut() {
-                buffer_mut
-            } else {
-                buffer.make_mut()
-            }
+        let buffer_mut = if let Some(buffer_mut) = buffer.get_mut() {
+            buffer_mut
+        } else {
+            buffer.make_mut()
         };
 
         // Get the stream name by truncating the "sink_" prefix
@@ -520,13 +535,8 @@ impl RgbdMux {
     /// * `pad_name` - The name of the pad to read a buffer from.
     fn new_tagged_gap_buffer(pad_name: &str) -> gst::Buffer {
         let mut buffer = gst::Buffer::new();
-        let buffer_mut = {
-            if let Some(buffer_mut) = buffer.get_mut() {
-                buffer_mut
-            } else {
-                buffer.make_mut()
-            }
-        };
+        // Get mutable reference the newly created buffer, which is always writable
+        let buffer_mut = buffer.get_mut().unwrap();
         // Set the GAP flag
         buffer_mut.set_flags(gst::BufferFlags::GAP | gst::BufferFlags::DROPPABLE);
 
@@ -554,8 +564,7 @@ impl RgbdMux {
         // First check if any of the sink pads have any buffer queued
         if !sink_pad_names
             .iter()
-            .map(|sink_pad_name| Self::get_aggregator_pad(aggregator, sink_pad_name).has_buffer())
-            .any(|x| x)
+            .any(|sink_pad_name| Self::get_aggregator_pad(aggregator, sink_pad_name).has_buffer())
         {
             return Err(RgbdMuxError("No buffers are queued, skipping".to_string()));
         }
@@ -632,7 +641,6 @@ impl RgbdMux {
         send_gap_event: bool,
     ) -> Result<(), RgbdMuxError> {
         #![allow(clippy::assign_op_pattern)]
-        // Get timestamps of buffers queued on the sink pads
         let mut timestamps: Vec<(String, gst::ClockTime)> =
             self.get_timestamps(aggregator, sink_pad_names);
 
@@ -648,19 +656,25 @@ impl RgbdMux {
         }
 
         // Get the min and max timestamps of the queued buffers
-        timestamps.sort_by(|t1, t2| t1.1.partial_cmp(&t2.1).unwrap_or(std::cmp::Ordering::Equal));
-        let min_pts = timestamps.first().unwrap().1;
-        let max_pts = timestamps.last().unwrap().1;
+        timestamps
+            .sort_by(|(_, t1), (_, t2)| t1.partial_cmp(t2).unwrap_or(std::cmp::Ordering::Equal));
+        let (_, min_pts) = timestamps.first().unwrap();
+        let (_, max_pts) = timestamps.last().unwrap();
 
-        // If all timestamps are within +/- 0.5 frame duration, the streams are considered to be synchronised
-        if 2 * (max_pts - min_pts) < self.clock_internals.read().unwrap().frameset_duration {
+        // Check if all timestamps are synchronised
+        if self
+            .clock_internals
+            .read()
+            .unwrap()
+            .is_synchronised(min_pts, max_pts)
+        {
             return Ok(());
         }
 
         // If the streams are not synchronised, iterature over all buffers and
         // drop a single buffer for those that are late
         for (sink_pad_name, timestamp) in timestamps.iter() {
-            if *timestamp < max_pts {
+            if timestamp < max_pts {
                 // Get sink pad with the given name
                 let sink_pad = Self::get_aggregator_pad(aggregator, sink_pad_name);
                 // Drop the buffer
@@ -777,7 +791,7 @@ impl RgbdMux {
         let stream_name = &pad_name[5..];
         // Set the format for MJPG stream
         if pad_caps.is_subset(gst::Caps::new_simple("image/jpeg", &[]).as_ref()) {
-            let src_field_name = format!("{}_{}", stream_name, "format");
+            let src_field_name = format!("{}_format", stream_name);
             src_caps.set(&src_field_name, &"image/jpeg");
         }
 

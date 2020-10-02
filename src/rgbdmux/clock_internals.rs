@@ -43,3 +43,15 @@ impl Default for ClockInternals {
         }
     }
 }
+
+impl ClockInternals {
+    /// Check is `min_pts` and `max_pts` are synchronised within +/- 0.5 of the frame duration.
+    /// # Arguments
+    /// * `min_pts` - The ealiest (smallest) pts timestamp from a single frameset.
+    /// * `max_pts` - The latest (largest) pts timestamp from a single frameset.
+    #[inline]
+    pub fn is_synchronised(&self, min_pts: &gst::ClockTime, max_pts: &gst::ClockTime) -> bool {
+        // 2 represents 0.5 on the opposite side (for performance and because as {float} * gst::ClockTime is not implemented)
+        2 * (max_pts - min_pts) < self.frameset_duration
+    }
+}

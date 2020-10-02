@@ -118,13 +118,7 @@ impl ElementImpl for RgbdDemux {
         #[allow(clippy::single_match)]
         match transition {
             gst::StateChange::PausedToReady => {
-                // Reset internals (except for settings)
-                self.flow_combiner.lock().unwrap().reset();
-                *self.stream_identifier.lock().unwrap() = None;
-                // Reset stream start tracker, but keep the pads
-                for (_, src_pad) in self.src_pads.write().unwrap().iter_mut() {
-                    src_pad.pushed_stream_start = false;
-                }
+                self.reset();
             }
             _ => {}
         }
@@ -248,7 +242,7 @@ impl RgbdDemux {
                 &mut src_pads,
                 &mut flow_combiner,
                 stream_name,
-                new_pad_caps,
+                &new_pad_caps,
             );
         }
         Ok(())
@@ -324,6 +318,8 @@ impl RgbdDemux {
     /// * `element` - The element that represents `rgbddemux` in GStreamer.
     /// * `src_pads` - List of current source pads.
     /// * `allowed_streams` - List of allowed streams, e.g. based on upstream CAPS.
+    /// # Panics
+    /// * If one of the unneeded pads cannot be deactivated or removed from the element.
     fn remove_unneeded_pads(
         element: &gst::Element,
         src_pads: &mut SrcPads,
@@ -341,15 +337,8 @@ impl RgbdDemux {
                     stream_name, allowed_streams
                 );
 
-                // De-activate the pad
-                src_pad.pad.set_active(false).unwrap_or_else(|_| {
-                    panic!("Could not deactivate a src pad: {:?}", src_pad.pad)
-                });
-
-                // Remove the pad from the element
-                element
-                    .remove_pad(&src_pad.pad)
-                    .unwrap_or_else(|_| panic!("Could not remove a src pad: {:?}", src_pad.pad));
+                // Deactivate and remove the pad from the element
+                src_pad.deactivate_and_remove_from_element(element);
 
                 false
             } else {
@@ -365,13 +354,17 @@ impl RgbdDemux {
     /// * `src_pads` - A mutable reference to the collection of pads currently present on the `rgbddemux`.
     /// * `flow_combiner` - A mutable reference to the flow combiner that drives the `rgbddemux`.
     /// * `stream_name` - The name of the stream to create a src pad for.
+    /// * `new_pad_caps` - CAPS of the new pad's stream, which are used to send CAPS event downstream.
+    /// # Panics
+    /// * If the new pad cannot be added to `element`.
+    /// * If the new pad cannot be activated.
     fn create_new_src_pad(
         &self,
         element: &gst::Element,
         src_pads: &mut SrcPads,
         flow_combiner: &mut gst_base::UniqueFlowCombiner,
         stream_name: &str,
-        new_pad_caps: gst::Caps,
+        new_pad_caps: &gst::Caps,
     ) {
         gst_debug!(
             CAT,
@@ -410,9 +403,36 @@ impl RgbdDemux {
         // Create a DemuxPad from it
         let mut pad_handle = DemuxPad::new(pad);
 
+        // Prepare new pad for streaming, i.e. send events and activate it
+        self.prepare_new_pad(&mut pad_handle, stream_name, new_pad_caps);
+
+        // Add the new pad to the internals
+        flow_combiner.add_pad(&pad_handle.pad);
+        src_pads.insert(stream_name.to_string(), pad_handle);
+
+        gst_debug!(
+            CAT,
+            "New pad for {} stream successfuly created",
+            stream_name
+        );
+    }
+
+    /// Send stream-start and CAPS events downstream, after which the pad is activated.
+    /// # Arguments
+    /// * `pad_handle` - A mutable reference to the handle for the new pad.
+    /// * `stream_name` - The name of the stream to create a src pad for.
+    /// * `new_pad_caps` - CAPS of the new pad's stream, which are used to send CAPS event downstream.
+    /// # Panics
+    /// * If the new pad cannot be activated.
+    fn prepare_new_pad(
+        &self,
+        pad_handle: &mut DemuxPad,
+        stream_name: &str,
+        new_pad_caps: &gst::Caps,
+    ) {
         // Push stream-start event to indicate beginning of the stream
         if let Some(stream_identifier) = self.stream_identifier.lock().unwrap().as_ref() {
-            Self::push_stream_start(&mut pad_handle, stream_name, &stream_identifier);
+            Self::push_stream_start(pad_handle, stream_name, stream_identifier);
         }
 
         // Push CAPS event, so that downstream element know what data they're dealing with
@@ -426,16 +446,6 @@ impl RgbdDemux {
             .pad
             .set_active(true)
             .expect("rgbdmux: Could not activate new src pad");
-
-        // Finally, add the new pad to the internals
-        flow_combiner.add_pad(&pad_handle.pad);
-        src_pads.insert(stream_name.to_string(), pad_handle);
-
-        gst_debug!(
-            CAT,
-            "New pad for {} stream successfuly created",
-            stream_name
-        );
     }
 
     /// Called whenever a new buffer is passed to the sink pad. This function splits the buffer in
@@ -628,6 +638,17 @@ impl RgbdDemux {
                 )
             })
             .build()
+    }
+
+    /// Reset the internals of `rgbddemux`, so that they can be used again after re-negotiation.
+    fn reset(&self) {
+        // Reset internals (except for settings)
+        self.flow_combiner.lock().unwrap().reset();
+        *self.stream_identifier.lock().unwrap() = None;
+        // Reset stream start tracker, but keep the pads
+        for (_, src_pad) in self.src_pads.write().unwrap().iter_mut() {
+            src_pad.pushed_stream_start = false;
+        }
     }
 }
 

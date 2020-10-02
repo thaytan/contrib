@@ -23,6 +23,8 @@
 /// * `old_value` - The old value of the property.
 /// # Returns
 /// `value` converted to type `T`.
+/// # Panics
+/// * If `value` contains type that is different from `T`.
 pub fn get_property_and_debug<'a, T>(
     cat: gst::DebugCategory,
     value: &'a glib::Value,

@@ -14,6 +14,8 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use gst::prelude::*;
+
 /// A handle on the pad, which contains information related to the pad.
 pub struct DemuxPad {
     /// The actual pad.
@@ -33,5 +35,22 @@ impl DemuxPad {
             pad,
             pushed_stream_start: false,
         }
+    }
+
+    /// Deactive and remove `self` (pad) from `element`.
+    /// # Arguments
+    /// * `element` - The element that represents `rgbddemux` in GStreamer.
+    /// # Panics
+    /// * If one of the unneeded pads cannot be deactivated or removed from the element.
+    pub fn deactivate_and_remove_from_element(&self, element: &gst::Element) {
+        // De-activate the pad
+        self.pad
+            .set_active(false)
+            .unwrap_or_else(|_| panic!("Could not deactivate a src pad: {:?}", self.pad));
+
+        // Remove the pad from the element
+        element
+            .remove_pad(&self.pad)
+            .unwrap_or_else(|_| panic!("Could not remove a src pad: {:?}", self.pad));
     }
 }
