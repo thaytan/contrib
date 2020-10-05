@@ -15,9 +15,3 @@ class BootstrapMuslConan(ConanFile):
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(f"musl-{self.version}", ["--disable-shared"])
         autotools.install()
-
-    def package_info(self):
-        cflags = f" -idirafter {os.path.join(self.package_folder, 'include')} "
-
-        self.env_info.CFLAGS += cflags
-        self.env_info.CXXFLAGS += cflags
