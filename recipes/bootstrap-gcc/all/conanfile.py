@@ -46,6 +46,6 @@ class BootstrapGccConan(ConanFile):
         args.append(f"--build={target}")
         args.append(f"--host={target}")
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args, vars=env)
+        autotools.configure(f"{self.name}-{self.version}", args)
         autotools.make()
         autotools.install()
