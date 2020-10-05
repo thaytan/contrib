@@ -3,9 +3,9 @@ import os
 from conans import *
 
 
-class GccConan(ConanFile):
+class BootstrapGccConan(ConanFile):
     description = "The GNU Compiler Collection - C and C++ frontends"
-    license = "custom", "FDL", "GPL", "LGPL"
+    license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
 
     def source(self):
