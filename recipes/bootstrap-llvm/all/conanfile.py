@@ -38,8 +38,10 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc_build == "musl":
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
             abi = "musl"
         else:
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
 
@@ -178,7 +180,7 @@ class BootstrapLlvmConan(ConanFile):
         env = {
             "LD_LIBRARY_PATH": libcxx_lib,
             "CFLAGS": cflags,  # Needed for tests
-            "CXXFLAGS": f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc}",
+            "CXXFLAGS": f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}",
             "LDFLAGS": f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
 
@@ -221,10 +223,14 @@ class BootstrapLlvmConan(ConanFile):
         static_flags = ""
         if self.settings.libc_build == "musl":
             static_flags = "-static"
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
+        else:
+            static_flags = ""
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-        cflags = f" -nostdinc -idirafter {clang_inc} {static_flags} -flto=thin -nostdinc "
+        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -flto=thin -nostdinc "
         cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
-        self.env_info.CFLAGS += cflags
-        self.env_info.CXXFLAGS += cxxflags
+        self.env_info.CFLAGS = cflags
+        self.env_info.CXXFLAGS = cxxflags
