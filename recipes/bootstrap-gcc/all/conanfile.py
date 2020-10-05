@@ -7,32 +7,17 @@ class GccConan(ConanFile):
     description = "The GNU Compiler Collection - C and C++ frontends"
     license = "custom", "FDL", "GPL", "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "binutils/[^2.35]",
-        "bootstrap-llvm/[^10.0.1]",
-        "make/[^4.3]",
-        "zlib/[^1.2.11]",
-        "mpfr/[^4.1.0]",
-        "gmp/[^6.2.0]",
-        "mpc/[^1.1.0]",
-        "isl/[^0.22.1]",
-    )
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/gcc/gcc-{self.version}/gcc-{self.version}.tar.xz")
 
     def build(self):
-        env = {
-            "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", ""),
-            "CXXFLAGS": os.environ["CXXFLAGS"].replace("-flto=thin", ""),
-        }
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
             "--disable-bootstrap",
+            "--disable-multilib",
             "--enable-languages=c,c++,objc,obj-c++",
             "--enable-threads=posix",
-            "--with-system-zlib",
-            "--disable-multilib",
             "--enable-__cxa_atexit",
             "--disable-libunwind-exceptions",
             "--enable-clocale=gnu",
@@ -48,10 +33,11 @@ class GccConan(ConanFile):
             "--enable-default-pie",
             "--enable-default-ssp",
             "--enable-cet=auto",
-            f"--with-mpfr={self.deps_cpp_info['mpfr'].rootpath}",
-            f"--with-gmp={self.deps_cpp_info['gmp'].rootpath}",
-            f"--with-mpc={self.deps_cpp_info['mpc'].rootpath}",
-            f"--with-isl={self.deps_cpp_info['isl'].rootpath}",
+            "--with-system-zlib",
+            # f"--with-mpfr={self.deps_cpp_info['mpfr'].rootpath}",
+            # f"--with-gmp={self.deps_cpp_info['gmp'].rootpath}",
+            # f"--with-mpc={self.deps_cpp_info['mpc'].rootpath}",
+            # f"--with-isl={self.deps_cpp_info['isl'].rootpath}",
         ]
         if self.settings.arch_build == "x86_64":
             target = "x86_64-linux-gnu"
