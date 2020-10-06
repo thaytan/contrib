@@ -8,8 +8,11 @@ class AutoconfConan(ConanFile):
     license = "GPL3"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "m4-include.patch"
-    build_requires = ("perl/[^5.30.0]",)
-    requires = ("m4/[^1.4.18]", "make/[^4.3]")
+    requires = (
+        "m4/[^1.4.18]",
+        "make/[^4.3]",
+        "perl/[^5.30.0]",
+    )
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/autoconf/autoconf-{self.version}.tar.gz")
