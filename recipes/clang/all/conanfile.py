@@ -120,10 +120,10 @@ class ClangConan(ConanFile):
         static_flags = ""
         if self.settings.libc_build == "musl":
             static_flags = "-static"
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["musl"].rootpath, "include")
         else:
             static_flags = ""
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["glibc-headers"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
         cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin -nostdinc "
