@@ -8,11 +8,8 @@ class AutomakeConan(ConanFile):
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "automake-include-fix.patch"
-    build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
-        "autoconf/[^2.69]",
-    )
-    requires = ("perl/[^5.30.0]",)
+    build_requires = ("bootstrap-llvm/[^10.0.1]",)
+    requires = ("autoconf/[^2.69]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/automake/automake-{self.version}.tar.gz")
