@@ -24,7 +24,7 @@ class NcursesConan(ConanFile):
             f'--with-pkg-config-libdir={os.path.join(self.package_folder, "lib", "pkgconfig")}',
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args=args)
+        autotools.configure(f"ncurses-{self.version}", args)
         autotools.make()
         autotools.install()
 
