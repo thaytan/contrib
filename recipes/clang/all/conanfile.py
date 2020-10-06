@@ -16,7 +16,6 @@ class ClangConan(ConanFile):
         "ncurses/[^6.2]",
         "libffi/[^3.3]",
     )
-    requires = ("llvm/[^10.0.1]",)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
