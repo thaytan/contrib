@@ -12,6 +12,7 @@ class AutomakeConan(ConanFile):
         "bootstrap-llvm/[^10.0.1]",
         "autoconf/[^2.69]",
     )
+    requires = ("perl/[^5.30.0]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/automake/automake-{self.version}.tar.gz")
