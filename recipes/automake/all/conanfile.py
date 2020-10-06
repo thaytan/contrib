@@ -4,13 +4,12 @@ from conans import *
 
 
 class AutomakeConan(ConanFile):
-    name = "automake"
     description = "A GNU tool for automatically creating Makefiles"
     license = "GPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "automake-include-fix.patch"
     build_requires = (
-        "cc/[^1.0.0]",
+        "bootstrap-llvm/[^10.0.1]",
         "autoconf/[^2.69]",
     )
 
@@ -19,11 +18,10 @@ class AutomakeConan(ConanFile):
         tools.patch(patch_file="automake-include-fix.patch", base_path=f"{self.name}-{self.version}")
 
     def build(self):
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
-            autotools.make()
-            autotools.install()
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"automake-{self.version}")
+        autotools.make()
+        autotools.install()
 
     def package_info(self):
         self.env_info.AUTOMAKE = os.path.join(self.package_folder, "bin", "automake")
