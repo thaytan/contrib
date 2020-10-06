@@ -2,7 +2,6 @@ from conans import *
 
 
 class Help2ManConan(ConanFile):
-    name = "help2man"
     description = "Conversion tool to create man files"
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
