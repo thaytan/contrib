@@ -18,6 +18,6 @@ class ZlibConan(ConanFile):
             "--static",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args=args)
+        autotools.configure(f"zlib-{self.version}", args)
         autotools.make()
         autotools.install()
