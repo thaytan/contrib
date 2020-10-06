@@ -12,8 +12,8 @@ class LibcxxConan(ConanFile):
         "bootstrap-cmake/[^3.18.0]",
         "bootstrap-ninja/[^1.10.0]",
         "python/[^3.8.5]",
-        "libunwind/[^10.0.1]",
     )
+    requires = ("libunwind/[^10.0.1]",)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
