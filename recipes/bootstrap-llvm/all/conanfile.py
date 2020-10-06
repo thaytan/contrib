@@ -45,6 +45,7 @@ class BootstrapLlvmConan(ConanFile):
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
 
+        cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_BUILD_RUNTIME"] = True
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
@@ -229,7 +230,7 @@ class BootstrapLlvmConan(ConanFile):
             libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -flto=thin -nostdinc "
+        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin -nostdinc "
         cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
         self.env_info.CFLAGS = cflags
