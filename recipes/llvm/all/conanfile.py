@@ -11,7 +11,6 @@ class LlvmConan(ConanFile):
         "bootstrap-cmake/[^3.18.0]",
         "bootstrap-ninja/[^1.10.0]",
         "python/[^3.8.5]",
-        "libunwind/[^10.0.1]",
         "zlib/[^1.2.11]",
         "ncurses/[^6.2]",
         "libffi/[^3.3]",
