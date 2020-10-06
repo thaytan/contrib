@@ -4,27 +4,22 @@ from conans import *
 
 
 class AutoconfConan(ConanFile):
-    name = "autoconf"
     description = "A GNU tool for automatically configuring source code"
     license = "GPL3"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "m4-include.patch"
-    build_requires = ("cc/[^1.0.0]",)
-    requires = (
-        "base/[^1.0.0]",
-        "m4/[^1.4.18]",
-    )
+    build_requires = ("perl/[^5.30.0]",)
+    requires = ("m4/[^1.4.18]", "make/[^4.3]")
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/autoconf/autoconf-{self.version}.tar.gz")
         tools.patch(patch_file="m4-include.patch", base_path=f"{self.name}-{self.version}")
 
     def build(self):
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
-            autotools.make()
-            autotools.install()
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"autoconf-{self.version}")
+        autotools.make()
+        autotools.install()
 
     def package_info(self):
         self.env_info.AUTOCONF = os.path.join(self.package_folder, "bin", "autoconf")
