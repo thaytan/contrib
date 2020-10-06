@@ -16,6 +16,7 @@ class PythonConan(ConanFile):
         "zlib/[^1.2.11]",
         "bzip2/[^1.0.8]",
         "sqlite/[^3.30.1]",
+        "readline/[^8.0]",
     )
 
     def source(self):
