@@ -7,20 +7,19 @@ class CurlConan(ConanFile):
     name = "curl"
     description = "An URL retrieval utility and library"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
+        "clang/[^10.0.1]",
         "zlib/[^1.2.11]",
-        "openssl/[^1.1.1b]",
+        "openssl/[^3.0.0-alpha6]",
     )
 
     def source(self):
         tools.get(f"https://curl.haxx.se/download/curl-{self.version}.tar.gz")
 
     def build(self):
-        args = ["--disable-static"]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        args = ["--disable-shared"]
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"curl-{self.version}", args)
+        autotools.make()
+        autotools.install()
