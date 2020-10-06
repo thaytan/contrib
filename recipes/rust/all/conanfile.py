@@ -5,49 +5,51 @@ from six import StringIO
 import shutil
 
 
+TEMPLATE = """
+[llvm]
+[build]
+target = ["x86_64-unknown-linux-gnu"]
+tools = ["cargo", "rls", "clippy", "miri", "rustfmt", "analysis", "src"]
+extended = true
+sanitizers = false
+profiler = true
+vendor = true
+[install]
+prefix = "{0}"
+[rust]
+# LLVM crashes when passing an object through ThinLTO twice.  This is triggered when using rust
+# code in cross-language LTO if libstd was built using ThinLTO.
+# http://blog.llvm.org/2019/09/closing-gap-cross-language-lto-between.html
+# https://github.com/rust-lang/rust/issues/54872
+codegen-units-std = 1
+debuginfo-level-std = 2
+channel = "stable"
+rpath = false
+[target.x86_64-unknown-linux-gnu]
+"""
+
+
 class RustConan(ConanFile):
-    name = "rust"
+    llvm_version = "10.0.1"
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "curl/[^7.66.0]",
-    )
-    requires = (
-        "base/[^1.0.0]",
-        "pkgconf/[^1.6.3]",
-        "clang/[^9.0.0]",
-        "cc/[^1.0.0]",
+        "llvm/[^10.0.1]",
+        "python/[^3.8.5]",
     )
 
     def source(self):
-        tools.download("https://sh.rustup.rs", "rustup.sh")
+        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.llvm_version}/compiler-rt-{self.llvm_version}.src.tar.xz")
+        tools.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
 
     def build(self):
         env = {
-            "HOME": self.build_folder,  # To avoid rustup writing to $HOME/.profile
-            "RUSTUP_HOME": self.build_folder,
-            "CARGO_HOME": self.build_folder,
+            "RUST_COMPILER_RT_ROOT": os.path.join(self.source_folder, f"compiler-rt-{self.llvm_version}"),
         }
-        with tools.environment_append(env):
-            self.run("sh rustup.sh -y --default-toolchain " + self.version)
-            self.run("./bin/rustup component add rust-src rustc-dev")
+        with tools.chdir(f"rustc-{self.version}-src"), tools.environment_append(env):
+            with open("config.toml", "w") as config:
+                content = TEMPLATE.format(self.package_folder)
+                config.write(content)
 
-    def package(self):
-        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
-        src = os.path.join(f"toolchains", "{self.version}-{arch}-unknown-linux-gnu")
-        self.copy("*", src=os.path.join(src, "bin"), dst="bin")
-        self.copy("*.so*", src=os.path.join(src, "lib"), dst="lib")
-        self.copy(
-            "*", src=os.path.join(src, "etc", "bash_completion.d"), dst=os.path.join("share", "bash-completion", "completions")\        )
-        self.copy(
-            "*", src=os.path.join(src, "lib", "rustlib"), dst=os.path.join("lib", "rustlib")\        )
-
-    def package_info(self):
-        self.env_info.RUST_SRC_PATH = os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")
-        git_hash = StringIO()
-        if shutil.which("rustc"):
-            self.run("rustc -Vv | grep commit-hash | cut -b 14-", output=git_hash)
-            git_hash = git_hash.getvalue()[81:-1]
-            path = os.path.join(self.package_folder, "lib", "rustlib", "src", "rust", "src")
-            self.env_info.SOURCE_MAP.append(f"/rustc/${git_hash}/src|{path}"
+            self.run("python x.py dist")
