@@ -27,7 +27,6 @@ use camera_meta::Distortion;
 use glib::subclass;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
-use gst_base::subclass::base_src::CreateSuccess;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
 use k4a::calibration::Calibration;
@@ -88,7 +87,7 @@ struct CameraInternals {
 
 impl ObjectSubclass for K4aSrc {
     const NAME: &'static str = "k4asrc";
-    type ParentType = gst_base::BaseSrc;
+    type ParentType = gst_base::PushSrc;
     type Instance = gst::subclass::ElementInstanceStruct<Self>;
     type Class = subclass::simple::ClassStruct<Self>;
 
@@ -312,13 +311,14 @@ impl BaseSrcImpl for K4aSrc {
         self.parent_fixate(base_src, caps)
     }
 
-    fn create(
-        &self,
-        base_src: &gst_base::BaseSrc,
-        _offset: u64,
-        _buffer: Option<&mut gst::BufferRef>,
-        _length: u32,
-    ) -> Result<CreateSuccess, gst::FlowError> {
+    fn is_seekable(&self, _base_src: &gst_base::BaseSrc) -> bool {
+        // TODO: If desired, enable and implement seeking for streaming from `Playback`
+        false
+    }
+}
+
+impl PushSrcImpl for K4aSrc {
+    fn create(&self, push_src: &gst_base::PushSrc) -> Result<gst::Buffer, gst::FlowError> {
         // Lock the internals
         let internals = &mut self
             .internals
@@ -335,7 +335,7 @@ impl BaseSrcImpl for K4aSrc {
         // Attach `depth` frame if enabled
         if desired_streams.depth {
             let res = self.attach_frame_to_buffer(
-                base_src,
+                push_src,
                 internals,
                 &mut output_buffer,
                 &capture,
@@ -345,7 +345,7 @@ impl BaseSrcImpl for K4aSrc {
             if res.is_err() {
                 gst_warning!(
                     CAT,
-                    obj: base_src,
+                    obj: push_src,
                     "Frame could not be attached to buffer for `{}` stream",
                     STREAM_ID_DEPTH
                 );
@@ -355,7 +355,7 @@ impl BaseSrcImpl for K4aSrc {
         // Attach `ir` frame if enabled
         if desired_streams.ir {
             let res = self.attach_frame_to_buffer(
-                base_src,
+                push_src,
                 internals,
                 &mut output_buffer,
                 &capture,
@@ -365,7 +365,7 @@ impl BaseSrcImpl for K4aSrc {
             if res.is_err() {
                 gst_warning!(
                     CAT,
-                    obj: base_src,
+                    obj: push_src,
                     "Frame could not be attached to buffer for `{}` stream",
                     STREAM_ID_IR
                 );
@@ -375,7 +375,7 @@ impl BaseSrcImpl for K4aSrc {
         // Attach `color` frame if enabled
         if desired_streams.color {
             let res = self.attach_frame_to_buffer(
-                base_src,
+                push_src,
                 internals,
                 &mut output_buffer,
                 &capture,
@@ -385,7 +385,7 @@ impl BaseSrcImpl for K4aSrc {
             if res.is_err() {
                 gst_warning!(
                     CAT,
-                    obj: base_src,
+                    obj: push_src,
                     "Frame could not be attached to buffer for `{}` stream",
                     STREAM_ID_COLOR
                 );
@@ -395,22 +395,17 @@ impl BaseSrcImpl for K4aSrc {
         // Attach `IMU` samples if enabled
         if desired_streams.imu {
             let imu_samples = Self::get_available_imu_samples(internals)?;
-            self.attach_imu_samples(base_src, &mut output_buffer, imu_samples)?;
+            self.attach_imu_samples(push_src, &mut output_buffer, imu_samples)?;
         }
 
         // Attach Cap'n Proto serialised `CameraMeta` if enabled
         if internals.settings.attach_camera_meta {
             // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
             let camera_meta = internals.camera.camera_meta_serialised.clone();
-            self.attach_camera_meta(base_src, &mut output_buffer, camera_meta)?;
+            self.attach_camera_meta(push_src, &mut output_buffer, camera_meta)?;
         }
 
-        Ok(CreateSuccess::NewBuffer(output_buffer))
-    }
-
-    fn is_seekable(&self, _base_src: &gst_base::BaseSrc) -> bool {
-        // TODO: If desired, enable and implement seeking for streaming from `Playback`
-        false
+        Ok(output_buffer)
     }
 }
 
@@ -707,7 +702,7 @@ impl K4aSrc {
     /// `previous_streams` is enabled, the frame is attached as meta buffer.
     ///
     /// # Arguments
-    /// * `base_src` - This element (k4asrc).
+    /// * `push_src` - This element (k4asrc).
     /// * `internals` - The internals of the element that contain settings and stream source.
     /// * `output_buffer` - The output buffer to which frames will be attached.
     /// * `capture` - Capture to extract the frames from.
@@ -719,7 +714,7 @@ impl K4aSrc {
     /// * `Err(K4aSrcError)` on failure.
     fn attach_frame_to_buffer(
         &self,
-        base_src: &gst_base::BaseSrc,
+        push_src: &gst_base::PushSrc,
         internals: &mut K4aSrcInternals,
         output_buffer: &mut gst::Buffer,
         capture: &Capture,
@@ -766,7 +761,12 @@ impl K4aSrc {
         // Extract timestamp from K4A
         let camera_timestamp = TimestampSource::Image(&frame).extract_timestamp();
         // Set timestamps using `RgbdTimestamps` trait
-        self.set_rgbd_timestamp(base_src, buffer_mut_ref, is_buffer_main, camera_timestamp);
+        self.set_rgbd_timestamp(
+            push_src.upcast_ref(),
+            buffer_mut_ref,
+            is_buffer_main,
+            camera_timestamp,
+        );
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
         if is_buffer_main {
@@ -791,7 +791,7 @@ impl K4aSrc {
     /// the frame is attached as meta buffer. Unimplemented!
     ///
     /// # Arguments
-    /// * `base_src` - This element (k4asrc).
+    /// * `push_src` - This element (k4asrc).
     /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
     /// * `imu_samples` - ImuSamples to attach to the `output_buffer`.
     ///
@@ -800,7 +800,7 @@ impl K4aSrc {
     /// * `Err(K4aSrcError)` on failure.
     fn attach_imu_samples(
         &self,
-        base_src: &gst_base::BaseSrc,
+        push_src: &gst_base::PushSrc,
         output_buffer: &mut gst::Buffer,
         imu_samples: Vec<ImuSample>,
     ) -> Result<(), K4aSrcError> {
@@ -826,7 +826,12 @@ impl K4aSrc {
         ))?;
 
         // Set timestamps using `RgbdTimestamps` trait
-        self.set_rgbd_timestamp(base_src, buffer_mut_ref, false, camera_timestamp);
+        self.set_rgbd_timestamp(
+            push_src.upcast_ref(),
+            buffer_mut_ref,
+            false,
+            camera_timestamp,
+        );
 
         // Attach the IMU buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
@@ -864,7 +869,7 @@ impl K4aSrc {
     /// Attach Cap'n Proto serialised CameraMeta to `output_buffer`.
     ///
     /// # Arguments
-    /// * `base_src` - This element (k4asrc).
+    /// * `push_src` - This element (k4asrc).
     /// * `output_buffer` - The output buffer to which the ImuSamples will be attached.
     /// * `camera_meta` - Serialised CameraMeta to attach to the `output_buffer`.
     ///
@@ -873,7 +878,7 @@ impl K4aSrc {
     /// * `Err(K4aSrcError)` on failure.
     fn attach_camera_meta(
         &self,
-        base_src: &gst_base::BaseSrc,
+        push_src: &gst_base::PushSrc,
         output_buffer: &mut gst::Buffer,
         camera_meta: Vec<u8>,
     ) -> Result<(), K4aSrcError> {
@@ -889,7 +894,12 @@ impl K4aSrc {
         ))?;
 
         // Set timestamps using `RgbdTimestamps` trait
-        self.set_rgbd_timestamp(base_src, buffer_mut_ref, false, gst::CLOCK_TIME_NONE);
+        self.set_rgbd_timestamp(
+            push_src.upcast_ref(),
+            buffer_mut_ref,
+            false,
+            gst::CLOCK_TIME_NONE,
+        );
 
         // Attach the camera_meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
