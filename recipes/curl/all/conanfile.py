@@ -27,3 +27,6 @@ class CurlConan(ConanFile):
         autotools.configure(f"curl-{self.version}", args, vars=env)
         autotools.make()
         autotools.install()
+
+    def package_info(self):
+        self.env_info.CURL_CA_BUNDLE = os.path.join(self.deps_cpp_info["ca-certificates"].rootpath, "etc", "ssl", "certs")
