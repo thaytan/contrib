@@ -334,27 +334,29 @@ impl PushSrcImpl for K4aSrc {
         // TODO: This code doesn't really comunicate clearly that 0..3 are
         //       the depth, ir and color streams. Maybe there is a better
         //       way to structure this
-        for (i, description) in stream_descriptions[0..3].iter().enumerate() {
-            if description.enabled {
-                let res = self.attach_frame_to_buffer(
-                    push_src,
-                    internals,
-                    &mut output_buffer,
-                    &capture,
+        for (i, description) in stream_descriptions[0..3]
+            .iter()
+            .filter(|d| d.enabled)
+            .enumerate()
+        {
+            let res = self.attach_frame_to_buffer(
+                push_src,
+                internals,
+                &mut output_buffer,
+                &capture,
+                description.id,
+                // The first stream after filtering out disabled streams is
+                // the main stream
+                i == 0,
+            );
+
+            if res.is_err() {
+                gst_warning!(
+                    CAT,
+                    obj: push_src,
+                    "Frame could not be attached to buffer for `{}` stream",
                     description.id,
-                    // stream_descriptions have the streams in order, so slicing
-                    // from 0 to our streams index will give us all previous
-                    // streams
-                    &stream_descriptions[0..i],
                 );
-                if res.is_err() {
-                    gst_warning!(
-                        CAT,
-                        obj: push_src,
-                        "Frame could not be attached to buffer for `{}` stream",
-                        description.id,
-                    );
-                }
             }
         }
 
@@ -664,8 +666,8 @@ impl K4aSrc {
     }
 
     /// Extract a frame from Capture and attach it to `output_buffer`. This function outputs the
-    /// frame as main buffer if `previous_streams` is empty or all `false`. If any of the
-    /// `previous_streams` is enabled, the frame is attached as meta buffer.
+    /// frame as main buffer if `is_main_stream` is `true`. Otherwise the frame is attached as meta
+    /// buffer.
     ///
     /// # Arguments
     /// * `push_src` - This element (k4asrc).
@@ -673,7 +675,7 @@ impl K4aSrc {
     /// * `output_buffer` - The output buffer to which frames will be attached.
     /// * `capture` - Capture to extract the frames from.
     /// * `stream_id` - The id of the stream to extract.
-    /// * `previous_streams` - An indicator of what previous streams are enabled.
+    /// * `is_main_stream` - Indicator of whether the stream is the main stream.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -685,7 +687,7 @@ impl K4aSrc {
         output_buffer: &mut gst::Buffer,
         capture: &Capture,
         stream_id: &str,
-        previous_streams: &[StreamDescription],
+        is_main_stream: bool,
     ) -> Result<(), K4aSrcError> {
         // Extract the correspond frame from the capture
         let frame = match stream_id {
@@ -721,21 +723,18 @@ impl K4aSrc {
             ]
         ))?;
 
-        // Determine whether any of the previous streams is enabled
-        let is_buffer_main = !previous_streams.iter().any(|stream| stream.enabled);
-
         // Extract timestamp from K4A
         let camera_timestamp = TimestampSource::Image(&frame).extract_timestamp();
         // Set timestamps using `RgbdTimestamps` trait
         self.set_rgbd_timestamp(
             push_src.upcast_ref(),
             buffer_mut_ref,
-            is_buffer_main,
+            is_main_stream,
             camera_timestamp,
         );
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
-        if is_buffer_main {
+        if is_main_stream {
             // Fill the main buffer and tag it adequately
             rgbd::fill_main_buffer_and_tag(output_buffer, buffer, stream_id)?;
         } else {
