@@ -1,4 +1,6 @@
 import os
+import glob
+import pathlib
 from conans import *
 
 
@@ -19,10 +21,17 @@ class CaCertificatesConan(ConanFile):
 
     def build(self):
         env = {"DESTDIR": self.package_folder, "CFLAGS": os.environ["CFLAGS"] + f" -ldl -lpthread -I{self.deps_cpp_info['bootstrap-openssl'].rootpath}/include"}
+        ca_cert = open("ca-certificates.crt", "w")
         with tools.chdir(f"ca-certificates-{self.version}"), tools.environment_append(env):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.make()
+            # NetLock Arany contains invalid utf-8 characters, which is not supported in Python 3.6
             self.run("mv NetLock_Arany_*.crt NetLock_Arany.crt")
+            for cert in glob.glob("*.crt"):
+                ca_cert.write(pathlib.Path(cert).read_text())
+
+        ca_cert.close()
 
     def package(self):
-        self.copy("*.crt", dst="share/ca-certificates")
+        self.copy("*.crt", dst="share/ca-certificates", keep_path=False)
+        self.copy("*ca-certificates.crt", dst="etc/ssl/certs")
