@@ -11,6 +11,7 @@ class OpensslConan(ConanFile):
         "make/[^4.3]",
         "perl/[^5.30.0]",
     )
+    requires = ("ca-certificates/[^20191127]",)
 
     def source(self):
         tools.get(f"https://github.com/openssl/openssl/archive/openssl-{self.version}.tar.gz")
@@ -27,3 +28,6 @@ class OpensslConan(ConanFile):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
+
+    def package_info(self):
+        self.env_info.SSL_CERT_DIR = os.path.join(self.deps_cpp_info["ca-certificates"].rootpath, "ert", "ssl", "certs")
