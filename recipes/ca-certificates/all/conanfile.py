@@ -18,7 +18,7 @@ class CaCertificatesConan(ConanFile):
         tools.get(f"https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{self.version}/ca-certificates-{self.version}.tar.bz2")
 
     def build(self):
-        env = {"DESTDIR": self.package_folder, "CFLAGS": os.environ["CFLAGS"] + f" -ldl -lpthread -I{self.deps_cpp_info['openssl'].rootpath}/include"}
+        env = {"DESTDIR": self.package_folder, "CFLAGS": os.environ["CFLAGS"] + f" -ldl -lpthread -I{self.deps_cpp_info['bootstrap-openssl'].rootpath}/include"}
         with tools.chdir(f"ca-certificates-{self.version}"), tools.environment_append(env):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.make()
