@@ -29,9 +29,10 @@ class CaCertificatesConan(ConanFile):
             self.run("mv NetLock_Arany_*.crt NetLock_Arany.crt")
             for cert in glob.glob("*.crt"):
                 ca_cert.write(pathlib.Path(cert).read_text())
-
         ca_cert.close()
+        os.symlink("ca-certificates.crt", "cert.pem")
 
     def package(self):
         self.copy("*.crt", dst="share/ca-certificates", keep_path=False)
         self.copy("*ca-certificates.crt", dst="etc/ssl/certs")
+        self.copy("*cert.pem", dst="etc/ssl/certs")
