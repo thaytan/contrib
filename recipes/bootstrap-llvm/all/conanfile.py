@@ -18,14 +18,12 @@ class BootstrapLlvmConan(ConanFile):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz")
-        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libunwind-{self.version}.src.tar.xz")
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
         shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))
         shutil.move(f"compiler-rt-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
         shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
-        shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
         cmake = CMake(self)
@@ -71,7 +69,6 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
         cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
-        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
         cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
         cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
@@ -90,17 +87,7 @@ class BootstrapLlvmConan(ConanFile):
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
-        cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
-        if self.settings.libc_build == "musl":
-            cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
-
-        # libunwind options
-        cmake.definitions["LIBUNWIND_USE_COMPILER_RT"] = True
-        if self.settings.libc_build == "musl":
-            cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = False
-        else:
-            cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         ###########
         # Stage 0 #
@@ -113,7 +100,7 @@ class BootstrapLlvmConan(ConanFile):
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
-        # Stage 0 build (lld, clang, ar, unwind)
+        # Stage 0 build (lld, clang, ar)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
         cmake.build(target="install-clang")
         cmake.build(target="install-clang-resource-headers")
@@ -123,7 +110,6 @@ class BootstrapLlvmConan(ConanFile):
         cmake.build(target="install-lld")
         cmake.build(target="install-llvm-tblgen")
         cmake.build(target="install-libcxx")
-        cmake.build(target="install-unwind")
         cmake.build(target="install-compiler-rt")
 
         ###########
@@ -155,11 +141,10 @@ class BootstrapLlvmConan(ConanFile):
             "LDFLAGS": cflags,
         }
 
-        # Stage 1 build (libcxx, libcxxabi, libunwind)
+        # Stage 1 build (libcxx, libcxxabi)
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
             cmake.build(target="install-libcxx")
-            cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
 
         ###########
@@ -185,11 +170,10 @@ class BootstrapLlvmConan(ConanFile):
             "LDFLAGS": f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}",
         }
 
-        # Stage 2 build (lld, clang, libcxx, libcxxabi, libunwind)
+        # Stage 2 build (lld, clang, libcxx, libcxxabi)
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
             cmake.build(target="install-libcxx")
-            cmake.build(target="install-unwind")
             cmake.build(target="install-compiler-rt")
             cmake.build(target="install-clang")
             cmake.build(target="install-clang-resource-headers")
