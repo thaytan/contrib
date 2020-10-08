@@ -1,3 +1,4 @@
+import os
 from conans import *
 
 
@@ -12,13 +13,17 @@ class CurlConan(ConanFile):
         "zlib/[^1.2.11]",
         "openssl/[^3.0.0-alpha6]",
     )
+    requires = ("ca-certificates/[^20191127]",)
 
     def source(self):
         tools.get(f"https://curl.haxx.se/download/curl-{self.version}.tar.gz")
 
     def build(self):
+        env = {
+            "CFLAGS": os.environ["CFLAGS"] + "-ldl -lpthread",
+        }
         args = ["--disable-shared"]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"curl-{self.version}", args)
+        autotools.configure(f"curl-{self.version}", args, vars=env)
         autotools.make()
         autotools.install()
