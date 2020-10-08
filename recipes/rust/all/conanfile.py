@@ -15,7 +15,7 @@ class RustConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/rust-lang/rust/archive/1.47.0.tar.gz rustc-{self.version}-src.tar.gz")
+        tools.get(f"https://github.com/rust-lang/rust/archive/{self.version}.tar.gz")
 
     def build(self):
         archs = {
