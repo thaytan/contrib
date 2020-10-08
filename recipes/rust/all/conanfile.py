@@ -30,7 +30,7 @@ class RustConan(ConanFile):
             f"--llvm-root={self.deps_cpp_info['bootstrap-llvm'].rootpath}",
             "--enable-vendor",
         ]
-        with tools.chdir(f"rustc-{self.version}-src"):
+        with tools.chdir(f"rust-{self.version}"):
             self.run(f"./configure {' '.join(args)}")
 
             self.run("python x.py dist")
