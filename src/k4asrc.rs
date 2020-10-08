@@ -224,9 +224,7 @@ impl BaseSrcImpl for K4aSrc {
                 selected_streams.push_str(&format!("{},", STREAM_ID_DEPTH));
                 caps.set(
                     &format!("{}_format", STREAM_ID_DEPTH),
-                    &k4a_image_format_to_gst_video_format(DEPTH_FORMAT)
-                        .unwrap()
-                        .to_string(),
+                    &k4a_image_format_to_gst_video_format(DEPTH_FORMAT).unwrap(),
                 );
                 // If rectified, the resolution of the depth stream is identical to color stream.
                 if internals.settings.rectify_depth {
@@ -254,9 +252,7 @@ impl BaseSrcImpl for K4aSrc {
                 selected_streams.push_str(&format!("{},", STREAM_ID_IR));
                 caps.set(
                     &format!("{}_format", STREAM_ID_IR),
-                    &k4a_image_format_to_gst_video_format(IR_FORMAT)
-                        .unwrap()
-                        .to_string(),
+                    &k4a_image_format_to_gst_video_format(IR_FORMAT).unwrap(),
                 );
                 caps.set(
                     &format!("{}_width", STREAM_ID_IR),
@@ -272,7 +268,7 @@ impl BaseSrcImpl for K4aSrc {
                 selected_streams.push_str(&format!("{},", STREAM_ID_COLOR));
                 caps.set(
                     &format!("{}_format", STREAM_ID_COLOR),
-                    &stream_properties.color_format.to_string(),
+                    &stream_properties.color_format,
                 );
                 caps.set(
                     &format!("{}_width", STREAM_ID_COLOR),
