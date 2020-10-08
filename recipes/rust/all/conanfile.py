@@ -15,7 +15,7 @@ class RustConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/rust-lang/rust/archive/{self.version}.tar.gz")
+        tools.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
 
     def build(self):
         archs = {
@@ -30,7 +30,6 @@ class RustConan(ConanFile):
             f"--llvm-root={self.deps_cpp_info['bootstrap-llvm'].rootpath}",
             "--enable-vendor",
         ]
-        with tools.chdir(f"rust-{self.version}"):
+        with tools.chdir(f"rustc-{self.version}-src"):
             self.run(f"./configure {' '.join(args)}")
-
             self.run("python x.py dist")
