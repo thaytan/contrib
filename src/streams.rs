@@ -41,6 +41,11 @@ pub(crate) struct Streams {
     pub(crate) imu: bool,
 }
 
+pub(crate) struct StreamDescription {
+    pub(crate) enabled: bool,
+    pub(crate) id: &'static str,
+}
+
 impl Default for Streams {
     fn default() -> Self {
         Self {
@@ -79,5 +84,27 @@ impl Streams {
             && (available_streams.color || !enabled_streams.color)
             && (available_streams.ir || !enabled_streams.ir)
             && (available_streams.depth || !enabled_streams.depth)
+    }
+
+    /// Get a description of all streams sorted by the streams priority
+    pub(crate) fn get_descriptions(self) -> [StreamDescription; 4] {
+        [
+            StreamDescription {
+                enabled: self.depth,
+                id: STREAM_ID_DEPTH,
+            },
+            StreamDescription {
+                enabled: self.ir,
+                id: STREAM_ID_IR,
+            },
+            StreamDescription {
+                enabled: self.color,
+                id: STREAM_ID_COLOR,
+            },
+            StreamDescription {
+                enabled: self.imu,
+                id: STREAM_ID_IMU,
+            },
+        ]
     }
 }

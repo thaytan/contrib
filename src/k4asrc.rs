@@ -325,6 +325,7 @@ impl PushSrcImpl for K4aSrc {
             .lock()
             .expect("k4asrc: Cannot lock internals in `create()`");
         let desired_streams = internals.settings.desired_streams;
+        let stream_descriptions = desired_streams.get_descriptions();
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
@@ -332,63 +333,32 @@ impl PushSrcImpl for K4aSrc {
         // Get capture from the stream source
         let capture = Self::get_capture(internals)?;
 
-        // Attach `depth` frame if enabled
-        if desired_streams.depth {
-            let res = self.attach_frame_to_buffer(
-                push_src,
-                internals,
-                &mut output_buffer,
-                &capture,
-                STREAM_ID_DEPTH,
-                &[],
-            );
-            if res.is_err() {
-                gst_warning!(
-                    CAT,
-                    obj: push_src,
-                    "Frame could not be attached to buffer for `{}` stream",
-                    STREAM_ID_DEPTH
+        // Attach depth, ir and color frames to buffer. imu is handled
+        // seperalty after this loop
+        // TODO: This code doesn't really comunicate clearly that 0..3 are
+        //       the depth, ir and color streams. Maybe there is a better
+        //       way to structure this
+        for (i, description) in stream_descriptions[0..3].iter().enumerate() {
+            if description.enabled {
+                let res = self.attach_frame_to_buffer(
+                    push_src,
+                    internals,
+                    &mut output_buffer,
+                    &capture,
+                    description.id,
+                    // stream_descriptions have the streams in order, so slicing
+                    // from 0 to our streams index will give us all previous
+                    // streams
+                    &stream_descriptions[0..i],
                 );
-            }
-        }
-
-        // Attach `ir` frame if enabled
-        if desired_streams.ir {
-            let res = self.attach_frame_to_buffer(
-                push_src,
-                internals,
-                &mut output_buffer,
-                &capture,
-                STREAM_ID_IR,
-                &[desired_streams.depth],
-            );
-            if res.is_err() {
-                gst_warning!(
-                    CAT,
-                    obj: push_src,
-                    "Frame could not be attached to buffer for `{}` stream",
-                    STREAM_ID_IR
-                );
-            }
-        }
-
-        // Attach `color` frame if enabled
-        if desired_streams.color {
-            let res = self.attach_frame_to_buffer(
-                push_src,
-                internals,
-                &mut output_buffer,
-                &capture,
-                STREAM_ID_COLOR,
-                &[desired_streams.depth, desired_streams.ir],
-            );
-            if res.is_err() {
-                gst_warning!(
-                    CAT,
-                    obj: push_src,
-                    "Frame could not be attached to buffer for `{}` stream",
-                    STREAM_ID_COLOR
-                );
+                if res.is_err() {
+                    gst_warning!(
+                        CAT,
+                        obj: push_src,
+                        "Frame could not be attached to buffer for `{}` stream",
+                        description.id,
+                    );
+                }
             }
         }
 
@@ -719,7 +689,7 @@ impl K4aSrc {
         output_buffer: &mut gst::Buffer,
         capture: &Capture,
         stream_id: &str,
-        previous_streams: &[bool],
+        previous_streams: &[StreamDescription],
     ) -> Result<(), K4aSrcError> {
         // Extract the correspond frame from the capture
         let frame = match stream_id {
@@ -756,7 +726,7 @@ impl K4aSrc {
         ))?;
 
         // Determine whether any of the previous streams is enabled
-        let is_buffer_main = !previous_streams.iter().any(|stream| *stream);
+        let is_buffer_main = !previous_streams.iter().any(|stream| stream.enabled);
 
         // Extract timestamp from K4A
         let camera_timestamp = TimestampSource::Image(&frame).extract_timestamp();
