@@ -35,4 +35,4 @@ class CaCertificatesConan(ConanFile):
     def package(self):
         self.copy("*.crt", dst="share/ca-certificates", keep_path=False)
         self.copy("*ca-certificates.crt", dst="etc/ssl/certs")
-        self.copy("*cert.pem", dst="etc/ssl/certs")
+        self.copy("*cert.pem", dst="etc/ssl/certs", symlinks=True)
