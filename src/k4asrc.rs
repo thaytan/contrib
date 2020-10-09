@@ -171,7 +171,7 @@ impl BaseSrcImpl for K4aSrc {
             .expect("k4asrc: Cannot read settings in `start()`");
 
         // Initiate streaming from K4A
-        Self::start_k4a(internals, settings)?;
+        self.start_k4a(internals, settings)?;
 
         // Return `Ok()` if everything went fine and start streaming
         Ok(())
@@ -292,9 +292,6 @@ impl BaseSrcImpl for K4aSrc {
             // Fixate the framerate
             caps.fixate_field_nearest_fraction("framerate", stream_properties.framerate);
 
-            // Update buffer duration for `RgbdTimestamps` trait
-            self.set_buffer_duration(stream_properties.framerate as f32);
-
             // Finally add the streams to the caps
             caps.set("streams", &selected_streams.as_str());
         }
@@ -378,7 +375,11 @@ impl K4aSrc {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
-    fn start_k4a(internals: &mut K4aSrcInternals, settings: &Settings) -> Result<(), K4aSrcError> {
+    fn start_k4a(
+        &self,
+        internals: &mut K4aSrcInternals,
+        settings: &Settings,
+    ) -> Result<(), K4aSrcError> {
         // Make sure the user enabled at least one of the streams
         if !settings.desired_streams.is_any_video_enabled() {
             return Err(K4aSrcError::Failure(
@@ -398,9 +399,9 @@ impl K4aSrc {
         // Determine whether to stream from `Playback` or `Device`
         // If `recording-location` is not set, live stream from `Device` is assumed
         if !settings.playback_settings.recording_location.is_empty() {
-            Self::start_from_playback(internals, settings)?;
+            self.start_from_playback(internals, settings)?;
         } else {
-            Self::start_from_device(internals, settings)?;
+            self.start_from_device(internals, settings)?;
         }
 
         // Return `Ok()` if everything went fine
@@ -417,6 +418,7 @@ impl K4aSrc {
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn start_from_playback(
+        &self,
         internals: &mut K4aSrcInternals,
         settings: &Settings,
     ) -> Result<(), K4aSrcError> {
@@ -454,8 +456,14 @@ impl K4aSrc {
         // Setup camera internals based on the extracted Calibration
         Self::setup_camera_internals(&mut internals.camera, settings, calibration)?;
 
+        let stream_source = StreamSource::Playback(playback, record_configuration);
+        let properties = Self::get_stream_properties(&stream_source).unwrap();
+
+        // Update buffer duration for `RgbdTimestamps` trait
+        self.set_buffer_duration(properties.framerate as f32);
+
         // Update `stream_source` to `Playback`
-        internals.stream_source = Some(StreamSource::Playback(playback, record_configuration));
+        internals.stream_source = Some(stream_source);
 
         // Return `Ok()` if everything went fine
         Ok(())
@@ -471,6 +479,7 @@ impl K4aSrc {
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn start_from_device(
+        &self,
         internals: &mut K4aSrcInternals,
         settings: &Settings,
     ) -> Result<(), K4aSrcError> {
@@ -510,8 +519,14 @@ impl K4aSrc {
         // Setup camera internals based on the extracted Calibration
         Self::setup_camera_internals(&mut internals.camera, settings, calibration)?;
 
-        // Update `stream_source` to `Device`
-        internals.stream_source = Some(StreamSource::Device(device, device_configuration));
+        let stream_source = StreamSource::Device(device, device_configuration);
+        let properties = Self::get_stream_properties(&stream_source).unwrap();
+
+        // Update buffer duration for `RgbdTimestamps` trait
+        self.set_buffer_duration(properties.framerate as f32);
+
+        // Update `stream_source` to `Playback`
+        internals.stream_source = Some(stream_source);
 
         // Return `DeviceConfiguration` if everything went fine
         Ok(())
