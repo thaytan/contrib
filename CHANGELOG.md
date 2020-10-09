@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2020-Oct-09
+
+### Changed
+
+- Base class of `K4aSrc` is now `PushSrc`.
+
+### Fixed
+
+- Several smaller review comments from Sebastian Dröge from `gst-realsense` which
+  also applied to this repo have been resolved.
+
 ## [1.3.5] - 2020-Sep-07
 ### Changed
 - Set dependency of `rgbd-timestamps` to a separate shared library (separate from `gstreamer-depth-meta-rs`), such that `GstTimestampMode` gets registered only once.
