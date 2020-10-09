@@ -40,10 +40,12 @@ use k4a::transformation::Transformation;
 use k4a::CalibrationType::*;
 use k4a::*;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 /// A struct representation of the `k4asrc` element.
 struct K4aSrc {
+    /// Reconfigurable properties.
+    settings: RwLock<Settings>,
     /// Internals of `k4asrc` element that are locked under mutex.
     internals: Mutex<K4aSrcInternals>,
     /// Contains timestamp internals utilised by `RgbdTimestamps` trait.
@@ -61,12 +63,22 @@ lazy_static! {
 
 /// Internals of the element that are under a mutex.
 struct K4aSrcInternals {
-    /// Reconfigurable properties.
-    settings: Settings,
     /// Contains information about the utilised K4A source.
     stream_source: Option<StreamSource>,
     /// Contains calibration data specific to the Device or Playback the is utilised for streaming.
     camera: CameraInternals,
+}
+
+impl Default for K4aSrcInternals {
+    fn default() -> Self {
+        Self {
+            stream_source: None,
+            camera: CameraInternals {
+                transformation: None,
+                camera_meta_serialised: Vec::default(),
+            },
+        }
+    }
 }
 
 /// An enum that contains information about stream source from either playback and physical K4A device.
@@ -139,14 +151,8 @@ impl ObjectSubclass for K4aSrc {
 
     fn new() -> Self {
         Self {
-            internals: Mutex::new(K4aSrcInternals {
-                settings: Settings::default(),
-                stream_source: None,
-                camera: CameraInternals {
-                    transformation: None,
-                    camera_meta_serialised: Vec::default(),
-                },
-            }),
+            settings: RwLock::new(Settings::default()),
+            internals: Mutex::new(K4aSrcInternals::default()),
             timestamp_internals: Arc::new(Mutex::new(TimestampInternals::default())),
         }
     }
@@ -159,34 +165,20 @@ impl BaseSrcImpl for K4aSrc {
             .internals
             .lock()
             .expect("k4asrc: Cannot lock internals in `start()`");
+        let settings = &*self
+            .settings
+            .read()
+            .expect("k4asrc: Cannot read settings in `start()`");
 
         // Initiate streaming from K4A
-        Self::start_k4a(internals)?;
+        Self::start_k4a(internals, settings)?;
 
         // Return `Ok()` if everything went fine and start streaming
         Ok(())
     }
 
     fn stop(&self, base_src: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
-        // Lock the internals
-        let internals = &mut *self
-            .internals
-            .lock()
-            .expect("k4asrc: Cannot lock internals in `start()`");
-
-        // Stop live streaming from K4A `Device`
-        match &internals.stream_source {
-            Some(StreamSource::Device(device, _device_configuration)) => {
-                if internals.settings.desired_streams.imu {
-                    device.stop_imu();
-                }
-                device.stop_cameras();
-            }
-            Some(StreamSource::Playback(_playback, _record_configuration)) => {}
-            None => unreachable!("k4asrc: Stream source is specified before reaching `stop()`"),
-        }
-
-        // Chain up parent implementation
+        self.stop_k4a_and_reset()?;
         self.parent_stop(base_src)
     }
 
@@ -196,7 +188,11 @@ impl BaseSrcImpl for K4aSrc {
             .internals
             .lock()
             .expect("k4asrc: Cannot lock internals in `fixate()`");
-        let desired_streams = &internals.settings.desired_streams;
+        let settings = &mut self
+            .settings
+            .read()
+            .expect("k4asrc: Cannot read settings in `fixate()`");
+        let desired_streams = &settings.desired_streams;
 
         caps.truncate();
         {
@@ -227,7 +223,7 @@ impl BaseSrcImpl for K4aSrc {
                     &k4a_image_format_to_gst_video_format(DEPTH_FORMAT).unwrap(),
                 );
                 // If rectified, the resolution of the depth stream is identical to color stream.
-                if internals.settings.rectify_depth {
+                if settings.rectify_depth {
                     caps.set(
                         &format!("{}_width", STREAM_ID_DEPTH),
                         &stream_properties.color_resolution.width,
@@ -286,7 +282,7 @@ impl BaseSrcImpl for K4aSrc {
             }
 
             // Add camerameta stream, if enabled
-            if internals.settings.attach_camera_meta {
+            if settings.attach_camera_meta {
                 selected_streams.push_str(&format!("{},", STREAM_ID_CAMERAMETA));
             }
 
@@ -320,54 +316,49 @@ impl PushSrcImpl for K4aSrc {
             .internals
             .lock()
             .expect("k4asrc: Cannot lock internals in `create()`");
-        let desired_streams = internals.settings.desired_streams;
-        let stream_descriptions = desired_streams.get_descriptions();
+        let settings = &mut self
+            .settings
+            .read()
+            .expect("k4asrc: Cannot read settings in `create()`");
+        let desired_streams = settings.desired_streams;
+        let streams: Streams = desired_streams.into();
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
 
         // Get capture from the stream source
-        let capture = Self::get_capture(internals)?;
+        let capture = Self::get_capture(internals, settings)?;
 
-        // Attach depth, ir and color frames to buffer. imu is handled
-        // seperalty after this loop
-        // TODO: This code doesn't really comunicate clearly that 0..3 are
-        //       the depth, ir and color streams. Maybe there is a better
-        //       way to structure this
-        for (i, description) in stream_descriptions[0..3]
-            .iter()
-            .filter(|d| d.enabled)
-            .enumerate()
-        {
-            let res = self.attach_frame_to_buffer(
-                push_src,
-                internals,
-                &mut output_buffer,
-                &capture,
-                description.id,
-                // The first stream after filtering out disabled streams is
-                // the main stream
-                i == 0,
-            );
-
-            if res.is_err() {
-                gst_warning!(
-                    CAT,
-                    obj: push_src,
-                    "Frame could not be attached to buffer for `{}` stream",
-                    description.id,
-                );
+        // Attach all enabled streams
+        for stream in streams.iter().filter(|s| s.enabled) {
+            match stream.id {
+                StreamId::Imu => {
+                    let imu_samples = Self::get_available_imu_samples(internals)?;
+                    self.attach_imu_samples(push_src, &mut output_buffer, imu_samples)?;
+                }
+                _ => {
+                    let res = self.attach_frame_to_buffer(
+                        push_src,
+                        internals,
+                        settings,
+                        &mut output_buffer,
+                        &capture,
+                        stream,
+                    );
+                    if res.is_err() {
+                        gst_warning!(
+                            CAT,
+                            obj: push_src,
+                            "Frame could not be attached to buffer for `{}` stream",
+                            stream.id.get_string(),
+                        );
+                    }
+                }
             }
         }
 
-        // Attach `IMU` samples if enabled
-        if desired_streams.imu {
-            let imu_samples = Self::get_available_imu_samples(internals)?;
-            self.attach_imu_samples(push_src, &mut output_buffer, imu_samples)?;
-        }
-
         // Attach Cap'n Proto serialised `CameraMeta` if enabled
-        if internals.settings.attach_camera_meta {
+        if settings.attach_camera_meta {
             // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
             let camera_meta = internals.camera.camera_meta_serialised.clone();
             self.attach_camera_meta(push_src, &mut output_buffer, camera_meta)?;
@@ -381,14 +372,13 @@ impl K4aSrc {
     /// Start streaming from K4A and configure stream source according to settings.
     ///
     /// # Arguments
-    /// * `internals` - The internals of the element that contain settings and stream source.
+    /// * `internals` - The internals of the element that contain stream source.
+    /// * `settings` - The settings of the element.
     ///
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
-    fn start_k4a(internals: &mut K4aSrcInternals) -> Result<(), K4aSrcError> {
-        let settings = &internals.settings;
-
+    fn start_k4a(internals: &mut K4aSrcInternals, settings: &Settings) -> Result<(), K4aSrcError> {
         // Make sure the user enabled at least one of the streams
         if !settings.desired_streams.is_any_video_enabled() {
             return Err(K4aSrcError::Failure(
@@ -408,9 +398,9 @@ impl K4aSrc {
         // Determine whether to stream from `Playback` or `Device`
         // If `recording-location` is not set, live stream from `Device` is assumed
         if !settings.playback_settings.recording_location.is_empty() {
-            Self::start_from_playback(internals)?;
+            Self::start_from_playback(internals, settings)?;
         } else {
-            Self::start_from_device(internals)?;
+            Self::start_from_device(internals, settings)?;
         }
 
         // Return `Ok()` if everything went fine
@@ -420,14 +410,16 @@ impl K4aSrc {
     /// Start streaming from K4A `Playback`.
     ///
     /// # Arguments
-    /// * `internals` - The internals of the element that contain settings and stream source.
+    /// * `internals` - The internals of the element that contain stream source.
+    /// * `settings` - The settings of the element.
     ///
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
-    fn start_from_playback(internals: &mut K4aSrcInternals) -> Result<(), K4aSrcError> {
-        let settings = &internals.settings;
-
+    fn start_from_playback(
+        internals: &mut K4aSrcInternals,
+        settings: &Settings,
+    ) -> Result<(), K4aSrcError> {
         // Open `Playback`
         let playback = Playback::open(&settings.playback_settings.recording_location)?;
 
@@ -435,7 +427,7 @@ impl K4aSrc {
         let record_configuration = playback.get_record_configuration()?;
 
         // Extract available streams from the `record_configuration`
-        let available_streams = Streams {
+        let available_streams = EnabledStreams {
             depth: record_configuration.depth_track_enabled,
             ir: record_configuration.ir_track_enabled,
             color: record_configuration.color_track_enabled,
@@ -443,7 +435,7 @@ impl K4aSrc {
         };
 
         // Make sure there are no conflicts between the desired and available streams
-        if !Streams::are_streams_available(settings.desired_streams, available_streams) {
+        if !EnabledStreams::are_streams_available(settings.desired_streams, available_streams) {
             return Err(K4aSrcError::Failure(
                 "k4asrc: Some of the desired stream(s) are not available in the recording for playback",
           ));
@@ -460,7 +452,7 @@ impl K4aSrc {
         // Get Calibration from the Playback
         let calibration = playback.get_calibration()?;
         // Setup camera internals based on the extracted Calibration
-        Self::setup_camera_internals(internals, calibration)?;
+        Self::setup_camera_internals(&mut internals.camera, settings, calibration)?;
 
         // Update `stream_source` to `Playback`
         internals.stream_source = Some(StreamSource::Playback(playback, record_configuration));
@@ -472,14 +464,16 @@ impl K4aSrc {
     /// Start streaming from K4A `Device`.
     ///
     /// # Arguments
-    /// * `internals` - The internals of the element that contain settings and stream source.
+    /// * `internals` - The internals of the element that contain stream source.
+    /// * `settings` - The settings of the element.
     ///
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
-    fn start_from_device(internals: &mut K4aSrcInternals) -> Result<(), K4aSrcError> {
-        let settings = &internals.settings;
-
+    fn start_from_device(
+        internals: &mut K4aSrcInternals,
+        settings: &Settings,
+    ) -> Result<(), K4aSrcError> {
         // Make sure that color stream is enabled if depth rectification is desired
         if settings.rectify_depth && !settings.desired_streams.color {
             return Err(K4aSrcError::Failure(
@@ -514,7 +508,7 @@ impl K4aSrc {
             device_configuration.color_resolution,
         )?;
         // Setup camera internals based on the extracted Calibration
-        Self::setup_camera_internals(internals, calibration)?;
+        Self::setup_camera_internals(&mut internals.camera, settings, calibration)?;
 
         // Update `stream_source` to `Device`
         internals.stream_source = Some(StreamSource::Device(device, device_configuration));
@@ -526,19 +520,18 @@ impl K4aSrc {
     /// Sets up the camera internals from K4A Calibration.
     ///
     /// # Arguments
-    /// * `internals` - The internals of the element that contain settings and timestamp internals.
+    /// * `internals` - The internals of the element that contain timestamp internals.
+    /// * `settings` - The settings of the element.
     /// * `calibration` - K4A Calibration of the utilised Device or Playback.
     ///
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(K4aSrcError)` on failure.
     fn setup_camera_internals(
-        internals: &mut K4aSrcInternals,
+        camera: &mut CameraInternals,
+        settings: &Settings,
         calibration: Calibration,
     ) -> Result<(), K4aSrcError> {
-        let settings = &internals.settings;
-        let camera = &mut internals.camera;
-
         // Get Transformation if rectification is enabled
         if settings.rectify_depth {
             camera.transformation = Some(Transformation::new(&calibration)?)
@@ -582,17 +575,20 @@ impl K4aSrc {
     /// Extract a Capture from either Playback or Device.
     ///
     /// # Arguments
-    /// * `internals` - The internals of the element that contain settings and stream source.
+    /// * `internals` - The internals of the element that contain stream source.
+    /// * `settings` - The settings of the element.
     ///
     /// # Returns
     /// * `Ok(Capture)` on success.
     /// * `Err(K4aSrcError)` on failure.
-    fn get_capture(internals: &K4aSrcInternals) -> Result<Capture, K4aSrcError> {
+    fn get_capture(
+        internals: &K4aSrcInternals,
+        settings: &Settings,
+    ) -> Result<Capture, K4aSrcError> {
         // Extract stream_source and settings from internals
         let stream_source = internals.stream_source.as_ref().unwrap_or_else(|| {
             unreachable!("k4asrc: Stream source is specified before reaching `get_capture()`")
         });
-        let settings = &internals.settings;
 
         Ok(match stream_source {
             StreamSource::Playback(playback, _record_configuration) => {
@@ -617,7 +613,7 @@ impl K4aSrc {
     /// Extract all available ImuSamples from either Playback or Device. Unimplemented!
     ///
     /// # Arguments
-    /// * `internals` - The internals of the element that contain settings and stream source.
+    /// * `internals` - The internals of the element that contain stream source.
     ///
     /// # Returns
     /// * `Ok(Vec<ImuSample>)` on success.
@@ -671,11 +667,11 @@ impl K4aSrc {
     ///
     /// # Arguments
     /// * `push_src` - This element (k4asrc).
-    /// * `internals` - The internals of the element that contain settings and stream source.
+    /// * `internals` - The internals of the element that contain stream source.
+    /// * `settings` - The settings of the element.
     /// * `output_buffer` - The output buffer to which frames will be attached.
     /// * `capture` - Capture to extract the frames from.
-    /// * `stream_id` - The id of the stream to extract.
-    /// * `is_main_stream` - Indicator of whether the stream is the main stream.
+    /// * `stream` - The stream to extract.
     ///
     /// # Returns
     /// * `Ok()` on success.
@@ -683,17 +679,17 @@ impl K4aSrc {
     fn attach_frame_to_buffer(
         &self,
         push_src: &gst_base::PushSrc,
-        internals: &mut K4aSrcInternals,
+        internals: &K4aSrcInternals,
+        settings: &Settings,
         output_buffer: &mut gst::Buffer,
         capture: &Capture,
-        stream_id: &str,
-        is_main_stream: bool,
+        stream: &Stream,
     ) -> Result<(), K4aSrcError> {
         // Extract the correspond frame from the capture
-        let frame = match stream_id {
-            STREAM_ID_DEPTH => {
+        let frame = match stream.id {
+            StreamId::Depth => {
                 // Rectify depth, if desired
-                if internals.settings.rectify_depth {
+                if settings.rectify_depth {
                     let depth_image = capture.get_depth_image()?;
                     let transformation = internals.camera
                         .transformation
@@ -704,8 +700,8 @@ impl K4aSrc {
                     capture.get_depth_image()
                 }
             }
-            STREAM_ID_IR => capture.get_ir_image(),
-            STREAM_ID_COLOR => capture.get_color_image(),
+            StreamId::Ir => capture.get_ir_image(),
+            StreamId::Color => capture.get_color_image(),
             _ => unreachable!("k4asrc: There are no more video streams available from K4A"),
         }?;
 
@@ -714,14 +710,9 @@ impl K4aSrc {
 
         // Form a gst buffer out of mutable slice
         let mut buffer = gst::buffer::Buffer::from_mut_slice(frame_buffer);
+
         // Get mutable reference to the buffer
-        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
-            gst::ResourceError::Failed,
-            [
-                "k4asrc: Cannot get mutable reference to {} buffer",
-                stream_id
-            ]
-        ))?;
+        let buffer_mut_ref = buffer.get_mut().unwrap();
 
         // Extract timestamp from K4A
         let camera_timestamp = TimestampSource::Image(&frame).extract_timestamp();
@@ -729,23 +720,23 @@ impl K4aSrc {
         self.set_rgbd_timestamp(
             push_src.upcast_ref(),
             buffer_mut_ref,
-            is_main_stream,
+            stream.is_main,
             camera_timestamp,
         );
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
-        if is_main_stream {
+        if stream.is_main {
             // Fill the main buffer and tag it adequately
-            rgbd::fill_main_buffer_and_tag(output_buffer, buffer, stream_id)?;
+            rgbd::fill_main_buffer_and_tag(output_buffer, buffer, stream.id.get_string())?;
         } else {
             // Attach the secondary buffer and tag it adequately
             rgbd::attach_aux_buffer_and_tag(output_buffer.get_mut().ok_or(gst_error_msg!(
                 gst::ResourceError::Failed,
                 [
                     "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
-                    stream_id
+                    stream.id.get_string()
                 ]
-            ))?, &mut buffer, stream_id)?;
+            ))?, &mut buffer, stream.id.get_string())?;
         }
 
         Ok(())
@@ -919,7 +910,7 @@ impl K4aSrc {
     /// # Returns
     /// * `HashMap<String, camera_meta::Intrinsics>` containing Intrinsics corresponding to a stream.
     fn extract_intrinsics(
-        desired_streams: Streams,
+        desired_streams: EnabledStreams,
         depth_calibration: &CameraCalibration,
         color_calibration: &CameraCalibration,
     ) -> HashMap<String, camera_meta::Intrinsics> {
@@ -955,21 +946,23 @@ impl K4aSrc {
     /// * `HashMap<(String, String), camera_meta::Transformation>` containing Transformation
     /// in a hashmap of <(from, to), Transformation>.
     fn extract_extrinsics(
-        desired_streams: Streams,
+        desired_streams: EnabledStreams,
         calibration: &Calibration,
     ) -> HashMap<(String, String), camera_meta::Transformation> {
         // Create extrinsics and insert the appropriate transformations
         let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
 
         // Determine the main stream from which all extrinsics are computed
-        let main_stream = Self::determine_main_stream(desired_streams);
+        let streams: Streams = desired_streams.into();
+        let main_stream = streams.iter().find(|s| s.is_main).unwrap();
+        let main_stream_name = main_stream.id.get_string();
         let main_stream_calibration_type =
             Self::determine_main_stream_calibration_type(desired_streams);
 
         // Insert extrinsics from main stream to the IR, unless it is the main stream itself
-        if desired_streams.ir && main_stream != STREAM_ID_IR {
+        if desired_streams.ir && main_stream.id != StreamId::Ir {
             extrinsics.insert(
-                (main_stream.to_string(), STREAM_ID_IR.to_string()),
+                (main_stream_name.to_string(), STREAM_ID_IR.to_string()),
                 Self::k4a_extrinsics_to_camera_meta_transformation(
                     calibration
                         .extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_DEPTH),
@@ -978,9 +971,9 @@ impl K4aSrc {
         }
 
         // Insert extrinsics from main stream to the color, unless it is the main stream itself
-        if desired_streams.color && main_stream != STREAM_ID_COLOR {
+        if desired_streams.color && main_stream.id != StreamId::Color {
             extrinsics.insert(
-                (main_stream.to_string(), STREAM_ID_COLOR.to_string()),
+                (main_stream_name.to_string(), STREAM_ID_COLOR.to_string()),
                 Self::k4a_extrinsics_to_camera_meta_transformation(
                     calibration
                         .extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_COLOR),
@@ -991,13 +984,19 @@ impl K4aSrc {
         // Insert extrinsics from main stream to the IMU, for both gyroscope and accelerometer
         if desired_streams.imu {
             extrinsics.insert(
-                (main_stream.to_string(), format!("{}_gyro", STREAM_ID_IMU)),
+                (
+                    main_stream_name.to_string(),
+                    format!("{}_gyro", STREAM_ID_IMU),
+                ),
                 Self::k4a_extrinsics_to_camera_meta_transformation(
                     calibration.extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_GYRO),
                 ),
             );
             extrinsics.insert(
-                (main_stream.to_string(), format!("{}_accel", STREAM_ID_IMU)),
+                (
+                    main_stream_name.to_string(),
+                    format!("{}_accel", STREAM_ID_IMU),
+                ),
                 Self::k4a_extrinsics_to_camera_meta_transformation(
                     calibration
                         .extrinsics(main_stream_calibration_type, K4A_CALIBRATION_TYPE_ACCEL),
@@ -1060,23 +1059,6 @@ impl K4aSrc {
         )
     }
 
-    /// Determine the main stream, while taking into account the priority `depth > ir > color`, and return the corresponding ID.
-    ///
-    /// # Arguments
-    /// * `streams` - Struct containing enabled streams.
-    ///
-    /// # Returns
-    /// * `&str` containing the ID of the main stream.
-    fn determine_main_stream(streams: Streams) -> &'static str {
-        if streams.depth {
-            STREAM_ID_DEPTH
-        } else if streams.ir {
-            STREAM_ID_IR
-        } else {
-            STREAM_ID_COLOR
-        }
-    }
-
     /// Determine the calibration type of the main stream, while taking into account the priority `depth == ir > color`.
     /// This function is useful for extracting Extrinsics from k4a::Calibration.
     ///
@@ -1085,12 +1067,41 @@ impl K4aSrc {
     ///
     /// # Returns
     /// * `k4a::CalibrationType` containing the corresponding calibration type.
-    fn determine_main_stream_calibration_type(streams: Streams) -> k4a::CalibrationType {
+    fn determine_main_stream_calibration_type(streams: EnabledStreams) -> k4a::CalibrationType {
         if streams.depth | streams.ir {
             K4A_CALIBRATION_TYPE_DEPTH
         } else {
             K4A_CALIBRATION_TYPE_COLOR
         }
+    }
+
+    /// Stop K4A device and reset internals ex
+    fn stop_k4a_and_reset(&self) -> Result<(), gst::ErrorMessage> {
+        // Lock the internals
+        let internals = &mut *self
+            .internals
+            .lock()
+            .expect("k4asrc: Cannot lock internals in `stop_k4a_and_reset()`");
+        let settings = &*self
+            .settings
+            .read()
+            .expect("k4asrc: Cannot lock settings in `stop_k4a_and_reset()`");
+
+        // Stop live streaming from K4A `Device`
+        match &internals.stream_source {
+            Some(StreamSource::Device(device, _device_configuration)) => {
+                if settings.desired_streams.imu {
+                    device.stop_imu();
+                }
+                device.stop_cameras();
+            }
+            Some(StreamSource::Playback(_playback, _record_configuration)) => {}
+            None => unreachable!("k4asrc: Stream source is specified before reaching `stop()`"),
+        }
+
+        *internals = K4aSrcInternals::default();
+        *self.timestamp_internals.lock().unwrap() = TimestampInternals::default();
+        Ok(())
     }
 }
 
@@ -1123,12 +1134,10 @@ impl ObjectImpl for K4aSrc {
     }
 
     fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
-        // Get settings
         let settings = &self
-            .internals
-            .lock()
-            .expect("k4asrc: Cannot lock internals in `get_property()`")
-            .settings;
+            .settings
+            .read()
+            .expect("k4asrc: Cannot read settings in `get_property()`");
 
         let prop = &PROPERTIES[id];
         match *prop {
@@ -1179,13 +1188,10 @@ impl ObjectImpl for K4aSrc {
         let element = obj
             .downcast_ref::<gst_base::BaseSrc>()
             .expect("k4asrc: Could not cast k4asrc to BaseSrc");
-
-        // Get settings
         let settings = &mut self
-            .internals
-            .lock()
-            .expect("k4asrc: Cannot lock internals in `set_property()`")
-            .settings;
+            .settings
+            .write()
+            .expect("k4asrc: Cannot lock settings in `set_property()`");
 
         let property = &PROPERTIES[id];
         match *property {

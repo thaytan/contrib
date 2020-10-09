@@ -30,7 +30,7 @@ pub(crate) const STREAM_ID_CAMERAMETA: &str = "camerameta";
 
 /// A struct containing information about what streams are enabled.
 #[derive(Clone, Copy)]
-pub(crate) struct Streams {
+pub(crate) struct EnabledStreams {
     /// Determines whether depth stream is enabled.
     pub(crate) depth: bool,
     /// Determines whether IR stream is enabled.
@@ -41,12 +41,7 @@ pub(crate) struct Streams {
     pub(crate) imu: bool,
 }
 
-pub(crate) struct StreamDescription {
-    pub(crate) enabled: bool,
-    pub(crate) id: &'static str,
-}
-
-impl Default for Streams {
+impl Default for EnabledStreams {
     fn default() -> Self {
         Self {
             depth: DEFAULT_ENABLE_DEPTH,
@@ -57,7 +52,7 @@ impl Default for Streams {
     }
 }
 
-impl Streams {
+impl EnabledStreams {
     /// Determine whether at least one video stream is enabled. IMU stream is ignored.
     ///
     /// # Returns
@@ -77,33 +72,78 @@ impl Streams {
     /// # Returns
     /// * `Vec<&str>` of conflicting streams, which is empty if there is no conflict.
     pub(crate) fn are_streams_available(
-        enabled_streams: Streams,
-        available_streams: Streams,
+        enabled_streams: EnabledStreams,
+        available_streams: EnabledStreams,
     ) -> bool {
         (available_streams.imu || !enabled_streams.imu)
             && (available_streams.color || !enabled_streams.color)
             && (available_streams.ir || !enabled_streams.ir)
             && (available_streams.depth || !enabled_streams.depth)
     }
+}
 
-    /// Get a description of all streams sorted by the streams priority
-    pub(crate) fn get_descriptions(self) -> [StreamDescription; 4] {
+/// An Id for distinguishing between streams when iterating over `Streams`.
+#[derive(PartialEq)]
+pub(crate) enum StreamId {
+    Depth,
+    Ir,
+    Color,
+    Imu,
+}
+
+impl StreamId {
+    pub(crate) fn get_string(&self) -> &'static str {
+        match self {
+            StreamId::Depth => STREAM_ID_DEPTH,
+            StreamId::Ir => STREAM_ID_IR,
+            StreamId::Color => STREAM_ID_COLOR,
+            StreamId::Imu => STREAM_ID_IMU,
+        }
+    }
+}
+
+/// An array for storing all streams.
+pub(crate) type Streams = [Stream; 4];
+
+/// A struct with fields describing the properties of a stream.
+pub(crate) struct Stream {
+    /// Is the stream enabled?
+    pub(crate) enabled: bool,
+
+    /// If the stream the main stream. This is true if the stream
+    /// is the first enabled stream. When `enabled` is `false`, this
+    /// can never be `true`.
+    pub(crate) is_main: bool,
+
+    /// The streams id.
+    pub(crate) id: StreamId,
+}
+
+impl From<EnabledStreams> for Streams {
+    fn from(enabled_streams: EnabledStreams) -> Self {
         [
-            StreamDescription {
-                enabled: self.depth,
-                id: STREAM_ID_DEPTH,
+            Stream {
+                enabled: enabled_streams.depth,
+                is_main: enabled_streams.depth,
+                id: StreamId::Depth,
             },
-            StreamDescription {
-                enabled: self.ir,
-                id: STREAM_ID_IR,
+            Stream {
+                enabled: enabled_streams.ir,
+                is_main: !enabled_streams.depth && enabled_streams.ir,
+                id: StreamId::Ir,
             },
-            StreamDescription {
-                enabled: self.color,
-                id: STREAM_ID_COLOR,
+            Stream {
+                enabled: enabled_streams.color,
+                is_main: !enabled_streams.depth && !enabled_streams.ir && enabled_streams.color,
+                id: StreamId::Color,
             },
-            StreamDescription {
-                enabled: self.imu,
-                id: STREAM_ID_IMU,
+            Stream {
+                enabled: enabled_streams.imu,
+                is_main: !enabled_streams.depth
+                    && !enabled_streams.ir
+                    && !enabled_streams.color
+                    && enabled_streams.imu,
+                id: StreamId::Imu,
             },
         ]
     }
