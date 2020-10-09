@@ -26,12 +26,12 @@ extern crate lazy_static;
 extern crate rgbd_timestamps;
 
 mod d400_limits;
-mod enabled_streams;
 mod errors;
 mod properties;
 mod realsensesrc;
 mod rs_meta;
 mod settings;
+mod streams;
 
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     realsensesrc::register(plugin)?;

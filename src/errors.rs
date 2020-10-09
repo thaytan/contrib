@@ -17,7 +17,8 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use crate::settings::Streams;
+use crate::realsensesrc::CAT;
+use crate::settings::StreamsSettings;
 
 #[derive(Clone, Debug)]
 pub(crate) struct RealsenseError(pub(crate) String);
@@ -36,35 +37,34 @@ impl From<rs2::error::Error> for RealsenseError {
     }
 }
 
-impl From<StreamEnableError> for RealsenseError {
-    fn from(error: StreamEnableError) -> Self {
-        Self(error.0.to_string())
+impl From<RealsenseError> for gst::ErrorMessage {
+    fn from(e: RealsenseError) -> Self {
+        gst_error!(CAT, "{}", e);
+        gst_error_msg!(gst::StreamError::Failed, (&e.0))
     }
 }
 
 impl From<RealsenseError> for gst::FlowError {
     fn from(e: RealsenseError) -> Self {
-        gst_error!(
-            gst::DebugCategory::new(
-                "realsensesrc",
-                gst::DebugColorFlags::empty(),
-                Some("Realsense Source"),
-            ),
-            "{}",
-            e
-        );
+        gst_error!(CAT, "{}", e);
         gst::FlowError::Error
     }
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct StreamEnableError(pub(crate) &'static str);
+pub(crate) struct StreamEnableError(pub(crate) String);
 
 impl Error for StreamEnableError {}
 
 impl Display for StreamEnableError {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "Could not enable stream: {}", self.0)
+    }
+}
+
+impl From<StreamEnableError> for RealsenseError {
+    fn from(error: StreamEnableError) -> Self {
+        Self(error.0)
     }
 }
 
@@ -83,7 +83,7 @@ pub(crate) enum ConfigError {
     DeviceNotFound(String),
     /// Error that occurs in case the combination of resolution and framerate is invalid for the connected device
     /// with a specific firmware.
-    InvalidRequest(Streams),
+    InvalidRequest(StreamsSettings),
     /// Other errors that either do not need more detailed error handling, or they occur only rarely.
     Other(String),
 }
@@ -91,19 +91,26 @@ pub(crate) enum ConfigError {
 impl std::error::Error for ConfigError {}
 impl std::fmt::Display for ConfigError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let msg = match self {
+        match self {
             ConfigError::DeviceNotFound(serial) => {
-                format!("Device with serial '{}' is not connected", serial)
+                write!(f, "Device with serial '{}' is not connected", serial)
             }
-            ConfigError::InvalidRequest(streams) => format!(
+            ConfigError::InvalidRequest(streams) => write!(
+                f,
                 "The selected RealSense configuration is NOT supported by your device: {}",
                 streams
             ),
-            ConfigError::Other(err_msg) => format!(
+            ConfigError::Other(err_msg) => write!(
+                f,
                 "Failed to prepare and start librealsense2 pipeline: {}",
                 err_msg
             ),
-        };
-        write!(f, "{}", msg)
+        }
+    }
+}
+
+impl From<ConfigError> for RealsenseError {
+    fn from(error: ConfigError) -> Self {
+        Self(error.to_string())
     }
 }

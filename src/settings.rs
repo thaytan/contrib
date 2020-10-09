@@ -15,9 +15,10 @@
 
 use std::fmt::{Display, Formatter};
 
-pub(crate) use crate::d400_limits::*;
-pub(crate) use crate::enabled_streams::EnabledStreams;
 pub(crate) use rs2::stream_profile::StreamResolution;
+
+pub(crate) use crate::d400_limits::*;
+pub(crate) use crate::streams::StreamId;
 
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 pub(crate) const DEFAULT_LOOP_ROSBAG: bool = false;
@@ -56,7 +57,7 @@ pub(crate) struct Settings {
     pub(crate) serial: Option<String>,
     pub(crate) rosbag_location: Option<String>,
     pub(crate) json_location: Option<String>,
-    pub(crate) streams: Streams,
+    pub(crate) streams: StreamsSettings,
     pub(crate) loop_rosbag: bool,
     pub(crate) wait_for_frames_timeout: u32,
     pub(crate) include_per_frame_metadata: bool,
@@ -66,14 +67,14 @@ pub(crate) struct Settings {
 
 /// A struct containing properties of `realsensesrc` about streams
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Streams {
+pub(crate) struct StreamsSettings {
     pub(crate) enabled_streams: EnabledStreams,
     pub(crate) depth_resolution: StreamResolution,
     pub(crate) color_resolution: StreamResolution,
     pub(crate) framerate: i32,
 }
 
-impl Display for Streams {
+impl Display for StreamsSettings {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let depth_info = &format!("{}@{}fps", self.depth_resolution, self.framerate);
         let color_info = &format!("{}@{}fps", self.color_resolution, self.framerate);
@@ -104,13 +105,29 @@ impl Display for Streams {
     }
 }
 
+impl StreamsSettings {
+    /// Get resolution of stream determined by `stream_id`.
+    /// # Arguments
+    /// * `stream_id` - Stream for which to return the resolution.
+    /// # Returns
+    /// `(i32, i32)` - Resolution of the stream formated as tuple=(width, height).
+    pub(crate) fn get_stream_resolution(&self, stream_id: StreamId) -> (i32, i32) {
+        // Depth, infra1 and infra2 streams share the same resolution.
+        if stream_id == StreamId::Color {
+            (self.color_resolution.width, self.color_resolution.height)
+        } else {
+            (self.depth_resolution.width, self.depth_resolution.height)
+        }
+    }
+}
+
 impl Default for Settings {
     fn default() -> Self {
         Settings {
             rosbag_location: None,
             serial: None,
             json_location: None,
-            streams: Streams {
+            streams: StreamsSettings {
                 enabled_streams: EnabledStreams {
                     depth: DEFAULT_ENABLE_DEPTH,
                     infra1: DEFAULT_ENABLE_INFRA1,
@@ -136,55 +153,52 @@ impl Default for Settings {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub(crate) enum StreamId {
-    Depth,
-    Color,
-    Infra1,
-    Infra2,
+/// Helper struct that contains information about what streams are enabled
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct EnabledStreams {
+    /// Flag that determines if depth stream is enabled.
+    pub(crate) depth: bool,
+    /// Flag that determines if infra1 stream is enabled.
+    pub(crate) infra1: bool,
+    /// Flag that determines if infra2 stream is enabled.
+    pub(crate) infra2: bool,
+    /// Flag that determines if color stream is enabled.
+    pub(crate) color: bool,
 }
-impl Display for StreamId {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                StreamId::Color => "color",
-                StreamId::Depth => "depth",
-                StreamId::Infra1 => "infra1",
-                StreamId::Infra2 => "infra2",
-            }
-        )
-    }
-}
-impl StreamId {
-    /// Convert RealSense stream type and index into its correspond GStreamer ID.
-    ///
-    /// # Arguments
-    /// * `stream` - Stream type.
-    /// * `index` - Index of the sream.
+
+impl EnabledStreams {
+    /// Determines whether at least one stream is enabled.
     ///
     /// # Returns
-    /// * `&str` containing the ID of the stream.
-    pub(crate) fn from_rs2_stream(rs2_stream: rs2::rs2_stream, index: i32) -> Self {
-        match rs2_stream {
-            rs2::rs2_stream::RS2_STREAM_DEPTH => StreamId::Depth,
-            rs2::rs2_stream::RS2_STREAM_INFRARED => match index {
-                1 => StreamId::Infra1,
-                2 => StreamId::Infra2,
-                _ => unreachable!("Each RealSense device has only two infrared streams"),
-            },
-            rs2::rs2_stream::RS2_STREAM_COLOR => StreamId::Color,
-            _ => unimplemented!("Other RealSense streams are not supported"),
-        }
+    /// * `true` if at least one stream is enabled.
+    /// * `false` if no stream is enabled.
+    pub(crate) fn any(&self) -> bool {
+        self.depth || self.infra1 || self.infra2 || self.color
     }
 
-    pub(crate) fn to_rs2_stream(self) -> (rs2::rs2_stream, i32) {
-        match self {
-            StreamId::Depth => (rs2::rs2_stream::RS2_STREAM_DEPTH, -1),
-            StreamId::Infra1 => (rs2::rs2_stream::RS2_STREAM_INFRARED, 1),
-            StreamId::Infra2 => (rs2::rs2_stream::RS2_STREAM_INFRARED, 2),
-            StreamId::Color => (rs2::rs2_stream::RS2_STREAM_COLOR, -1),
+    /// Determines whether there are any conflict between `enabled_streams` and
+    /// `available_streams`
+    ///
+    /// # Arguments
+    /// * `enabled_streams` - The streams that are enabled.
+    /// * `available_streams` - The streams that are available.
+    ///
+    /// # Returns
+    /// * `Vec<StreamId>` of conflicting streams, which is empty if there is no conflict.
+    pub(crate) fn get_conflicts(&self, available_streams: &EnabledStreams) -> Vec<StreamId> {
+        let mut conflicting_streams = Vec::new();
+        if self.depth && !available_streams.depth {
+            conflicting_streams.push(StreamId::Depth);
         }
+        if self.infra1 && !available_streams.infra1 {
+            conflicting_streams.push(StreamId::Infra1);
+        }
+        if self.infra2 && !available_streams.infra2 {
+            conflicting_streams.push(StreamId::Infra2);
+        }
+        if self.color && !available_streams.color {
+            conflicting_streams.push(StreamId::Color);
+        }
+        conflicting_streams
     }
 }
