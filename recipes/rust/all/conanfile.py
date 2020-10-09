@@ -22,12 +22,8 @@ class RustConan(ConanFile):
         env = {
             "RUSTFLAGS": "",
         }
-        archs = {
-            "x86_64": "x86_64",
-            "armv8": "aarch64",
-        }
-        arch = archs[str(self.settings.arch_build)]
-        triple = f"{arch}-aivero-linux-gnu"
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
+        triple = f"{arch}-unknown-linux-gnu"
         args = [
             f"--host={triple}",
             f"--target={triple}",
