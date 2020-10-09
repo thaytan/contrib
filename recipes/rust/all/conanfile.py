@@ -19,6 +19,9 @@ class RustConan(ConanFile):
         tools.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
 
     def build(self):
+        env = {
+            "RUSTFLAGS": "",
+        }
         archs = {
             "x86_64": "x86_64",
             "armv8": "aarch64",
@@ -31,7 +34,7 @@ class RustConan(ConanFile):
             f"--llvm-root={self.deps_cpp_info['bootstrap-llvm'].rootpath}",
             "--enable-vendor",
         ]
-        with tools.chdir(f"rustc-{self.version}-src"):
+        with tools.chdir(f"rustc-{self.version}-src"), tools.environment_append(env):
             self.run(f"./configure {' '.join(args)}")
             # with open("config.toml") as r:
             #    text = r.read().replace("#thin-lto = false", "thin-lto = true")
