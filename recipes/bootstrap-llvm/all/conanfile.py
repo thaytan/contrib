@@ -190,6 +190,7 @@ class BootstrapLlvmConan(ConanFile):
             cmake.build(target="install-llvm-tblgen")
             cmake.build(target="install-llvm-profdata")
             cmake.build(target="install-FileCheck")
+            cmake.build(target="install-llvm-libraries")
             cmake.build(target="install-llvm-headers")
 
         # Make lld, clang, clang++ default
