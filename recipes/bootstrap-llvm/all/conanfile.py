@@ -185,7 +185,7 @@ class BootstrapLlvmConan(ConanFile):
 
         # Use system libgcc_s
         with tools.chdir(os.path.join(self.package_folder, "lib")):
-            os.symlink("/lib/x86_64-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
+            os.symlink(f"/lib/{arch}-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
