@@ -27,13 +27,12 @@ class RustConan(ConanFile):
         args = [
             f"--host={triple}",
             f"--target={triple}",
+            f'--prefix="{self.package_folder}"',
             f"--llvm-root={self.deps_cpp_info['bootstrap-llvm'].rootpath}",
             "--enable-vendor",
+            "--release-channel=stable",
+            "--enable-extended",
         ]
         with tools.chdir(f"rustc-{self.version}-src"), tools.environment_append(env):
             self.run(f"./configure {' '.join(args)}")
-            # with open("config.toml") as r:
-            #    text = r.read().replace("#thin-lto = false", "thin-lto = true")
-            # with open("config.toml", "w") as w:
-            #    w.write(text)
-            self.run("python x.py dist")
+            self.run("python x.py install")
