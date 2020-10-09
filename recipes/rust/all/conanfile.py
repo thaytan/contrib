@@ -33,8 +33,8 @@ class RustConan(ConanFile):
         ]
         with tools.chdir(f"rustc-{self.version}-src"):
             self.run(f"./configure {' '.join(args)}")
-            with open("config.toml") as r:
-                text = r.read().replace("#thin-lto = false", "thin-lto = true")
-            with open("config.toml", "w") as w:
-                w.write(text)
+            # with open("config.toml") as r:
+            #    text = r.read().replace("#thin-lto = false", "thin-lto = true")
+            # with open("config.toml", "w") as w:
+            #    w.write(text)
             self.run("python x.py dist")
