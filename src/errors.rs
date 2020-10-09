@@ -17,9 +17,8 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use crate::settings::Streams;
-
 use crate::realsensesrc::CAT;
+use crate::settings::StreamsSettings;
 
 #[derive(Clone, Debug)]
 pub(crate) struct RealsenseError(pub(crate) String);
@@ -53,7 +52,7 @@ impl From<RealsenseError> for gst::FlowError {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct StreamEnableError(pub(crate) &'static str);
+pub(crate) struct StreamEnableError(pub(crate) String);
 
 impl Error for StreamEnableError {}
 
@@ -65,7 +64,7 @@ impl Display for StreamEnableError {
 
 impl From<StreamEnableError> for RealsenseError {
     fn from(error: StreamEnableError) -> Self {
-        Self(error.0.to_string())
+        Self(error.0)
     }
 }
 
@@ -84,7 +83,7 @@ pub(crate) enum ConfigError {
     DeviceNotFound(String),
     /// Error that occurs in case the combination of resolution and framerate is invalid for the connected device
     /// with a specific firmware.
-    InvalidRequest(Streams),
+    InvalidRequest(StreamsSettings),
     /// Other errors that either do not need more detailed error handling, or they occur only rarely.
     Other(String),
 }

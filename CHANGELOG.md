@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.0] - 2020-Oct-02
+## [2.3.0] - 2020-Oct-09
 
 ### Added
 
@@ -14,12 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Base class of `realsensesrc` is now GstPushSrc.
+- Refactored streams and the way in which we handle their internal representation.
 
 ### Fixed
 
 - Several smaller review comments from Sebastian Dröge. Thank you for your feedback!
 - State of the element is no longer changed during CAPS fixation.
 - Mutexes are now unlocked in known places with possibility of deadlock.
+- Order of `streams` field in CAPS template is now correct - RealSense meta streams are attached directly after their corresponding frame, e.g. {"depth","depthmeta","color","colormeta"}. The previous order, e.g. {"depth","color","depthmeta","colormeta"}, was incorrect with respect to the implementation.
 
 ## [2.2.4] - 2020-Sep-07
 

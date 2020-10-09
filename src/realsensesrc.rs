@@ -34,6 +34,10 @@ use crate::errors::*;
 use crate::properties::*;
 use crate::rs_meta::rs_meta_serialization::*;
 use crate::settings::*;
+use crate::streams::*;
+
+/// The default metric scale for the depth map (1 mm per unit).
+const DEFAULT_DEPTH_SCALE: f32 = 0.001;
 
 lazy_static! {
     pub static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
@@ -102,7 +106,16 @@ impl ObjectSubclass for RealsenseSrc {
                 // List of available streams meant for indicating their respective priority
                 (
                     "streams",
-                    &"depth,infra1,infra2,color,depthmeta,infra1meta,infra2meta,colormeta,camerameta",
+                    &format! {"{},{},{},{},{},{},{},{},{}",
+                    StreamId::Depth,
+                    format!{"{}meta", StreamId::Depth},
+                    StreamId::Infra1,
+                    format!{"{}meta", StreamId::Infra1},
+                    StreamId::Infra2,
+                    format!{"{}meta", StreamId::Infra2},
+                    StreamId::Color,
+                    format!{"{}meta", StreamId::Color},
+                    STREAM_ID_CAMERAMETA},
                 ),
                 (
                     "framerate",
@@ -189,45 +202,24 @@ impl BaseSrcImpl for RealsenseSrc {
             let mut selected_streams = String::new();
             let settings = self.settings.read().unwrap();
 
-            if settings.streams.enabled_streams.depth {
-                // Add `depth` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"depth,");
-                s.set("depth_format", &gst_video::VideoFormat::Gray16Le.to_str());
-                s.set("depth_width", &settings.streams.depth_resolution.width);
-                s.set("depth_height", &settings.streams.depth_resolution.height);
+            // Iterate over all enabled streams and create corresponding video/rgbd CAPS.
+            let streams: Streams = (&settings.streams.enabled_streams).into();
+            for (stream_id, stream_descriptor) in streams.iter() {
+                selected_streams.push_str(&format!("{},", stream_id));
                 if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"depthmeta,");
+                    selected_streams.push_str(&format!("{}meta,", stream_id));
                 }
-            }
-            if settings.streams.enabled_streams.infra1 {
-                // Add `infra1` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"infra1,");
-                s.set("infra1_format", &gst_video::VideoFormat::Gray8.to_str());
-                s.set("infra1_width", &settings.streams.depth_resolution.width);
-                s.set("infra1_height", &settings.streams.depth_resolution.height);
-                if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"infra1meta,");
-                }
-            }
-            if settings.streams.enabled_streams.infra2 {
-                // Add `infra2` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"infra2,");
-                s.set("infra2_format", &gst_video::VideoFormat::Gray8.to_str());
-                s.set("infra2_width", &settings.streams.depth_resolution.width);
-                s.set("infra2_height", &settings.streams.depth_resolution.height);
-                if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"infra2meta,");
-                }
-            }
-            if settings.streams.enabled_streams.color {
-                // Add `color` stream with its format, width and height into the caps if enabled
-                selected_streams.push_str(&"color,");
-                s.set("color_format", &gst_video::VideoFormat::Rgb.to_str());
-                s.set("color_width", &settings.streams.color_resolution.width);
-                s.set("color_height", &settings.streams.color_resolution.height);
-                if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&"colormeta,");
-                }
+
+                // Add the corresponding video format
+                s.set(
+                    &format!("{}_format", stream_id),
+                    &stream_descriptor.video_format.to_string(),
+                );
+
+                // Add resolution fields for the stream.
+                let (width, height) = settings.streams.get_stream_resolution(*stream_id);
+                s.set(&format!("{}_width", stream_id), &width);
+                s.set(&format!("{}_height", stream_id), &height);
             }
 
             // Add `camerameta` into `streams`, if enabled
@@ -315,68 +307,20 @@ impl PushSrcImpl for RealsenseSrc {
         // Embed the frames in output_buffer
         {
             let settings = &self.settings.read().unwrap();
-            let streams = &settings.streams;
 
-            // Attach `depth` frame if enabled
-            if streams.enabled_streams.depth {
+            let streams: Streams = (&settings.streams.enabled_streams).into();
+            for (i, (stream_id, stream_descriptor)) in streams.iter().enumerate() {
+                // Only the first stream is considered to be 'main'
+                let is_stream_main = i == 0;
+
                 self.attach_frame_to_buffer(
                     push_src,
                     settings,
                     &mut output_buffer,
                     &frames,
-                    "depth",
-                    -1,
-                    rs2::rs2_stream::RS2_STREAM_DEPTH,
-                    &[],
-                )?;
-            }
-
-            // Attach `infra1` frame if enabled
-            if streams.enabled_streams.infra1 {
-                self.attach_frame_to_buffer(
-                    push_src,
-                    settings,
-                    &mut output_buffer,
-                    &frames,
-                    "infra1",
-                    1,
-                    rs2::rs2_stream::RS2_STREAM_INFRARED,
-                    &[streams.enabled_streams.depth],
-                )?;
-            }
-
-            // Attach `infra2` frame if enabled
-            if streams.enabled_streams.infra2 {
-                self.attach_frame_to_buffer(
-                    push_src,
-                    settings,
-                    &mut output_buffer,
-                    &frames,
-                    "infra2",
-                    2,
-                    rs2::rs2_stream::RS2_STREAM_INFRARED,
-                    &[
-                        streams.enabled_streams.depth,
-                        streams.enabled_streams.infra1,
-                    ],
-                )?;
-            }
-
-            // Attach `color` frame if enabled
-            if streams.enabled_streams.color {
-                self.attach_frame_to_buffer(
-                    push_src,
-                    settings,
-                    &mut output_buffer,
-                    &frames,
-                    "color",
-                    -1,
-                    rs2::rs2_stream::RS2_STREAM_COLOR,
-                    &[
-                        streams.enabled_streams.depth,
-                        streams.enabled_streams.infra1,
-                        streams.enabled_streams.infra2,
-                    ],
+                    &stream_id.to_string(),
+                    stream_descriptor,
+                    is_stream_main,
                 )?;
             }
 
@@ -432,21 +376,21 @@ impl RealsenseSrc {
 
                 // Enable device with the given serial number and device configuration
                 config.enable_device(&serial)?;
+                Ok(config)
             }
             // Stream from rosbag
             (None, Some(rosbag)) => {
                 config.enable_device_from_file_repeat_option(&rosbag, settings.loop_rosbag)?;
+                Ok(config)
             }
             // Make sure that exactly one stream source is selected
             (None, None) => {
-                return Err(RealsenseError("Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!".to_string()));
+                Err(RealsenseError("Neither the `serial` or `rosbag-location` properties are defined. At least one of these must be defined!".to_string()))
             }
             (Some(serial), Some(rosbag_location)) => {
-                return Err(RealsenseError(format!("Both `serial`: {:?} and `rosbag-location`: {:?} are defined. Only one of these can be defined!", serial, rosbag_location)))
+                Err(RealsenseError(format!("Both `serial`: {:?} and `rosbag-location`: {:?} are defined. Only one of these can be defined!", serial, rosbag_location)))
             }
         }
-
-        Ok(config)
     }
 
     /// Enable all the streams that has their associated property set to `true`.
@@ -460,53 +404,20 @@ impl RealsenseSrc {
         config: &rs2::config::Config,
         settings: &Settings,
     ) -> Result<(), StreamEnableError> {
-        if settings.streams.enabled_streams.depth {
+        // Iterate over all user-enabled streams and enable them in librealsense config
+        let streams: Streams = (&settings.streams.enabled_streams).into();
+        for (stream_id, stream_descriptor) in streams.iter() {
+            let (width, height) = settings.streams.get_stream_resolution(*stream_id);
             config
                 .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_DEPTH,
-                    -1,
-                    settings.streams.depth_resolution.width,
-                    settings.streams.depth_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_Z16,
+                    stream_descriptor.rs2_stream_descriptor.rs2_stream,
+                    stream_descriptor.rs2_stream_descriptor.sensor_id,
+                    width,
+                    height,
+                    stream_descriptor.rs2_stream_descriptor.rs2_format,
                     settings.streams.framerate,
                 )
-                .map_err(|_e| StreamEnableError("Depth stream"))?;
-        }
-        if settings.streams.enabled_streams.infra1 {
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_INFRARED,
-                    1,
-                    settings.streams.depth_resolution.width,
-                    settings.streams.depth_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_Y8,
-                    settings.streams.framerate,
-                )
-                .map_err(|_e| StreamEnableError("Infra1 stream"))?;
-        }
-        if settings.streams.enabled_streams.infra2 {
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_INFRARED,
-                    2,
-                    settings.streams.depth_resolution.width,
-                    settings.streams.depth_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_Y8,
-                    settings.streams.framerate,
-                )
-                .map_err(|_e| StreamEnableError("Infra2 stream"))?;
-        }
-        if settings.streams.enabled_streams.color {
-            config
-                .enable_stream(
-                    rs2::rs2_stream::RS2_STREAM_COLOR,
-                    -1,
-                    settings.streams.color_resolution.width,
-                    settings.streams.color_resolution.height,
-                    rs2::rs2_format::RS2_FORMAT_RGB8,
-                    settings.streams.framerate,
-                )
-                .map_err(|_e| StreamEnableError("Color stream"))?;
+                .map_err(|_e| StreamEnableError(format!("{} stream", stream_id)))?;
         }
         Ok(())
     }
@@ -539,7 +450,7 @@ impl RealsenseSrc {
         let pipeline = rs2::pipeline::Pipeline::new(&context)?;
 
         // Make sure that the config can be resolved
-        // Note that these variants are obtained directly from librealsense as strings,
+        // Note that these variants are obtained directly from C librealsense API as strings,
         // here we just expand the error messages to make the user informed in a better way.
         config.resolve(&pipeline).map_err(|e| {
             let err = e.get_message();
@@ -708,20 +619,16 @@ impl RealsenseSrc {
     }
 
     /// Extract a frame from the RealSense camera, outputting it in `output_buffer` on the given
-    /// `push_src`. This function outputs the frame as main buffer if `previous_streams` is empty or
-    /// all `false` and as a meta buffer if `previous_streams` contains any `true`s.
+    /// `push_src`. This function outputs the frame as main buffer if `is_buffer_main` is *true* or
+    ///  as a meta buffer if `is_buffer_main` is *false*.
     /// # Arguments
     /// * `push_src` - The element that represents the `realsensesrc`.
     /// * `settings` - The settings for the `realsensesrc`.
     /// * `output_buffer` - The buffer which the frames should be extracted into.
     /// * `frames` - A collection of frames that was extracted from the RealSense camera (or ROSBAG)
     /// * `tag` - The tag to give to the buffer. This may be used to identify the type of the stream later downstream.
-    /// * `stream_id` - The id of the stream to extract.
-    /// * `stream_type` - The type of the stream we should extract.
-    /// * `previous_streams` - A list of booleans. If any is ticked, it means we should extract the next frame as secondary buffer.
-    /// # TODO
-    /// Refactor this function to have fewer arguments, as suggested by clippy.
-    #[allow(clippy::too_many_arguments)]
+    /// * `stream_descriptor` - Unique descriptor of the stream.
+    /// * `is_buffer_main` - A flag that determine whether the currently proccessed buffer is main or auxiliary.
     fn attach_frame_to_buffer(
         &self,
         push_src: &gst_base::PushSrc,
@@ -729,12 +636,16 @@ impl RealsenseSrc {
         output_buffer: &mut gst::Buffer,
         frames: &[rs2::frame::Frame],
         tag: &str,
-        stream_id: i32,
-        stream_type: rs2::rs2_stream,
-        previous_streams: &[bool],
+        stream_descriptor: &StreamDescriptor,
+        is_buffer_main: bool,
     ) -> Result<(), RealsenseError> {
         // Extract the frame from frames based on its type and id
-        let frame = Self::find_frame_with_id(frames, stream_type, stream_id).ok_or_else(|| {
+        let frame = Self::find_frame_with_id(
+            frames,
+            stream_descriptor.rs2_stream_descriptor.rs2_stream,
+            stream_descriptor.rs2_stream_descriptor.sensor_id,
+        )
+        .ok_or_else(|| {
             RealsenseError("Failed to find a suitable frame on realsensesrc".to_string())
         })?;
 
@@ -746,9 +657,6 @@ impl RealsenseSrc {
 
         // Newly allocated buffer is mutable, no need for error handling
         let buffer_mut_ref = buffer.get_mut().unwrap();
-
-        // Determine whether any of the previous streams is enabled
-        let is_buffer_main = !previous_streams.iter().any(|stream| *stream);
 
         // Extract timestamp from RealSense frame, div by 1000 to convert to seconds
         let camera_timestamp = gst::ClockTime::from_nseconds(
@@ -867,7 +775,7 @@ impl RealsenseSrc {
     fn update_settings_from_rosbag(
         &self,
         stream_info: &StreamInfo,
-        stream_settings: &mut Streams,
+        stream_settings: &mut StreamsSettings,
         rosbag_enabled_streams: &mut EnabledStreams,
     ) {
         // Determine what stream to consider
@@ -1043,8 +951,7 @@ impl RealsenseSrc {
         enabled_streams: &EnabledStreams,
         available_streams: &EnabledStreams,
     ) -> Result<(), RealsenseError> {
-        let conflicting_streams: Vec<&str> =
-            EnabledStreams::get_conflicts(enabled_streams, available_streams);
+        let conflicting_streams = enabled_streams.get_conflicts(available_streams);
 
         if !conflicting_streams.is_empty() {
             return Err(RealsenseError(format!(
@@ -1104,7 +1011,9 @@ impl RealsenseSrc {
         // Iterate over all stream profile, extract intrinsics and assign them to the appropriate stream
         for stream_profile in stream_profiles.iter() {
             let stream_data = stream_profile.get_data()?;
-            let stream_id = StreamId::from_rs2_stream(stream_data.stream, stream_data.index);
+            let stream_id: StreamId =
+                RsStreamDescriptor::new(stream_data.stream, stream_data.format, stream_data.index)
+                    .into();
 
             // Make sure that the stream is enabled for streaming
             if Self::is_stream_enabled(stream_id, desired_streams) {
@@ -1178,18 +1087,18 @@ impl RealsenseSrc {
     ) -> Result<HashMap<(String, String), camera_meta::Transformation>, RealsenseError> {
         // Determine the main stream from which all transformations are taken
         let main_stream_id = Self::determine_main_stream(desired_streams);
-        let (main_stream_rs2_stream, main_stream_rs2_index) = main_stream_id.to_rs2_stream();
+        let main_stream_rs_descriptor: RsStreamDescriptor = main_stream_id.into();
 
         // Get the stream profile for the main stream
         let main_stream_profile = stream_profiles
             .iter()
             .find(|stream_profile| match stream_profile.get_data() {
                 Ok(stream) => {
-                    stream.stream == main_stream_rs2_stream
-                        && if main_stream_rs2_index == -1 {
+                    stream.stream == main_stream_rs_descriptor.rs2_stream
+                        && if main_stream_rs_descriptor.sensor_id == -1 {
                             true
                         } else {
-                            stream.index == main_stream_rs2_index
+                            stream.index == main_stream_rs_descriptor.sensor_id
                         }
                 }
                 _ => false,
@@ -1200,7 +1109,9 @@ impl RealsenseSrc {
         let mut extrinsics: HashMap<(String, String), camera_meta::Transformation> = HashMap::new();
         for stream_profile in stream_profiles.iter() {
             let stream_data = stream_profile.get_data()?;
-            let stream_id = StreamId::from_rs2_stream(stream_data.stream, stream_data.index);
+            let stream_id: StreamId =
+                RsStreamDescriptor::new(stream_data.stream, stream_data.format, stream_data.index)
+                    .into();
 
             if stream_id == main_stream_id {
                 // Skip the main buffer
@@ -1253,7 +1164,7 @@ impl RealsenseSrc {
             }
         }
         // If depth scale cannot be found (depth stream is not active), return the default depth scale.
-        0.001
+        DEFAULT_DEPTH_SCALE
     }
 
     /// Attach Cap'n Proto serialised CameraMeta to `output_buffer`.
@@ -1272,8 +1183,6 @@ impl RealsenseSrc {
         output_buffer: &mut gst::Buffer,
         camera_meta: Vec<u8>,
     ) -> Result<(), RealsenseError> {
-        let camera_meta_stream_id = "camerameta";
-
         // Form a gst buffer out of mutable slice
         let mut buffer = gst::buffer::Buffer::from_mut_slice(camera_meta);
         // Get mutable reference to the buffer
@@ -1281,7 +1190,7 @@ impl RealsenseSrc {
             gst::ResourceError::Failed,
             [
                 "Cannot get mutable reference to the buffer for {}",
-                camera_meta_stream_id
+                STREAM_ID_CAMERAMETA
             ]
         ))?;
 
@@ -1299,11 +1208,11 @@ impl RealsenseSrc {
                 gst::ResourceError::Failed,
                 [
                     "Cannot get mutable reference to the main buffer while attaching {}",
-                    camera_meta_stream_id
+                    STREAM_ID_CAMERAMETA
                 ]
             ))?,
             &mut buffer,
-            camera_meta_stream_id,
+            STREAM_ID_CAMERAMETA,
         )?;
 
         Ok(())
