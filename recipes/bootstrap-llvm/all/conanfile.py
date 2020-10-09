@@ -15,11 +15,13 @@ class BootstrapLlvmConan(ConanFile):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz")
+        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz")
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz")
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
         shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))
+        shutil.move(f"compiler-rt-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
         shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
 
@@ -67,17 +69,26 @@ class BootstrapLlvmConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
         cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
+        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libgcc"
+        cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
         cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
+
+        # compiler-rt options
+        cmake.definitions["COMPILER_RT_BUILD_SANITIZERS"] = False
+        cmake.definitions["COMPILER_RT_BUILD_XRAY"] = False
+        cmake.definitions["COMPILER_RT_BUILD_LIBFUZZER"] = False
 
         # libcxx options
         cmake.definitions["LIBCXX_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
+        cmake.definitions["LIBCXX_USE_COMPILER_RT"] = True
         if self.settings.libc_build == "musl":
             cmake.definitions["LIBCXX_HAS_MUSL_LIBC"] = True
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
+        cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
 
         ###########
         # Stage 0 #
@@ -100,6 +111,7 @@ class BootstrapLlvmConan(ConanFile):
         cmake.build(target="install-lld")
         cmake.build(target="install-llvm-tblgen")
         cmake.build(target="install-libcxx")
+        cmake.build(target="install-compiler-rt")
 
         ###########
         # Stage 1 #
@@ -134,6 +146,7 @@ class BootstrapLlvmConan(ConanFile):
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage1-{self.version}")
             cmake.build(target="install-libcxx")
+            cmake.build(target="install-compiler-rt")
 
         ###########
         # Stage 2 #
@@ -162,6 +175,7 @@ class BootstrapLlvmConan(ConanFile):
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
             cmake.build(target="install-libcxx")
+            cmake.build(target="install-compiler-rt")
             cmake.build(target="install-clang")
             cmake.build(target="install-clang-resource-headers")
             cmake.build(target="install-ar")
