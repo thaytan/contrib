@@ -35,7 +35,6 @@ class RustConan(ConanFile):
             f"--llvm-root={self.deps_cpp_info['bootstrap-llvm'].rootpath}",
             "--enable-vendor",
             "--release-channel=stable",
-            "--enable-extended",
         ]
         with tools.chdir(f"rustc-{self.version}-src"), tools.environment_append(env):
             self.run(f"./configure {' '.join(args)}")
