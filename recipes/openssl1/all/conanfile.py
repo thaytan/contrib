@@ -15,7 +15,7 @@ class Openssl1Conan(ConanFile):
     requires = ("ca-certificates/[^20191127]",)
 
     def source(self):
-        tools.get(f"https://github.com/openssl/openssl/archive/OpenSSL_{self.version}.tar.gz".replace(".", "_"))
+        tools.get(f"https://github.com/openssl/openssl/archive/OpenSSL_{self.version.replace('.', '_')}.tar.gz")
 
     def build(self):
         args = ["no-shared", "no-ssl3-method"]
