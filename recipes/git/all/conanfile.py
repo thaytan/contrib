@@ -1,28 +1,34 @@
+import os
 from conans import *
+
+CONFIG_MAK = """
+CFLAGS={}
+LDFLAGS=-ldl
+"""
 
 
 class GitConan(ConanFile):
-    name = "git"
     description = "The fast distributed version control system"
     license = "GPL2"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
-        "gettext/[^0.20.1]",
-    )
-    requires = (
-        "base/[^1.0.0]",
+        "clang/[^10.0.1]",
+        "make/[^4.3]",
+        "gettext/[^0.21]",
         "zlib/[^1.2.11]",
         "curl/[^7.66.0]",
-        "openssl/[^1.1.1b]",
+        "openssl/[^3.0.0-alpha6]",
+        "expat/[^2.2.7]",
     )
 
     def source(self):
         tools.get(f"https://www.kernel.org/pub/software/scm/git/git-{self.version}.tar.xz")
 
     def build(self):
-        with tools.chdir(f"{self.name}-{self.version}"):
+        # env = {"CFLAGS": f"-H -I{self.source_folder} {os.environ['CFLAGS']}"}
+        with tools.chdir(f"git-{self.version}"):  # , tools.environment_append(env):
+            with open("config.mak", "w") as w:
+                w.write(CONFIG_MAK.format(f"-I{self.source_folder} {os.environ['CFLAGS']}"))
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
             autotools.make()
             autotools.install()
