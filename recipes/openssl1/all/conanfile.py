@@ -15,7 +15,7 @@ class Openssl1Conan(ConanFile):
     requires = ("ca-certificates/[^20191127]",)
 
     def source(self):
-        tools.get(f"https://github.com/openssl/openssl/archive/openssl-{self.version}.tar.gz")
+        tools.get(f"https://github.com/openssl/openssl/archive/OpenSSL_{self.version}.tar.gz".replace(".", "_"))
 
     def build(self):
         args = ["no-shared", "no-ssl3-method"]
@@ -23,7 +23,7 @@ class Openssl1Conan(ConanFile):
             args += ["linux-x86_64", "enable-ec_nistp_64_gcc_128"]
         elif self.settings.arch_build == "armv8":
             args += ["linux-aarch64", "no-afalgeng"]
-        with tools.chdir(f"openssl-openssl-{self.version}"):
+        with tools.chdir(f"openssl-openssl-{self.version.replace('.', '_')}"):
             shutil.copy("Configure", "configure")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
