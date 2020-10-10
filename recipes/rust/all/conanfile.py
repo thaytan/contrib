@@ -16,6 +16,7 @@ class RustConan(ConanFile):
         "pkgconf/[^1.7.3]",
         "zlib/[^1.2.11]",
         "openssl/[^3.0.0-alpha6]",
+        "git/[2.28.0]",
     )
 
     def source(self):
