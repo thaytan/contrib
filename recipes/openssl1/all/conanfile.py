@@ -23,7 +23,7 @@ class Openssl1Conan(ConanFile):
             args += ["linux-x86_64", "enable-ec_nistp_64_gcc_128"]
         elif self.settings.arch_build == "armv8":
             args += ["linux-aarch64", "no-afalgeng"]
-        with tools.chdir(f"openssl-openssl-{self.version.replace('.', '_')}"):
+        with tools.chdir(f"openssl-OpenSSL_{self.version.replace('.', '_')}"):
             shutil.copy("Configure", "configure")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
