@@ -33,6 +33,8 @@ class RustConan(ConanFile):
             f"--target={triple}",
             f'--prefix="{self.package_folder}"',
             f"--llvm-root={self.deps_cpp_info['bootstrap-llvm'].rootpath}",
+            "--disable-docs",
+            "--tools=cargo",
             "--enable-vendor",
             "--release-channel=stable",
         ]
