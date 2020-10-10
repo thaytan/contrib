@@ -24,9 +24,6 @@ class RustConan(ConanFile):
     def build(self):
         env = {
             "RUSTFLAGS": "",
-            "OPENSSL_DIR": self.deps_cpp_info["openssl"].rootpath,
-            "OPENSSL_LIB_DIR": os.path.join(self.deps_cpp_info["openssl"].rootpath, "lib"),
-            "OPENSSL_INCLUDE_DIR": os.path.join(self.deps_cpp_info["openssl"].rootpath, "include"),
         }
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         triple = f"{arch}-unknown-linux-gnu"
