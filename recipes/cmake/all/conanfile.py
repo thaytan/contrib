@@ -2,21 +2,23 @@ from conans import *
 
 
 class CMakeConan(ConanFile):
-    name = "cmake"
     description = "A cross-platform open-source make system"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
-    requires = (
-        "base/[^1.0.0]",
-        "cc/[^1.0.0]",
-        "pkgconf/[^1.6.3]",
-        "ninja/[^1.9.0]",
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    build_requires = (
+        "bootstrap-cmake/[^3.18.0]",
+        "bootstrap-ninja/[^1.10.0]",
+        "clang/[^10.0.1]",
+        "pkgconf/[^1.7.3]",
+        "openssl/[^3.0.0-alpha6]",
     )
 
     def source(self):
         tools.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir(f"{self.name}-{self.version}"):
-            self.run("./bootstrap --prefix=" + self.package_folder)
-            self.run("make install")
+        cmake = CMake(self)
+        cmake.configure(source_folder=f"cmake-{self.version}")
+        cmake.build()
+        cmake.install()
+
