@@ -13,7 +13,6 @@ class LibcxxConan(ConanFile):
         "bootstrap-ninja/[^1.10.0]",
         "python/[^3.8.5]",
     )
-    requires = ("libunwind/[^10.0.1]",)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
@@ -23,7 +22,6 @@ class LibcxxConan(ConanFile):
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
-        shutil.move(f"libunwind-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libunwind"))
 
     def build(self):
         cmake = CMake(self)
@@ -41,15 +39,7 @@ class LibcxxConan(ConanFile):
 
         # libcxxabi options
         cmake.definitions["LIBCXXABI_ENABLE_SHARED"] = False
-        cmake.definitions["LIBCXXABI_USE_LLVM_UNWINDER"] = True
         cmake.definitions["LIBCXXABI_USE_COMPILER_RT"] = True
-        if self.settings.libc_build == "musl":
-            cmake.definitions["LIBCXXABI_ENABLE_STATIC_UNWINDER"] = True
-
-        # libunwind options
-        cmake.definitions["LIBUNWIND_USE_COMPILER_RT"] = True
-        cmake.definitions["LIBUNWIND_ENABLE_SHARED"] = True
-        cmake.definitions["LIBUNWIND_ENABLE_STATIC"] = False
 
         env = {"CXXFLAGS": ""}
         with tools.environment_append(env):
