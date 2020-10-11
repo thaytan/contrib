@@ -2,13 +2,13 @@ from conans import *
 
 
 class FlexConan(ConanFile):
-    name = "flex"
     description = "Flex, the fast lexical analyzer generator"
-    license = "BSD 2-Clause"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    license = "BSD"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
+        "clang/[^10.0.1]",
         "autotools/[^1.0.0]",
-        "bison/[^3.3]",
+        "bison/[^3.7.2]",
     )
 
     def source(self):
@@ -16,7 +16,7 @@ class FlexConan(ConanFile):
 
     def build(self):
         args = ["--disable-nls", "ac_cv_func_reallocarray=no"]
-        with tools.chdir(f"{self.name}-{self.version}"):
+        with tools.chdir(f"flex-{self.version}"):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
