@@ -4,22 +4,23 @@ from conans import *
 
 
 class Libxml2Conan(ConanFile):
-    name = "libxml2"
     description = "XML parsing library, version 2"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "autotools/[^1.0.0]",
         "zlib/[^1.2.11]",
-        "python/[^3.7.4]",
+        "python/[^3.8.5]",
     )
 
     def source(self):
         tools.get(f"https://gitlab.gnome.org/GNOME/libxml2/-/archive/v{self.version}/libxml2-v{self.version}.tar.bz2")
 
     def build(self):
-        args = ["--disable-static"]
-        env = {"with_python_install_dir": os.path.join(self.package_folder, "lib", "python3.7", "site-packages")}
+        args = [
+            "--disable-shared",
+        ]
+        env = {"with_python_install_dir": os.path.join(self.package_folder, "lib", "python3.8", "site-packages")}
         with tools.chdir(f"{self.name}-v{self.version}"), tools.environment_append(env):
             self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
