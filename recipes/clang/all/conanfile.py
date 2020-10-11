@@ -16,10 +16,7 @@ class ClangConan(ConanFile):
         "ncurses/[^6.2]",
         "libffi/[^3.3]",
     )
-    requires = (
-        "libc/[^1.0.0]",
-        "libunwind/[^10.0.1]",
-    )
+    requires = ("libc/[^1.0.0]",)
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
@@ -75,7 +72,7 @@ class ClangConan(ConanFile):
         cmake.definitions["CLANG_DEFAULT_LINKER"] = "lld"
         cmake.definitions["CLANG_DEFAULT_OBJCOPY"] = "llvm-objcopy"
         cmake.definitions["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
-        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libunwind"
+        cmake.definitions["CLANG_DEFAULT_UNWINDLIB"] = "libgcc"
         cmake.definitions["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
         cmake.definitions["CLANG_ENABLE_STATIC_ANALYZER"] = True
         cmake.definitions["LIBCLANG_BUILD_STATIC"] = True
