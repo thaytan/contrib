@@ -104,6 +104,10 @@ class ClangConan(ConanFile):
             os.symlink("clang", "cc")
             os.symlink("clang++", "c++")
 
+        # Use system libgcc_s
+        with tools.chdir(os.path.join(self.package_folder, "lib")):
+            os.symlink(f"/lib/{arch}-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
+
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
@@ -123,7 +127,7 @@ class ClangConan(ConanFile):
             libc_inc = os.path.join(self.deps_cpp_info["glibc-headers"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin -nostdinc "
+        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin "
         cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
         self.env_info.CFLAGS = cflags
