@@ -4,17 +4,13 @@ from conans import *
 
 
 class MesonConan(ConanFile):
-    name = "meson"
     description = "High productivity build system"
     license = "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = (
-        "base/[^1.0.0]",
-        "python/[^3.7.4]",
-        "python-setuptools/[^41.2.0]",
+        "python-setuptools/[^50.3.0]",
         "ninja/[^1.9.0]",
-        "pkgconf/[^1.6.3]",
-        "cc/[^1.0.0]",
+        "pkgconf/[^1.7.3]",
     )
 
     def source(self):
