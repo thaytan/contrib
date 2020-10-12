@@ -29,9 +29,9 @@ class GitConan(ConanFile):
         args = [
             f"prefix={self.package_folder}",
         ]
-        with tools.chdir(f"git-{self.version}"):  # , tools.environment_append(env):
-            with open("config.mak", "w") as w:
-                w.write(CONFIG_MAK.format(f"-I{self.source_folder} {os.environ['CFLAGS']}"))
+        with tools.chdir(f"git-{self.version}"):
+            with open("config.mak", "w") as cfg:
+                cfg.write(CONFIG_MAK.format(f"-I{self.source_folder} {os.environ['CFLAGS']}"))
             autotools = AutoToolsBuildEnvironment(self)
             autotools.make(args)
             autotools.install(args)
