@@ -27,7 +27,6 @@ jobs:
           - alpine-x86_64-bootstrap
           - alpine-armv8
           - alpine-armv8-bootstrap
-          - dispatch
     steps:
       - uses: actions/checkout@v2
 
