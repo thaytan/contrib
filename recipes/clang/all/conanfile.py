@@ -69,8 +69,6 @@ class ClangConan(ConanFile):
         cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
         cmake.definitions["LLVM_INSTALL_BINUTILS_SYMLINKS"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
-        cmake.definitions["LLVM_INSTALL_TOOLCHAIN_ONLY"] = True
-        cmake.definitions["LLVM_TOOLCHAIN_TOOLS"] = "llvm-ar llvm-ranlib llvm-nm llvm-objcopy llvm-objdump llvm-strings llvm-strip llvm-profdata ar as ranlib nm objcopy objdump strings strip"
 
         # clang options
         cmake.definitions["CLANG_VENDOR"] = "Aivero"
