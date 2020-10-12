@@ -119,6 +119,7 @@ class ClangConan(ConanFile):
             os.symlink("llvm-ar", "llvm-ranlib")
 
         # Use system libgcc_s
+        os.makedirs("lib_symlinks")
         with tools.chdir("lib_symlinks"):
             os.symlink(f"/lib/{arch}-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
 
