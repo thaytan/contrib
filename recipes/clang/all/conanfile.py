@@ -116,8 +116,8 @@ class ClangConan(ConanFile):
                 os.remove(os.path.join(self.package_folder, "bin", dst))
                 os.symlink("lld", dst)
             os.symlink("lld", "ld")
-            os.remove(os.path.join(self.package_folder, "bin", "llvm-strip"))
-            os.symlink("llvm-objcopy", "llvm-strip")
+            os.remove(os.path.join(self.package_folder, "bin", "strip"))
+            os.symlink("llvm-objcopy", "strip")
             os.remove(os.path.join(self.package_folder, "bin", "ranlib"))
             os.symlink("llvm-ar", "ranlib")
 
