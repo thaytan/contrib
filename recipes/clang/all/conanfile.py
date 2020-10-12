@@ -109,12 +109,13 @@ class ClangConan(ConanFile):
             for dst in ["clang", "clang++", "clang-cl", "clang-cpp"]:
                 os.remove(os.path.join(self.package_folder, "bin", dst))
                 os.symlink("clang-10", dst)
-            for dst in ["ld.lld", "ld64.lld", "lld-link", "wasm-ld", "ld"]:
-                os.remove(os.path.join(self.package_folder, "bin", dst))
-                os.symlink("lld", dst)
             for dst in ["ar", "nm", "objdump"]:
                 os.remove(os.path.join(self.package_folder, "bin", dst))
                 os.symlink(f"llvm-{dst}", dst)
+            for dst in ["ld.lld", "ld64.lld", "lld-link", "wasm-ld"]:
+                os.remove(os.path.join(self.package_folder, "bin", dst))
+                os.symlink("lld", dst)
+            os.symlink("lld", "ld")
             os.remove(os.path.join(self.package_folder, "bin", "llvm-strip"))
             os.symlink("llvm-objcopy", "llvm-strip")
             os.remove(os.path.join(self.package_folder, "bin", "llvm-ranlib"))
