@@ -106,7 +106,7 @@ class ClangConan(ConanFile):
         with tools.chdir("bin_symlinks"):
             for dst in ["cc", "c++"]:
                 os.symlink("clang-10", dst)
-            for dst in ["clang", "clang++", "clang-cl", "clang-cl", "clang-cpp"]:
+            for dst in ["clang", "clang++", "clang-cl", "clang-cpp"]:
                 os.remove(os.path.join(self.package_folder, "bin", dst))
                 os.symlink("clang-10", dst)
             for dst in ["ld.lld", "ld64.lld", "lld-link", "wasm-ld", "ld"]:
