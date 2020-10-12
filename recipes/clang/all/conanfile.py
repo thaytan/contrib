@@ -67,6 +67,7 @@ class ClangConan(ConanFile):
 
         # LLVM other options
         cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
+        cmake.definitions["LLVM_INSTALL_BINUTILS_SYMLINKS"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_INSTALL_TOOLCHAIN_ONLY"] = True
 
