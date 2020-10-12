@@ -1,24 +1,26 @@
-import os
-
 from conans import *
 
 
 class NinjaConan(ConanFile):
-    name = "ninja"
     description = "Small build system with a focus on speed"
     license = "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
-        "python/[^3.7.4]",
+        "cmake/[^3.18.0]",
+        "bootstrap-ninja/[^1.10.0]",
+        "clang/[^10.0.1]",
     )
 
     def source(self):
         tools.get(f"https://github.com/ninja-build/ninja/archive/v{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir(f"{self.name}-{self.version}"):
-            self.run("python configure.py --bootstrap")
+        cmake = CMake(self)
+        cmake.configure(source_folder=f"ninja-{self.version}")
+        cmake.build()
 
     def package(self):
-        self.copy(os.path.join(f"{self.name}-{self.version}", "ninja"), "bin", keep_path=False)
+        self.copy("ninja", "bin")
+
+    def package_info(self):
+        self.env_info.CONAN_CMAKE_GENERATOR = "Ninja"
