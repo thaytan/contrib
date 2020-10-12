@@ -118,8 +118,8 @@ class ClangConan(ConanFile):
             os.symlink("lld", "ld")
             os.remove(os.path.join(self.package_folder, "bin", "llvm-strip"))
             os.symlink("llvm-objcopy", "llvm-strip")
-            os.remove(os.path.join(self.package_folder, "bin", "llvm-ranlib"))
-            os.symlink("llvm-ar", "llvm-ranlib")
+            os.remove(os.path.join(self.package_folder, "bin", "ranlib"))
+            os.symlink("llvm-ar", "ranlib")
 
         # Use system libgcc_s
         os.makedirs("lib_symlinks")
