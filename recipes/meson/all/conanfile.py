@@ -17,7 +17,7 @@ class MesonConan(ConanFile):
         tools.get(f"https://github.com/mesonbuild/meson/releases/download/{self.version}/meson-{self.version}.tar.gz")
 
     def build(self):
-        py_path = os.path.join(self.package_folder, "lib", "python3.7", "site-packages")
+        py_path = os.path.join(self.package_folder, "lib", "python3.8", "site-packages")
         env = {"PYTHONPATH": os.environ["PYTHONPATH"] + os.pathsep + py_path}
         os.makedirs(py_path)
         with tools.chdir(f"{self.name}-{self.version}"), tools.environment_append(env):
