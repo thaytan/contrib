@@ -25,10 +25,12 @@ class GitConan(ConanFile):
         tools.get(f"https://www.kernel.org/pub/software/scm/git/git-{self.version}.tar.xz")
 
     def build(self):
-        # env = {"CFLAGS": f"-H -I{self.source_folder} {os.environ['CFLAGS']}"}
+        args = [
+            f"prefix={self.package_folder}",
+        ]
         with tools.chdir(f"git-{self.version}"):  # , tools.environment_append(env):
             with open("config.mak", "w") as w:
                 w.write(CONFIG_MAK.format(f"-I{self.source_folder} {os.environ['CFLAGS']}"))
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.make()
-            autotools.install()
+            autotools.make(args)
+            autotools.install(args)
