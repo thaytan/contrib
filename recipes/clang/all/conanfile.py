@@ -67,7 +67,6 @@ class ClangConan(ConanFile):
 
         # LLVM other options
         cmake.definitions["LLVM_INCLUDE_EXAMPLES"] = False
-        cmake.definitions["LLVM_INSTALL_BINUTILS_SYMLINKS"] = True
         cmake.definitions["LLVM_INSTALL_UTILS"] = True
         cmake.definitions["LLVM_INSTALL_TOOLCHAIN_ONLY"] = True
 
@@ -102,15 +101,30 @@ class ClangConan(ConanFile):
         cmake.build(target="install-llvm-tblgen")
         cmake.build(target="install-llvm-profdata")
 
-        # Make lld, clang, clang++ default
-        with tools.chdir(os.path.join(self.package_folder, "bin")):
-            os.symlink("ld.lld", "ld")
-            os.symlink("clang", "cc")
-            os.symlink("clang++", "c++")
+        # Create symlinks
+        os.makedirs("bin_symlinks")
+        with tools.chdir("bin_symlinks"):
+            for dst in ["clang", "clang++", "cc", "c++", "clang-cl", "clang-cl", "clang-cpp"]:
+                os.remove(os.path.join(self.package_folder, "bin", dst))
+                os.symlink("clang-10", dst)
+            for dst in ["ld.lld", "ld64.lld", "lld-link", "wasm-ld", "ld"]:
+                os.remove(os.path.join(self.package_folder, "bin", dst))
+                os.symlink("lld", dst)
+            for dst in ["ar", "nm", "objdump"]:
+                os.remove(os.path.join(self.package_folder, "bin", dst))
+                os.symlink(f"llvm-{dst}", dst)
+            os.remove(os.path.join(self.package_folder, "bin", "llvm-strip"))
+            os.symlink("llvm-objcopy", "llvm-strip")
+            os.remove(os.path.join(self.package_folder, "bin", "llvm-ranlib"))
+            os.symlink("llvm-ar", "llvm-ranlib")
 
         # Use system libgcc_s
-        with tools.chdir(os.path.join(self.package_folder, "lib")):
+        with tools.chdir("lib_symlinks"):
             os.symlink(f"/lib/{arch}-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
+
+    def package(self):
+        self.copy("*bin_symlinks/*", dst="bin", keep_path=False, symlinks=True)
+        self.copy("*lib_symlinks/*", dst="lib", keep_path=False, symlinks=True)
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
