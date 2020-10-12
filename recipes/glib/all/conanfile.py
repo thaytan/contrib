@@ -23,7 +23,6 @@ class GLibConan(ConanFile):
     def build(self):
         args = [
             "--auto-features=disabled",
-            "-Ddefault_library=static",
             "-Dman=False",
             "-Dgtk_doc=False",
             "-Dinternal_pcre=False",
