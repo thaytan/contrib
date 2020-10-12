@@ -313,7 +313,7 @@ impl PushSrcImpl for K4aSrc {
             .internals
             .lock()
             .expect("k4asrc: Cannot lock internals in `create()`");
-        let settings = &mut self
+        let settings = &self
             .settings
             .read()
             .expect("k4asrc: Cannot read settings in `create()`");
@@ -1090,7 +1090,11 @@ impl K4aSrc {
         }
     }
 
-    /// Stop K4A device and reset internals ex
+    /// Stop K4A device and resets the internal state
+    ///
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(ErrorMessage)` on failure.
     fn stop_k4a_and_reset(&self) -> Result<(), gst::ErrorMessage> {
         // Lock the internals
         let internals = &mut *self
