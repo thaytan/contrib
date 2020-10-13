@@ -17,9 +17,11 @@ class RustConan(ConanFile):
         "openssl1/[^1.1.1h]",
         "git/[2.28.0]",
     )
+    exports = "disable-shared-lto.patch"
 
     def source(self):
         tools.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
+        tools.patch(patch_file="disable-shared-lto.patch")
 
     def build(self):
         env = {
@@ -37,7 +39,11 @@ class RustConan(ConanFile):
             "--tools=cargo",
             "--enable-vendor",
             "--release-channel=stable",
+            "--set=llvm.thin-lto=true",
         ]
         with tools.chdir(f"rustc-{self.version}-src"), tools.environment_append(env):
             self.run(f"./configure {' '.join(args)}")
             self.run("python x.py install")
+
+    def package_info(self):
+        self.env_info.RUSTFLAGS = "-Clinker-plugin-lto -Copt-level=2"

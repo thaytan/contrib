@@ -1,0 +1,12 @@
+diff -uarN rustc-1.47.0-src-ori/src/bootstrap/compile.rs rustc-1.47.0-src/src/bootstrap/compile.rs
+--- rustc-1.47.0-src-ori/src/bootstrap/compile.rs	2020-10-13 12:51:17.126562648 +0200
++++ rustc-1.47.0-src/src/bootstrap/compile.rs	2020-10-13 12:52:38.258319414 +0200
+@@ -593,7 +593,7 @@
+             let file = compiler_file(builder, builder.cxx(target).unwrap(), target, "libstdc++.a");
+             cargo.env("LLVM_STATIC_STDCPP", file);
+         }
+-        if builder.config.llvm_link_shared || builder.config.llvm_thin_lto {
++        if builder.config.llvm_link_shared {
+             cargo.env("LLVM_LINK_SHARED", "1");
+         }
+         if builder.config.llvm_use_libcxx {
