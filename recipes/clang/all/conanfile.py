@@ -19,6 +19,7 @@ class ClangConan(ConanFile):
     requires = (
         "libc/[^1.0.0]",
         "libcxx/[^10.0.1]",
+        "file/[^5.39]",
     )
 
     def source(self):
