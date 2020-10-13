@@ -102,34 +102,15 @@ class ClangConan(ConanFile):
         cmake.build(target="install-llvm-tblgen")
         cmake.build(target="install-llvm-profdata")
 
-        # Create symlinks
-        os.makedirs("bin_symlinks")
-        with tools.chdir("bin_symlinks"):
-            for dst in ["cc", "c++"]:
-                os.symlink("clang-10", dst)
-            for dst in ["clang", "clang++", "clang-cl", "clang-cpp"]:
-                os.remove(os.path.join(self.package_folder, "bin", dst))
-                os.symlink("clang-10", dst)
-            for dst in ["ar", "nm", "objdump"]:
-                os.remove(os.path.join(self.package_folder, "bin", dst))
-                os.symlink(f"llvm-{dst}", dst)
-            for dst in ["ld.lld", "ld64.lld", "lld-link", "wasm-ld"]:
-                os.remove(os.path.join(self.package_folder, "bin", dst))
-                os.symlink("lld", dst)
-            os.symlink("lld", "ld")
-            os.remove(os.path.join(self.package_folder, "bin", "strip"))
-            os.symlink("llvm-objcopy", "strip")
-            os.remove(os.path.join(self.package_folder, "bin", "ranlib"))
-            os.symlink("llvm-ar", "ranlib")
+        # Make lld, clang, clang++ default
+        with tools.chdir(os.path.join(self.package_folder, "bin")):
+            os.symlink("ld.lld", "ld")
+            os.symlink("clang", "cc")
+            os.symlink("clang++", "c++")
 
         # Use system libgcc_s
-        os.makedirs("lib_symlinks")
-        with tools.chdir("lib_symlinks"):
+        with tools.chdir(os.path.join(self.package_folder, "lib")):
             os.symlink(f"/lib/{arch}-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
-
-    def package(self):
-        self.copy("*bin_symlinks/*", dst="bin", keep_path=False, symlinks=True)
-        self.copy("*lib_symlinks/*", dst="lib", keep_path=False, symlinks=True)
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
