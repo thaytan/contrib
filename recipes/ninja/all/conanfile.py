@@ -6,7 +6,7 @@ class NinjaConan(ConanFile):
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cmake/[^3.18.0]",
+        "bootstrap-cmake/[^3.18.0]",
         "bootstrap-ninja/[^1.10.0]",
         "clang/[^10.0.1]",
     )
