@@ -10,6 +10,8 @@ class GnutlsConan(ConanFile):
         "make/[^4.3]",
         "zlib/[^1.2.11]",
         "pkgconf/[^1.7.3]",
+    )
+    requires = (
         "nettle/[^3.6]",
         "libtasn1/[^4.16.0]",
     )
