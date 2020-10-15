@@ -23,6 +23,7 @@ class GnutlsConan(ConanFile):
             "--disable-shared",
             "--with-included-unistring",
             "--without-p11-kit",
+            "--disable-tests",
         ]
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(f"gnutls-{self.version}", args)
