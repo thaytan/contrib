@@ -11,8 +11,8 @@ class GLibConan(ConanFile):
         "meson/[^0.55.3]",
         "clang/[^10.0.1]",
         "zlib/[^1.2.11]",
-        "libffi/[^3.3]",
     )
+    requires = ("libffi/[^3.3]",)
 
     def source(self):
         tools.get(f"https://github.com/GNOME/glib/archive/{self.version}.tar.gz")
