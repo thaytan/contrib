@@ -1,29 +1,30 @@
-import os
-
 from conans import *
 
 
 class GnutlsConan(ConanFile):
-    name = "gnutls"
     description = "A library which provides a secure layer over a reliable transport layer"
-    license = "custom", "FDL", "GPL", "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    license = "custom"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
+        "clang/[^10.0.1]",
         "make/[^4.3]",
-    )
-    requires = (
-        "base/[^1.0.0]",
         "zlib/[^1.2.11]",
+        "pkgconf/[^1.7.3]",
+        "nettle/[^3.6]",
+        "libtasn1/[^4.16.0]",
     )
 
     def source(self):
         tools.get(f"https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-{self.version}.tar.xz")
 
     def build(self):
-        args = ["--with-zlib", "--disable-static", "--with-included-unistring"]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        args = [
+            "--with-zlib",
+            "--disable-shared",
+            "--with-included-unistring",
+            "--without-p11-kit",
+        ]
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"gnutls-{self.version}", args)
+        autotools.make()
+        autotools.install()
