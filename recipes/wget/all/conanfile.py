@@ -7,11 +7,11 @@ class WgetConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "clang/[^10.0.1]",
-        "gnutls/[^3.6.15]",
         "autotools/[^1.0.0]",
         "nettle/[^3.6]",
         "libtasn1/[^4.16.0]",
     )
+    requires = ("gnutls/[^3.6.15]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/wget/wget-{self.version}.tar.gz")
