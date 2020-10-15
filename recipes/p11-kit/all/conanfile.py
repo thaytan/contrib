@@ -18,7 +18,6 @@ class P11KitConan(ConanFile):
 
     def build(self):
         args = [
-            "--disable-shared",
             "--without-trust-paths",
         ]
         autotools = AutoToolsBuildEnvironment(self)
