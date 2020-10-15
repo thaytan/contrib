@@ -4,25 +4,17 @@ from conans import *
 
 
 class LibRealsenseConan(ConanFile):
-    name = "librealsense"
     description = "Intel RealSense SDK"
     license = "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
-    options = {"cuda": [True, False], "python": [True, False]}
-    default_options = ("cuda=False", "python=True")
-
-    def build_requirements(self):
-        self.build_requires("cc/[^1.0.0]")
-        self.build_requires("cmake/[^3.15.3]")
-        if self.options.cuda:
-            self.build_requires("cuda/[^10.1.243]")
-
-    def requirements(self):
-        self.requires("base/[^1.0.0]")
-        self.requires("libusb/[^1.0.23]")
-        if self.options.python:
-            self.requires("python/[^3.7.4]")
+    build_requires = (
+        "clang/[^10.0.1]",
+        "cmake/[^3.18.4]",
+        # "cuda/[^10.1.243]",
+        "libusb/[^1.0.23]",
+        "python/[^3.8.5]",
+    )
 
     def source(self):
         tools.get(f"https://github.com/IntelRealSense/librealsense/archive/v{self.version}.tar.gz")
@@ -30,9 +22,9 @@ class LibRealsenseConan(ConanFile):
         tools.patch(patch_file="libusb-fix.patch", base_path=f"{self.name}-{self.version}")
 
     def build(self):
-        cmake = CMake(self, generator="Ninja")
-        cmake.definitions["BUILD_WITH_CUDA"] = self.options.cuda
-        cmake.definitions["BUILD_PYTHON_BINDINGS"] = self.options.python
+        cmake = CMake(self)
+        # cmake.definitions["BUILD_WITH_CUDA"] = self.options.cuda
+        cmake.definitions["BUILD_PYTHON_BINDINGS"] = True
         cmake.definitions["BUILD_EXAMPLES"] = False
         cmake.definitions["BUILD_GRAPHICAL_EXAMPLES"] = False
         cmake.definitions["BUILD_PCL_EXAMPLES"] = False
