@@ -8,9 +8,11 @@ class CMakeConan(ConanFile):
     build_requires = (
         "bootstrap-cmake/[^3.18.0]",
         "clang/[^10.0.1]",
+    )
+    requires = (
+        "ninja/[^1.10.0]",
         "pkgconf/[^1.7.3]",
     )
-    requires = ("ninja/[^1.10.0]",)
 
     def source(self):
         tools.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
