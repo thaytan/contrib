@@ -43,10 +43,10 @@ class ClangConan(ConanFile):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc_build == "musl":
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["musl"].rootpath, "include")
             abi = "musl"
         else:
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["glibc"].rootpath, "include")
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
 
