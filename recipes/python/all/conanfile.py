@@ -29,6 +29,7 @@ class PythonConan(ConanFile):
         }
         args = [
             "--with-openssl=" + self.deps_cpp_info["openssl"].rootpath,
+            "--enable-shared",
             "--with-computed-gotos",
             "--enable-optimizations",
             "--with-lto",
