@@ -32,7 +32,6 @@ class BootstrapGlibcConan(ConanFile):
             ]
             for lib in libs:
                 os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
-                os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy static objs/libs from glibc-dev
             libs = [
                 "libm.a",
