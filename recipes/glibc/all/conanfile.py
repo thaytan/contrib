@@ -8,10 +8,10 @@ class GlibcConan(ConanFile):
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = ("linux-headers/[^5.4.50]",)
-    build_requires = ("bootstrap-glibc-headers/[^2.27]",)
+    build_requires = ("bootstrap-glibc/[^2.27]",)
 
     def package(self):
-        pkg_rootpath = self.deps_cpp_info["bootstrap-glibc-headers"].rootpath
+        pkg_rootpath = self.deps_cpp_info["bootstrap-glibc"].rootpath
         # Copy include lib and include
         folders = [
             "include",
