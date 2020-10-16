@@ -1,5 +1,6 @@
 import pathlib
 import os
+import shutil
 from conans import *
 
 
@@ -35,4 +36,4 @@ class BootstrapGlibcConan(ConanFile):
                 "crtn.o",
             ]
             for lib in libs:
-                os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
+                shutil.copy2(f"/lib/{arch}-linux-gnu/{lib}", lib)
