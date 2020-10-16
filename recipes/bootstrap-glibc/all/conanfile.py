@@ -25,10 +25,14 @@ class BootstrapGlibcConan(ConanFile):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         os.makedirs(os.path.join(self.package_folder, "lib"))
         with tools.chdir(os.path.join(self.package_folder, "lib")):
-            os.symlink(f"/lib/{arch}-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
+            libs = [
+                "libc.so",
+                "libgcc_s.so",
+            ]
+            for lib in libs:
+                os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy system libs from glibc-dev
             libs = [
-                "libc.a",
                 "libm.a",
                 "libpthread.a",
                 "crt1.o",
