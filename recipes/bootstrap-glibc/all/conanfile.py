@@ -28,6 +28,7 @@ class BootstrapGlibcConan(ConanFile):
             # Symlink shared libs from glibc
             libs = [
                 "libc.so.6",
+                "libm.so.6",
                 "libdl.so.2",
                 "librt.so.1",
                 "libpthread.so.0",
@@ -37,7 +38,6 @@ class BootstrapGlibcConan(ConanFile):
                 os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy static objs/libs from glibc-dev
             libs = [
-                "libm.a",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
