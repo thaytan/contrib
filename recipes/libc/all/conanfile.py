@@ -9,6 +9,6 @@ class LibcConan(ConanFile):
     def requirements(self):
         if self.settings.os_build == "Linux":
             if self.settings.libc_build == "system":
-                self.requires("glibc-headers/[~2.27]")
+                self.requires("glibc/[~2.27]")
             if self.settings.libc_build == "musl":
                 self.requires("musl/[~1.2.1]")
