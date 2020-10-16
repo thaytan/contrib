@@ -36,4 +36,4 @@ class BootstrapGlibcConan(ConanFile):
                 "crtn.o",
             ]
             for lib in libs:
-                shutil.copy2(f"/lib/{arch}-linux-gnu/{lib}", lib)
+                shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
