@@ -38,7 +38,6 @@ class BootstrapGlibcConan(ConanFile):
             # Copy static objs/libs from glibc-dev
             libs = [
                 "libm.a",
-                "libpthread.a",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
