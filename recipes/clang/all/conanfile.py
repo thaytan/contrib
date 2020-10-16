@@ -124,7 +124,7 @@ class ClangConan(ConanFile):
             libc_inc = os.path.join(self.deps_cpp_info["musl"].rootpath, "include")
         else:
             static_flags = ""
-            libc_inc = os.path.join(self.deps_cpp_info["glibc-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["glibc"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.deps_cpp_info["libcxx"].rootpath, "include", "c++", "v1")
         # -Wno-unused-command-line-argument is needed for some sanity tests in cmake
