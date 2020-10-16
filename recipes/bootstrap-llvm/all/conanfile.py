@@ -35,10 +35,10 @@ class BootstrapLlvmConan(ConanFile):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc_build == "musl":
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl"].rootpath, "include")
             abi = "musl"
         else:
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
 
@@ -198,10 +198,6 @@ class BootstrapLlvmConan(ConanFile):
             os.symlink("clang", "cc")
             os.symlink("clang++", "c++")
 
-        # Use system libgcc_s
-        with tools.chdir(os.path.join(self.package_folder, "lib")):
-            os.symlink(f"/lib/{arch}-linux-gnu/libgcc_s.so.1", "libgcc_s.so")
-
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
@@ -215,10 +211,10 @@ class BootstrapLlvmConan(ConanFile):
         static_flags = ""
         if self.settings.libc_build == "musl":
             static_flags = "-static"
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-musl"].rootpath, "include")
         else:
             static_flags = ""
-            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc-headers"].rootpath, "include")
+            libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
         cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin --sysroot {self.package_folder} "
