@@ -28,6 +28,9 @@ class BootstrapGlibcConan(ConanFile):
             # Symlink shared libs from glibc
             libs = [
                 "libc.so.6",
+                "libdl.so.2",
+                "librt.so.1",
+                "libpthread.so.0",
                 "libgcc_s.so.1",
             ]
             for lib in libs:
