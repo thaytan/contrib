@@ -50,7 +50,7 @@ class BootstrapGlibcConan(ConanFile):
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy libgcc_s from libgcc-7-dev
-            shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/{lib}/7/libgcc_s.so", "libgcc_s.so")
+            shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/libgcc_s.so", "libgcc_s.so")
 
     def package_info(self):
         self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib")
