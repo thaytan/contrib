@@ -7,6 +7,7 @@ class BootstrapLlvmConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    exports = ("disable-system-libs.patch",)
     build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
     requires = "bootstrap-libc/[^1.0.0]", "bootstrap-file/[^5.39]"
 
@@ -23,6 +24,7 @@ class BootstrapLlvmConan(ConanFile):
         shutil.move(f"compiler-rt-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
         shutil.move(f"libcxx-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
         shutil.move(f"libcxxabi-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
+        tools.patch(patch_file="disable-system-libs.patch")
 
     def build(self):
         cmake = CMake(self)
@@ -217,7 +219,7 @@ class BootstrapLlvmConan(ConanFile):
             libc_inc = os.path.join(self.deps_cpp_info["bootstrap-glibc"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin --sysroot {self.package_folder} "
+        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin "
         cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
         self.env_info.CFLAGS = cflags
