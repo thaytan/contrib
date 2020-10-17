@@ -35,7 +35,9 @@ class BootstrapGlibcConan(ConanFile):
                 "libgcc_s.so.1",
             ]
             for lib in libs:
+                name, _, version = lib.split(".")
                 os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
+                os.symlink(f"/lib/{arch}-linux-gnu/{lib}", f"{name}.so")
             # Copy static objs/libs from glibc-dev
             libs = [
                 "crt1.o",
