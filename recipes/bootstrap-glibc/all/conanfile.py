@@ -25,7 +25,7 @@ class BootstrapGlibcConan(ConanFile):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         os.makedirs(os.path.join(self.package_folder, "lib"))
         with tools.chdir(os.path.join(self.package_folder, "lib")):
-            # Symlink shared libs from glibc
+            # Symlink to glibc
             libs = [
                 "libc.so.6",
                 "libm.so.6",
@@ -37,13 +37,16 @@ class BootstrapGlibcConan(ConanFile):
             for lib in libs:
                 name, _, version = lib.split(".")
                 os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
-                os.symlink(f"/lib/{arch}-linux-gnu/{lib}", f"{name}.so")
-            # Copy static objs/libs from glibc-dev
+            # Copy from glibc-dev
             libs = [
+                "libc.so",
+                "libm.so",
+                "libdl.so",
+                "librt.so",
+                "libpthread.so",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
-                "libc_nonshared.a",
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
