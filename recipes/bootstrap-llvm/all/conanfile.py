@@ -137,7 +137,9 @@ class BootstrapLlvmConan(ConanFile):
         cflags = ""
         if self.settings.libc_build == "musl":
             cflags = "-static"
+        libcxx_lib = os.path.join(stage0_folder, "lib")
         env = {
+            "LIBRARY_PATH": libcxx_lib,
             "CFLAGS": cflags,
             "CXXLAGS": cflags,
             "LDFLAGS": cflags,
