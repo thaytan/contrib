@@ -166,7 +166,7 @@ class BootstrapLlvmConan(ConanFile):
         libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage1_folder, "lib")
         env = {
-            "LD_LIBRARY_PATH": libcxx_lib,
+            "LIBRARY_PATH": libcxx_lib,
             "CFLAGS": cflags,  # Needed for tests
             "CXXFLAGS": f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}",
             "LDFLAGS": f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}",
