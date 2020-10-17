@@ -102,17 +102,23 @@ class BootstrapLlvmConan(ConanFile):
         # Reduce memory footprint of linking with gold linker
         cmake.definitions["LLVM_USE_LINKER"] = "gold"
 
+        # Don't use LIBRARY_PATH with gcc
+        env = {
+            "LIBRARY_PATH": "",
+        }
+
         # Stage 0 build (lld, clang, ar)
-        cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
-        cmake.build(target="install-clang")
-        cmake.build(target="install-clang-resource-headers")
-        cmake.build(target="install-ar")
-        cmake.build(target="install-ranlib")
-        cmake.build(target="install-strip")
-        cmake.build(target="install-lld")
-        cmake.build(target="install-llvm-tblgen")
-        cmake.build(target="install-libcxx")
-        cmake.build(target="install-compiler-rt")
+        with tools.environment_append(env):
+            cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
+            cmake.build(target="install-clang")
+            cmake.build(target="install-clang-resource-headers")
+            cmake.build(target="install-ar")
+            cmake.build(target="install-ranlib")
+            cmake.build(target="install-strip")
+            cmake.build(target="install-lld")
+            cmake.build(target="install-llvm-tblgen")
+            cmake.build(target="install-libcxx")
+            cmake.build(target="install-compiler-rt")
 
         ###########
         # Stage 1 #
