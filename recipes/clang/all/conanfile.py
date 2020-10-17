@@ -7,6 +7,7 @@ class ClangConan(ConanFile):
     description = "C language family frontend for LLVM"
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    exports = ("disable-system-libs.patch",)
     build_requires = (
         "bootstrap-llvm/[^10.0.1]",
         "bootstrap-cmake/[^3.18.0]",
@@ -31,6 +32,7 @@ class ClangConan(ConanFile):
         shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
         shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))
         shutil.move(f"compiler-rt-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
+        tools.patch(patch_file="disable-system-libs.patch")
 
     def build(self):
         cmake = CMake(self)
