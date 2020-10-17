@@ -43,6 +43,7 @@ class BootstrapGlibcConan(ConanFile):
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
+                "libc_nonshared.a",
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
