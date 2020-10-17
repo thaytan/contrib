@@ -44,3 +44,6 @@ class BootstrapGlibcConan(ConanFile):
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
+
+    def package_info(self):
+        self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib")
