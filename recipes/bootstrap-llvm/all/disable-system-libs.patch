@@ -1,12 +1,16 @@
 diff --git a/llvm-10.0.1/projects/clang/lib/Driver/ToolChains/Linux.cpp b/llvm-10.0.1/projects/clang/lib/Driver/ToolChains/Linux.cpp
-index 6532c899..4c7a68f3 100644
+index 6532c899..4d3f2b1f 100644
 --- a/llvm-10.0.1/projects/clang/lib/Driver/ToolChains/Linux.cpp
 +++ b/llvm-10.0.1/projects/clang/lib/Driver/ToolChains/Linux.cpp
-@@ -219,6 +219,7 @@ static void addMultilibsFilePaths(const Driver &D, const MultilibSet &Multilibs,
+@@ -219,6 +219,11 @@ static void addMultilibsFilePaths(const Driver &D, const MultilibSet &Multilibs,
  
  Linux::Linux(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
      : Generic_ELF(D, Triple, Args) {
-+  return;
++  if (::getenv("LIBC_LIBRARY_PATH")) {
++    path_list &Paths = getFilePaths();
++    addPathIfExists(D, ::getenv("LIBC_LIBRARY_PATH"), Paths);
++    return;
++  }
    GCCInstallation.init(Triple, Args);
    Multilibs = GCCInstallation.getMultilibs();
    SelectedMultilib = GCCInstallation.getMultilib();
