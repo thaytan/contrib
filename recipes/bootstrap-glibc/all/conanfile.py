@@ -35,7 +35,6 @@ class BootstrapGlibcConan(ConanFile):
                 "libgcc_s.so.1",
             ]
             for lib in libs:
-                name, _, version = lib.split(".")
                 os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy from glibc-dev
             libs = [
