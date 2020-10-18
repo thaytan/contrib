@@ -1,5 +1,3 @@
-import os
-
 from conans import *
 
 
@@ -7,9 +5,9 @@ class OpenCVConan(ConanFile):
     description = "OpenCV is an open source computer vision and machine learning software library."
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = ("cmake/[^3.15.3]",)
-    requires = (
-        "base/[^1.0.0]",
+    build_requires = (
+        "cc/[^1.0.0]",
+        "cmake/[^3.18.3]",
         "zlib/[^1.2.11]",
         "libpng/[^1.6.37]",
     )
@@ -31,6 +29,6 @@ class OpenCVConan(ConanFile):
         cmake.definitions["BUILD_IPP_IW"] = False
         cmake.definitions["BUILD_ITT"] = False
         cmake.definitions["BUILD_JPEG_TURBO_DISABLE"] = True
-        cmake.configure(source_folder=f"{self.name}-{self.version}")
+        cmake.configure(source_folder=f"opencv-{self.version}")
         cmake.build()
         cmake.install()
