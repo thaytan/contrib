@@ -1,5 +1,3 @@
-import os
-
 from conans import *
 
 
@@ -14,9 +12,5 @@ class AutoconfArchiveConan(ConanFile):
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools.configure()
-            autotools.install()
-
-    def package_info(self):
-        self.env_info.ACLOCAL_PATH.append(os.path.join(self.package_folder, "share", "aclocal"))
+        autotools.configure(f"autoconf-archive-{self.version}")
+        autotools.install()
