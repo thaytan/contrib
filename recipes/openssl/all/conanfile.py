@@ -31,4 +31,4 @@ class OpensslConan(ConanFile):
             autotools.install()
 
     def package_info(self):
-        self.env_info.SSL_CERT_DIR = os.path.join(self.deps_cpp_info["ca-certificates"].rootpath, "ert", "ssl", "certs")
+        self.env_info.SSL_CERT_DIR = os.path.join(self.deps_cpp_info["ca-certificates"].rootpath, "etc", "ssl", "certs")
