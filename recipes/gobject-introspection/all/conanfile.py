@@ -12,7 +12,6 @@ class GObjectIntrospectionConan(ConanFile):
         "bison/[^3.7.2]",
         "flex/[^2.6.4]",
         "git/[^2.28.0]",
-        "zlib/[^1.2.11]",
     )
     requires = (
         "python/[^3.8.5]",
