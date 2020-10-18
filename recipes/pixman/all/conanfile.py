@@ -17,5 +17,5 @@ class PixmanConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(args, source_folder=f"name-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(args, source_folder=f"pixman-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
