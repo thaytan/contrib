@@ -12,7 +12,7 @@ class PixmanConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/pixman-{self.version}.tar.bz2")
+        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/pixman-{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled"]
