@@ -6,7 +6,7 @@ class P11KitConan(ConanFile):
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "clang/[^10.0.1]",
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "pkgconf/[^1.7.3]",
         "libtasn1/[^4.16.0]",

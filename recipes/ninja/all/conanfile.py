@@ -8,7 +8,7 @@ class NinjaConan(ConanFile):
     build_requires = (
         "bootstrap-cmake/[^3.18.0]",
         "bootstrap-ninja/[^1.10.0]",
-        "clang/[^10.0.1]",
+        "cc/[^1.0.0]",
     )
 
     def source(self):

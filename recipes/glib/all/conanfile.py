@@ -9,7 +9,7 @@ class GLibConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.55.3]",
-        "clang/[^10.0.1]",
+        "cc/[^1.0.0]",
     )
     requires = (
         "libffi/[^3.3]",

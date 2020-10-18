@@ -6,7 +6,7 @@ class FlexConan(ConanFile):
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "clang/[^10.0.1]",
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "bison/[^3.7.2]",
     )

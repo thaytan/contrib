@@ -6,7 +6,7 @@ class GnutlsConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "clang/[^10.0.1]",
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "zlib/[^1.2.11]",
         "pkgconf/[^1.7.3]",

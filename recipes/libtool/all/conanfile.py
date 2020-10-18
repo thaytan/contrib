@@ -9,7 +9,7 @@ class LibtoolConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "libtool-prefix-fix.patch"
     build_requires = (
-        "clang/[^10.0.1]",
+        "cc/[^1.0.0]",
         "automake/[^1.16.1]",
         "help2man/[^1.47.11]",
         "texinfo/[^6.6]",

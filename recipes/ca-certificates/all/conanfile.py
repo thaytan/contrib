@@ -13,7 +13,7 @@ class CaCertificatesConan(ConanFile):
         "bootstrap-openssl/[^3.0.0-alpha6]",
         "make/[^4.3]",
         "python/[^3.8.5]",
-        "clang/[^10.0.1]",
+        "cc/[^1.0.0]",
     )
 
     def source(self):
