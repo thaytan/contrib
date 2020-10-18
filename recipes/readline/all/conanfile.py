@@ -1,5 +1,3 @@
-import os
-
 from conans import *
 
 
@@ -21,5 +19,5 @@ class ReadlineConan(ConanFile):
             "--disable-shared",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.configure(f"readline-{self.version}", args)
         autotools.install()
