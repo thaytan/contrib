@@ -2,7 +2,7 @@ import os
 
 from conans import *
 
-musl_clang = """#!/usr/bin/env sh
+MUSL_CLANG = """#!/usr/bin/env sh
 # prevent clang from running the linker (and erroring) on no input.
 sflags=
 eflags=
@@ -32,7 +32,7 @@ exec clang \
     -L-user-end
 """
 
-musl_clangpp = """#!/usr/bin/env sh
+MUSL_CLANGPP = """#!/usr/bin/env sh
 # prevent clang from running the linker (and erroring) on no input.
 sflags=
 eflags=
@@ -64,7 +64,6 @@ exec clang++ \
 
 
 class MuslConan(ConanFile):
-    name = "musl"
     description = "Lightweight implementation of C standard library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
@@ -90,10 +89,10 @@ class MuslConan(ConanFile):
             os.symlink(os.path.join("..", "lib", "libc.so"), f"ld-musl-{arch}.so.1")
 
         with open("musl-clang", "w") as pc:
-            pc.write(musl_clang)
+            pc.write(MUSL_CLANG)
         os.chmod("musl-clang", 0o775)
         with open("musl-clang++", "w") as pc:
-            pc.write(musl_clangpp)
+            pc.write(MUSL_CLANGPP)
         os.chmod("musl-clang++", 0o775)
 
     def package(self):
