@@ -2,7 +2,7 @@ from conans import *
 
 
 class YasmConan(ConanFile):
-    description = "Yasm is a complete rewrite of the NASM assembler under the “new” BSD License"
+    description = "Yasm is a complete rewrite of the NASM assembler under the new BSD License"
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
