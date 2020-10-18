@@ -19,6 +19,6 @@ class LibffiConan(ConanFile):
             "--disable-shared",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args=args)
+        autotools.configure(f"libffi-{self.version}", args)
         autotools.make()
         autotools.install()
