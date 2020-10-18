@@ -8,7 +8,7 @@ class XzConan(ConanFile):
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/1.0.0",
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
     )
 
