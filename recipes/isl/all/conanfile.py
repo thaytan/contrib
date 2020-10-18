@@ -19,6 +19,6 @@ class IslConan(ConanFile):
             "--disable-shared",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.configure(f"isl-{self.version}", args)
         autotools.make()
         autotools.install()
