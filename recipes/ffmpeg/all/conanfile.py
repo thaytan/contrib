@@ -20,6 +20,8 @@ class FFMpegConan(ConanFile):
             "--enable-static",
             "--disable-doc",
             "--disable-programs",
+            "--cc=cc",
+            "--cxx=c++",
         ]
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(f"ffmpeg-{self.version}", args)
