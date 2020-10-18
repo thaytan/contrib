@@ -1,3 +1,1 @@
-versions:
-  "20191127":
-    folder: all
+- version: '20191127'

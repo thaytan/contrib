@@ -1,3 +1,1 @@
-versions:
-  "50.3.0":
-    folder: all
+- version: 50.3.0

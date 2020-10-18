@@ -1,5 +1,1 @@
-versions:
-  "1.2.1":
-    folder: all
-    profiles:
-      - Linux-x86_64-musl
+- version: 1.2.1

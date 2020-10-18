@@ -1,3 +1,1 @@
-versions:
-  "2019.1":
-    folder: all
+- version: '2019.1'

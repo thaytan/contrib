@@ -1,6 +1,1 @@
-versions:
-  "2.27":
-    folder: all
-    profiles:
-      - Linux-x86_64
-      - Linux-armv8
+- version: '2.27'
