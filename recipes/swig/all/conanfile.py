@@ -10,6 +10,7 @@ class SwigConan(ConanFile):
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "python/[^3.8.5]",
+        "perl/[^5.30.0]",
     )
 
     def source(self):
