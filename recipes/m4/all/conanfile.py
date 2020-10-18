@@ -17,7 +17,7 @@ class M4Conan(ConanFile):
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}")
+        autotools.configure(f"m4-{self.version}")
         autotools.make()
         autotools.install()
 
