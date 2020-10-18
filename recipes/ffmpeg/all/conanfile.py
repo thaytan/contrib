@@ -2,10 +2,9 @@ from conans import *
 
 
 class FFMpegConan(ConanFile):
-    name = "ffmpeg"
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "GPL3"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("yasm/[^1.3.0]",)
 
     def source(self):

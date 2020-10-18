@@ -4,10 +4,9 @@ from conans import *
 
 
 class PythonMakoConan(ConanFile):
-    name = "python-mako"
     description = "A super-fast templating language that borrows the best ideas from the existing templating languages"
     license = "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
 
     def source(self):
         tools.get(f"https://github.com/sqlalchemy/mako/archive/rel_{self.version}.tar.gz".replace(".", "_"))

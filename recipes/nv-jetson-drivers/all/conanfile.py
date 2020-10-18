@@ -15,10 +15,9 @@ download_tx1_url = {
 
 
 class NvJetsonDrivers(ConanFile):
-    name = "nv-jetson-drivers"
     description = "NVIDIA built Accelerated GStreamer Plugins"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports_sources = ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = "jetson=TX2"

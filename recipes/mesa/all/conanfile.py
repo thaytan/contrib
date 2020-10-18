@@ -4,10 +4,9 @@ from conans import *
 
 
 class MesaConan(ConanFile):
-    name = "mesa"
     description = "An open-source implementation of the OpenGL specification"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     build_requires = (

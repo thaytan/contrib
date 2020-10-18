@@ -2,10 +2,9 @@ from conans import *
 
 
 class LibVpxConan(ConanFile):
-    name = "libvpx"
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "gcc/7.4.0",
         "yasm/[^1.3.0]",

@@ -4,10 +4,9 @@ from conans import *
 
 
 class PythonCairoConan(ConanFile):
-    name = "python-cairo"
     description = "Python bindings for the cairo graphics library"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",

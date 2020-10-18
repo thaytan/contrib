@@ -2,10 +2,9 @@ from conans import *
 
 
 class XcbProtoConan(ConanFile):
-    name = "xcb-proto"
     description = "XML-XCB protocol descriptions"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("pkgconf/[^1.6.3]",)
 
     def source(self):

@@ -5,10 +5,9 @@ from conans import *
 
 
 class FreetypeNoHarfbuzzConan(ConanFile):
-    name = "freetype-no-harfbuzz"
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("autotools/[^1.0.0]",)
 
     def source(self):

@@ -4,10 +4,9 @@ from conans import *
 
 
 class AtSpi2CoreConan(ConanFile):
-    name = "at-spi2-core"
     description = "Protocol definitions and daemon for D-Bus at-spi"
     license = "GPL2"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.51.2]",
     )

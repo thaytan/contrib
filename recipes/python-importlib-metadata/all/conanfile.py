@@ -4,10 +4,9 @@ from conans import *
 
 
 class PythonImportlibMetadataConan(ConanFile):
-    name = "python-importlib-metadata"
     description = "Read metadata from Python packages"
     license = "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("python-setuptools/[^41.2.0]",)
     requires = (
         "base/[^1.0.0]",

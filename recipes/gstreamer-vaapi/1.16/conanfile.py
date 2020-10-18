@@ -4,10 +4,9 @@ from conans import *
 
 
 class GStreamerVaapiConan(ConanFile):
-    name = "gstreamer-vaapi"
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {
         "encoders": [True, False],
         "egl": [True, False],

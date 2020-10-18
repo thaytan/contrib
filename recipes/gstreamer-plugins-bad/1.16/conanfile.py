@@ -3,11 +3,10 @@ from conans import *
 
 
 class GStreamerPluginsBadConan(ConanFile):
-    name = "gstreamer-plugins-bad"
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     exports = "reduce_latency.patch"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {
         "introspection": [True, False],
         "videoparsers": [True, False],

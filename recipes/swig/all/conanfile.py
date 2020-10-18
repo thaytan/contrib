@@ -4,10 +4,9 @@ from conans import *
 
 
 class SwigConan(ConanFile):
-    name = "swig"
     description = "Generate scripting interfaces to C/C++ code"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "cc/[^1.0.0]",
         "python/[^3.7.4]",

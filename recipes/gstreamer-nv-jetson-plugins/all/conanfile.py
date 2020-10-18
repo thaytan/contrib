@@ -4,10 +4,9 @@ from conans import *
 
 
 class GstreamerNvJetsonPluginsConan(ConanFile):
-    name = "gstreamer-nv-jetson-plugins"
     description = "Demo conan package"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports_sources = ["lib/gstreamer-1.0/*.so"]
 
     def requirements(self):

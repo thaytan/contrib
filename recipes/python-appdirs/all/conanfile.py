@@ -4,10 +4,9 @@ from conans import *
 
 
 class PythonAppdirsConan(ConanFile):
-    name = "python-appdirs"
     description = 'A small Python module for determining appropriate platform-specific dirs, e.g. a "user data dir".'
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("python-setuptools/[^41.2.0]",)
     requires = (
         "base/[^1.0.0]",

@@ -4,10 +4,9 @@ from conans import *
 
 
 class PythonVirtualenvConan(ConanFile):
-    name = "python-virtualenv"
     description = "Virtual Python Environment builder"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = (
         "base/[^1.0.0]",
         "python/[^3.7.4]",

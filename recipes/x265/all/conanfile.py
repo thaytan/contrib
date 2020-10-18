@@ -4,10 +4,9 @@ from conans import *
 
 
 class X265Conan(ConanFile):
-    name = "x265"
     description = "x265 is the leading H.265 / HEVC encoder software library"
     license = "GPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"bit_depth": [8, 10, 12], "HDR10": [True, False]}
     default_options = "bit_depth=8", "HDR10=False"
     build_requires = (

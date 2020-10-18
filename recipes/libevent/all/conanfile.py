@@ -3,10 +3,9 @@ import os
 
 
 class LibeventConan(ConanFile):
-    name = "libevent"
     description = "Event notification library https://libevent.org"
     license = "BSD-3-Clause"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "uninstall.patch"
     build_requires = (
         "env-generator/1.0.0",

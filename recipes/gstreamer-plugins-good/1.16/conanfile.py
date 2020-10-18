@@ -4,10 +4,9 @@ from conans import *
 
 
 class GStreamerPluginsGoodConan(ConanFile):
-    name = "gstreamer-plugins-good"
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {
         "autodetect": [True, False],
         "rtp": [True, False],

@@ -4,10 +4,9 @@ from conans import *
 
 
 class LibjpegTurboConan(ConanFile):
-    name = "libjpeg-turbo"
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "yasm/1.3.0",
         "cmake/3.15.3",

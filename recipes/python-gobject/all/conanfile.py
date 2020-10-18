@@ -4,10 +4,9 @@ from conans import *
 
 
 class PythonGobjectConan(ConanFile):
-    name = "python-gobject"
     description = "Python GObject bindings"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("meson/[^0.51.2]",)
     requires = (
         "gobject-introspection/[^1.59.3]",

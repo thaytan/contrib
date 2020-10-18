@@ -2,10 +2,9 @@ from conans import *
 
 
 class GraphvizConan(ConanFile):
-    name = "graphviz"
     description = "Graph Visualization Tools"
     license = "EPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "autotools/[^1.0.0]",
         "flex/[^2.6.4]",

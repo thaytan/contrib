@@ -2,10 +2,9 @@ from conans import *
 
 
 class Libxxf86vmConan(ConanFile):
-    name = "libxxf86vm"
     description = "X11 XFree86 video mode extension library"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "pkgconf/[^1.6.3]",
         "xorg-util-macros/[^1.19.1]",

@@ -4,16 +4,15 @@ from conans import *
 
 
 class PangoConan(ConanFile):
-    name = "pango"
     description = "A library for layout and rendering of text"
     license = "GPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
+        "cc/[^1.0.0]",
         "meson/[^0.51.2]",
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
-        "base/[^1.0.0]",
         "fribidi/[^1.0.5]",
         "cairo/[^1.16.0]",
         "harfbuzz/[^2.6.1]",
@@ -27,8 +26,5 @@ class PangoConan(ConanFile):
         args.append("-Dgtk_doc=false")
         args.append("-Dinstall-tests=false")
         meson = Meson(self)
-        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
+        meson.configure(args, source_folder=f"pango-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
-
-    def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))

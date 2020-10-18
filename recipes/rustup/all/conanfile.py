@@ -5,10 +5,9 @@ from conans import *
 
 
 class RustupConan(ConanFile):
-    name = "rustup"
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("rust/[^1.3.8]",)
     requires = (
         "base/[^1.0.0]",

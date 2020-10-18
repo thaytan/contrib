@@ -4,10 +4,9 @@ from conans import *
 
 
 class NpmConan(ConanFile):
-    name = "npm"
     description = "Evented I/O for V8 javascript"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "autotools/1.0.0",
         "python/[^3.7.4]",

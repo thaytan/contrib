@@ -187,6 +187,5 @@ class pkgconf(Generator):
 
 
 class GeneratorsPackage(ConanFile):
-    name = "generators"
     description = "Conan generators"
     license = "MIT"

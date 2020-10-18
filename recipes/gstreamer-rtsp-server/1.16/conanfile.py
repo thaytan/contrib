@@ -4,10 +4,9 @@ from conans import *
 
 
 class GStreamerRtspServerConan(ConanFile):
-    name = "gstreamer-rtsp-server"
     description = "A framework for streaming media"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {
         "examples": [True, False],
         "tests": [True, False],

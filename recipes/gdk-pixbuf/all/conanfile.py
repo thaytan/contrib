@@ -5,10 +5,9 @@ from conans import *
 
 
 class GdkPixbufConan(ConanFile):
-    name = "gdk-pixbuf"
     description = "An image loading library"
     license = "LGPL-2.1"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.51.2]",
         "gobject-introspection/[^1.59.3]",

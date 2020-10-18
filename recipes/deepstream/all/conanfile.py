@@ -2,10 +2,9 @@ from conans import *
 
 
 class Deepstream(ConanFile):
-    name = "deepstream"
     description = "Complete streaming analytics toolkit for AI-based video"
     license = "proprietary"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
 

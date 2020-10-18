@@ -4,10 +4,9 @@ from conans import *
 
 
 class PythonPipConan(ConanFile):
-    name = "python-pip"
     description = "High productivity build system"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
 
     def source(self):
         tools.get(f"https://github.com/pypa/pip/archive/{self.version}.tar.gz")

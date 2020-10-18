@@ -4,10 +4,9 @@ from conans import *
 
 
 class SvtHevcConan(ConanFile):
-    name = "svt-hevc"
     description = "The Scalable Video Technology for HEVC Encoder"
     license = "BSD"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "cmake/[^3.15.3]",
         "yasm/[^1.3.0]",

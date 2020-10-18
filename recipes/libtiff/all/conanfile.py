@@ -2,10 +2,9 @@ from conans import *
 
 
 class LibtiffConan(ConanFile):
-    name = "libtiff"
     description = "Library for manipulation of TIFF images"
     license = "custom"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("mesa/20.0.0",)
     requires = (
         "base/[^1.0.0]",

@@ -4,10 +4,9 @@ from conans import *
 
 
 class RustAnalyzerConan(ConanFile):
-    name = "rust-analyzer"
     description = "An experimental Rust compiler front-end for IDEs."
     license = "MIT", "Apache2"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
 
     def source(self):
         tools.get(f"https://github.com/rust-analyzer/rust-analyzer/archive/{self.version.replace('.', '-')}.tar.gz")

@@ -2,10 +2,9 @@ from conans import *
 
 
 class CclsConan(ConanFile):
-    name = "ccls"
     description = "C/C++ language server supporting cross references, hierarchies, completion and semantic highlighting"
     license = "Apache"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("cmake/[^3.15.3]",)
     requires = (
         "base/[^1.0.0]",

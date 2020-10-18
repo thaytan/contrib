@@ -2,16 +2,14 @@ from conans import *
 
 
 class LibxcbConan(ConanFile):
-    name = "libxcb"
     description = "X11 client-side library"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "pkgconf/[^1.6.3]",
         "xcb-proto/[^1.13]",
     )
     requires = (
-        "base/[^1.0.0]",
         "libxau/[^1.0.9]",
         "libpthread-stubs/[^0.4]",
     )
@@ -22,6 +20,5 @@ class LibxcbConan(ConanFile):
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools.configure(args=args)
-            autotools.install()
+        autotools.configure(f"libxcb-{self.version}", args)
+        autotools.install()

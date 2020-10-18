@@ -2,10 +2,9 @@ from conans import *
 
 
 class PngquantConan(ConanFile):
-    name = "pngquant"
     description = "Command-line utility to quantize PNGs down to 8-bit paletted PNGs"
     license = "BSD"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("autotools/1.0.0",)
     requires = (
         "base/[^1.0.0]",

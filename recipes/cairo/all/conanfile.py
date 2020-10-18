@@ -1,21 +1,11 @@
 import os
-
 from conans import *
 
 
 class CairoConan(ConanFile):
-    name = "cairo"
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
-    default_options = ("introspection=True", "zlib=True", "png=True", "fontconfig=True")
-    scm = {
-        "type": "git",
-        "url": "https://github.com/centricular/cairo.git",
-        "revision": "meson-" + version,
-        "recursive": True,
-        "subfolder": f"cairo-{version}",
-    }
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.51.2]",
         "gobject-introspection/[^1.59.3]",
@@ -30,14 +20,16 @@ class CairoConan(ConanFile):
         "libpng/[^1.6.37]",
     )
 
+    def source(self)
+        tools.get(f"https://github.com/centricular/cairo/archive/meson-{self.version}.tar.gz")
+
     def build(self):
         meson = Meson(self)
-        args = ["-Dintrospection=" + ("enabled" if self.options.introspection else "disabled")]
-        args.append("-Dfontconfig=" + ("enabled" if self.options.fontconfig else "disabled"))
-        args.append("-Dzlib=" + ("enabled" if self.options.zlib else "disabled"))
-        args.append("-Dpng=" + ("enabled" if self.options.png else "disabled"))
-        meson.configure(source_folder=f"{self.name}-${self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        args = [
+            "-Dintrospection=enabled",
+            "-Dfontconfig=enabled",
+            "-Dzlib=enabled",
+            "-Dpng=enabled",
+        ]
+        meson.configure(args, source_folder=f"pango-${self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
-
-    def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))

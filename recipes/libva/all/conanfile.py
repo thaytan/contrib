@@ -4,10 +4,9 @@ from conans import *
 
 
 class LibVaConan(ConanFile):
-    name = "libva"
     description = "Libva is an implementation for VA-API (VIdeo Acceleration API)"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
     build_requires = ("meson/[^0.51.2]",)

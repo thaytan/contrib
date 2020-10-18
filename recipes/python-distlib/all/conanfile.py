@@ -2,10 +2,9 @@ from conans import *
 
 
 class PythonDistlibConan(ConanFile):
-    name = "python-distlib"
     description = "Low-level components of distutils2/packaging"
     license = "PSF"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
         requires = (
         "base/[^1.0.0]",
         "python/[^3.7.4]",
