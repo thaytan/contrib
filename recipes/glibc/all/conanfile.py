@@ -21,3 +21,6 @@ class GlibcConan(ConanFile):
             src_folder = os.path.join(pkg_rootpath, folder)
             dst_folder = os.path.join(self.package_folder, folder)
             shutil.copytree(src_folder, dst_folder)
+
+    def package_info(self):
+        self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib")
