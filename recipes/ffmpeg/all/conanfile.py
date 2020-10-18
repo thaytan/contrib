@@ -16,7 +16,7 @@ class FFMpegConan(ConanFile):
 
     def build(self):
         args = [
-            "--disable-stared",
+            "--disable-shared",
             "--enable-static",
             "--disable-doc",
             "--disable-programs",
