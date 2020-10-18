@@ -67,17 +67,21 @@ class MuslConan(ConanFile):
     name = "musl"
     description = "Lightweight implementation of C standard library"
     license = "MIT"
-    settings = {"os_build": ["Linux"], "arch_build": ["x86_64", "armv8"]}
-    build_requires = ("clang-bootstrap/[^10.0.0]",)
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    build_requires = ("linux-headers/[^5.4.50]",)
 
     def source(self):
         tools.get(f"https://www.musl-libc.org/releases/musl-{self.version}.tar.gz")
 
     def build(self):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
-        vars = {"CC": "clang", "TARGET": f"{arch}-linux-musl"}
+        vars = {
+            "TARGET": f"{arch}-linux-musl",
+            "LIBCC": "-lcompiler_rt",
+            "CFLAGS": os.environ["CFLAGS"],
+        }
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(vars=vars, configure_dir=f"{self.name}-{self.version}")
+        autotools.configure(f"musl-{self.version}", vars=vars)
         autotools.make()
         autotools.install()
         with tools.chdir(os.path.join(self.package_folder, "bin")):
