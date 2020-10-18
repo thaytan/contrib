@@ -44,6 +44,7 @@ class BootstrapGlibcConan(ConanFile):
                 "libdl.so",
                 "librt.so",
                 "libpthread.so",
+                "libresolv.so",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
