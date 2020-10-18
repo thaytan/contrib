@@ -11,7 +11,7 @@ class XcbProtoConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://xcb.freedesktop.org/dist/xcb-proto-{self.version}.tar.bz2")
+        tools.get(f"https://xcb.freedesktop.org/dist/xcb-proto-{self.version}.tar.xz")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
