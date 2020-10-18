@@ -11,7 +11,7 @@ class RapidJsonConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/Tencent/rapidjson/archive/{self.version}.tar.gz")
+        tools.get(f"https://github.com/Tencent/rapidjson/archive/v{self.version}.tar.gz")
 
     def build(self):
         cmake = CMake(self)
