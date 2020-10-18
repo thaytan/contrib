@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -8,22 +7,23 @@ class MozjpegConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "autotools/1.0.0",
+        "cc/[^1.0.0]",
+        "cmake/[^3.18.4]",
         "yasm/[^1.3.0]",
-        "cmake/[^3.15.3]",
+        "zlib/[^1.2.11]",
+        "libpng/[^1.6.37]",
     )
 
     def source(self):
         tools.get(f"https://github.com/mozilla/mozjpeg/archive/v{self.version}.tar.gz")
 
     def build(self):
-        args = [
-            "--disable-static",
-        ]
-
-        with tools.chdir(f"{self.name}-{self.version}"):
-            self.run("autoreconf -i")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        cmake = CMake(self)
+        cmake.definitions["ENABLE_SHARED"] = False
+        cmake.definitions["CMAKE_INSTALL_BINDIR"] = os.path.join(self.package_folder, "bin")
+        cmake.definitions["CMAKE_INSTALL_DATAROOTDIR"] = os.path.join(self.package_folder, "share")
+        cmake.definitions["CMAKE_INSTALL_INCLUDEDIR"] = os.path.join(self.package_folder, "include")
+        cmake.definitions["CMAKE_INSTALL_LIBDIR"] = os.path.join(self.package_folder, "lib")
+        cmake.configure(source_folder=f"mozjpeg-{self.version}")
+        cmake.build()
+        cmake.install()
