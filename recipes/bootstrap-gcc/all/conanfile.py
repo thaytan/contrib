@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -7,6 +6,16 @@ class BootstrapGccConan(ConanFile):
     description = "The GNU Compiler Collection - C and C++ frontends"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    build_requires = (
+        "binutils/[^2.35]",
+        "bootstrap-llvm/[^10.0.1]",
+        "make/[^4.3]",
+        "zlib/[^1.2.11]",
+        "mpfr/[^4.1.0]",
+        "gmp/[^6.2.0]",
+        "mpc/[^1.1.0]",
+        "isl/[^0.22.1]",
+    )
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/gcc/gcc-{self.version}/gcc-{self.version}.tar.xz")
@@ -14,7 +23,6 @@ class BootstrapGccConan(ConanFile):
     def build(self):
         args = [
             f"--libexecdir={os.path.join(self.package_folder, 'lib')}",
-            "--disable-bootstrap",
             "--disable-multilib",
             "--enable-languages=c,c++,objc,obj-c++",
             "--enable-threads=posix",
@@ -34,10 +42,10 @@ class BootstrapGccConan(ConanFile):
             "--enable-default-ssp",
             "--enable-cet=auto",
             "--with-system-zlib",
-            # f"--with-mpfr={self.deps_cpp_info['mpfr'].rootpath}",
-            # f"--with-gmp={self.deps_cpp_info['gmp'].rootpath}",
-            # f"--with-mpc={self.deps_cpp_info['mpc'].rootpath}",
-            # f"--with-isl={self.deps_cpp_info['isl'].rootpath}",
+            f"--with-mpfr={self.deps_cpp_info['mpfr'].rootpath}",
+            f"--with-gmp={self.deps_cpp_info['gmp'].rootpath}",
+            f"--with-mpc={self.deps_cpp_info['mpc'].rootpath}",
+            f"--with-isl={self.deps_cpp_info['isl'].rootpath}",
         ]
         if self.settings.arch_build == "x86_64":
             target = "x86_64-linux-gnu"
