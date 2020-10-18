@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -20,5 +19,5 @@ class MesonConan(ConanFile):
         py_path = os.path.join(self.package_folder, "lib", "python3.8", "site-packages")
         env = {"PYTHONPATH": os.environ["PYTHONPATH"] + os.pathsep + py_path}
         os.makedirs(py_path)
-        with tools.chdir(f"{self.name}-{self.version}"), tools.environment_append(env):
-            self.run('python setup.py install --optimize=1 --prefix= --root="%s"' % self.package_folder)
+        with tools.environment_append(env):
+            self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"', cwd=f"meson-{self.version}")
