@@ -16,7 +16,7 @@ class AutoconfConan(ConanFile):
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/autoconf/autoconf-{self.version}.tar.gz")
-        tools.patch(patch_file="m4-include.patch", base_path=f"{self.name}-{self.version}")
+        tools.patch(patch_file="m4-include.patch", base_path=f"autoconf-{self.version}")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
