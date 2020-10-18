@@ -11,6 +11,5 @@ class XtransConan(ConanFile):
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools.configure()
-            autotools.install()
+        autotools.configure(f"xtrans-{self.version}")
+        autotools.install()
