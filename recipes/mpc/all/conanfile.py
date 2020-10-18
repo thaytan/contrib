@@ -20,6 +20,6 @@ class MpcConan(ConanFile):
             "--disable-shared",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args)
+        autotools.configure(f"mpc-{self.version}", args)
         autotools.make()
         autotools.install()
