@@ -33,6 +33,7 @@ class BootstrapGlibcConan(ConanFile):
                 "librt.so.1",
                 "libpthread.so.0",
                 "libresolv.so.2",
+                "libutil.so.1",
                 "libgcc_s.so.1",
             ]
             for lib in libs:
@@ -45,6 +46,7 @@ class BootstrapGlibcConan(ConanFile):
                 "librt.so",
                 "libpthread.so",
                 "libresolv.so",
+                "libutil.so",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
