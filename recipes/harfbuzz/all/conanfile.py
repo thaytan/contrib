@@ -21,6 +21,7 @@ class HarfbuzzConan(ConanFile):
     def build(self):
         args = [
             "--auto-features=disabled",
+            "-Dfreetype=enabled",
         ]
         meson = Meson(self)
         meson.configure(args, source_folder=f"harfbuzz-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
