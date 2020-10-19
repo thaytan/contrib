@@ -8,7 +8,7 @@ class OpensslConan(ConanFile):
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
+        "bootstrap-llvm/[^11.0.0]",
         "make/[^4.3]",
         "perl/[^5.30.0]",
     )
