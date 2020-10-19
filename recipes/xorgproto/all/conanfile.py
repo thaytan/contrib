@@ -1,3 +1,4 @@
+import os
 from conans import *
 
 
@@ -6,7 +7,8 @@ class XorgProtoConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "meson/[^0.51.2]",
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
         "xorg-util-macros/[^1.19.1]",
     )
 
@@ -16,6 +18,5 @@ class XorgProtoConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled"]
         meson = Meson(self)
-        meson.configure(
-            source_folder=f"{self.name}-{self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":")\        )
+        meson.configure(args, source_folder=f"xorgproto-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
