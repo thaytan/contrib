@@ -1,7 +1,6 @@
 name: Conan Create and Upload
 on:
-  repository_dispatch:
-    types: [conan]
+  repository_dispatch: ~
 jobs:
   build:
     name: ${{ github.event.client_payload.profile }}>${{ github.event.client_payload.package }}
