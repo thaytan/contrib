@@ -7,12 +7,15 @@ class Libx11Conan(ConanFile):
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "pkgconf/[^1.6.3]",
-        "xorg-util-macros/[^1.19.1]",
+        "cc/[^1.0.0]",
+        "make/[^4.3]",
+        "pkgconf/[^1.7.3]",
+        "xorg-util-macros/[^1.19.2]",
         "xtrans/[^1.4.0]",
-        "xorgproto/[^2019.1]",
+        "xorgproto/[^2020.1]",
+        "perl/[^5.30.0]",
     )
-    requires = ("libxcb/[^1.13.1]",)
+    requires = ("libxcb/[^1.14]",)
 
     def source(self):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libX11-{self.version}.tar.gz")
