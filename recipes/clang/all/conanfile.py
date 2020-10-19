@@ -19,7 +19,7 @@ class ClangConan(ConanFile):
     )
     requires = (
         "libc/[^1.0.0]",
-        "libcxx/[^10.0.1]",
+        "libcxx/[^11.0.0]",
         "file/[^5.39]",
     )
 
@@ -109,10 +109,12 @@ class ClangConan(ConanFile):
             os.symlink("ld.lld", "ld")
             os.symlink("clang", "cc")
             os.symlink("clang++", "c++")
+            os.symlink("clang-cpp", "cpp")
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
+        self.env_info.CPP = os.path.join(self.package_folder, "bin", "clang-cpp")
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.AS = os.path.join(self.package_folder, "bin", "llvm-as")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
