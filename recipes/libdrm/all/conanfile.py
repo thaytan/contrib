@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -8,15 +7,13 @@ class LibdrmConan(ConanFile):
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "meson/[^0.51.2]",
-    )
-    requires = (
-        "base/[^1.0.0]",
-        "libpciaccess/[^0.14]",
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
+        "libpciaccess/[>=0.16]",
     )
 
     def source(self):
-        tools.get(f"http://dri.freedesktop.org/libdrm/libdrm-{self.version}.tar.gz")
+        tools.get(f"http://dri.freedesktop.org/libdrm/libdrm-{self.version}.tar.xz")
 
     def build(self):
         args = [
@@ -26,5 +23,5 @@ class LibdrmConan(ConanFile):
             "-Dnouveau=true",
         ]
         meson = Meson(self)
-        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
+        meson.configure(args, source_folder=f"libdrm-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
