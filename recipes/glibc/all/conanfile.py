@@ -11,14 +11,14 @@ class GlibcConan(ConanFile):
     build_requires = ("bootstrap-glibc/[^2.27]",)
 
     def package(self):
-        pkg_rootpath = self.deps_cpp_info["bootstrap-glibc"].rootpath
+        bootstrap_glibc_path = self.deps_cpp_info["bootstrap-glibc"].rootpath
         # Copy include lib and include
         folders = [
             "include",
             "lib",
         ]
         for folder in folders:
-            src_folder = os.path.join(pkg_rootpath, folder)
+            src_folder = os.path.join(bootstrap_glibc_path, folder)
             dst_folder = os.path.join(self.package_folder, folder)
             shutil.copytree(src_folder, dst_folder)
 
