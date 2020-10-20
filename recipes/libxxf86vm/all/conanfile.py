@@ -6,20 +6,18 @@ class Libxxf86vmConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "pkgconf/[^1.6.3]",
-        "xorg-util-macros/[^1.19.1]",
-        "xorgproto/[^2019.1]",
+        "cc/[^1.0.0]",
+        "autotools/[^1.0.0]",
+        "xorg-util-macros/[^1.19.2]",
+        "xorgproto/[^2020.1]",
     )
-    requires = (
-        "base/[^1.0.0]",
-        "libxext/[^1.3.4]",
-    )
+    requires = ("libxext/[^1.3.4]",)
 
     def source(self):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXxf86vm-{self.version}.tar.gz")
 
     def build(self):
+        args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("libXxf86vm-" + self.version):
-            autotools.configure()
-            autotools.install()
+        autotools.configure(f"libXxf86vm-{self.version}", args)
+        autotools.install()
