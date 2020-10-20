@@ -19,7 +19,7 @@ class LibdrmConan(ConanFile):
         args = [
             "--auto-features=disabled",
             "-Dradeon=false",
-            "-Damdgpu=false",
+            "-Damdgpu=true",
             "-Dnouveau=true",
         ]
         meson = Meson(self)
