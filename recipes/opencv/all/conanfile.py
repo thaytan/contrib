@@ -16,7 +16,7 @@ class OpenCVConan(ConanFile):
         tools.get(f"https://github.com/opencv/opencv/archive/{self.version}.tar.gz")
 
     def build(self):
-        cmake = CMake(self, generator="Ninja")
+        cmake = CMake(self)
         cmake.definitions["OPENCV_GENERATE_PKGCONFIG"] = True
         cmake.definitions["BUILD_ZLIB"] = True
         cmake.definitions["BUILD_PNG"] = True
