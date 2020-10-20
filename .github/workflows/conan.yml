@@ -3,7 +3,7 @@ on:
   repository_dispatch: ~
 jobs:
   build:
-    name: ${{ github.event.client_payload.package }}: ${{ github.event.client_payload.profile }}
+    name: '${{ github.event.client_payload.package }}: ${{ github.event.client_payload.profile }}'
     runs-on: ${{ github.event.client_payload.tags }}
     container:
       image: ${{ github.event.client_payload.docker_image }}
