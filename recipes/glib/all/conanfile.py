@@ -18,9 +18,6 @@ class GLibConan(ConanFile):
 
     def source(self):
         tools.get(f"https://github.com/GNOME/glib/archive/{self.version}.tar.gz")
-        # Disable broken gio tests until fixed by upstream (https://gitlab.gnome.org/GNOME/glib/issues/1897)
-        # Use tools.replace_in_file()
-        # self.run(f"sed glib-{self.version}/gio/meson.build -i -e 's/build_tests = .*/build_tests = false/'")
 
     def build(self):
         args = [
