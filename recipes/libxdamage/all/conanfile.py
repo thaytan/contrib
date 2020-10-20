@@ -15,6 +15,7 @@ class LibxdamageConan(ConanFile):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXdamage-{self.version}.tar.gz")
 
     def build(self):
+        args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"libXdamage-{self.version}")
+        autotools.configure(f"libXdamage-{self.version}", args)
         autotools.install()
