@@ -11,9 +11,11 @@ class FontconfigConan(ConanFile):
         "autotools/[^1.0.0]",
         "gperf/[^3.1]",
         "libuuid/[^1.0.3]",
+    )
+    requires = (
+        "freetype/[^2.10.3]",
         "expat/[^2.2.7]",
     )
-    requires = ("freetype/[^2.10.3]",)
 
     def source(self):
         tools.get(f"https://www.freedesktop.org/software/fontconfig/release/fontconfig-{self.version}.tar.xz")
