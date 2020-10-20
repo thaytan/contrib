@@ -6,12 +6,11 @@ class LibxrandrConan(ConanFile):
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "pkgconf/[^1.6.3]",
+        "cc/[^1.0.0]",
+        "autotools/[^1.0.0]",
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "base/[^1.0.0]",
-        "libx11/[^1.6.8]",
         "libxrender/[^0.9.10]",
         "libxext/[^1.3.4]",
     )
@@ -22,6 +21,5 @@ class LibxrandrConan(ConanFile):
     def build(self):
         args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("libXrandr-" + self.version):
-            autotools.configure(args=args)
-            autotools.install()
+        autotools.configure(f"libXrandr-{self.version}", args)
+        autotools.install()
