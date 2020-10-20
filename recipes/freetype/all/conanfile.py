@@ -10,12 +10,13 @@ class FreetypeConan(ConanFile):
         "autotools/[^1.0.0]",
         "harfbuzz/[^2.7.2]",
     )
+    requires = ("zlib/[^1.2.11]",)
 
     def source(self):
         tools.get(f"https://download-mirror.savannah.gnu.org/releases/freetype/freetype-{self.version}.tar.xz")
 
     def build(self):
-        args = ["--disable-shared"]
+        args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(f"freetype-{self.version}", args)
         autotools.install()
