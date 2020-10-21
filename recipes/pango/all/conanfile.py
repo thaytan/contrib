@@ -25,6 +25,7 @@ class PangoConan(ConanFile):
         args = [
             "--auto-features=disabled",
             "-Dfontconfig=enabled",
+            "-Dfreetype=enabled",
             "-Dcairo=enabled",
         ]
         meson = Meson(self)
