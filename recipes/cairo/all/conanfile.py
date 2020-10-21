@@ -7,29 +7,34 @@ class CairoConan(ConanFile):
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "meson/[^0.51.2]",
-        "gobject-introspection/[^1.59.3]",
+        "cc/[^1.0.0]",
+        "autotools/[^1.0.0]",
+        "gobject-introspection/[^1.66.1]",
+        "mesa/[^20.2.1]",
+        "zlib/[^1.2.11]",
     )
     requires = (
         "glib/[^2.62.0]",
-        "pixman/[^0.38.4]",
+        "pixman/[^0.40.0]",
         "libxrender/[^0.9.10]",
         "libxext/[^1.3.4]",
-        "fontconfig/[^2.13.1]",
-        "zlib/[^1.2.11]",
+        "fontconfig/[^2.13.92]",
         "libpng/[^1.6.37]",
     )
 
-    def source(self)
-        tools.get(f"https://github.com/centricular/cairo/archive/meson-{self.version}.tar.gz")
+    def source(self):
+        tools.get(f"https://gitlab.freedesktop.org/cairo/cairo/-/archive/{self.version}/cairo-{self.version}.tar.gz")
 
     def build(self):
-        meson = Meson(self)
         args = [
-            "-Dintrospection=enabled",
-            "-Dfontconfig=enabled",
-            "-Dzlib=enabled",
-            "-Dpng=enabled",
+            "--disable-static",
+            "--disable-gl",
+            "--enable-gobject",
         ]
-        meson.configure(args, source_folder=f"pango-${self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        os.environ["CFLAGS"] += " -lpthread"
+        os.environ["CPPFLAGS"] = f"-I{os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')}"
+        os.environ["NOCONFIGURE"] = "1"
+        autotools = AutoToolsBuildEnvironment(self)
+        self.run(f"sh autogen.sh", cwd=f"cairo-{self.version}")
+        autotools.configure(f"cairo-{self.version}", args)
+        autotools.install()
