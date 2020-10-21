@@ -15,11 +15,11 @@ class GStreamerPluginsBaseConan(ConanFile):
         "meson/[^0.55.2]",
         "mesa/[^20.2.1]",
         "gobject-introspection/[^1.59.3]",
-        "orc/[^0.4.29]",
         "opus/[^1.3.1]",
         "pango/[^1.43.0]",
         "libx11/[^1.6.8]",
     )
+    requires = ("orc/[^0.4.29]",)
 
     def requirements(self):
         self.requires(f"gstreamer/[~{self.settings.gstreamer}]")
