@@ -25,8 +25,7 @@ class PangoConan(ConanFile):
         args = [
             "--auto-features=disabled",
             "-Dfontconfig=enabled",
-            "-Dgtk_doc=false",
-            "-Dinstall-tests=false",
+            "-Dcairo=enabled",
         ]
         meson = Meson(self)
         meson.configure(args, source_folder=f"pango-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
