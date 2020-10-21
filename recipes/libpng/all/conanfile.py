@@ -15,7 +15,7 @@ class LibpngConan(ConanFile):
         tools.get(f"https://downloads.sourceforge.net/sourceforge/libpng/libpng-{self.version}.tar.xz")
 
     def build(self):
-        args = ["--disable-shared"]
+        args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(f"libpng-{self.version}", args)
         autotools.make()
