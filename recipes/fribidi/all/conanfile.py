@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -8,7 +7,8 @@ class FribidiConan(ConanFile):
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "meson/[^0.5.12]",
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
     )
 
     def source(self):
@@ -17,5 +17,5 @@ class FribidiConan(ConanFile):
     def build(self):
         args = ["--auto-features=disabled", "-Ddocs=false"]
         meson = Meson(self)
-        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
+        meson.configure(args, source_folder=f"fribidi-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
