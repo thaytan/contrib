@@ -100,6 +100,7 @@ class ClangConan(ConanFile):
         cmake.build(target="install-ranlib")
         cmake.build(target="install-strip")
         cmake.build(target="install-strings")
+        cmake.build(target="install-readelf")
         cmake.build(target="install-llvm-as")
         cmake.build(target="install-llvm-config")
         cmake.build(target="install-llvm-tblgen")
