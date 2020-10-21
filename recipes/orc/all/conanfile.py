@@ -17,9 +17,7 @@ class OrcConan(ConanFile):
     def build(self):
         args = [
             "--auto-features=disabled",
-            "-Dgtk_doc=disabled",
-            "-Dbenchmarks=disabled",
-            "-Dexamples=disabled",
+            "-Dtools=enabled",
         ]
         meson = Meson(self)
         meson.configure(args, source_folder=f"orc-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
