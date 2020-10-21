@@ -1,3 +1,4 @@
+import os
 from conans import *
 
 
@@ -6,7 +7,8 @@ class LibVpxConan(ConanFile):
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "gcc/7.4.0",
+        "cc/[^1.0.0]",
+        "make/[^4.3]",
         "yasm/[^1.3.0]",
     )
 
@@ -17,10 +19,11 @@ class LibVpxConan(ConanFile):
         args = [
             "--enable-shared",
             "--disable-static",
+            "--disable-examples",
             "--disable-install-docs",
             "--disable-install-srcs",
         ]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.install()
+        os.environ["STRIP"] = "no"
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"libvpx-{self.version}", args)
+        autotools.install()
