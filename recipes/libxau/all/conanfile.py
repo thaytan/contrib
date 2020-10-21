@@ -16,7 +16,7 @@ class LibxauConan(ConanFile):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXau-{self.version}.tar.gz")
 
     def build(self):
-        args = ["--disable-shared"]
+        args = ["--disable-static"]
         autotools = AutoToolsBuildEnvironment(self)
         autotools.configure(f"libXau-{self.version}", args)
         autotools.install()
