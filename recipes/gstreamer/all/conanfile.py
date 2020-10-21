@@ -23,6 +23,7 @@ class GStreamerConan(ConanFile):
             "--auto-features=disabled",
             "-Dcheck=enabled",
             "-Dtools=enabled",
+            "-Dintrospection=enabled",
         ]
         meson = Meson(self)
         meson.configure(args, source_folder=f"gstreamer-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
