@@ -1,27 +1,28 @@
 import os
-
 from conans import *
 
 
 class LibNiceConan(ConanFile):
     description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     build_requires = (
-        "meson/[^0.51.2]",
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
     )
+    requires = ("openssl1/[^1.1.1h]",)
 
     def requirements(self):
-        self.requires("glib/[^2.62.0]")
-        self.requires("openssl/[^1.1.1b]")
-        self.requires(f"gstreamer-plugins-base/[~{self.gst_version}]")
+        self.requires(f"gstreamer-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
         tools.get(f"https://github.com/libnice/libnice/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = ["--auto-features=disabled"]
-        args.append("-Dgstreamer=" + ("enabled" if self.options.gstreamer else "disabled"))
+        args = [
+            "--auto-features=disabled",
+            "-Dgstreamer=enabled",
+        ]
         meson = Meson(self)
-        meson.configure(source_folder=f"{self.name, self.version), args=args}-{pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"}")
+        meson.configure(args, source_folder=f"libnice-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
