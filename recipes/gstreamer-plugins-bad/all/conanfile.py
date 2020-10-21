@@ -6,7 +6,7 @@ class GStreamerPluginsBadConan(ConanFile):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     exports = "reduce_latency.patch"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     options = {
         "introspection": [True, False],
         "videoparsers": [True, False],
@@ -50,13 +50,9 @@ class GStreamerPluginsBadConan(ConanFile):
         "webp=True",
     )
     build_requires = (
-        "base/[^1.0.0]",
-        "meson/[^0.51.2]",
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
-    )
-    requires = (
-        "glib/[^2.62.0]",
-        "gstreamer-plugins-base/[~1.16]",
     )
 
     def configure(self):
@@ -73,6 +69,8 @@ class GStreamerPluginsBadConan(ConanFile):
     def requirements(self):
         if self.options.webrtc:
             self.requires("libnice/[^0.1]")
+        else:
+            self.requires(f"gstreamer/[~{self.settings.gstreamer}]")
         if self.options.srtp:
             self.requires("libsrtp/[^2.2.0]")
         if self.options.opencv:
@@ -83,10 +81,7 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("libwebp/[^1.1.0]")
 
     def source(self):
-        git = tools.Git(folder="gst-plugins-bad-" + self.version)
-        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git", branch=self.version, shallow=True)
-        if self.options.aiveropatchlatency:
-            tools.patch(patch_file="reduce_latency.patch", base_path=os.path.join(self.source_folder, "gst-plugins-bad"))
+        tools.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled"]
@@ -111,6 +106,6 @@ class GStreamerPluginsBadConan(ConanFile):
                 args.append("-Dnvcodec=" + ("enabled" if self.options.nvcodec else "disabled"))
 
         meson = Meson(self)
-        meson.configure(source_folder=f"gst-plugins-bad-{self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(args, source_folder=f"gst-plugins-bad-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.build()
         meson.install()
