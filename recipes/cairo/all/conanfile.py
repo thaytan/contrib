@@ -16,8 +16,6 @@ class CairoConan(ConanFile):
     requires = (
         "glib/[^2.62.0]",
         "pixman/[^0.40.0]",
-        "libxrender/[^0.9.10]",
-        "libxext/[^1.3.4]",
         "fontconfig/[^2.13.92]",
         "libpng/[^1.6.37]",
     )
