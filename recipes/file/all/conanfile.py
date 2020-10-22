@@ -5,10 +5,6 @@ class FileConan(ConanFile):
     description = "File type identification utility"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
-        "bootstrap-make/[^4.3]",
-    )
 
     def source(self):
         tools.get(f"https://astron.com/pub/file/file-{self.version}.tar.gz")
