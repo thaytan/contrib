@@ -12,8 +12,8 @@ class LibNiceConan(ConanFile):
     )
     requires = ("openssl1/[^1.1.1h]",)
 
-    def requirements(self):
-        self.requires(f"gstreamer-plugins-base/[~{self.settings.gstreamer}]")
+    def build_requirements(self):
+        self.build_requires(f"gstreamer-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
         tools.get(f"https://github.com/libnice/libnice/archive/{self.version}.tar.gz")
