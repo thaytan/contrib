@@ -106,6 +106,7 @@ class LlvmConan(ConanFile):
         # Stage 0 build (lld, clang, ar)
         cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage0-{self.version}")
         cmake.build(target="install-clang")
+        cmake.build(target="install-clang-cpp")
         cmake.build(target="install-clang-resource-headers")
         cmake.build(target="install-ar")
         cmake.build(target="install-ranlib")
