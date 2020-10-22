@@ -1,2 +1,3 @@
 - version: 5.4.50
-  bootstrap: true
+  image:
+    bootstrap: true
