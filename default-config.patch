@@ -1,0 +1,73 @@
+diff --git a/gst-omx1/omx/gstomx.c b/gst-omx1/omx/gstomx.c
+index 4299244..d316bd7 100644
+--- a/gst-omx1/omx/gstomx.c
++++ b/gst-omx1/omx/gstomx.c
+@@ -49,6 +49,45 @@
+ #include "gstomxvp9dec.h"
+ #include "gstomxvp9enc.h"
+ 
++typedef struct driver_t {
++  char *name;
++  char *type_name;
++  char *component_name;
++} driver;
++
++const static driver drivers[] = {
++  {"omxmpeg4videodec", "GstOMXMPEG4VideoDec", "OMX.Nvidia.mp4.decode"},
++  {"omxh264dec", "GstOMXH264Dec", "OMX.Nvidia.h264.decode"},
++  {"omxh265dec", "GstOMXH265Dec", "OMX.Nvidia.h265.decode"},
++  {"omxvp9dec", "GstOMXVP9Dec", "OMX.Nvidia.vp9.decode"},
++  {"omxmpeg2videodec", "GstOMXMPEG2VideoDec", "OMX.Nvidia.mpeg2v.decode"},
++  {"omxwmvdec", "GstOMXWMVDec", "OMX.Nvidia.vc1.decode"},
++  {"omxh264enc", "GstOMXH264Enc", "OMX.Nvidia.h264.encoder"},
++  {"omxh265enc", "GstOMXH265Enc", "OMX.Nvidia.h265.encoder"},
++  {"omxvp9enc", "GstOMXVP9Enc", "OMX.Nvidia.vp9.encoder"},
++  {"nvoverlaysink", "GstNvOverlaySink", "OMX.Nvidia.std.iv_renderer.overlay.yuv420"}
++};
++
++const static char format[] =
++"[%s]\n"
++"type-name=%s\n"
++"core-name=%s/libnvomx.so\n"
++"component-name=%s\n"
++"rank=266\n"
++"\n";
++
++const char *get_default_config()
++{
++  const char *res = "";
++  const char *driver_path = g_getenv("JETSON_DRIVER_PATH");
++  for (int i = 0; i < sizeof(drivers) / sizeof(drivers[0]); i++ ) {
++    char *driver_str = g_strdup_printf(format, drivers[i].name, drivers[i].type_name, driver_path, drivers[i].component_name);
++    res = g_strconcat(res, driver_str, NULL);
++    g_free(driver_str);
++  }
++  return res;
++}
++
+ GST_DEBUG_CATEGORY (gstomx_debug);
+ #define GST_CAT_DEFAULT gstomx_debug
+ 
+@@ -2829,6 +2868,9 @@ plugin_init (GstPlugin * plugin)
+     g_error_free (err);
+     err = NULL;
+     GST_INFO ("Using default configuration");
++#ifdef USE_OMX_TARGET_TEGRA
++    default_config = get_default_config();
++#endif
+     if (default_config == NULL || !g_key_file_load_from_data (config,
+             default_config, strlen (default_config), G_KEY_FILE_NONE, &err)) {
+       if (err) {
+diff --git a/gst-omx1/omx/gstomx.h b/gst-omx1/omx/gstomx.h
+index 42cf6bc..b2bccd7 100644
+--- a/gst-omx1/omx/gstomx.h
++++ b/gst-omx1/omx/gstomx.h
+@@ -62,6 +62,8 @@
+ #pragma pack()
+ #endif
+ 
++const char *get_default_config();
++
+ G_BEGIN_DECLS
+ #define GST_OMX_INIT_STRUCT(st) G_STMT_START { \
+   memset ((st), 0, sizeof (*(st))); \
