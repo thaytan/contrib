@@ -108,6 +108,7 @@ class LlvmConan(ConanFile):
         cmake.build(target="install-clang")
         cmake.build(target="install-clang-cpp")
         cmake.build(target="install-clang-resource-headers")
+        cmake.build(target="install-llvm-libraries")
         cmake.build(target="install-ar")
         cmake.build(target="install-ranlib")
         cmake.build(target="install-strip")
