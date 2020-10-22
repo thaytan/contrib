@@ -67,10 +67,9 @@ class GStreamerPluginsBadConan(ConanFile):
             self.build_requires("orc/[^0.4.31]")
 
     def requirements(self):
+        self.requires(f"gstreamer-plugins-base/[~{self.settings.gstreamer}]")
         if self.options.webrtc:
             self.requires("libnice/[^0.1]")
-        else:
-            self.requires(f"gstreamer/[~{self.settings.gstreamer}]")
         if self.options.srtp:
             self.requires("libsrtp/[^2.2.0]")
         if self.options.opencv:
@@ -84,6 +83,7 @@ class GStreamerPluginsBadConan(ConanFile):
         tools.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
 
     def build(self):
+        self.run("pkgconf --libs gstreamer-gl-x11-1.0")
         args = ["--auto-features=disabled"]
         args.append("-Dvideoparsers=" + ("enabled" if self.options.videoparsers else "disabled"))
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
