@@ -6,7 +6,7 @@ from conans import *
 class GStreamerVaapiConan(ConanFile):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     options = {
         "encoders": [True, False],
         "egl": [True, False],
@@ -22,23 +22,21 @@ class GStreamerVaapiConan(ConanFile):
         "glx=True",
     )
     build_requires = (
-        "base/[^1.0.0]",
-        "meson/[^0.51.2]",
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
     )
-    requires = (
-        "gstreamer-plugins-base/[~1.16]",
-        "gstreamer-plugins-bad/[~1.16]",
-        "libva/[^2.3.0]",
-    )
+    requires = ("libva/[^2.9.0]",)
+
+    def requirements(self):
+        self.requires(f"gstreamer-plugins-bad/[~{self.settings.gstreamer}]")
 
     def source(self):
-        git = tools.Git(folder=f"{self.name}-${self.version}")
-        git.clone(url="https://gitlab.freedesktop.org/gstreamer/gstreamer-vaapi.git", branch=self.version, shallow=True)
+        tools.get(f"https://github.com/GStreamer/gstreamer-vaapi/archive/{self.version}.tar.gz")
 
     def build(self):
         args = ["--auto-features=disabled"]
         args.append("-Dwith_encoders=" + ("yes" if self.options.encoders else "no"))
         meson = Meson(self)
-        meson.configure(source_folder=f"{self.name}-${self.version}", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(args, source_folder=f"gstreamer-vaapi-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
