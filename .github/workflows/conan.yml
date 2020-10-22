@@ -15,9 +15,10 @@ jobs:
       uses: aivero/conan-action@test
       with:
         package: ${{ github.event.client_payload.package }}
+        settings: ${{ github.event.client_payload.settings }}
+        options: ${{ github.event.client_payload.options }}
         profile: ${{ github.event.client_payload.profile }}
         path: ${{ github.event.client_payload.path }}
-        conan_repo: ${{ github.event.client_payload.conan_repo }}
       env:
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
