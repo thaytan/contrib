@@ -140,6 +140,7 @@ class LlvmConan(ConanFile):
             cflags = "-static"
         libcxx_lib = os.path.join(stage0_folder, "lib")
         env = {
+            "LD_LIBRARY_PATH": os.path.join(stage0_folder, "lib"),
             "LIBRARY_PATH": libcxx_lib,
             "CFLAGS": cflags,
             "CXXLAGS": cflags,
@@ -169,6 +170,7 @@ class LlvmConan(ConanFile):
         libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage1_folder, "lib")
         env = {
+            "LD_LIBRARY_PATH": os.path.join(stage0_folder, "lib"),
             "LIBRARY_PATH": libcxx_lib,
             "CFLAGS": cflags,  # Needed for tests
             "CXXFLAGS": f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}",
