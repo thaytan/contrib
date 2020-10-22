@@ -1,5 +1,12 @@
 name: Conan Dispatch
-on: [push]
+on:
+  push: ~
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package/Version'
+        required: true
+        default: 'pkg/*'
 jobs:
   dispatch:
     name: Conan Dispatch
@@ -13,3 +20,4 @@ jobs:
         uses: aivero/conan-dispatch-action@test
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          package: ${{ github.event.inputs.package }}
