@@ -5,17 +5,19 @@ from conans import *
 class LlvmConan(ConanFile):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "Apache"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
         "bootstrap-llvm/[^10.0.1]",
         "bootstrap-cmake/[^3.18.0]",
         "bootstrap-ninja/[^1.10.0]",
-        "python/[^3.8.5]",
         "zlib/[^1.2.11]",
         "ncurses/[^6.2]",
         "libffi/[^3.3]",
     )
     requires = ("libcxx/[^10.0.1]",)
+
+    def build_requirements(self):
+        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")

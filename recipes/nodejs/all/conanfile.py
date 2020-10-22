@@ -1,21 +1,18 @@
-import os
-
 from conans import *
 
 
 class NodejsConan(ConanFile):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "autotools/[^1.0.0]",
-        "python/[^3.7.4]",
-    )
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
+    build_requires = ("autotools/[^1.0.0]",)
     requires = (
-        "base/[^1.0.0]",
         "openssl/[^1.1.1b]",
         "zlib/[^1.2.11]",
     )
+
+    def build_requirements(self):
+        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://github.com/nodejs/node/archive/v{self.version}.tar.gz")

@@ -5,13 +5,15 @@ from conans import *
 class SwigConan(ConanFile):
     description = "Generate scripting interfaces to C/C++ code"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
-        "python/[^3.8.5]",
         "perl/[^5.30.0]",
     )
+
+    def build_requirements(self):
+        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://downloads.sourceforge.net/swig/swig-{self.version}.tar.gz")

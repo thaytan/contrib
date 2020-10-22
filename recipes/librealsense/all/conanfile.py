@@ -1,20 +1,21 @@
 import os
-
 from conans import *
 
 
 class LibRealsenseConan(ConanFile):
     description = "Intel RealSense SDK"
     license = "Apache"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         # "cuda/[^10.1.243]",
         "libusb/[^1.0.23]",
-        "python/[^3.8.5]",
     )
+
+    def build_requirements(self):
+        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://github.com/IntelRealSense/librealsense/archive/v{self.version}.tar.gz")
@@ -22,12 +23,6 @@ class LibRealsenseConan(ConanFile):
         tools.patch(patch_file="libusb-fix.patch", base_path=f"{self.name}-{self.version}")
 
     def build(self):
-        env = {
-            # "CMAKE_PROGRAM_PATH": self.deps_cpp_info["python"].rootpath,
-            # "PythonInterp_ROOT": self.deps_cpp_info["python"].rootpath,
-            "PATH": os.environ["PATH"].replace("/usr/bin:", "")
-        }
-        # with tools.environment_append(env):
         cmake = CMake(self)
         # cmake.definitions["BUILD_WITH_CUDA"] = self.options.cuda
         cmake.definitions["BUILD_PYTHON_BINDINGS"] = True

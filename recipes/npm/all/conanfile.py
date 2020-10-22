@@ -1,23 +1,22 @@
-import os, shutil
-
+import os
+import shutil
 from conans import *
 
 
 class NpmConan(ConanFile):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
         "autotools/1.0.0",
-        "python/[^3.7.4]",
         "libpng/[^1.6.37]",
         "mozjpeg/[^3.3.1]",
         "pngquant/[^2.12.6]",
     )
-    requires = (
-        "base/[^1.0.0]",
-        "nodejs/[^13.0.1]",
-    )
+    requires = ("nodejs/[^13.0.1]",)
+
+    def build_requirements(self):
+        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://github.com/npm/cli/archive/v{self.version}.tar.gz")

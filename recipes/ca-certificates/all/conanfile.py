@@ -7,14 +7,16 @@ from conans import *
 class CaCertificatesConan(ConanFile):
     description = "Common CA certificates PEM files from Mozilla"
     license = "MPL-2.0"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
 
     build_requires = (
         "bootstrap-openssl/[^3.0.0-alpha6]",
         "make/[^4.3]",
-        "python/[^3.8.5]",
         "cc/[^1.0.0]",
     )
+
+    def build_requirements(self):
+        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{self.version}/ca-certificates-{self.version}.tar.bz2")
