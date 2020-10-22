@@ -87,7 +87,9 @@ class NvJetsonDrivers(ConanFile):
             "NOCONFIGURE": "true",
             "GST_EGL_LIBS": "-lgstegl-1.0 -lnvbuf_utils -lEGL -lX11 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0",
             "PKG_CONFIG_PATH": os.environ["PKG_CONFIG_PATH"] + ":" + pc_path_base,
-            "LD_LIBRARY_PATH": os.environ["LD_LIBRARY_PATH"] + ":" + os.path.join(self.package_folder, "lib") + ":" +  os.path.join(self.build_folder,"usr/lib/aarch64-linux-gnu/tegra"),
+            "LIBRARY_PATH": os.environ["LIBRARY_PATH"] + ":" + os.path.join(self.package_folder, "lib") + ":" +  os.path.join(self.build_folder,"usr/lib/aarch64-linux-gnu/tegra"),
+            "CFLAGS": f" -I{self.build_folder} -Wno-error",
+            "ERROR_CFLAGS": ""
         }
         args = ["--with-omx-target=tegra"]
 
@@ -102,8 +104,7 @@ class NvJetsonDrivers(ConanFile):
             # self.run("./autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
-            self.run("cp %s/*.h ./omx/" % self.build_folder)
-            autotools.make(args=['-I%s' % self.build_folder, 'ERROR_CFLAGS='])
+            autotools.make()
             autotools.install()
 
     def package(self):
