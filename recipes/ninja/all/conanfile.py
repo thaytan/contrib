@@ -9,8 +9,14 @@ class NinjaConan(ConanFile):
     default_options = ("bootstrap=False",)
 
     def build_requirements(self):
-        if not self.options.bootstrap:
+        if self.options.bootstrap:
+            self.build_requires("cmake/[^3.18.4]")
+        else:
             self.build_requires("llvm/[^11.0.0]")
+
+    def configure(self):
+        # Avoid circular requirement
+        self.options["cmake"].bootstrap = self.options.bootstrap
 
     def source(self):
         tools.get(f"https://github.com/ninja-build/ninja/archive/v{self.version}.tar.gz")
