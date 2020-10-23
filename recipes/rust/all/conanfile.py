@@ -35,7 +35,7 @@ class RustConan(ConanFile):
             f"--target={triple}",
             f'--prefix="{self.package_folder}"',
             f"--llvm-root={self.deps_cpp_info['llvm'].rootpath}",
-            "--enable-option-checkin",
+            "--enable-option-checking",
             "--enable-llvm-link-shared",
             "--enable-locked-deps",
             "--disable-docs",
