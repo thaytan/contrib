@@ -218,7 +218,7 @@ class LlvmConan(ConanFile):
 
         # Delete component libs (They are part of the shared libs)
         for lib in os.listdir(os.path.join(self.package_folder, "lib")):
-            if lib.endswith(".a"):
+            if lib.endswith(".a") and lib != "libc++.a":
                 os.remove(os.path.join(self.package_folder, "lib", lib))
 
     def package_info(self):
