@@ -2,7 +2,7 @@ from conans import *
 
 
 class IntelMediaDriverConan(ConanFile):
-    description = "Intel Media Driver for VAAPI — Broadwell+ iGPUs"
+    description = "Intel Media Driver for VAAPI Broadwell iGPUs"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
