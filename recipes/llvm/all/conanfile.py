@@ -53,6 +53,9 @@ class LlvmConan(ConanFile):
         cmake.definitions["LLVM_BUILD_DOCS"] = False
         cmake.definitions["LLVM_BUILD_EXAMPLES"] = False
         cmake.definitions["LLVM_BUILD_TESTS"] = False
+
+        # Build and link all libs as shared
+        cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
 
