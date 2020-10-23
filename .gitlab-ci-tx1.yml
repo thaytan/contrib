@@ -5,13 +5,13 @@
 armv8-bionic-release-stable-tx1:
   extends: armv8-bionic-release-stable
   variables:
-    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
+    CONAN_BUILD_OPTIONS: "-s hardware.board=t210"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
 
 armv8-bionic-release-testing-tx1:
   extends: armv8-bionic-release-testing
   variables:
-    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
+    CONAN_BUILD_OPTIONS: "-s hardware.board=t210"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
 
 # #######
@@ -21,12 +21,11 @@ armv8-bionic-release-testing-tx1:
 armv8-bionic-debug-stable-tx1:
   extends: armv8-bionic-debug-stable
   variables:
-    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
+    CONAN_BUILD_OPTIONS: "-s hardware.board=t210"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
 
 armv8-bionic-debug-testing-tx1:
   extends: armv8-bionic-debug-testing
   variables:
-    CONAN_BUILD_OPTIONS: "-o jetson=Nano"
+    CONAN_BUILD_OPTIONS: "-s hardware.board=t210"
     CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
-

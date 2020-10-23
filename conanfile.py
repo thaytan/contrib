@@ -17,6 +17,7 @@ download_tx1_url_sources = {
     "32.4.3": "https://developer.nvidia.com/embedded/L4T/r32_Release_v4.3/sources/T210/public_sources.tbz2"
 }
 
+
 def get_lib_dir(basedir, libname):
     if "libgst" in (libname):
         return basedir + "/gstreamer-1.0"
@@ -29,10 +30,9 @@ class NvJetsonDrivers(ConanFile):
     version = tools.get_env("GIT_TAG", "32.4.3")
     license = "LGPL"
     description = "Compiled elements from NVIDIAs Jetson sources"
-    settings = "os", "compiler", "build_type", "arch", "gstreamer", "tegra_release"
+    settings = {"os": None, "compiler": None, "build_type": None, "arch": "armv8",
+                "hardware": {"l4t": {"board", "version"}}, "gstreamer": None}
     exports = ["*.patch"]
-    options = {"jetson": ["Nano", "TX2", "Xavier"]}
-    default_options = "jetson=TX2"
 
     def build_requirements(self):
         self.build_requires("generators/1.0.0@%s/stable" % self.user)
@@ -40,19 +40,20 @@ class NvJetsonDrivers(ConanFile):
 
     def requirements(self):
         self.requires(
-            "gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer,self.user))
+            "gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
         self.requires("glib/[~2]@%s/stable" % self.user)
         self.requires("libglvnd/[~1]@%s/stable" % self.user)
-        self.requires("nv-jetson-drivers/%s@%s/stable" % (self.version, self.user)) #!!!! Change to profile
+        self.requires("nv-jetson-drivers/%s@%s/stable" %
+                      (self.settings.hardware.version, self.user))
 
     def source(self):
-        if self.options.jetson in ("TX2", "Xavier"):
-            # Should also reside in
-            tools.get(download_tx2_url_sources[self.version]) #!!!! Change to profile
-        elif self.options.jetson == "Nano":
-            tools.get(download_tx1_url_sources[self.version]) #!!!! Change to profile
+        if self.settings.hardware.board == "t186":
+            # Should also reside in Linux_for_Tegra
+            tools.get(download_tx2_url_sources[f"{self.settings.hardware.version}"])
+        elif self.settings.hardware.board == "t210":
+            tools.get(download_tx1_url_sources[f"{self.settings.hardware.version}"])
         else:
-            raise KeyError("Unknown option: " + self.options.jetson)
+            raise KeyError("Unknown option board type")
 
         # Unpack the relevant sources
         tools.untargz(
@@ -65,7 +66,6 @@ class NvJetsonDrivers(ConanFile):
         tools.untargz(
             "Linux_for_Tegra/source/public/gst-nvvideo4linux2_src.tbz2", self.source_folder)
         tools.rmdir("Linux_for_Tegra")
-
 
     def build(self):
 
@@ -87,7 +87,7 @@ class NvJetsonDrivers(ConanFile):
             "NOCONFIGURE": "true",
             "GST_EGL_LIBS": "-lgstegl-1.0 -lnvbuf_utils -lEGL -lX11 -lgstreamer-1.0 -lgobject-2.0 -lglib-2.0",
             "PKG_CONFIG_PATH": os.environ["PKG_CONFIG_PATH"] + ":" + pc_path_base,
-            "LIBRARY_PATH": os.environ["LIBRARY_PATH"] + ":" + os.path.join(self.package_folder, "lib") + ":" +  os.path.join(self.build_folder,"usr/lib/aarch64-linux-gnu/tegra"),
+            "LIBRARY_PATH": os.environ["LIBRARY_PATH"] + ":" + os.path.join(self.package_folder, "lib") + ":" + os.path.join(self.build_folder, "usr/lib/aarch64-linux-gnu/tegra"),
             "CFLAGS": f" -I{self.build_folder} -Wno-error",
             "ERROR_CFLAGS": ""
         }
@@ -110,7 +110,6 @@ class NvJetsonDrivers(ConanFile):
     def package(self):
         lib_folder = os.path.join(self.package_folder, "lib")
 
-        
         self.copy("*.so*", src="usr", dst="lib", keep_path=False,
                   symlinks=False, excludes=("*libgst*.so*"))
         self.copy("*libgst*.so*", dst="lib/gstreamer-1.0",
