@@ -55,7 +55,6 @@ class LlvmConan(ConanFile):
         cmake.definitions["LLVM_BUILD_TESTS"] = False
 
         # Build and link all libs as shared
-        cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
 
@@ -216,6 +215,11 @@ class LlvmConan(ConanFile):
             os.symlink("ld.lld", "ld")
             os.symlink("clang", "cc")
             os.symlink("clang++", "c++")
+
+        # Delete component libs (They are part of the shared libs)
+        for lib in os.listdir(os.path.join(self.package_folder, "lib")):
+            if lib.endswith(".a"):
+                os.remove(os.path.join(self.package_folder, "lib", lib))
 
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
