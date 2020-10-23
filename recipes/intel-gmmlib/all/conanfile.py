@@ -15,6 +15,6 @@ class IntelGmmlibConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(source_folder=f"intel-gmmlib-{self.version}")
+        cmake.configure(source_folder=f"gmmlib-intel-gmmlib-{self.version}")
         cmake.build()
         cmake.install()
