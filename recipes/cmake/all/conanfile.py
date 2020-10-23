@@ -8,12 +8,9 @@ class CMakeConan(ConanFile):
     options = {"bootstrap": [True, False]}
     default_options = ("bootstrap=False",)
 
-    def build_requirements(self):
-        if not self.options.bootstrap:
-            self.build_requires("cc/[^1.0.0]")
-
     def requirements(self):
         if not self.options.bootstrap:
+            self.requires("cc/[^1.0.0]")
             self.requires("ninja/[^1.10.0]")
             self.requires("pkgconf/[^1.7.3]")
 

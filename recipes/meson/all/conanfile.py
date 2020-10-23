@@ -8,6 +8,7 @@ class MesonConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = (
         "python-setuptools/[^50.3.0]",
+        "cc/[^1.0.0]",
         "ninja/[^1.9.0]",
         "pkgconf/[^1.7.3]",
     )
