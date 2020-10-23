@@ -1,3 +1,4 @@
+import os
 from conans import *
 
 
@@ -18,9 +19,12 @@ class OpenmpConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.definitions["LIBOMP_ENABLE_SHARED"] = False
+        cmake.definitions["LIBOMP_ENABLE_SHARED"] = True
         cmake.definitions["OPENMP_ENABLE_LIBOMPTARGET"] = False
         cmake.definitions["LIBOMP_OMPT_SUPPORT"] = False
         cmake.configure(source_folder=f"openmp-{self.version}.src")
         cmake.build()
         cmake.install()
+
+    def package_info(self):
+        self.env_info.CPATH.append(os.path.join(self.package_folder, "include"))
