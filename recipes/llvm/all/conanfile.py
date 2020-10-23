@@ -46,7 +46,7 @@ class LlvmConan(ConanFile):
         else:
             libc_inc = os.path.join(self.deps_cpp_info["glibc"].rootpath, "include")
             abi = "gnu"
-        cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-aivero-linux-{abi}"
+        cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-unknown-linux-{abi}"
 
         cmake.definitions["LLVM_ENABLE_PIC"] = True
         cmake.definitions["LLVM_BUILD_RUNTIME"] = True
