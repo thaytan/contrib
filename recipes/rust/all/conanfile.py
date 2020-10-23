@@ -7,23 +7,21 @@ class RustConan(ConanFile):
     license = "MIT", "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
-        "bootstrap-llvm/[^11.0.0]",
-        "bootstrap-cmake/[^3.18.0]",
-        "bootstrap-ninja/[^1.10.0]",
+        "llvm/[^11.0.0]",
+        "cmake/[^3.18.0]",
+        "ninja/[^1.10.0]",
         "curl/[^7.72.0]",
         "pkgconf/[^1.7.3]",
         "zlib/[^1.2.11]",
-        "openssl1/[^1.1.1h]",
         "git/[2.28.0]",
     )
-    exports = "disable-shared-lto.patch"
+    requires = ("openssl1/[^1.1.1h]",)
 
     def build_requirements(self):
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
-        tools.patch(patch_file="disable-shared-lto.patch")
 
     def build(self):
         env = {
@@ -36,7 +34,7 @@ class RustConan(ConanFile):
             f"--host={triple}",
             f"--target={triple}",
             f'--prefix="{self.package_folder}"',
-            f"--llvm-root={self.deps_cpp_info['bootstrap-llvm'].rootpath}",
+            f"--llvm-root={self.deps_cpp_info['llvm'].rootpath}",
             "--disable-docs",
             "--tools=cargo",
             "--enable-vendor",
