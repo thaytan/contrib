@@ -8,8 +8,12 @@ class LlvmConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = ("disable-system-libs.patch",)
-    build_requires = ("bootstrap-cmake/[^3.18.0]", "bootstrap-ninja/[^1.10.0]")
+    build_requires = ("cmake/[^3.18.4]", "ninja/[^1.10.0]")
     requires = "libc/[^1.0.0]", "file/[^5.39]"
+
+    def configure(self):
+        self.options["cmake"].bootstrap = True
+        self.options["ninja"].bootstrap = True
 
     def source(self):
         tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
