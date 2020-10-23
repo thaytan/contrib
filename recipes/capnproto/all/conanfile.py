@@ -5,13 +5,18 @@ class CapNProtoConan(ConanFile):
     description = "Cap'n Proto serialization/RPC system"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    build_requires = (
+        "cc/[^1.0.0]",
+        "cmake/[^3.18.3]",
+        "zlib/[^1.2.11]",
+    )
 
     def source(self):
-        tools.get(f"https://capnproto.org/capnproto-c++-{self.version}.tar.gz")
+        tools.get(f"https://github.com/capnproto/capnproto/archive/v{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir(f"capnproto-c++-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
-            autotools.make()
-            autotools.install()
+        cmake = CMake(self)
+        cmake.definitions["BUILD_SHARED_LIBS"] = True
+        cmake.configure(source_folder=f"capnproto-{self.version}")
+        cmake.build()
+        cmake.install()
