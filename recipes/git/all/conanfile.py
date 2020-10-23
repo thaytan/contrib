@@ -17,10 +17,9 @@ class GitConan(ConanFile):
         "gettext/[^0.21]",
         "zlib/[^1.2.11]",
         "curl/[^7.66.0]",
-        "openssl/[^3.0.0-alpha6]",
         "expat/[^2.2.7]",
     )
-    requires = ("ca-certificates/[^20191127]",)
+    requires = ("openssl/[^3.0.0-alpha6]",)
 
     def source(self):
         tools.get(f"https://www.kernel.org/pub/software/scm/git/git-{self.version}.tar.xz")
