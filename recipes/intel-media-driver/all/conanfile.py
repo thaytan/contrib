@@ -1,3 +1,4 @@
+import os
 from conans import *
 
 
@@ -19,7 +20,13 @@ class IntelMediaDriverConan(ConanFile):
         tools.get(f"https://github.com/intel/media-driver/archive/intel-media-{self.version}.tar.gz")
 
     def build(self):
+        os.environ["CPATH"] += ":" + ":".join(self.deps_cpp_info["libx11"].include_paths + self.deps_cpp_info["xorgproto"].include_paths)
         cmake = CMake(self)
+
+        # Needed to pass tests
+        # cmake.definitions["BYPASS_MEDIA_ULT"] = True
+        # os.environ["CXXFLAGS"] += " -fno-semantic-interposition"
+
         cmake.configure(source_folder=f"media-driver-intel-media-{self.version}")
         cmake.build()
         cmake.install()
