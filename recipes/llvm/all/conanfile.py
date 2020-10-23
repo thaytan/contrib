@@ -239,7 +239,8 @@ class LlvmConan(ConanFile):
             libc_inc = os.path.join(self.deps_cpp_info["glibc"].rootpath, "include")
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin "
+        # -Wno-unused-command-line-argument is needed for some sanity tests in cmake
+        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin -Wno-unused-command-line-argument "
         cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
         self.env_info.CFLAGS = cflags
