@@ -15,7 +15,7 @@ class FreetypeConan(ConanFile):
     def requirements(self):
         if self.options.harfbuzz:
             self.requires("harfbuzz/[^2.7.2]")
-        else
+        else:
             self.requires("zlib/[^1.2.11]")
 
     def source(self):
