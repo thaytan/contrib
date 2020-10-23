@@ -11,11 +11,12 @@ class FreetypeConan(ConanFile):
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
     )
-    requires = ("zlib/[^1.2.11]",)
 
     def requirements(self):
         if self.options.harfbuzz:
             self.requires("harfbuzz/[^2.7.2]")
+        else
+            self.requires("zlib/[^1.2.11]")
 
     def source(self):
         tools.get(f"https://download-mirror.savannah.gnu.org/releases/freetype/freetype-{self.version}.tar.xz")
