@@ -1,1 +1,2 @@
 - version: '20.3.2'
+  profile: [Linux-x86_64]
