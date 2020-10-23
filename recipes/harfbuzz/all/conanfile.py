@@ -9,10 +9,14 @@ class HarfbuzzConan(ConanFile):
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[^0.55.3]",
-        "freetype-no-harfbuzz/[^2.10.3]",
+        "freetype/[^2.10.3]",
         "gobject-introspection/[^1.66.1]",
     )
     requires = ("glib/[^2.66.1]",)
+
+    def configure(self):
+        # Avoid circular requirement
+        self.options["freetype"].harfbuzz = False
 
     def source(self):
         tools.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")
