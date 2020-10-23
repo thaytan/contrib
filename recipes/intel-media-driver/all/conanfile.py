@@ -20,6 +20,6 @@ class IntelMediaDriverConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(source_folder=f"intel-media-driver-{self.version}")
+        cmake.configure(source_folder=f"media-driver-intel-media-{self.version}")
         cmake.build()
         cmake.install()
