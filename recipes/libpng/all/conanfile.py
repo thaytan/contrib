@@ -8,8 +8,8 @@ class LibpngConan(ConanFile):
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/1.0.0",
-        "zlib/[^1.2.11]",
     )
+    requires = ("zlib/[^1.2.11]",)
 
     def source(self):
         tools.get(f"https://downloads.sourceforge.net/sourceforge/libpng/libpng-{self.version}.tar.xz")
