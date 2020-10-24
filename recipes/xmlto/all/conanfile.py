@@ -12,10 +12,7 @@ class XmltoConan(ConanFile):
         tools.get(f"https://releases.pagure.org/xmlto/xmlto-{self.version}.tar.bz2")
 
     def build(self):
-        args = [
-            "--disable-static",
-        ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"xmlto-{self.version}", args)
+        autotools.configure(f"xmlto-{self.version}")
         autotools.make()
         autotools.install()
