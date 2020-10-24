@@ -7,9 +7,9 @@ class PngquantConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("autotools/1.0.0",)
     requires = (
-        "base/[^1.0.0]",
         "libpng/[^1.6.37]",
         "libimagequant/[^2.12.6]",
+        "openmp/[^11.0.0]",
     )
 
     def source(self):
@@ -19,7 +19,7 @@ class PngquantConan(ConanFile):
         args = [
             "--with-openmp",
         ]
-        with tools.chdir(f"{self.name}-{self.version}"):
+        with tools.chdir(f"pngquant-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure(args=args)
             autotools.make()
