@@ -1,3 +1,4 @@
+import os
 from conans import *
 
 
@@ -6,9 +7,11 @@ class SharedMimeInfoConan(ConanFile):
     license = "GPL2"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "autotools/[^1.0.0]",
+        "meson/[^0.55.3]",
         "itstool/[^2.0.6]",
         "xz/[^5.2.4]",
+        "xmlto/[^0.0.28]",
+        "gettext/[^0.21]",
     )
     requires = (
         "glib/[^2.62.0]",
@@ -16,13 +19,15 @@ class SharedMimeInfoConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/freedesktop/xdg-shared-mime-info/archive/{self.version}.tar.gz")
+        tools.get("https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/master/shared-mime-info-master.tar.gz")
+        # tools.get("https://gitlab.freedesktop.org/xdg/xdgmime/-/archive/master/xdgmime-master.tar.gz")
 
     def build(self):
-        args = ["--disable-update-mimedb"]
-        with tools.chdir(f"{self.name}-${self.version}"):
-            self.run("sh autogen.sh")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        args = [
+            "--auto-features=disabled",
+            "--wrap-mode=nofallback",
+            "-Dupdate-mimedb=false",
+        ]
+        meson = Meson(self)
+        meson.configure(args, source_folder="shared-mime-info-master", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.install()
