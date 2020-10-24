@@ -5,7 +5,7 @@ from conans import *
 class GObjectIntrospectionConan(ConanFile):
     description = "Middleware layer between C libraries (using GObject) and language bindings"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
+    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[^0.55.3]",
@@ -13,10 +13,10 @@ class GObjectIntrospectionConan(ConanFile):
         "flex/[^2.6.4]",
         "git/[^2.28.0]",
     )
-    requires = (
-        "python/[^3.8.5]",
-        "glib/[^2.66.1]",
-    )
+    requires = ("glib/[^2.66.1]",)
+
+    def requirements(self):
+        self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         tools.get(f"https://github.com/GNOME/gobject-introspection/archive/{self.version}.tar.gz")
@@ -28,5 +28,4 @@ class GObjectIntrospectionConan(ConanFile):
         meson.install()
 
     def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
         self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "gobject-introspection")
