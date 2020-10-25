@@ -11,6 +11,7 @@ class SharedMimeInfoConan(ConanFile):
         "itstool/[^2.0.6]",
         "xz/[^5.2.4]",
         "gettext/[^0.21]",
+        "xmlto/[^0.0.28]",
     )
     requires = (
         "glib/[^2.62.0]",
