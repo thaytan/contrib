@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -15,7 +14,6 @@ class PangoConan(ConanFile):
     requires = (
         "fribidi/[^1.0.5]",
         "cairo/[^1.17.2]",
-        "harfbuzz/[^2.6.1]",
     )
 
     def source(self):
