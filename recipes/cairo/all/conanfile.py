@@ -7,7 +7,6 @@ class CairoConan(ConanFile):
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "gobject-introspection/[^1.66.1]",
         "mesa/[^20.2.1]",
@@ -18,6 +17,8 @@ class CairoConan(ConanFile):
         "pixman/[^0.40.0]",
         "fontconfig/[^2.13.92]",
         "libpng/[^1.6.37]",
+        "libxrender/[^0.9.10]",
+        "libxext/[^1.3.4]",
     )
 
     def source(self):
