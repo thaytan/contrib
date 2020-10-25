@@ -12,7 +12,6 @@ class HarfbuzzConan(ConanFile):
         "freetype/[^2.10.3]",
         "gobject-introspection/[^1.66.1]",
     )
-    requires = ("glib/[^2.66.1]",)
 
     def configure(self):
         # Avoid circular requirement
