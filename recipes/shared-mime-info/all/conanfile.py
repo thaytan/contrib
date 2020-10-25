@@ -10,7 +10,6 @@ class SharedMimeInfoConan(ConanFile):
         "meson/[^0.55.3]",
         "itstool/[^2.0.6]",
         "xz/[^5.2.4]",
-        "xmlto/[^0.0.28]",
         "gettext/[^0.21]",
     )
     requires = (
@@ -19,8 +18,8 @@ class SharedMimeInfoConan(ConanFile):
     )
 
     def source(self):
-        tools.get("https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/master/shared-mime-info-master.tar.gz")
-        # tools.get("https://gitlab.freedesktop.org/xdg/xdgmime/-/archive/master/xdgmime-master.tar.gz")
+        tools.get(f"https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/{self.version}/shared-mime-info-{self.version}.tar.gz")
+        tools.replace_in_file(os.path.join(f"shared-mime-info-{self.version}", "data", "meson.build"), "build_by_default: true", "build_by_default: false")
 
     def build(self):
         args = [
@@ -29,5 +28,5 @@ class SharedMimeInfoConan(ConanFile):
             "-Dupdate-mimedb=false",
         ]
         meson = Meson(self)
-        meson.configure(args, source_folder="shared-mime-info-master", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
+        meson.configure(args, source_folder=f"shared-mime-info-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
         meson.install()
