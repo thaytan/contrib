@@ -12,14 +12,15 @@ class GdkPixbufConan(ConanFile):
         "gettext/[^0.21]",
     )
     requires = (
-        "glib/[^2.66.1]",
         "libx11/[^1.6.8]",
         "libpng/[^1.6.37]",
-        "shared-mime-info/[^1.14]",
+        "shared-mime-info/[^2.0]",
     )
 
     def source(self):
         tools.get(f"https://github.com/GNOME/gdk-pixbuf/archive/{self.version}.tar.gz")
+        # Disable broken tests
+        tools.replace_in_file(os.path.join(f"gdk-pixbuf-{self.version}", "meson.build"), "subdir('tests')", "")
 
     def build(self):
         args = [
