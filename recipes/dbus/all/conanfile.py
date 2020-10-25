@@ -9,19 +9,19 @@ class DbusConan(ConanFile):
         "autotools/[^1.0.0]",
         "autoconf-archive/[^2019.01.06]",
     )
-    requires = (
-        "base/[^1.0.0]",
-        "expat/[^2.2.7]",
-    )
+    requires = ("expat/[^2.2.7]",)
 
     def source(self):
         tools.get(f"https://gitlab.freedesktop.org/dbus/dbus/-/archive/dbus-{self.version}/dbus-dbus-{self.version}.tar.bz2")
 
     def build(self):
+        env = {
+            "NOCONFIGURE": "1",
+        }
         args = ["--disable-static"]
-        with tools.chdir("dbus-dbus-" + self.version):
-            self.run("sh autogen.sh")
+        with tools.environment_append(env):
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
+            self.run("sh autogen.sh", cwd=f"dbus-dbus-{self.version}")
+            autotools.configure(f"dbus-dbus-{self.version}", args)
             autotools.make()
             autotools.install()
