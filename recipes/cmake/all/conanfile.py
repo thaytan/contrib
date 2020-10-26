@@ -17,5 +17,5 @@ class CMakeRecipe(Recipe):
         self.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
 
     def build(self):
-        defs = {"CMAKE_USE_OPENSSL": True}
+        defs = {"CMAKE_USE_OPENSSL": False}
         self.cmake(defs)
