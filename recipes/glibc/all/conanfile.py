@@ -4,6 +4,8 @@ from build import *
 class GlibcRecipe(Recipe):
     description = "GNU C Library"
     license = "GPL"
+    options = {}
+    default_options = {}
     requires = "linux-headers/[^5.4.50]"
 
     def source(self):
