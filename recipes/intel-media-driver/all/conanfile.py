@@ -6,10 +6,7 @@ class IntelMediaDriverConan(ConanFile):
     description = "Intel Media Driver for VAAPI Broadwell iGPUs"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "cmake/[^3.18.4]",
-    )
+    build_requires = ("cmake/[^3.18.4]",)
     requires = (
         "intel-gmmlib/[^20.3.2]",
         "libva/[^2.9.0]",
@@ -23,7 +20,7 @@ class IntelMediaDriverConan(ConanFile):
         os.environ["CPATH"] += ":" + ":".join(self.deps_cpp_info["libx11"].include_paths + self.deps_cpp_info["xorgproto"].include_paths)
         cmake = CMake(self)
 
-        # Needed to pass tests
+        # (Maybe) needed to pass tests with clang
         # cmake.definitions["BYPASS_MEDIA_ULT"] = True
         # os.environ["CXXFLAGS"] += " -fno-semantic-interposition"
 
