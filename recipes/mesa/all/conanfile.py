@@ -32,8 +32,6 @@ class MesaRecipe(Recipe):
 
     def build(self):
         args = [
-            "--auto-features=disabled",
-            "--wrap-mode=nofallback",
             "-Dglvnd=true",
             "-Dglx=dri",
             "-Degl=true",

@@ -29,7 +29,6 @@ class GStreamerPluginsBaseRecipe(Recipe):
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dgl_platform=egl",
             "-Dintrospection=enabled",
             "-Dgl=enabled",

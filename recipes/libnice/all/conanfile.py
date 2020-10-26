@@ -16,7 +16,6 @@ class LibNiceRecipe(Recipe):
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dgstreamer=enabled",
         ]
         self.meson(args)

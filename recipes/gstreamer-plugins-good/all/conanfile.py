@@ -24,7 +24,6 @@ class GStreamerPluginsGoodRecipe(Recipe):
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dautodetect=enabled",
             "-Drtp=enabled",
             "-Drtsp=enabled",

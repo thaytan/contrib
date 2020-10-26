@@ -11,7 +11,6 @@ class FribidiRecipe(Recipe):
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Ddocs=false",
         ]
         self.meson(args)

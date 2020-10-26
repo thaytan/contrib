@@ -17,7 +17,7 @@ class IntelVaapiDriverRecipe(Recipe):
         self.get(f"https://github.com/intel/intel-vaapi-driver/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = ["--auto-features=disabled"]
+        args = []
         args.append("-Dwith_x11=" + ("yes" if self.options.x11 else "no"))
         args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
         args.append("-Ddriverdir=" + os.path.join(self.package_folder, "lib", "dri"))

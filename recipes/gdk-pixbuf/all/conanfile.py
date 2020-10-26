@@ -22,8 +22,6 @@ class GdkPixbufRecipe(Recipe):
 
     def build(self):
         args = [
-            "--auto-features=disabled",
-            "--wrap-mode=nofallback",
             "-Dinstalled_tests=false",
             "-Drelocatable=true",
         ]

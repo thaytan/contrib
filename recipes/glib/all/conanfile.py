@@ -15,7 +15,6 @@ class GLibRecipe(Recipe):
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dman=False",
             "-Dgtk_doc=False",
             "-Dinternal_pcre=False",

@@ -15,7 +15,3 @@ class GStreamerSvtHevcRecipe(Recipe):
 
     def source(self):
         self.get(f"https://github.com/OpenVisualCloud/SVT-HEVC/archive/v{self.version}.tar.gz")
-
-    def build(self):
-        args = ["--auto-features=disabled"]
-        self.meson(args)
