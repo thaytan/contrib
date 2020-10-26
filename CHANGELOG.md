@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2020-Oct-26
+
+### Fixed
+
+- `rgbdmux`
+  - Downstream requests for video format are now correctly sent to the upstream element(s), even if their linking is delayed. Previously, video format forwarding could fail if `rgbdmux` was linked with upstream (e.g. in NULL state) before downsteam (e.g. in READY state).
+
 ## [1.0.0] - 2020-Oct-02
 
 ### Changed

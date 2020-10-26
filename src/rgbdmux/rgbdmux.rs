@@ -251,50 +251,6 @@ impl AggregatorImpl for RgbdMux {
         self.parent_get_next_time(aggregator)
     }
 
-    /// Called whenever a query is received at the src pad.
-    /// CAPS query is used to obtain requests for formats of the individual video streams.
-    /// # Arguments
-    /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
-    /// * `query` - The query that should be handled.
-    fn src_query(&self, aggregator: &gst_base::Aggregator, query: &mut gst::QueryRef) -> bool {
-        #[allow(clippy::single_match)]
-        match query.view_mut() {
-            // Wait until CAPS query is received on the src pad
-            gst::QueryView::Caps(_query_caps) => {
-                // Get the src_pad used for sending the query to the linked downstream element
-                let src_pad = aggregator
-                    .get_static_pad("src")
-                    .expect("rgbdmux: Element must have a src pad to receive a src_query");
-                // Get the default CAPS from the src pad template
-                let src_pad_template_caps = aggregator
-                    .get_pad_template("src")
-                    .expect("rgbdmux: Could not find src-pad template")
-                    .get_caps();
-                // Create CAPS query
-                let mut request_downstream_caps_query =
-                    gst::query::Caps::new(src_pad_template_caps.as_ref());
-
-                // Send the query and receive the sink CAPS of the downstream element
-                if src_pad.peer_query(&mut request_downstream_caps_query) {
-                    if let Some(requested_caps) = request_downstream_caps_query.get_result() {
-                        // Before extraction, intersect with src pad template caps
-                        let requested_caps = requested_caps.intersect(
-                            &src_pad_template_caps
-                                .expect("rgbdmux: Element defines a src pad template with caps"),
-                        );
-                        // Extract formats from these caps for use when creating new CAPS
-                        *self.requested_stream_formats.lock().unwrap() =
-                            self.extract_formats_from_rgbd_caps(&requested_caps);
-                    }
-                }
-            }
-            _ => {}
-        }
-
-        // Let parent handle all queries
-        self.parent_src_query(aggregator, query)
-    }
-
     /// Called whenever a query is received at one of the sink pads.
     /// CAPS query augmented to use formats for the individual video streams based on requests from the downstream element.
     /// # Arguments
@@ -312,18 +268,21 @@ impl AggregatorImpl for RgbdMux {
             gst::QueryView::Caps(mut caps_query) => {
                 if let Some(filter) = caps_query.get_filter() {
                     let mut result = filter.copy();
-                    let requested_stream_formats = &self.requested_stream_formats.lock().unwrap();
                     let stream_name = &aggregator_pad.get_name()[5..];
 
-                    for filter_caps in result.get_mut().unwrap().iter_mut() {
-                        // Continue if filter has no format at all
-                        if filter_caps.get::<String>("format").is_err() {
-                            continue;
+                    // Get the requested stream formats of downstream element for each stream from video/rgbd CAPS,
+                    // translate the format into elementary steam and forward it upstream
+                    if let Some(requested_stream_formats) =
+                        self.query_downstream_video_formats(aggregator)
+                    {
+                        for filter_caps in result.get_mut().unwrap().iter_mut() {
+                            // Overwrite format, if downstream element requested it
+                            if let Some(downstream_format) =
+                                requested_stream_formats.get(stream_name)
+                            {
+                                filter_caps.set::<String>("format", downstream_format);
+                            };
                         }
-                        // Overwrite format, if downstream element requested it
-                        if let Some(downstream_format) = requested_stream_formats.get(stream_name) {
-                            filter_caps.set::<String>("format", downstream_format);
-                        };
                     }
 
                     caps_query.set_result(&result);
@@ -902,16 +861,73 @@ impl RgbdMux {
         downstream_caps.to_owned()
     }
 
+    /// Query downstream element of `aggregator` for CAPS and extracts format fields for each stream.
+    /// # Arguments
+    /// * `aggregator` - The aggregator that represents `rgbdmux`.
+    /// # Returns
+    /// * `HashMap<String, String>` - Hashmap containing <stream, format>.
+    fn query_downstream_video_formats(
+        &self,
+        aggregator: &gst_base::Aggregator,
+    ) -> Option<HashMap<String, String>> {
+        let src_pad = aggregator
+            .get_static_pad("src")
+            .expect("rgbdmux: Element must have a src pad to receive a src_query");
+        let src_pad_template_caps = aggregator
+            .get_pad_template("src")
+            .expect("rgbdmux: Could not find src-pad template")
+            .get_caps();
+
+        // Create CAPS query with filter based on template CAPS
+        let mut request_downstream_caps_query =
+            gst::query::Caps::new(src_pad_template_caps.as_ref());
+
+        // Send the query and receive sink CAPS of the downstream element
+        if !src_pad.peer_query(&mut request_downstream_caps_query) {
+            gst_debug!(
+                CAT,
+                obj: aggregator,
+                "Cannot send CAPS query downstream. The src pad of this element is probably not yet linked.",
+            );
+            return None;
+        }
+
+        if let Some(requested_caps) = request_downstream_caps_query.get_result() {
+            // We can only handle fixed CAPS here
+            if !requested_caps.is_fixed() {
+                gst_warning!(
+                    CAT,
+                    obj: aggregator,
+                    "Downstream element queried CAPS that are NOT fixed. Only fixed `video/rgbd` CAPS can be handled properly.",
+                );
+                return None;
+            }
+
+            // Extract formats from these caps for use when creating new CAPS
+            self.extract_formats_from_rgbd_caps(requested_caps)
+        } else {
+            gst_warning!(
+                CAT,
+                obj: aggregator,
+                "Downstream element did not return a valid result for CAPS query.",
+            );
+            None
+        }
+    }
+
     /// Extracts format field for each stream in `video/rgbd` CAPS.
     /// # Arguments
     /// * `caps` - Formats are extracted from these `video/rgbd` CAPS.
     /// # Returns
     /// * `HashMap<String, String>` - Hashmap containing <stream, format>.
-    fn extract_formats_from_rgbd_caps(&self, caps: &gst::Caps) -> HashMap<String, String> {
+    fn extract_formats_from_rgbd_caps(
+        &self,
+        caps: &gst::CapsRef,
+    ) -> Option<HashMap<String, String>> {
         // Iterate over all fields in the input CAPS and retain only the format field
-        caps.iter()
-            .next()
-            .expect("rgbdmux: Downstream element has not CAPS")
+        let formats = caps
+            .iter()
+            .next()?
             .iter()
             .filter_map(|(field, value)| {
                 if !field.contains("_format") {
@@ -923,7 +939,12 @@ impl RgbdMux {
                     ))
                 }
             })
-            .collect::<HashMap<String, String>>()
+            .collect::<HashMap<String, String>>();
+        if formats.is_empty() {
+            None
+        } else {
+            Some(formats)
+        }
     }
 }
 
