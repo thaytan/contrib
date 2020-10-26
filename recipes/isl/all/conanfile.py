@@ -11,9 +11,3 @@ class IslRecipe(Recipe):
 
     def source(self):
         self.get(f"http://isl.gforge.inria.fr/isl-{self.version}.tar.xz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

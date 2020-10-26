@@ -15,7 +15,6 @@ class FlexRecipe(Recipe):
     def build(self):
         args = [
             "--disable-nls",
-            "--disable-shared",
             "ac_cv_func_reallocarray=no",
         ]
         self.autotools(args)

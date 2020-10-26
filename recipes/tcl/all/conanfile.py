@@ -14,7 +14,6 @@ class TclRecipe(Recipe):
 
     def build(self):
         args = [
-            "--disable-shared",
             "--enable-threads",
             "--enable-64bit",
         ]

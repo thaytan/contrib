@@ -17,11 +17,5 @@ class Libx11Recipe(Recipe):
     def source(self):
         self.get(f"https://xorg.freedesktop.org/releases/individual/lib/libX11-{self.version}.tar.gz")
 
-    def build(self):
-        args = [
-            "--disable-static",
-        ]
-        self.autotools(args)
-
     def package_info(self):
         self.env_info.XLOCALEDIR = os.path.join(self.package_folder, "share", "X11", "locale")

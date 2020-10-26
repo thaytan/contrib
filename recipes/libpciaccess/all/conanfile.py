@@ -11,9 +11,3 @@ class LibPciAccessRecipe(Recipe):
 
     def source(self):
         self.get(f"https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

@@ -8,9 +8,3 @@ class LibuuidRecipe(Recipe):
 
     def source(self):
         self.get(f"https://netix.dl.sourceforge.net/project/libuuid/libuuid-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

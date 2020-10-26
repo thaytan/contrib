@@ -12,7 +12,6 @@ class LibxsltRecipe(Recipe):
 
     def build(self):
         args = [
-            "--disable-static",
             "--without-python",
         ]
         self.autotools(args)

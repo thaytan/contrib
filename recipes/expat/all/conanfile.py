@@ -8,7 +8,3 @@ class ExpatRecipe(Recipe):
 
     def source(self):
         self.get(f"https://github.com/libexpat/libexpat/releases/download/R_{self.version.replace('.', '_')}/expat-{self.version}.tar.bz2")
-
-    def build(self):
-        args = ["--disable-shared"]
-        self.autotools(args)

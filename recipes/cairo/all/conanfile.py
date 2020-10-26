@@ -24,7 +24,6 @@ class CairoRecipe(Recipe):
 
     def build(self):
         args = [
-            "--disable-static",
             "--disable-gl",
             "--enable-gobject",
         ]

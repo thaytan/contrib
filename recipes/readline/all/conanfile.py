@@ -11,9 +11,3 @@ class ReadlineRecipe(Recipe):
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/readline/readline-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

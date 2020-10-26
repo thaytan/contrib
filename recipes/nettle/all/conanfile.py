@@ -9,9 +9,3 @@ class NettleRecipe(Recipe):
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/nettle/nettle-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

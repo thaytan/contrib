@@ -11,9 +11,3 @@ class GmpRecipe(Recipe):
 
     def source(self):
         self.get(f"https://gmplib.org/download/gmp/gmp-{self.version}.tar.xz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

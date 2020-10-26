@@ -17,10 +17,7 @@ class CurlRecipe(Recipe):
 
     def build(self):
         os.environ["CFLAGS"] += ("-ldl -lpthread",)
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)
+        self.autotools()
 
     def package_info(self):
         self.env_info.CURL_CA_BUNDLE = os.path.join(self.deps_cpp_info["ca-certificates"].rootpath, "etc", "ssl", "certs", "cert.pem")

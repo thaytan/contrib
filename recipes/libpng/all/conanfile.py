@@ -9,9 +9,3 @@ class LibpngRecipe(Recipe):
 
     def source(self):
         self.get(f"https://downloads.sourceforge.net/sourceforge/libpng/libpng-{self.version}.tar.xz")
-
-    def build(self):
-        args = [
-            "--disable-static",
-        ]
-        self.autotools(args)

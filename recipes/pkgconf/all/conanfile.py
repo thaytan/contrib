@@ -12,12 +12,6 @@ class PkgconfRecipe(Recipe):
     def source(self):
         self.get(f"https://github.com/pkgconf/pkgconf/archive/pkgconf-{self.version}.tar.gz")
 
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)
-
     def package(self):
         os.symlink("pkgconf", os.path.join(self.package_folder, "bin", "pkg-config"))
 

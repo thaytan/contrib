@@ -12,9 +12,3 @@ class EudevRecipe(Recipe):
 
     def source(self):
         self.get(f"https://dev.gentoo.org/~blueness/eudev/eudev-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-static",
-        ]
-        self.autotools(args)

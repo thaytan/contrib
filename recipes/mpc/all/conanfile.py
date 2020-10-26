@@ -12,9 +12,3 @@ class MpcRecipe(Recipe):
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/mpc/mpc-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

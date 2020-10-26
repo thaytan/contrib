@@ -15,12 +15,6 @@ class LibtoolRecipe(Recipe):
         self.get(f"https://ftp.gnu.org/gnu/libtool/libtool-{self.version}.tar.gz")
         self.patch("libtool-prefix-fix.patch")
 
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)
-
     def package_info(self):
         self.env_info.LIBTOOL_PREFIX = self.package_folder
         self.env_info.LIBTOOL = os.path.join(self.package_folder, "bin", "libtool")

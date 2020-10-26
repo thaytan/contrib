@@ -8,9 +8,3 @@ class AlsaLibRecipe(Recipe):
 
     def source(self):
         self.get(f"https://www.alsa-project.org/files/pub/lib/alsa-lib-{self.version}.tar.bz2")
-
-    def build(self):
-        args = [
-            "--disable-static",
-        ]
-        self.autotools(args)

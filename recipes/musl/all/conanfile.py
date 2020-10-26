@@ -8,7 +8,3 @@ class MuslRecipe(Recipe):
 
     def source(self):
         self.get(f"https://www.musl-libc.org/releases/musl-{self.version}.tar.gz")
-
-    def build(self):
-        args = ["--disable-shared"]
-        self.autotools(args)

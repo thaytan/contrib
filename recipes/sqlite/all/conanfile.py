@@ -22,7 +22,4 @@ class SqliteRecipe(Recipe):
     def build(self):
         self.run("chmod +x configure", cwd=f"{self.name}-{self.version}")
 
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)
+        self.autotools()

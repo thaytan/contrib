@@ -12,7 +12,6 @@ class LibUSBRecipe(Recipe):
 
     def build(self):
         args = [
-            "--disable-shared",
             "--enable-udev",
         ]
         self.autotools(args)

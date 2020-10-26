@@ -17,7 +17,6 @@ class ElfutilsRecipe(Recipe):
 
     def build(self):
         args = [
-            "--disable-shared",
             "--disable-debuginfod",
         ]
         os.environ["CFLAGS"] += " -Wno-error"

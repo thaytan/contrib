@@ -8,10 +8,3 @@ class LibffiRecipe(Recipe):
 
     def source(self):
         self.get(f"https://github.com/libffi/libffi/releases/download/v{self.version}/libffi-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-dependency-tracking",
-            "--disable-shared",
-        ]
-        self.autotools(args)

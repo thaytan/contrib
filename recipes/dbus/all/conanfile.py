@@ -12,7 +12,3 @@ class DbusRecipe(Recipe):
 
     def source(self):
         self.get(f"https://gitlab.freedesktop.org/dbus/dbus/-/archive/dbus-{self.version}/dbus-dbus-{self.version}.tar.bz2")
-
-    def build(self):
-        args = ["--disable-static"]
-        self.autotools(args)

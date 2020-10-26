@@ -9,9 +9,3 @@ class OpusRecipe(Recipe):
 
     def source(self):
         self.get(f"https://archive.mozilla.org/pub/opus/opus-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

@@ -14,8 +14,6 @@ class FFMpegRecipe(Recipe):
 
     def build(self):
         args = [
-            "--disable-shared",
-            "--enable-static",
             "--disable-doc",
             "--disable-programs",
             "--cc=cc",

@@ -8,9 +8,3 @@ class Libtasn1Recipe(Recipe):
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/libtasn1/libtasn1-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

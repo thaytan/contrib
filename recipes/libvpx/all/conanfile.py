@@ -14,8 +14,6 @@ class LibVpxRecipe(Recipe):
 
     def build(self):
         args = [
-            "--enable-shared",
-            "--disable-static",
             "--disable-examples",
             "--disable-install-docs",
             "--disable-install-srcs",

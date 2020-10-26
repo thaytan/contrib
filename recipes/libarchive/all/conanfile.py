@@ -15,9 +15,3 @@ class LibarchiveRecipe(Recipe):
 
     def source(self):
         self.get(f"https://github.com/libarchive/libarchive/releases/download/v{self.version}/libarchive-{self.version}.tar.xz")
-
-    def build(self):
-        args = [
-            "--disable-shared",
-        ]
-        self.autotools(args)

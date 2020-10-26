@@ -15,9 +15,3 @@ class LibtiffRecipe(Recipe):
 
     def source(self):
         self.get(f"https://download.osgeo.org/libtiff/tiff-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-static",
-        ]
-        self.autotools(args)

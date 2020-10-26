@@ -14,7 +14,3 @@ class LibxcbRecipe(Recipe):
 
     def source(self):
         self.get(f"https://xcb.freedesktop.org/dist/libxcb-{self.version}.tar.xz")
-
-    def build(self):
-        args = ["--disable-static"]
-        self.autotools(args)

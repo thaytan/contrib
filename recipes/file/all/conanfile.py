@@ -10,7 +10,6 @@ class FileRecipe(Recipe):
 
     def build(self):
         args = [
-            "--disable-shared",
             "--disable-dependency-tracking",
         ]
         self.autotools(args)

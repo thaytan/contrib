@@ -9,9 +9,3 @@ class LibxdamageRecipe(Recipe):
 
     def source(self):
         self.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXdamage-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-static",
-        ]
-        self.autotools(args)

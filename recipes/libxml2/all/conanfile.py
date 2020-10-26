@@ -17,8 +17,5 @@ class Libxml2Recipe(Recipe):
         self.get(f"https://gitlab.gnome.org/GNOME/libxml2/-/archive/v{self.version}/libxml2-v{self.version}.tar.bz2")
 
     def build(self):
-        args = [
-            "--disable-static",
-        ]
         os.environ["with_python_install_dir"] = os.path.join(self.package_folder, "lib", f"python{self.settings.python}", "site-packages")
-        self.autotools(args)
+        self.autotools()
