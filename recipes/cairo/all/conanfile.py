@@ -29,5 +29,4 @@ class CairoRecipe(Recipe):
             "--enable-gobject",
         ]
         os.environ["CFLAGS"] += " -lpthread"
-        os.environ["CPPFLAGS"] = f"-I{os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')}"
         self.autotools(args)

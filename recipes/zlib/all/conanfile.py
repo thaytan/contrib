@@ -14,3 +14,6 @@ class ZlibRecipe(Recipe):
             "--static",
         ]
         self.autotools(args)
+
+    def package_info(self):
+        self.env_info.CPATH.append(os.path.join(self.package_folder, "include"))

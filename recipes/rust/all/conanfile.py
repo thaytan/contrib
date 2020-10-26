@@ -24,7 +24,6 @@ class RustRecipe(Recipe):
 
     def build(self):
         os.environ["RUSTFLAGS"] = "-Clinker-plugin-lto -Copt-level=2"
-        os.environ["CFLAGS"] = f"-I{os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')} {os.environ['CFLAGS']}"
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         triple = f"{arch}-unknown-linux-gnu"
         args = [
