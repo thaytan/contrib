@@ -3,5 +3,7 @@ from build import *
 
 class CCRecipe(Recipe):
     description = "Virtual c/c++ compiler package"
-    license = "GPL"
-    requires = ("llvm/[^11.0.0]",)
+    license = "MIT"
+
+    def requirements(self):
+        self.requires(f"llvm/[^{self.settings.clang.version}]")

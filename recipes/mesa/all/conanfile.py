@@ -7,7 +7,6 @@ class MesaRecipe(Recipe):
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     build_requires = (
-        "llvm/[^11.0.0]",
         "meson/[^0.55.3]",
         "gettext/[^0.21]",
         "bison/[^3.3]",
@@ -20,6 +19,7 @@ class MesaRecipe(Recipe):
     requires = ("libglvnd/[^1.3.2]",)
 
     def build_requirements(self):
+        self.build_requires(f"llvm/[^{self.settings.clang.version}]")
         if self.options.x11:
             self.build_requires("libx11/[^1.6.8]")
             self.build_requires("libxrandr/[^1.5.2]")

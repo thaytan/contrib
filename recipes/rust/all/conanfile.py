@@ -6,7 +6,6 @@ class RustRecipe(Recipe):
     license = "MIT", "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
-        "llvm/[^11.0.0]",
         "cmake/[^3.18.0]",
         "ninja/[^1.10.0]",
         "curl/[^7.72.0]",
@@ -17,6 +16,7 @@ class RustRecipe(Recipe):
     requires = ("openssl1/[^1.1.1h]",)
 
     def build_requirements(self):
+        self.build_requires(f"llvm/[^{self.settings.clang.version}]")
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
