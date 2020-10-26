@@ -61,3 +61,4 @@ class GlibcRecipe(Recipe):
 
     def package_info(self):
         self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib")
+        self.env_info.LIBC_INCLUDE_PATH = os.path.join(self.package_folder, "include")
