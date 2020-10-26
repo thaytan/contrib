@@ -4,6 +4,8 @@ from build import *
 class LinuxHeadersRecipe(Recipe):
     description = "Linux headers"
     license = "GPL2"
+    options = {}
+    default_options = {}
 
     def source(self):
         self.get(f"https://cdn.kernel.org/pub/linux/kernel/v{self.version.split('.')[0]}.x/linux-{self.version}.tar.xz")
