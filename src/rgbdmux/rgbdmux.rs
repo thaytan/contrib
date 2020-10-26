@@ -45,8 +45,6 @@ struct RgbdMux {
     clock_internals: RwLock<ClockInternals>,
     /// List of sink pad names that this muxer contains.
     sink_pad_names: Mutex<Vec<String>>,
-    /// Contains stream formats that are requested by the downstream element as a HashMap<stream, format> under a Mutex.
-    requested_stream_formats: Mutex<HashMap<String, String>>,
 }
 
 impl ObjectSubclass for RgbdMux {
@@ -62,7 +60,6 @@ impl ObjectSubclass for RgbdMux {
             settings: RwLock::new(Settings::default()),
             clock_internals: RwLock::new(ClockInternals::default()),
             sink_pad_names: Mutex::new(Vec::new()),
-            requested_stream_formats: Mutex::new(HashMap::new()),
         }
     }
 
@@ -306,7 +303,6 @@ impl AggregatorImpl for RgbdMux {
         // Reset internals (except for settings)
         *self.clock_internals.write().unwrap() = ClockInternals::default();
         self.sink_pad_names.lock().unwrap().clear();
-        self.requested_stream_formats.lock().unwrap().clear();
 
         self.parent_stop(aggregator)
     }
