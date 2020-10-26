@@ -1,17 +1,16 @@
-from conans import *
+from build import *
 
 
-class SccacheConan(ConanFile):
+class SccacheRecipe(Recipe):
     description = "Development and debugging tools for GStreamer"
     license = "Apache2"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "rust/[^1.47.0]",
         "openssl1/[^1.1.1h]",
     )
 
     def source(self):
-        tools.get(f"https://github.com/mozilla/sccache/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/mozilla/sccache/archive/{self.version}.tar.gz")
 
     def build(self):
         self.run("cargo build --release", cwd=f"sccache-{self.version}")

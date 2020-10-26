@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class GnutlsConan(ConanFile):
+class GnutlsRecipe(Recipe):
     description = "A library which provides a secure layer over a reliable transport layer"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "make/[^4.3]",
         "zlib/[^1.2.11]",
@@ -15,7 +14,7 @@ class GnutlsConan(ConanFile):
     requires = ("p11-kit/[^0.23.21]",)
 
     def source(self):
-        tools.get(f"https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-{self.version}.tar.xz")
+        self.get(f"https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-{self.version}.tar.xz")
 
     def build(self):
         args = [
@@ -23,7 +22,4 @@ class GnutlsConan(ConanFile):
             "--with-included-unistring",
             "--disable-tests",
         ]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"gnutls-{self.version}", args)
-        autotools.make()
-        autotools.install()
+        self.autotools(args)

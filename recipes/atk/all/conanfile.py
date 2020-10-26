@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class AtkConan(ConanFile):
+class AtkRecipe(Recipe):
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL-2.1"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {
         "introspection": [True, False],
     }
@@ -22,10 +20,4 @@ class AtkConan(ConanFile):
 
     def source(self):
         version = self.version.replace(".", "_")
-        tools.get(f"https://gitlab.gnome.org/GNOME/atk/-/archive/ATK_{version}/atk-ATK_{version}.tar.bz2")
-
-    def build(self):
-        args = ["--auto-features=disabled", "--wrap-mode=nofallback"]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"atk-ATK_{self.version.replace('.', '_')}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.get(f"https://gitlab.gnome.org/GNOME/atk/-/archive/ATK_{version}/atk-ATK_{version}.tar.bz2")

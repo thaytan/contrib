@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class LibShadercConan(ConanFile):
+class LibShadercRecipe(Recipe):
     description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -12,16 +11,8 @@ class LibShadercConan(ConanFile):
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        shaderc_git_dir = f"shaderc-{self.version}"
-        git = tools.Git(folder=shaderc_git_dir)
-        git.clone("https://github.com/google/shaderc", f"v{self.version}")
-        self.run(f"cd {shaderc_git_dir} && ./utils/git-sync-deps")
-
-    def build(self):
-        cmake = CMake(self)
-        cmake.configure(source_folder=f"shaderrc-{self.version}")
-        cmake.build()
-        cmake.install()
+        self.get(f"https://github.com/google/shaderc/archive/v{self.version}.tar.gz")
+        self.run(f"sh utils/git-sync-deps", cwd=f"{self.name}-{self.version}")
 
     def package_info(self):
         self.env_info.SHADERC_LIB_DIR.append(os.path.join(self.package_folder, "lib"))

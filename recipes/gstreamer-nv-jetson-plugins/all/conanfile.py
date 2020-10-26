@@ -1,12 +1,9 @@
-import os
-
-from conans import *
+from build import *
 
 
-class GstreamerNvJetsonPluginsConan(ConanFile):
+class GstreamerNvJetsonPluginsRecipe(Recipe):
     description = "Demo conan package"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports_sources = ["lib/gstreamer-1.0/*.so"]
 
     def requirements(self):

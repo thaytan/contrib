@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class FontconfigConan(ConanFile):
+class FontconfigRecipe(Recipe):
     description = "A library for configuring and customizing font access"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "autotools/[^1.0.0]",
         "gperf/[^3.1]",
@@ -17,13 +15,13 @@ class FontconfigConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://www.freedesktop.org/software/fontconfig/release/fontconfig-{self.version}.tar.xz")
+        self.get(f"https://www.freedesktop.org/software/fontconfig/release/fontconfig-{self.version}.tar.xz")
 
     def build(self):
-        args = ["--disable-static"]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"fontconfig-{self.version}", args)
-        autotools.install()
+        args = [
+            "--disable-static",
+        ]
+        self.autotools(args)
 
     def package(self):
         with tools.chdir(f"{self.package_folder}/etc/fonts/conf.d"):

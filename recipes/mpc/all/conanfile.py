@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class MpcConan(ConanFile):
+class MpcRecipe(Recipe):
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "make/[^4.3]",
         "mpfr/[^4.1.0]",
@@ -12,13 +11,10 @@ class MpcConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://ftp.gnu.org/gnu/mpc/mpc-{self.version}.tar.gz")
+        self.get(f"https://ftp.gnu.org/gnu/mpc/mpc-{self.version}.tar.gz")
 
     def build(self):
         args = [
             "--disable-shared",
         ]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"mpc-{self.version}", args)
-        autotools.make()
-        autotools.install()
+        self.autotools(args)

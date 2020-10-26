@@ -1,12 +1,9 @@
-import os
-
-from conans import *
+from build import *
 
 
-class LibtoolConan(ConanFile):
+class LibtoolRecipe(Recipe):
     description = "A generic library support script"
     license = "GPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "libtool-prefix-fix.patch"
     build_requires = (
         "automake/[^1.16.1]",
@@ -15,19 +12,14 @@ class LibtoolConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://ftp.gnu.org/gnu/libtool/libtool-{self.version}.tar.gz")
-        tools.patch(
-            patch_file="libtool-prefix-fix.patch", base_path=f"libtool-{self.version}",
-        )
+        self.get(f"https://ftp.gnu.org/gnu/libtool/libtool-{self.version}.tar.gz")
+        self.patch("libtool-prefix-fix.patch")
 
     def build(self):
         args = [
             "--disable-shared",
         ]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"libtool-{self.version}", args)
-        autotools.make()
-        autotools.install()
+        self.autotools(args)
 
     def package_info(self):
         self.env_info.LIBTOOL_PREFIX = self.package_folder

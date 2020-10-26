@@ -1,5 +1,4 @@
-import os
-from conans import *
+from build import *
 
 driver_map = {
     "10.1.243": "418.87.00",
@@ -7,10 +6,9 @@ driver_map = {
 }
 
 
-class CudaConan(ConanFile):
+class CudaRecipe(Recipe):
     description = "NVIDIA's GPU programming toolkit"
     license = "Proprietary"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports_sources = ("cuda-10.1.pc", "cudart-10.1.pc")
     build_requires = (
         "cc/[^1.0.0]",

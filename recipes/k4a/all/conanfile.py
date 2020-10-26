@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class KinectAzureSensorSDKConan(ConanFile):
+class KinectAzureSensorSDKRecipe(Recipe):
     description = "Azure Kinect SDK"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "k4a.pc"
 
     def source(self):

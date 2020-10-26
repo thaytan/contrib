@@ -1,7 +1,7 @@
-from conans import *
+from build import *
 
 
-class PythonVirtualenvConan(ConanFile):
+class PythonVirtualenvRecipe(Recipe):
     description = "Virtual Python Environment builder"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -18,12 +18,4 @@ class PythonVirtualenvConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/pypa/virtualenv/archive/{self.version}.tar.gz")
-
-    def build(self):
-        env = {
-            "SETUPTOOLS_SCM_PRETEND_VERSION": self.version,
-        }
-        with tools.environment_append(env):
-            self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"', cwd=f"virtualenv-{self.version}")
-
+        self.get(f"https://github.com/pypa/virtualenv/archive/{self.version}.tar.gz")

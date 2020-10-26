@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class GdbConan(ConanFile):
+class GdbRecipe(Recipe):
     description = "The GNU Debugger"
     license = "GPL3"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -16,15 +15,14 @@ class GdbConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://ftp.gnu.org/gnu/gdb/gdb-{self.version}.tar.gz")
+        self.get(f"https://ftp.gnu.org/gnu/gdb/gdb-{self.version}.tar.gz")
 
     def build(self):
-        args = ["--enable-tui=yes", "--with-system-readline"]
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        args = [
+            "--enable-tui=yes",
+            "--with-system-readline",
+        ]
+        self.autotools(args)
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "share", "gdb", "python"))

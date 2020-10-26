@@ -1,6 +1,6 @@
 from os import path, symlink, listdir
 
-from conans import *
+from build import *
 
 pc_v4lconvert = """
 prefix=%s
@@ -31,10 +31,9 @@ Cflags: -I${includedir}
 """
 
 
-class NvJetsonV4l2(ConanFile):
+class NvJetsonV4l2(Recipe):
     description = "NVIDIA built Accelerated GStreamer Plugins"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     exports_sources = {"patches/*"}
@@ -43,9 +42,9 @@ class NvJetsonV4l2(ConanFile):
     def source(self):
         if self.version == "32.3.1":
             if self.options.jetson in ("TX2", "Xavier"):
-                tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Sources/T186/public_sources.tbz2".replace(".", "-"))
+                self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Sources/T186/public_sources.tbz2".replace(".", "-"))
             elif self.options.jetson == "Nano":
-                tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Sources/T210/public_sources.tbz2".replace(".", "-"))
+                self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Sources/T210/public_sources.tbz2".replace(".", "-"))
             else:
                 raise KeyError("Unknown option: " + self.options.jetson)
             tools.untargz("Linux_for_Tegra/source/public/v4l2_libs_src.tbz2", self.source_folder)
@@ -54,9 +53,9 @@ class NvJetsonV4l2(ConanFile):
             tools.patch(patch_file="patches/Makefile.patch")
         else:
             if self.options.jetson in ("TX2", "Xavier"):
-                tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/TX2-AGX/sources/public_sources.tbz2".replace(".", "-"))
+                self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/TX2-AGX/sources/public_sources.tbz2".replace(".", "-"))
             elif self.options.jetson == "Nano":
-                tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Nano-TX1/sources/public_sources.tbz2".replace(".", "-"))
+                self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Nano-TX1/sources/public_sources.tbz2".replace(".", "-"))
             else:
                 raise KeyError("Unknown option: " + self.options.jetson)
 

@@ -1,7 +1,7 @@
-from conans import *
+from build import *
 
 
-class PythonNumpyConan(ConanFile):
+class PythonNumpyRecipe(Recipe):
     description = "conan package for Python Numpy module"
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -16,8 +16,4 @@ class PythonNumpyConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/numpy/numpy/releases/download/v{self.version}/numpy-{self.version}.tar.gz")
-
-    def build(self):
-        self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"', cwd=f"numpy-{self.version}")
-
+        self.get(f"https://github.com/numpy/numpy/releases/download/v{self.version}/numpy-{self.version}.tar.gz")

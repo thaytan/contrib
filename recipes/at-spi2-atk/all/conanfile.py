@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class AtSpi2AtkConan(ConanFile):
+class AtSpi2AtkRecipe(Recipe):
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("meson/[^0.55.3]",)
     requires = (
         "atk/[^2.36.0]",
@@ -15,10 +13,4 @@ class AtSpi2AtkConan(ConanFile):
 
     def source(self):
         version = self.version.replace(".", "_")
-        tools.get(f"https://gitlab.gnome.org/GNOME/at-spi2-atk/-/archive/AT_SPI2_ATK_{version}/at-spi2-atk-AT_SPI2_ATK_{version}.tar.bz2")
-
-    def build(self):
-        args = ["--auto-features=disabled", "--wrap-mode=nofallback"]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"at-spi2-atk-AT_SPI2_ATK_{self.version.replace('.', '_')}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.get(f"https://gitlab.gnome.org/GNOME/at-spi2-atk/-/archive/AT_SPI2_ATK_{version}/at-spi2-atk-AT_SPI2_ATK_{version}.tar.bz2")

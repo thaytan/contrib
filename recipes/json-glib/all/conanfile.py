@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class JsonGlibBaseConan(ConanFile):
+class JsonGlibBaseRecipe(Recipe):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "GPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.51.2]",
         "gettext/[^0.20.1]",
@@ -16,10 +15,4 @@ class JsonGlibBaseConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://gitlab.gnome.org/GNOME/json-glib/-/archive/{self.version}/json-glib-{self.version}.tar.gz")
-
-    def build(self):
-        args = ["--auto-features=disabled"]
-        meson = Meson(self)
-        meson.configure(args=args, source_folder=f"{self.name}-{self.version}")
-        meson.install()
+        self.get(f"https://gitlab.gnome.org/GNOME/json-glib/-/archive/{self.version}/json-glib-{self.version}.tar.gz")

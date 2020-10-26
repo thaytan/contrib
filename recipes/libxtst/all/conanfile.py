@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class LibxtstConan(ConanFile):
+class LibxtstRecipe(Recipe):
     description = "X11 Testing Resource extension library"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "autotools/[^1.0.0]",
         "xorg-util-macros/[^1.19.1]",
@@ -18,11 +17,10 @@ class LibxtstConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXtst-{self.version}.tar.gz")
+        self.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXtst-{self.version}.tar.gz")
 
     def build(self):
-        args = ["--disable-static"]
-        autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir("libXtst-" + self.version):
-            autotools.configure(args=args)
-            autotools.install()
+        args = [
+            "--disable-static",
+        ]
+        self.autotools(args)

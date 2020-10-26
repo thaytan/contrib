@@ -1,26 +1,24 @@
-import os
-from conans import *
+from build import *
 
 
-class PkgconfConan(ConanFile):
+class PkgconfRecipe(Recipe):
     description = "Package compiler and linker metadata toolkit"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "automake/[^1.16.1]",
         "libtool/[^2.4.6]",
     )
 
     def source(self):
-        tools.get(f"https://github.com/pkgconf/pkgconf/archive/pkgconf-{self.version}.tar.gz")
+        self.get(f"https://github.com/pkgconf/pkgconf/archive/pkgconf-{self.version}.tar.gz")
 
     def build(self):
-        args = ["--disable-shared"]
-        self.run("sh autogen.sh", cwd=f"pkgconf-pkgconf-{self.version}")
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"pkgconf-pkgconf-{self.version}", args)
-        autotools.make()
-        autotools.install()
+        args = [
+            "--disable-shared",
+        ]
+        self.autotools(args)
+
+    def package(self):
         os.symlink("pkgconf", os.path.join(self.package_folder, "bin", "pkg-config"))
 
     def package_info(self):

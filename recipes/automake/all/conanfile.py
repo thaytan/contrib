@@ -1,23 +1,15 @@
-import os
-from conans import *
+from build import *
 
 
-class AutomakeConan(ConanFile):
+class AutomakeRecipe(Recipe):
     description = "A GNU tool for automatically creating Makefiles"
     license = "GPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "automake-include-fix.patch"
     requires = ("autoconf/[^2.69]",)
 
     def source(self):
-        tools.get(f"https://ftp.gnu.org/gnu/automake/automake-{self.version}.tar.gz")
-        tools.patch(f"{self.name}-{self.version}", "automake-include-fix.patch")
-
-    def build(self):
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"automake-{self.version}")
-        autotools.make()
-        autotools.install()
+        self.get(f"https://ftp.gnu.org/gnu/automake/automake-{self.version}.tar.gz")
+        self.patch(f"automake-include-fix.patch")
 
     def package_info(self):
         self.env_info.AUTOMAKE = os.path.join(self.package_folder, "bin", "automake")

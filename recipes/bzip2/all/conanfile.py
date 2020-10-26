@@ -1,21 +1,20 @@
-import os
-from conans import *
+from build import *
 
 
-class Bzip2Conan(ConanFile):
+class Bzip2Recipe(Recipe):
     description = "A high-quality data compression program"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("make/[^4.3]",)
 
     def source(self):
-        tools.get(f"https://sourceware.org/pub/bzip2/bzip2-{self.version}.tar.gz")
+        self.get(f"https://sourceware.org/pub/bzip2/bzip2-{self.version}.tar.gz")
 
     def build(self):
-        with tools.chdir(f"{self.name}-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.make([f"CC=cc"])
-            autotools.install([f"PREFIX={self.package_folder}"])
+        args = [
+            f"PREFIX={self.package_folder}",
+            "CC=cc",
+        ]
+        self.autotools(args)
 
     def package(self):
         with tools.chdir(os.path.join(self.package_folder, "bin")):

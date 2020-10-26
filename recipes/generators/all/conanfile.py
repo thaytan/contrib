@@ -1,14 +1,10 @@
-import glob
-import os
-import shutil
-
-from conans import *
+from build import *
 from conans.model import Generator
 
 
 class env(Generator):
     def __init__(self, conanfile):
-        super().__init__(conanfile)
+        super().__init__(Recipe)
 
     @property
     def filename(self):
@@ -31,7 +27,7 @@ class env(Generator):
 
 class direnv(Generator):
     def __init__(self, conanfile):
-        super().__init__(conanfile)
+        super().__init__(Recipe)
 
     @property
     def filename(self):
@@ -54,7 +50,7 @@ class direnv(Generator):
 
 class gdb(Generator):
     def __init__(self, conanfile):
-        super().__init__(conanfile)
+        super().__init__(Recipe)
 
     @property
     def filename(self):
@@ -75,7 +71,7 @@ class gdb(Generator):
 
 class tools(Generator):
     def __init__(self, conanfile):
-        super().__init__(conanfile)
+        super().__init__(Recipe)
 
     @property
     def filename(self):
@@ -145,7 +141,7 @@ def replace_prefix_in_pc_file(pc_file, prefix):
 
 class pkgconf(Generator):
     def __init__(self, conanfile):
-        super().__init__(conanfile)
+        super().__init__(Recipe)
 
     @property
     def filename(self):
@@ -186,6 +182,6 @@ class pkgconf(Generator):
         return files
 
 
-class GeneratorsPackage(ConanFile):
+class GeneratorsPackage(Recipe):
     description = "Conan generators"
     license = "MIT"

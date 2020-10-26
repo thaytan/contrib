@@ -1,9 +1,7 @@
-import os
-
-from conans import *
+from build import *
 
 
-class GStreamerPythonConan(ConanFile):
+class GStreamerPythonRecipe(Recipe):
     description = "Gstreamer Python bindings"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
@@ -14,10 +12,4 @@ class GStreamerPythonConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/GStreamer/gst-python/archive/{self.version}.tar.gz")
-
-    def build(self):
-        args = ["--auto-features=disabled"]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gst-python-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.get(f"https://github.com/GStreamer/gst-python/archive/{self.version}.tar.gz")

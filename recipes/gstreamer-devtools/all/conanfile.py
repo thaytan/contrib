@@ -1,12 +1,9 @@
-import os
-
-from conans import *
+from build import *
 
 
-class GStreamerDevtoolsConan(ConanFile):
+class GStreamerDevtoolsRecipe(Recipe):
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {
         "gtk_doc": [True, False],
         "introspection": [True, False],
@@ -33,7 +30,4 @@ class GStreamerDevtoolsConan(ConanFile):
         git.clone("https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror.git", "rebased-aivero_mse_compare_changes")
 
     def build(self):
-        args = ["--auto-features=disabled"]
-        meson = Meson(self)
-        meson.configure(source_folder="gst-devtools", args=args, pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(folder="gst-devtools")

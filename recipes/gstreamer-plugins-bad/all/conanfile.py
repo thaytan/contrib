@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class GStreamerPluginsBadConan(ConanFile):
+class GStreamerPluginsBadRecipe(Recipe):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     exports = "reduce_latency.patch"
@@ -79,11 +78,10 @@ class GStreamerPluginsBadConan(ConanFile):
             self.requires("libwebp/[^1.1.0]")
 
     def source(self):
-        tools.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
 
     def build(self):
-        self.run("pkgconf --libs gstreamer-gl-x11-1.0")
-        args = ["--auto-features=disabled"]
+        args = []
         args.append("-Dvideoparsers=" + ("enabled" if self.options.videoparsers else "disabled"))
         args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
         args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
@@ -103,8 +101,4 @@ class GStreamerPluginsBadConan(ConanFile):
             args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
             if self.version == "master":
                 args.append("-Dnvcodec=" + ("enabled" if self.options.nvcodec else "disabled"))
-
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gst-plugins-bad-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.build()
-        meson.install()
+        self.meson(args)

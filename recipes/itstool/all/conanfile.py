@@ -1,7 +1,7 @@
-from conans import *
+from build import *
 
 
-class ItstoolConan(ConanFile):
+class ItstoolRecipe(Recipe):
     description = "XML to PO and back again"
     license = "GPL3"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -12,15 +12,4 @@ class ItstoolConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/itstool/itstool/archive/{self.version}.tar.gz")
-
-    def build(self):
-        env = {
-            "NOCONFIGURE": "1",
-        }
-        with tools.environment_append(env):
-            self.run("sh autogen.sh", cwd=f"itstool-{self.version}")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(f"itstool-{self.version}")
-            autotools.make()
-            autotools.install()
+        self.get(f"https://github.com/itstool/itstool/archive/{self.version}.tar.gz")

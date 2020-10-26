@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class CMakeConan(ConanFile):
+class CMakeRecipe(Recipe):
     description = "A cross-platform open-source make system"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"bootstrap": [True, False]}
     default_options = ("bootstrap=False",)
 
@@ -15,12 +14,8 @@ class CMakeConan(ConanFile):
             self.requires("pkgconf/[^1.7.3]")
 
     def source(self):
-        tools.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
+        self.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")
 
     def build(self):
-        cmake = CMake(self)
-        cmake.definitions["CMAKE_USE_OPENSSL"] = False
-        cmake.configure(source_folder=f"cmake-{self.version}")
-        cmake.build()
-        cmake.install()
-
+        defs = {"CMAKE_USE_OPENSSL": True}
+        self.cmake(defs)

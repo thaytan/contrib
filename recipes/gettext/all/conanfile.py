@@ -1,22 +1,19 @@
-import os
-from conans import *
+from build import *
 
 
-class GettextConan(ConanFile):
+class GettextRecipe(Recipe):
     description = "GNU internationalization library"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     license = "GPL"
     build_requires = ("make/[^4.3]",)
 
     def source(self):
-        tools.get(f"https://ftp.gnu.org/pub/gnu/gettext/gettext-{self.version}.tar.gz")
+        self.get(f"https://ftp.gnu.org/pub/gnu/gettext/gettext-{self.version}.tar.gz")
 
     def build(self):
-        args = ["--disable-shared"]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"gettext-{self.version}", args)
-        autotools.make()
-        autotools.install()
+        args = [
+            "--disable-shared",
+        ]
+        self.autotools(args)
 
     def package_info(self):
         self.env_info.gettext_datadir.append(os.path.join(self.package_folder, "share", "gettext"))

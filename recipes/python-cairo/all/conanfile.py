@@ -1,7 +1,7 @@
-from conans import *
+from build import *
 
 
-class PythonCairoConan(ConanFile):
+class PythonCairoRecipe(Recipe):
     description = "Python bindings for the cairo graphics library"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -15,7 +15,4 @@ class PythonCairoConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/pygobject/pycairo/releases/download/v{self.version}/pycairo-{self.version}.tar.gz")
-
-    def build(self):
-        self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"', cwd=f"pycairo-{self.version}")
+        self.get(f"https://github.com/pygobject/pycairo/releases/download/v{self.version}/pycairo-{self.version}.tar.gz")

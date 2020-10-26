@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class LibepoxyConan(ConanFile):
+class LibepoxyRecipe(Recipe):
     description = "Library handling OpenGL function pointer management"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {
         "x11": [True, False],
     }
@@ -18,15 +16,12 @@ class LibepoxyConan(ConanFile):
             self.requires("libx11/[^1.6.8]")
 
     def source(self):
-        tools.get(f"https://github.com/anholt/libepoxy/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/anholt/libepoxy/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dglx=yes",
             "-Dtests=false",
             f"-Dx11={self.options.x11}",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"libepoxy-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

@@ -1,7 +1,7 @@
-from conans import *
+from build import *
 
 
-class NodejsConan(ConanFile):
+class NodejsRecipe(Recipe):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -15,11 +15,12 @@ class NodejsConan(ConanFile):
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/nodejs/node/archive/v{self.version}.tar.gz")
+        self.get(f"https://github.com/nodejs/node/archive/v{self.version}.tar.gz")
 
     def build(self):
-        args = ["--without-npm", "--shared-openssl", "--shared-zlib"]
-        with tools.chdir(f"node-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.install()
+        args = [
+            "--without-npm",
+            "--shared-openssl",
+            "--shared-zlib",
+        ]
+        self.autotools(args)

@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class FreetypeConan(ConanFile):
+class FreetypeRecipe(Recipe):
     description = "FreeType is a software library to render fonts"
     license = "GPL2"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"harfbuzz": [True, False]}
     default_options = ("harfbuzz=True",)
     build_requires = ("autotools/[^1.0.0]",)
@@ -16,10 +15,10 @@ class FreetypeConan(ConanFile):
             self.requires("zlib/[^1.2.11]")
 
     def source(self):
-        tools.get(f"https://download-mirror.savannah.gnu.org/releases/freetype/freetype-{self.version}.tar.xz")
+        self.get(f"https://download-mirror.savannah.gnu.org/releases/freetype/freetype-{self.version}.tar.xz")
 
     def build(self):
-        args = ["--disable-static"]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"freetype-{self.version}", args)
-        autotools.install()
+        args = [
+            "--disable-static",
+        ]
+        self.autotools(args)

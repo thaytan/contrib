@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class PangoConan(ConanFile):
+class PangoRecipe(Recipe):
     description = "A library for layout and rendering of text"
     license = "GPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
@@ -16,15 +14,12 @@ class PangoConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/GNOME/pango/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GNOME/pango/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dfontconfig=enabled",
             "-Dfreetype=enabled",
             "-Dcairo=enabled",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"pango-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

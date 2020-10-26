@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class GObjectIntrospectionConan(ConanFile):
+class GObjectIntrospectionRecipe(Recipe):
     description = "Middleware layer between C libraries (using GObject) and language bindings"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -18,13 +17,7 @@ class GObjectIntrospectionConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/GNOME/gobject-introspection/archive/{self.version}.tar.gz")
-
-    def build(self):
-        args = ["--auto-features=disabled"]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gobject-introspection-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.get(f"https://github.com/GNOME/gobject-introspection/archive/{self.version}.tar.gz")
 
     def package_info(self):
         self.env_info.PYTHONPATH = os.path.join(self.package_folder, "lib", "gobject-introspection")

@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class GdkPixbufConan(ConanFile):
+class GdkPixbufRecipe(Recipe):
     description = "An image loading library"
     license = "LGPL-2.1"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.66.1]",
@@ -18,7 +16,7 @@ class GdkPixbufConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/GNOME/gdk-pixbuf/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GNOME/gdk-pixbuf/archive/{self.version}.tar.gz")
         # Disable broken tests
         tools.replace_in_file(os.path.join(f"gdk-pixbuf-{self.version}", "meson.build"), "subdir('tests')", "")
 
@@ -29,6 +27,4 @@ class GdkPixbufConan(ConanFile):
             "-Dinstalled_tests=false",
             "-Drelocatable=true",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gdk-pixbuf-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

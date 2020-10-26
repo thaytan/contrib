@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class RustConan(ConanFile):
+class RustRecipe(Recipe):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT", "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -21,13 +20,11 @@ class RustConan(ConanFile):
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
+        self.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
 
     def build(self):
-        env = {
-            "RUSTFLAGS": "-Clinker-plugin-lto -Copt-level=2",
-            "CFLAGS": f"-I{os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')} {os.environ['CFLAGS']}",
-        }
+        os.environ["RUSTFLAGS"] = "-Clinker-plugin-lto -Copt-level=2"
+        os.environ["CFLAGS"] = f"-I{os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')} {os.environ['CFLAGS']}"
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
         triple = f"{arch}-unknown-linux-gnu"
         args = [
@@ -45,7 +42,7 @@ class RustConan(ConanFile):
             "--release-channel=stable",
             "--set=llvm.thin-lto=true",
         ]
-        with tools.chdir(f"rustc-{self.version}-src"), tools.environment_append(env):
+        with tools.chdir(f"{self.name}-{self.version}"):
             self.run(f"./configure {' '.join(args)}")
             self.run("python x.py install")
 

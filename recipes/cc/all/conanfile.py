@@ -1,8 +1,7 @@
-from conans import *
+from build import *
 
 
-class CCConan(ConanFile):
+class CCRecipe(Recipe):
     description = "Virtual c/c++ compiler package"
     license = "GPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = ("llvm/[^11.0.0]",)

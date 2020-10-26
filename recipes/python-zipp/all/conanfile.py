@@ -1,7 +1,7 @@
-from conans import *
+from build import *
 
 
-class PythonZippConan(ConanFile):
+class PythonZippRecipe(Recipe):
     description = "Pathlib-compatible object wrapper for zip files"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -11,7 +11,4 @@ class PythonZippConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/jaraco/zipp/archive/v{self.version}.tar.gz")
-
-    def build(self):
-        self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"', cwd=f"zipp-{self.version}")
+        self.get(f"https://github.com/jaraco/zipp/archive/v{self.version}.tar.gz")

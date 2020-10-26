@@ -1,21 +1,13 @@
-import os
-from conans import *
+from build import *
 
 
-class MakeConan(ConanFile):
+class MakeRecipe(Recipe):
     description = "GNU make utility to maintain groups of programs"
     license = "GPL3"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = "cc/[^1.0.0]"
 
     def source(self):
-        tools.get(f"https://ftp.gnu.org/gnu/make/make-{self.version}.tar.gz")
-
-    def build(self):
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"make-{self.version}")
-        autotools.make()
-        autotools.install()
+        self.get(f"https://ftp.gnu.org/gnu/make/make-{self.version}.tar.gz")
 
     def package_info(self):
         self.env_info.MAKE = os.path.join(self.package_folder, "bin", "make")

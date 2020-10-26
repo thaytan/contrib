@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class ElfutilsConan(ConanFile):
+class ElfutilsRecipe(Recipe):
     description = "Utilities and DSOs to handle ELF files and DWARF data"
     license = "LGPL3"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = ("elfutils-clang.patch",)
     build_requires = (
         "autotools/[^1.0.0]",
@@ -14,8 +12,8 @@ class ElfutilsConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://sourceware.org/elfutils/ftp/{self.version}/elfutils-{self.version}.tar.bz2")
-        tools.patch(f"elfutils-{self.version}", "elfutils-clang.patch")
+        self.get(f"https://sourceware.org/elfutils/ftp/{self.version}/elfutils-{self.version}.tar.bz2")
+        self.patch(f"elfutils-clang.patch")
 
     def build(self):
         args = [
@@ -24,8 +22,4 @@ class ElfutilsConan(ConanFile):
         ]
         os.environ["CFLAGS"] += " -Wno-error"
         os.environ["CXXFLAGS"] += " -Wno-error"
-        self.run("autoreconf -ifv", cwd=f"elfutils-{self.version}")
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"elfutils-{self.version}", args)
-        autotools.make()
-        autotools.install()
+        self.autotools(args)

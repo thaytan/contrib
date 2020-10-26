@@ -1,12 +1,9 @@
-import os
-import shutil
-from conans import *
+from build import *
 
 
-class LlvmConan(ConanFile):
+class LlvmRecipe(Recipe):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = ("disable-system-libs.patch",)
     build_requires = ("cmake/[^3.18.4]", "ninja/[^1.10.0]")
     requires = "libc/[^1.0.0]", "file/[^5.39]"
@@ -16,12 +13,12 @@ class LlvmConan(ConanFile):
         self.options["ninja"].bootstrap = True
 
     def source(self):
-        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
-        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
-        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz")
-        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz")
-        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz")
-        tools.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz")
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz")
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz")
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz")
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz")
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz")
         shutil.move(f"llvm-{self.version}.src", f"llvm-{self.version}")
         shutil.move(f"clang-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "clang"))
         shutil.move(f"lld-{self.version}.src", os.path.join(f"llvm-{self.version}", "projects", "lld"))

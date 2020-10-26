@@ -1,21 +1,17 @@
-import os
-from conans import *
+from build import *
 
 
-class OrcConan(ConanFile):
+class OrcRecipe(Recipe):
     description = "Optimized Inner Loop Runtime Compiler"
     license = "LGPL-2.1"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     build_requires = ("meson/[^0.55.3]",)
 
     def source(self):
-        tools.get(f"https://github.com/GStreamer/orc/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/orc/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dtools=enabled",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"orc-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

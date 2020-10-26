@@ -1,12 +1,9 @@
-import os
-
-from conans import *
+from build import *
 
 
-class GstreamerNvJetsonEgl(ConanFile):
+class GstreamerNvJetsonEgl(Recipe):
     description = "NVIDIA jetson egl element"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     gst_version = "1.16"
@@ -23,20 +20,16 @@ class GstreamerNvJetsonEgl(ConanFile):
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/TX2-AGX/sources/public_sources.tbz2".replace(".", "-"))
+            self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/TX2-AGX/sources/public_sources.tbz2".replace(".", "-"))
         elif self.options.jetson == "Nano":
-            tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Nano-TX1/sources/public_sources.tbz2".replace(".", "-"))
+            self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version}_Release_v1.0/Nano-TX1/sources/public_sources.tbz2".replace(".", "-"))
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
         tools.untargz("public_sources/gstegl_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
 
     def build(self):
-        with tools.chdir("gstegl_src/gst-egl"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
-            autotools.make()
-            autotools.install()
+        self.autotools(source_folder="gstegl_src/gst-egl")
         pc_path = os.path.join(self.package_folder, "lib", "pkgconfig", "gstreamer-egl-1.0.pc")
         self.run('sed -i "s/Requires: .*/Requires: gstreamer-1.0 libglvnd x11/" ' + pc_path)
         self.run('sed -i "s/Libs: .*/Libs: -L\${libdir} -lgstegl-1.0/" ' + pc_path)

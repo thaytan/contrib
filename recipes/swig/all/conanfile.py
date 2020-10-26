@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class SwigConan(ConanFile):
+class SwigRecipe(Recipe):
     description = "Generate scripting interfaces to C/C++ code"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -15,11 +14,8 @@ class SwigConan(ConanFile):
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://downloads.sourceforge.net/swig/swig-{self.version}.tar.gz")
+        self.get(f"https://downloads.sourceforge.net/swig/swig-{self.version}.tar.gz")
 
     def build(self):
-        env = {"PATH": tools.get_env("PATH") + os.path.pathsep + os.path.join(self.package_folder, "bin")}
-        with tools.environment_append(env):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(f"swig-{self.version}")
-            autotools.install()
+        os.environ["PATH"] += os.path.join(self.package_folder, "bin")
+        self.autotools(args)

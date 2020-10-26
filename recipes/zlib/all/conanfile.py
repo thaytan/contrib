@@ -1,20 +1,16 @@
-from conans import *
+from build import *
 
 
-class ZlibConan(ConanFile):
+class ZlibRecipe(Recipe):
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
     license = "Zlib"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("make/[^4.3]",)
 
     def source(self):
-        tools.get(f"https://github.com/madler/zlib/archive/v{self.version}.tar.gz")
+        self.get(f"https://github.com/madler/zlib/archive/v{self.version}.tar.gz")
 
     def build(self):
         args = [
             "--static",
         ]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"zlib-{self.version}", args)
-        autotools.make()
-        autotools.install()
+        self.autotools(args)

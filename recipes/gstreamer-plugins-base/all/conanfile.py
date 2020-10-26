@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class GStreamerPluginsBaseConan(ConanFile):
+class GStreamerPluginsBaseRecipe(Recipe):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
@@ -26,7 +25,7 @@ class GStreamerPluginsBaseConan(ConanFile):
         self.requires(f"gstreamer/[~{self.settings.gstreamer}]")
 
     def source(self):
-        tools.get(f"https://github.com/GStreamer/gst-plugins-base/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gst-plugins-base/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -48,6 +47,4 @@ class GStreamerPluginsBaseConan(ConanFile):
             "-Daudioconvert=enabled",
         ]
         args.append("-Daudioresample=" + ("enabled" if self.options.audioresample else "disabled"))
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gst-plugins-base-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

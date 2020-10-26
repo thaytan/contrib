@@ -1,19 +1,19 @@
-import os
-from conans import *
+from build import *
 
 
-class PerlConan(ConanFile):
+class PerlRecipe(Recipe):
     description = "A highly capable, feature-rich programming language"
     license = "GPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("make/[^4.3]",)
     exports = "link-m-pthread.patch"
 
     def source(self):
-        tools.get(f"https://github.com/Perl/perl5/archive/v{self.version}.tar.gz")
-        tools.patch(f"perl5-{self.version}", "link-m-pthread.patch")
+        self.get(f"https://github.com/Perl/perl5/archive/v{self.version}.tar.gz")
+        self.patch("link-m-pthread.patch")
 
     def build(self):
+        self.run("mv Configure configure", cwd=f"{self.name}-{self.version}")
+
         args = [
             "-des",
             "-Dusethreads",
@@ -23,11 +23,7 @@ class PerlConan(ConanFile):
             "-Dprefix=" + self.package_folder,
             "-Dldflags=''",
         ]
-        with tools.chdir(f"{self.name}5-{self.version}"):
-            autotools = AutoToolsBuildEnvironment(self)
-            self.run("./Configure " + " ".join(args))
-            autotools.make()
-            autotools.install()
+        self.autotools(args)
 
     def package_info(self):
         arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}

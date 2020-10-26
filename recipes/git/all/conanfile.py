@@ -1,5 +1,4 @@
-import os
-from conans import *
+from build import *
 
 CONFIG_MAK = """
 CFLAGS={}
@@ -7,10 +6,9 @@ LDFLAGS=-ldl
 """
 
 
-class GitConan(ConanFile):
+class GitRecipe(Recipe):
     description = "The fast distributed version control system"
     license = "GPL2"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "make/[^4.3]",
         "gettext/[^0.21]",
@@ -21,15 +19,12 @@ class GitConan(ConanFile):
     requires = ("openssl/[^3.0.0-alpha6]",)
 
     def source(self):
-        tools.get(f"https://www.kernel.org/pub/software/scm/git/git-{self.version}.tar.xz")
+        self.get(f"https://www.kernel.org/pub/software/scm/git/git-{self.version}.tar.xz")
 
     def build(self):
+        with open(os.path.join(f"{self.name}-{self.version}", "config.mak"), "w") as cfg:
+            cfg.write(CONFIG_MAK.format(f"-I{self.source_folder} {os.environ['CFLAGS']}"))
         args = [
             f"prefix={self.package_folder}",
         ]
-        with tools.chdir(f"git-{self.version}"):
-            with open("config.mak", "w") as cfg:
-                cfg.write(CONFIG_MAK.format(f"-I{self.source_folder} {os.environ['CFLAGS']}"))
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.make(args)
-            autotools.install(args)
+        self.autotools(args)

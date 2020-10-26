@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class CairoConan(ConanFile):
+class CairoRecipe(Recipe):
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "autotools/[^1.0.0]",
         "gobject-introspection/[^1.66.1]",
@@ -22,7 +20,7 @@ class CairoConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://gitlab.freedesktop.org/cairo/cairo/-/archive/{self.version}/cairo-{self.version}.tar.gz")
+        self.get(f"https://gitlab.freedesktop.org/cairo/cairo/-/archive/{self.version}/cairo-{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -32,8 +30,4 @@ class CairoConan(ConanFile):
         ]
         os.environ["CFLAGS"] += " -lpthread"
         os.environ["CPPFLAGS"] = f"-I{os.path.join(self.deps_cpp_info['zlib'].rootpath, 'include')}"
-        os.environ["NOCONFIGURE"] = "1"
-        autotools = AutoToolsBuildEnvironment(self)
-        self.run(f"sh autogen.sh", cwd=f"cairo-{self.version}")
-        autotools.configure(f"cairo-{self.version}", args)
-        autotools.install()
+        self.autotools(args)

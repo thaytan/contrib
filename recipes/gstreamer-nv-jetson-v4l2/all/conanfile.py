@@ -1,6 +1,4 @@
-import os
-
-from conans import *
+from build import *
 
 mapper = {
     "TX2": "T186",
@@ -9,10 +7,9 @@ mapper = {
 }
 
 
-class GstreamerNvJetsonV4l2(ConanFile):
+class GstreamerNvJetsonV4l2(Recipe):
     description = "NVIDIA jetson v4l2 element"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
     gst_version = "1.16.0"
@@ -26,7 +23,7 @@ class GstreamerNvJetsonV4l2(ConanFile):
         self.requires("libglvnd/[^1.2.0]")
 
     def source(self):
-        tools.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version.replace('.', '-')}_Release_v1.0/Sources/{mapper[str(self.options.jetson)]}/public_sources.tbz2")
+        self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version.replace('.', '-')}_Release_v1.0/Sources/{mapper[str(self.options.jetson)]}/public_sources.tbz2")
         tools.untargz("Linux_for_Tegra/source/public/gst-nvvideo4linux2_src.tbz2", self.source_folder)
         tools.rmdir("public_sources")
         tools.patch(patch_file="patches/Makefile.patch")

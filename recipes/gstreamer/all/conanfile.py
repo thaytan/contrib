@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class GStreamerConan(ConanFile):
+class GStreamerRecipe(Recipe):
     description = "A framework for streaming media"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
@@ -15,18 +14,15 @@ class GStreamerConan(ConanFile):
     requires = ("glib/[^2.62.0]",)
 
     def source(self):
-        tools.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dcheck=enabled",
             "-Dtools=enabled",
             "-Dintrospection=enabled",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gstreamer-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)
 
     def package_info(self):
         self.env_info.GST_PLUGIN_SCANNER = os.path.join(self.package_folder, "bin", "gstreamer-1.0", "gst-plugin-scanner")

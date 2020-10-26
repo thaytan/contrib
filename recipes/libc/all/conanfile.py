@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class LibcConan(ConanFile):
+class LibcRecipe(Recipe):
     description = "Virtual libc"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
 
     def requirements(self):
         if self.settings.os_build == "Linux":

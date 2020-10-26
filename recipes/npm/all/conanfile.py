@@ -1,9 +1,7 @@
-import os
-import shutil
-from conans import *
+from build import *
 
 
-class NpmConan(ConanFile):
+class NpmRecipe(Recipe):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -19,7 +17,7 @@ class NpmConan(ConanFile):
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/npm/cli/archive/v{self.version}.tar.gz")
+        self.get(f"https://github.com/npm/cli/archive/v{self.version}.tar.gz")
 
     def build(self):
         pngquant_src = os.path.join(self.deps_cpp_info["pngquant"].rootpath, "bin", "pngquant")
@@ -30,4 +28,4 @@ class NpmConan(ConanFile):
         with tools.chdir(f"cli-{self.version}"):
             autotools = AutoToolsBuildEnvironment(self)
             self.run("mkdir -p man/man1")
-            autotools.install(['NPMOPTS=--prefix="%s"' % self.package_folder])
+            autotools.install([f'NPMOPTS=--prefix="{self.package_folder}"'])

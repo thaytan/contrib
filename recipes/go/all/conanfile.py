@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class GoConan(ConanFile):
+class GoRecipe(Recipe):
     description = "Core compiler tools for the Go programming language"
     license = "BSD"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
 
     def source(self):
         arch = {"x86_64": "amd64", "armv8": "arm64"}[str(self.settings.arch_build)]

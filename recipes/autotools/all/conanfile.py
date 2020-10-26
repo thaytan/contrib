@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class AutotoolsConan(ConanFile):
+class AutotoolsRecipe(Recipe):
     description = "A suite of programming tools 'designed' to assist in making source code"
     license = "GPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = (
         "automake/[^1.16.1]",
         "libtool/[^2.4.6]",

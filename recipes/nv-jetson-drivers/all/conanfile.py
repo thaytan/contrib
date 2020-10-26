@@ -1,7 +1,4 @@
-import os
-import re
-
-from conans import *
+from build import *
 
 # These come from https://developer.nvidia.com/embedded/downloads
 download_tx2_url = {
@@ -14,19 +11,18 @@ download_tx1_url = {
 }
 
 
-class NvJetsonDrivers(ConanFile):
+class NvJetsonDrivers(Recipe):
     description = "NVIDIA built Accelerated GStreamer Plugins"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports_sources = ["public_sources.tbz2"]
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = "jetson=TX2"
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):
-            tools.get(download_tx2_url[self.version])
+            self.get(download_tx2_url[self.version])
         elif self.options.jetson == "Nano":
-            tools.get(download_tx2_url[self.version])
+            self.get(download_tx2_url[self.version])
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
         tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)

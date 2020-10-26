@@ -1,28 +1,19 @@
-import os
-
-from conans import *
+from build import *
 
 
-class AutoconfConan(ConanFile):
+class AutoconfRecipe(Recipe):
     description = "A GNU tool for automatically configuring source code"
     license = "GPL3"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "m4-include.patch"
     requires = (
-        "m4/[^1.4.18]",
         "make/[^4.3]",
+        "m4/[^1.4.18]",
         "perl/[^5.30.0]",
     )
 
     def source(self):
-        tools.get(f"https://ftp.gnu.org/gnu/autoconf/autoconf-{self.version}.tar.gz")
-        tools.patch(patch_file="m4-include.patch", base_path=f"autoconf-{self.version}")
-
-    def build(self):
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"autoconf-{self.version}")
-        autotools.make()
-        autotools.install()
+        self.get(f"https://ftp.gnu.org/gnu/autoconf/autoconf-{self.version}.tar.gz")
+        self.patch("m4-include.patch")
 
     def package_info(self):
         self.env_info.AUTOCONF = os.path.join(self.package_folder, "bin", "autoconf")

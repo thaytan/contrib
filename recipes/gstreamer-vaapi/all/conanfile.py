@@ -1,9 +1,7 @@
-import os
-
-from conans import *
+from build import *
 
 
-class GStreamerVaapiConan(ConanFile):
+class GStreamerVaapiRecipe(Recipe):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
@@ -31,11 +29,9 @@ class GStreamerVaapiConan(ConanFile):
         self.requires(f"gstreamer-plugins-bad/[~{self.settings.gstreamer}]")
 
     def source(self):
-        tools.get(f"https://github.com/GStreamer/gstreamer-vaapi/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gstreamer-vaapi/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = ["--auto-features=disabled"]
+        args = []
         args.append("-Dwith_encoders=" + ("yes" if self.options.encoders else "no"))
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gstreamer-vaapi-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

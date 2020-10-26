@@ -1,12 +1,9 @@
-import os
-
-from conans import *
+from build import *
 
 
-class GLibConan(ConanFile):
+class GLibRecipe(Recipe):
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     license = "LGPL2.1"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = ("meson/[^0.55.3]",)
     requires = (
         "libffi/[^3.3]",
@@ -14,7 +11,7 @@ class GLibConan(ConanFile):
     )
 
     def source(self):
-        tools.get(f"https://github.com/GNOME/glib/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GNOME/glib/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -23,6 +20,4 @@ class GLibConan(ConanFile):
             "-Dgtk_doc=False",
             "-Dinternal_pcre=False",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"glib-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

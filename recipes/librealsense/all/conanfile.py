@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class LibRealsenseConan(ConanFile):
+class LibRealsenseRecipe(Recipe):
     description = "Intel RealSense SDK"
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -17,27 +16,25 @@ class LibRealsenseConan(ConanFile):
         self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/IntelRealSense/librealsense/archive/v{self.version}.tar.gz")
-        tools.patch(patch_file="pkgconfig-fix.patch", base_path=f"{self.name}-{self.version}")
-        tools.patch(patch_file="libusb-fix.patch", base_path=f"{self.name}-{self.version}")
+        self.get(f"https://github.com/IntelRealSense/librealsense/archive/v{self.version}.tar.gz")
+        self.patch("pkgconfig-fix.patch")
+        self.patch("libusb-fix.patch")
 
     def build(self):
-        cmake = CMake(self)
-        # cmake.definitions["BUILD_WITH_CUDA"] = self.options.cuda
-        cmake.definitions["BUILD_PYTHON_BINDINGS"] = True
-        cmake.definitions["BUILD_EXAMPLES"] = False
-        cmake.definitions["BUILD_GRAPHICAL_EXAMPLES"] = False
-        cmake.definitions["BUILD_PCL_EXAMPLES"] = False
-        cmake.definitions["BUILD_NODEJS_BINDINGS"] = False
-        cmake.definitions["BUILD_UNIT_TESTS"] = False
-        cmake.definitions["PYTHON_INCLUDE_DIRS"] = os.path.join(self.deps_cpp_info["python"].rootpath, "include", "python3.8")
-        cmake.definitions["PYTHON_LIBRARIES"] = os.path.join(self.deps_cpp_info["python"].rootpath, "lib", "libpython.a")
-        cmake.definitions["PYTHONLIBS_FOUND"] = True
-        cmake.definitions["PYTHON_MODULE_EXTENSION"] = "a"
-
-        cmake.configure(source_folder=f"{self.name}-{self.version}")
-        cmake.build()
-        cmake.install()
+        defs = {
+            # "BUILD_WITH_CUDA": self.options.cuda,
+            "BUILD_PYTHON_BINDINGS": True,
+            "BUILD_EXAMPLES": False,
+            "BUILD_GRAPHICAL_EXAMPLES": False,
+            "BUILD_PCL_EXAMPLES": False,
+            "BUILD_NODEJS_BINDINGS": False,
+            "BUILD_UNIT_TESTS": False,
+            "PYTHON_INCLUDE_DIRS": os.path.join(self.deps_cpp_info["python"].rootpath, "include", "python3.8"),
+            "PYTHON_LIBRARIES": os.path.join(self.deps_cpp_info["python"].rootpath, "lib", "libpython.a"),
+            "PYTHONLIBS_FOUND": True,
+            "PYTHON_MODULE_EXTENSION": "a",
+        }
+        self.cmake(defs)
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib"))

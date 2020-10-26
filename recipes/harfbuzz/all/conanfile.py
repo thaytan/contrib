@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class HarfbuzzConan(ConanFile):
+class HarfbuzzRecipe(Recipe):
     description = "HarfBuzz text shaping engine"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "meson/[^0.55.3]",
         "freetype/[^2.10.3]",
@@ -17,15 +15,12 @@ class HarfbuzzConan(ConanFile):
         self.options["freetype"].harfbuzz = False
 
     def source(self):
-        tools.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
-            "--auto-features=disabled",
             "-Dfreetype=enabled",
             "-Dgobject=enabled",
             "-Dintrospection=enabled",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"harfbuzz-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

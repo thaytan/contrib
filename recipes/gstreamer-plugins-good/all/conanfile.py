@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class GStreamerPluginsGoodConan(ConanFile):
+class GStreamerPluginsGoodRecipe(Recipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
@@ -21,7 +20,7 @@ class GStreamerPluginsGoodConan(ConanFile):
             self.requires("libxdamage/[^1.1.5]")
 
     def source(self):
-        tools.get(f"https://github.com/GStreamer/gst-plugins-good/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gst-plugins-good/archive/{self.version}.tar.gz")
 
     def build(self):
         args = [
@@ -43,6 +42,4 @@ class GStreamerPluginsGoodConan(ConanFile):
             "-Dxshm=enabled",
             "-Djpeg=enabled",
         ]
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"gst-plugins-good-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)

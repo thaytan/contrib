@@ -1,10 +1,9 @@
-from conans import *
+from build import *
 
 
-class LibxauConan(ConanFile):
+class LibxauRecipe(Recipe):
     description = "X11 authorisation library"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
         "make/[^4.3]",
         "pkgconf/[^1.7.3]",
@@ -12,10 +11,10 @@ class LibxauConan(ConanFile):
     requires = ("xorgproto/[^2020.1]",)
 
     def source(self):
-        tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXau-{self.version}.tar.gz")
+        self.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXau-{self.version}.tar.gz")
 
     def build(self):
-        args = ["--disable-static"]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"libXau-{self.version}", args)
-        autotools.install()
+        args = [
+            "--disable-static",
+        ]
+        self.autotools(args)

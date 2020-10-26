@@ -1,7 +1,7 @@
-from conans import *
+from build import *
 
 
-class PythonCythonConan(ConanFile):
+class PythonCythonRecipe(Recipe):
     description = "Python to C compiler"
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -15,8 +15,4 @@ class PythonCythonConan(ConanFile):
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
-        tools.get(f"https://github.com/cython/cython/archive/{self.version}.tar.gz")
-
-    def build(self):
-        self.run(f'python setup.py install --optimize=1 --prefix= --root="{self.package_folder}"', cwd=f"cython-{self.version}")
-
+        self.get(f"https://github.com/cython/cython/archive/{self.version}.tar.gz")

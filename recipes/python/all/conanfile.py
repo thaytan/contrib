@@ -1,8 +1,7 @@
-import os
-from conans import *
+from build import *
 
 
-class PythonConan(ConanFile):
+class PythonRecipe(Recipe):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
@@ -18,15 +17,14 @@ class PythonConan(ConanFile):
     requires = ("openssl/[^3.0.0-alpha6]",)
 
     def source(self):
-        tools.get(f"https://www.python.org/ftp/python/{self.version}/Python-{self.version}.tar.xz")
+        self.get(f"https://www.python.org/ftp/python/{self.version}/Python-{self.version}.tar.xz")
 
     def build(self):
         # Python build scripts handles LTO
-        env = {
-            "CFLAGS": os.environ["CFLAGS"].replace("-flto=thin", ""),
-        }
+        os.environ["CFLAGS"] = os.environ["CFLAGS"].replace("-flto=thin", "")
+
         args = [
-            "--with-openssl=" + self.deps_cpp_info["openssl"].rootpath,
+            f"--with-openssl={self.deps_cpp_info['openssl'].rootpath}",
             "--enable-shared",
             "--with-computed-gotos",
             "--enable-optimizations",
@@ -37,10 +35,8 @@ class PythonConan(ConanFile):
             "--enable-loadable-sqlite-extensions",
             "--without-ensurepip",
         ]
-        autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"Python-{self.version}", args, vars=env)
-        autotools.make()
-        autotools.install()
+        self.autotools(args)
+
         os.symlink(f"python{self.settings.python}", os.path.join(self.package_folder, "bin", "python"))
 
     def package_info(self):

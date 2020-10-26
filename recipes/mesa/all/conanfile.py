@@ -1,11 +1,9 @@
-import os
-from conans import *
+from build import *
 
 
-class MesaConan(ConanFile):
+class MesaRecipe(Recipe):
     description = "An open-source implementation of the OpenGL specification"
     license = "custom"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     build_requires = (
@@ -30,7 +28,7 @@ class MesaConan(ConanFile):
             self.build_requires("libxxf86vm/[^1.1.4]")
 
     def source(self):
-        tools.get(f"https://mesa.freedesktop.org/archive/mesa-{self.version}.tar.xz")
+        self.get(f"https://mesa.freedesktop.org/archive/mesa-{self.version}.tar.xz")
 
     def build(self):
         args = [
@@ -50,9 +48,7 @@ class MesaConan(ConanFile):
             args.append("-Dvulkan-drivers=intel")
         if self.settings.arch_build == "armv8":
             args.append("-Dgallium-drivers=nouveau,tegra")
-        meson = Meson(self)
-        meson.configure(args, source_folder=f"mesa-{self.version}", pkg_config_paths=os.environ["PKG_CONFIG_PATH"].split(":"))
-        meson.install()
+        self.meson(args)
 
     def package_info(self):
         self.env_info.LIBGL_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))
