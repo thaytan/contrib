@@ -6,10 +6,4 @@ class FileRecipe(Recipe):
     license = "custom"
 
     def source(self):
-        self.get(f"https://astron.com/pub/file/file-{self.version}.tar.gz")
-
-    def build(self):
-        args = [
-            "--disable-dependency-tracking",
-        ]
-        self.autotools(args)
+        self.get(f"http://astron.com/pub/file/file-{self.version}.tar.gz")
