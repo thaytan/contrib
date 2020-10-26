@@ -7,7 +7,6 @@ class PangoConan(ConanFile):
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
     )

@@ -5,10 +5,7 @@ class LibxdamageConan(ConanFile):
     description = "X11 damaged region extension library"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "autotools/[^1.0.0]",
-    )
+    build_requires = ("autotools/[^1.0.0]",)
     requires = ("libxfixes/[^5.0.3]",)
 
     def source(self):

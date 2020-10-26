@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -8,7 +7,6 @@ class TclConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
         "zlib/[^1.2.11]",
     )
@@ -24,5 +22,5 @@ class TclConan(ConanFile):
             "--enable-64bit",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(os.path.join(f"{self.name}{self.version}", "unix"), args, vars=env)
+        autotools.configure(os.path.join(f"tcl{self.version}", "unix"), args, vars=env)
         autotools.install()

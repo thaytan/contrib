@@ -17,10 +17,7 @@ class GstreamerNvJetsonV4l2(ConanFile):
     default_options = ("jetson=TX2",)
     gst_version = "1.16.0"
     exports_sources = {"patches/*"}
-    build_requires = (
-        "cc/[^1.0.0]",
-        "pkgconf/[^1.6.3]",
-    )
+    build_requires = ("pkgconf/[^1.6.3]",)
 
     def requirements(self):
         self.requires(f"nv-jetson-drivers/[^{self.version}]")

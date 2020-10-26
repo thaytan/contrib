@@ -7,7 +7,6 @@ class HarfbuzzConan(ConanFile):
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "freetype/[^2.10.3]",
         "gobject-introspection/[^1.66.1]",

@@ -7,10 +7,7 @@ class ConanLibwebp(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"shared": [True, False]}
     default_options = {"shared": True}
-    build_requires = (
-        "cc/[^1.0.0]",
-        "cmake/[^3.18.4]",
-    )
+    build_requires = ("cmake/[^3.18.4]",)
 
     def source(self):
         tools.get(f"https://github.com/webmproject/libwebp/archive/v{self.version}.tar.gz")

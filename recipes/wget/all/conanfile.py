@@ -6,7 +6,6 @@ class WgetConan(ConanFile):
     license = "GPL3"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "nettle/[^3.6]",
         "libtasn1/[^4.16.0]",

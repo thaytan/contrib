@@ -8,7 +8,6 @@ class LibRealsenseConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     build_requires = (
-        "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         # "cuda/[^10.1.243]",
         "libusb/[^1.0.23]",

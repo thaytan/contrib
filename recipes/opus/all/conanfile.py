@@ -5,10 +5,7 @@ class OpusConan(ConanFile):
     description = "Modern audio compression for the internet"
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "make/[^4.3]",
-    )
+    build_requires = ("make/[^4.3]",)
 
     def source(self):
         tools.get(f"https://archive.mozilla.org/pub/opus/opus-{self.version}.tar.gz")

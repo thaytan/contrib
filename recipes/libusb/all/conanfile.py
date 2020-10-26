@@ -5,10 +5,7 @@ class LibUSBConan(ConanFile):
     description = "A cross-platform library to access USB devices"
     license = "LGPL-2.1"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "autotools/[^1.0.0]",
-    )
+    build_requires = ("autotools/[^1.0.0]",)
     requires = ("eudev/[^3.2.9]",)
 
     def source(self):

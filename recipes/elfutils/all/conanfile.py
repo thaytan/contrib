@@ -8,7 +8,6 @@ class ElfutilsConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = ("elfutils-clang.patch",)
     build_requires = (
-        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "zlib/[^1.2.11]",
         "libarchive/[^3.4.3]",

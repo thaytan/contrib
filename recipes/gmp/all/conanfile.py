@@ -6,7 +6,6 @@ class GmpConan(ConanFile):
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
         "m4/[^1.4.18]",
     )

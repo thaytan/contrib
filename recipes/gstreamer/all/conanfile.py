@@ -7,7 +7,6 @@ class GStreamerConan(ConanFile):
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     build_requires = (
-        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "bison/[^3.7.2]",
         "flex/[^2.6.4]",

@@ -6,7 +6,6 @@ class LibxcbConan(ConanFile):
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "make/[^4.3]",
         "pkgconf/[^1.7.3]",
         "xcb-proto/[^1.13]",

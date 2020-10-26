@@ -11,7 +11,6 @@ class GStreamerPluginsBaseConan(ConanFile):
     }
     default_options = ("audioresample=False",)
     build_requires = (
-        "cc/[^1.0.0]",
         "meson/[^0.55.2]",
         "gobject-introspection/[^1.59.3]",
         "opus/[^1.3.1]",

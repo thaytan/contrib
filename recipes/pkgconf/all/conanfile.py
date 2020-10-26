@@ -1,7 +1,4 @@
-import glob
 import os
-import shutil
-
 from conans import *
 
 
@@ -10,7 +7,6 @@ class PkgconfConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "automake/[^1.16.1]",
         "libtool/[^2.4.6]",
     )
@@ -20,12 +16,11 @@ class PkgconfConan(ConanFile):
 
     def build(self):
         args = ["--disable-shared"]
-        with tools.chdir(f"pkgconf-pkgconf-{self.version}"):
-            self.run("sh autogen.sh")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
+        self.run("sh autogen.sh", cwd=f"pkgconf-pkgconf-{self.version}")
+        autotools = AutoToolsBuildEnvironment(self)
+        autotools.configure(f"pkgconf-pkgconf-{self.version}", args)
+        autotools.make()
+        autotools.install()
         os.symlink("pkgconf", os.path.join(self.package_folder, "bin", "pkg-config"))
 
     def package_info(self):

@@ -8,10 +8,7 @@ class LibvaConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
-    build_requires = (
-        "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
-    )
+    build_requires = ("meson/[^0.55.3]",)
     requires = (
         "libdrm/[^2.4.102]",
         "libxext/[^1.3.4]",

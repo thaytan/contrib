@@ -1,4 +1,3 @@
-import os
 from conans import *
 
 
@@ -9,7 +8,6 @@ class DirenvConan(ConanFile):
     build_requires = (
         "go/[^1.15.3]",
         "make/[^4.3]",
-        "cc/[^1.0.0]",
     )
 
     def source(self):

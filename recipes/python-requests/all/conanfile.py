@@ -6,7 +6,6 @@ class PythonRequestsConan(ConanFile):
     license = "Apache 2.0"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
-        "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
         "python-setuptools/[^41.2.0]",
     )

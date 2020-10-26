@@ -5,10 +5,7 @@ class Help2ManConan(ConanFile):
     description = "Conversion tool to create man files"
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "make/[^4.3]",
-    )
+    build_requires = ("make/[^4.3]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/help2man/help2man-{self.version}.tar.xz")

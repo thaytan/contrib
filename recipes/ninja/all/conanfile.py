@@ -11,7 +11,6 @@ class NinjaConan(ConanFile):
 
     def build_requirements(self):
         if not self.options.bootstrap:
-            self.build_requires("cc/[^1.0.0]")
             self.build_requires("make/[^4.3]")
 
     def configure(self):

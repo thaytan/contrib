@@ -6,10 +6,7 @@ class OrcConan(ConanFile):
     description = "Optimized Inner Loop Runtime Compiler"
     license = "LGPL-2.1"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
-    )
+    build_requires = ("meson/[^0.55.3]",)
 
     def source(self):
         tools.get(f"https://github.com/GStreamer/orc/archive/{self.version}.tar.gz")

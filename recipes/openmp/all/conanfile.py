@@ -7,7 +7,6 @@ class OpenmpConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         "libffi/[^3.3]",
         "elfutils/[^0.179]",

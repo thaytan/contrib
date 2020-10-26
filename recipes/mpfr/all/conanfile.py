@@ -6,7 +6,6 @@ class MpfrConan(ConanFile):
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
         "gmp/[^6.2.0]",
     )

@@ -50,7 +50,6 @@ class GStreamerPluginsBadConan(ConanFile):
         "webp=True",
     )
     build_requires = (
-        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
     )

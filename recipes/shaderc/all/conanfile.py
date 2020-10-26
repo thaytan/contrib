@@ -6,10 +6,7 @@ class LibShadercConan(ConanFile):
     description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
     license = "Apache"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "cmake/[^3.18.4]",
-    )
+    build_requires = ("cmake/[^3.18.4]",)
 
     def build_requirements(self):
         self.build_requires(f"python/[~{self.settings.python}]")

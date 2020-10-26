@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -7,10 +6,7 @@ class GdbConan(ConanFile):
     description = "The GNU Debugger"
     license = "GPL3"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "texinfo/[^6.6]",
-    )
+    build_requires = ("texinfo/[^6.6]",)
     requires = (
         "ncurses/[^6.1]",
         "readline/[^8.0]",

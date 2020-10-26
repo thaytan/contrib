@@ -7,10 +7,7 @@ class GLibConan(ConanFile):
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     license = "LGPL2.1"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "meson/[^0.55.3]",
-        "cc/[^1.0.0]",
-    )
+    build_requires = ("meson/[^0.55.3]",)
     requires = (
         "libffi/[^3.3]",
         "zlib/[^1.2.11]",

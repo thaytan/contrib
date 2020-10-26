@@ -12,7 +12,6 @@ class CaCertificatesConan(ConanFile):
     build_requires = (
         "bootstrap-openssl/[^3.0.0-alpha6]",
         "make/[^4.3]",
-        "cc/[^1.0.0]",
     )
 
     def build_requirements(self):

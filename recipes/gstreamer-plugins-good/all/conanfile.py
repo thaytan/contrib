@@ -8,10 +8,7 @@ class GStreamerPluginsGoodConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
-    build_requires = (
-        "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
-    )
+    build_requires = ("meson/[^0.55.3]",)
     requires = (
         "libpng/[^1.6.37]",
         "libvpx/[^1.8.0]",

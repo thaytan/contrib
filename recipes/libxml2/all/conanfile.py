@@ -8,7 +8,6 @@ class Libxml2Conan(ConanFile):
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
-        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "zlib/[^1.2.11]",
     )

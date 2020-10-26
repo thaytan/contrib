@@ -6,7 +6,6 @@ class OpenCVConan(ConanFile):
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "cmake/[^3.18.3]",
         "zlib/[^1.2.11]",
         "libpng/[^1.6.37]",

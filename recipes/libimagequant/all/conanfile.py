@@ -7,7 +7,6 @@ class LibimagequantConan(ConanFile):
     license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "autotools/1.0.0",
         "openmp/[^11.0.0]",
     )

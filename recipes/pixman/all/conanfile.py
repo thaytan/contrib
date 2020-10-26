@@ -6,10 +6,7 @@ class PixmanConan(ConanFile):
     description = "Image processing and manipulation library"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
-    )
+    build_requires = ("meson/[^0.55.3]",)
 
     def source(self):
         tools.get(f"https://xorg.freedesktop.org/releases/individual/lib/pixman-{self.version}.tar.gz")

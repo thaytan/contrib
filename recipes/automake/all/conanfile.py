@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -8,12 +7,11 @@ class AutomakeConan(ConanFile):
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     exports = "automake-include-fix.patch"
-    build_requires = ("bootstrap-llvm/[^10.0.1]",)
     requires = ("autoconf/[^2.69]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/gnu/automake/automake-{self.version}.tar.gz")
-        tools.patch(patch_file="automake-include-fix.patch", base_path=f"{self.name}-{self.version}")
+        tools.patch(f"{self.name}-{self.version}", "automake-include-fix.patch")
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)

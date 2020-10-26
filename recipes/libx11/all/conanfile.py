@@ -7,7 +7,6 @@ class Libx11Conan(ConanFile):
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "cc/[^1.0.0]",
         "make/[^4.3]",
         "pkgconf/[^1.7.3]",
         "xorg-util-macros/[^1.19.2]",

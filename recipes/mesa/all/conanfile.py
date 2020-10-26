@@ -9,7 +9,7 @@ class MesaConan(ConanFile):
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
     build_requires = (
-        "bootstrap-llvm/[^11.0.0]",
+        "llvm/[^11.0.0]",
         "meson/[^0.55.3]",
         "gettext/[^0.21]",
         "bison/[^3.3]",

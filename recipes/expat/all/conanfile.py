@@ -5,10 +5,7 @@ class ExpatConan(ConanFile):
     description = "An XML parser library"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
-        "make/[^4.3]",
-    )
+    build_requires = ("make/[^4.3]",)
 
     def source(self):
         tools.get(f"https://github.com/libexpat/libexpat/releases/download/R_{self.version.replace('.', '_')}/expat-{self.version}.tar.bz2")
@@ -16,5 +13,5 @@ class ExpatConan(ConanFile):
     def build(self):
         args = ["--disable-shared"]
         autotools = AutoToolsBuildEnvironment(self)
-        autotools.configure(f"{self.name}-{self.version}", args=args)
+        autotools.configure(f"expat-{self.version}", args)
         autotools.install()

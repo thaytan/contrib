@@ -6,10 +6,7 @@ class GettextConan(ConanFile):
     description = "GNU internationalization library"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     license = "GPL"
-    build_requires = (
-        "cc/[^1.0.0]",
-        "make/[^4.3]",
-    )
+    build_requires = ("make/[^4.3]",)
 
     def source(self):
         tools.get(f"https://ftp.gnu.org/pub/gnu/gettext/gettext-{self.version}.tar.gz")

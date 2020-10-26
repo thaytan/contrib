@@ -11,7 +11,6 @@ class SqliteConan(ConanFile):
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
         "make/[^4.3]",
         "tcl/[^8.6.10]",
         "zlib/[^1.2.11]",
@@ -26,7 +25,6 @@ class SqliteConan(ConanFile):
             "--disable-shared",
         ]
         autotools = AutoToolsBuildEnvironment(self)
-        with tools.chdir(f"{self.name}-src-{conv_version(self.version)}"):
-            self.run("chmod +x configure")
-            autotools.configure(args=args)
-            autotools.install()
+        self.run("chmod +x configure", cwd=f"sqlite-src-{conv_version(self.version)}")
+        autotools.configure(f"sqlite-src-{conv_version(self.version)}", args)
+        autotools.install()

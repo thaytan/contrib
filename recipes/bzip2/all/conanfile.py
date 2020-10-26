@@ -1,5 +1,4 @@
 import os
-
 from conans import *
 
 
@@ -7,10 +6,7 @@ class Bzip2Conan(ConanFile):
     description = "A high-quality data compression program"
     license = "custom"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
-    build_requires = (
-        "bootstrap-llvm/[^10.0.1]",
-        "make/[^4.3]",
-    )
+    build_requires = ("make/[^4.3]",)
 
     def source(self):
         tools.get(f"https://sourceware.org/pub/bzip2/bzip2-{self.version}.tar.gz")
