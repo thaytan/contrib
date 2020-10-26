@@ -38,10 +38,8 @@ class LlvmRecipe(Recipe):
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc_build == "musl":
-            libc_inc = os.path.join(self.deps_cpp_info["musl"].rootpath, "include")
             abi = "musl"
         else:
-            libc_inc = os.path.join(self.deps_cpp_info["glibc"].rootpath, "include")
             abi = "gnu"
         cmake.definitions["LLVM_HOST_TRIPLE"] = f"{arch}-unknown-linux-{abi}"
 
@@ -170,6 +168,7 @@ class LlvmRecipe(Recipe):
         # GVN causes segmentation fault during recursion higher than 290
         if self.settings.libc_build == "musl":
             ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
+        libc_inc = os.environ["LIBC_INCLUDE_PATH"]
         clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
         clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
         libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
@@ -228,12 +227,10 @@ class LlvmRecipe(Recipe):
         self.env_info.STRIP = os.path.join(self.package_folder, "bin", "strip")
         self.env_info.OBJCOPY = os.path.join(self.package_folder, "bin", "objcopy")
 
+        static_flags = ""
         if self.settings.libc_build == "musl":
             static_flags = "-static"
-            libc_inc = os.path.join(self.deps_cpp_info["musl"].rootpath, "include")
-        else:
-            static_flags = ""
-            libc_inc = os.path.join(self.deps_cpp_info["glibc"].rootpath, "include")
+        libc_inc = os.environ["LIBC_INCLUDE_PATH"]
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
         # -Wno-unused-command-line-argument is needed for some sanity tests in cmake
