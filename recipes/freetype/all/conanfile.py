@@ -7,10 +7,7 @@ class FreetypeConan(ConanFile):
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     options = {"harfbuzz": [True, False]}
     default_options = ("harfbuzz=True",)
-    build_requires = (
-        "cc/[^1.0.0]",
-        "autotools/[^1.0.0]",
-    )
+    build_requires = ("autotools/[^1.0.0]",)
 
     def requirements(self):
         if self.options.harfbuzz:
