@@ -4,6 +4,8 @@ from build import *
 class LibcRecipe(Recipe):
     description = "Virtual libc"
     license = "MIT"
+    options = {}
+    default_options = {}
 
     def requirements(self):
         if self.settings.os_build == "Linux":
