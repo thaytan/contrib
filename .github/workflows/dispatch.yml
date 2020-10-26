@@ -7,6 +7,10 @@ on:
         description: 'Package/Version'
         required: true
         default: 'pkg/*'
+      arguments:
+        description: 'Additional Conan arguments'
+        required: true
+        default: ''
 jobs:
   dispatch:
     name: Conan Dispatch
@@ -21,3 +25,4 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           package: ${{ github.event.inputs.package }}
+          arguments: ${{ github.event.inputs.arguments }}
