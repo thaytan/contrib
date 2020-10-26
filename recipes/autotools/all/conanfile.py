@@ -6,7 +6,6 @@ class AutotoolsConan(ConanFile):
     license = "GPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build"
     requires = (
-        "cc/[^1.0.0]",
         "automake/[^1.16.1]",
         "libtool/[^2.4.6]",
         "pkgconf/[^1.7.3]",
