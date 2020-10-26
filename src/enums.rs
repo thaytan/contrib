@@ -15,128 +15,25 @@
 // Boston, MA 02110-1301, USA.
 
 use crate::error::K4aSrcError;
-use glib::{gobject_sys, StaticType, Type};
+use glib::StaticType;
 use k4a::{DepthMode, ImageFormat};
 use std::convert::TryFrom;
-
-// All the enums in this file follow the unsafe GStreamer enum implementation, discussed in the
-// gst-plugin-rs/tutorial, found here:
-// https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs/blob/aa40eae58176f7e263dc9cd0bb45f8ab5da1e625/gst-plugin-tutorial/src/progressbin_output_enum.rs
-// A safer and more concise implementation is available on the master branch of glib-rs, which uses
-// a derive macro called #GEnum. This may have been included in version 0.9.3 of Glib, but the
-// changes are not backwards compatible, and thus require some manual leg-work.
 
 /// Represents the Azure Kinect's color format and is used here to implement it as a GStreamer property.
 /// It is a small wrapper around the k4a::ImageFormat enum, storing only the
 /// K4A_IMAGE_FORMAT_COLOR_* part of it.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
 #[repr(u32)]
+#[genum(type_name = "GstK4aColorFormat")]
 pub enum K4aColorFormat {
+    #[genum(name = "MJPG", nick = "mjpg")]
     MJPG = 0,
+    #[genum(name = "NV12 (720p only)", nick = "nv12")]
     NV12 = 1,
+    #[genum(name = "YUV2 (720p only)", nick = "yuv2")]
     YUV2 = 2,
+    #[genum(name = "BGRA32", nick = "bgra32")]
     BGRA32 = 3,
-}
-
-impl K4aColorFormat {
-    pub fn get_glib_type() -> glib::Type {
-        use std::sync::Once;
-        static ONCE: Once = Once::new();
-        static mut TYPE: glib::Type = glib::Type::Invalid;
-
-        ONCE.call_once(|| {
-            use std::ffi;
-            use std::ptr;
-
-            static mut VALUES: [gobject_sys::GEnumValue; 5] = [
-                gobject_sys::GEnumValue {
-                    value: K4aColorFormat::MJPG as i32,
-                    value_name: b"MJPG\0" as *const _ as *const _,
-                    value_nick: b"mjpg\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorFormat::NV12 as i32,
-                    value_name: b"NV12 (720p only)\0" as *const _ as *const _,
-                    value_nick: b"nv12\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorFormat::YUV2 as i32,
-                    value_name: b"YUV2 (720p only)\0" as *const _ as *const _,
-                    value_nick: b"yuv2\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorFormat::BGRA32 as i32,
-                    value_name: b"BGRA32\0" as *const _ as *const _,
-                    value_nick: b"bgra32\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: 0,
-                    value_name: ptr::null(),
-                    value_nick: ptr::null(),
-                },
-            ];
-
-            let name = ffi::CString::new("GstK4aColorFormat").unwrap();
-            unsafe {
-                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
-                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
-                if type_ == 0 {
-                    // Register the type ONLY if not done before
-                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
-                }
-                TYPE = glib::translate::from_glib(type_);
-            }
-        });
-
-        unsafe {
-            assert_ne!(TYPE, glib::Type::Invalid);
-            TYPE
-        }
-    }
-}
-
-impl glib::translate::ToGlib for K4aColorFormat {
-    type GlibType = i32;
-
-    fn to_glib(&self) -> Self::GlibType {
-        *self as i32
-    }
-}
-impl glib::translate::FromGlib<i32> for K4aColorFormat {
-    fn from_glib(val: i32) -> Self {
-        match val {
-            0 => K4aColorFormat::MJPG,
-            1 => K4aColorFormat::NV12,
-            2 => K4aColorFormat::YUV2,
-            3 => K4aColorFormat::BGRA32,
-            _ => unreachable!("Invalid GstK4aColorFormat, options are: 0 (MJPG), 1 (NV12), 2 (YUV2) or 3 (BGRA32)"),
-        }
-    }
-}
-impl StaticType for K4aColorFormat {
-    fn static_type() -> Type {
-        K4aColorFormat::get_glib_type()
-    }
-}
-impl<'a> glib::value::FromValueOptional<'a> for K4aColorFormat {
-    unsafe fn from_value_optional(value: &glib::Value) -> Option<Self> {
-        Some(glib::value::FromValue::from_value(value))
-    }
-}
-impl<'a> glib::value::FromValue<'a> for K4aColorFormat {
-    unsafe fn from_value(value: &glib::Value) -> Self {
-        use glib::translate::ToGlibPtr;
-
-        glib::translate::from_glib(gobject_sys::g_value_get_enum(value.to_glib_none().0))
-    }
-}
-
-impl glib::value::SetValue for K4aColorFormat {
-    unsafe fn set_value(value: &mut glib::Value, this: &Self) {
-        use glib::translate::{ToGlib, ToGlibPtrMut};
-
-        gobject_sys::g_value_set_enum(value.to_glib_none_mut().0, this.to_glib())
-    }
 }
 
 /// Try to convert a `k4a::ImageFormat` into a [K4aColorFormat](enum.K4aColorFormat.html). This is a
@@ -170,61 +67,22 @@ impl From<K4aColorFormat> for k4a::ImageFormat {
 }
 
 /// Represents the Azure Kinect's color resolution and is used here to implement it as a GStreamer property.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
 #[repr(u32)]
+#[genum(type_name = "GstK4aColorResolution")]
 pub enum K4aColorResolution {
+    #[genum(name = "720p: 720p resolution", nick = "720p")]
     C720p = 0,
+    #[genum(name = "1080p: 1080p resolution", nick = "1080p")]
     C1080p = 1,
+    #[genum(name = "1440p: 1440p resolution", nick = "1440p")]
     C1440p = 2,
+    #[genum(name = "1536p: 1536p resolution", nick = "1536p")]
     C1536p = 3,
+    #[genum(name = "2160p: 2160p resolution", nick = "2160p")]
     C2160p = 4,
+    #[genum(name = "3072p: 3072p resolution", nick = "3072p")]
     C3072p = 5,
-}
-
-impl glib::translate::ToGlib for K4aColorResolution {
-    type GlibType = i32;
-
-    fn to_glib(&self) -> Self::GlibType {
-        *self as i32
-    }
-}
-impl glib::translate::FromGlib<i32> for K4aColorResolution {
-    fn from_glib(val: i32) -> Self {
-        match val {
-            0 => K4aColorResolution::C720p,
-            1 => K4aColorResolution::C1080p,
-            2 => K4aColorResolution::C1440p,
-            3 => K4aColorResolution::C1536p,
-            4 => K4aColorResolution::C2160p,
-            5 => K4aColorResolution::C3072p,
-            _ => unreachable!("Invalid GstK4aColorResolution, options are: 0 (720p), 1 (1080p), 2 (1440p), 3 (1536p), 4 (2160p) or 5 (3072p)"),
-        }
-    }
-}
-impl StaticType for K4aColorResolution {
-    fn static_type() -> Type {
-        K4aColorResolution::get_glib_type()
-    }
-}
-impl<'a> glib::value::FromValueOptional<'a> for K4aColorResolution {
-    unsafe fn from_value_optional(value: &glib::Value) -> Option<Self> {
-        Some(glib::value::FromValue::from_value(value))
-    }
-}
-impl<'a> glib::value::FromValue<'a> for K4aColorResolution {
-    unsafe fn from_value(value: &glib::Value) -> Self {
-        use glib::translate::ToGlibPtr;
-
-        glib::translate::from_glib(gobject_sys::g_value_get_enum(value.to_glib_none().0))
-    }
-}
-
-impl glib::value::SetValue for K4aColorResolution {
-    unsafe fn set_value(value: &mut glib::Value, this: &Self) {
-        use glib::translate::{ToGlib, ToGlibPtrMut};
-
-        gobject_sys::g_value_set_enum(value.to_glib_none_mut().0, this.to_glib())
-    }
 }
 
 /// Try to convert a `k4a::ColorResolution` into a [K4aColorResolution](enum.K4aColorResolution.html). This is a
@@ -262,182 +120,19 @@ impl From<K4aColorResolution> for k4a::ColorResolution {
     }
 }
 
-impl K4aColorResolution {
-    pub fn get_glib_type() -> glib::Type {
-        use std::sync::Once;
-        static ONCE: Once = Once::new();
-        static mut TYPE: glib::Type = glib::Type::Invalid;
-
-        ONCE.call_once(|| {
-            use std::ffi;
-            use std::ptr;
-
-            static mut VALUES: [gobject_sys::GEnumValue; 7] = [
-                gobject_sys::GEnumValue {
-                    value: K4aColorResolution::C720p as i32,
-                    value_name: b"720p: 720p resolution\0" as *const _ as *const _,
-                    value_nick: b"720p\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorResolution::C1080p as i32,
-                    value_name: b"1080p: 1080p resolution\0" as *const _ as *const _,
-                    value_nick: b"1080p\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorResolution::C1440p as i32,
-                    value_name: b"1440p: 1440p resolution\0" as *const _ as *const _,
-                    value_nick: b"1440p\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorResolution::C1536p as i32,
-                    value_name: b"1536p: 1536p resolution\0" as *const _ as *const _,
-                    value_nick: b"1536p\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorResolution::C2160p as i32,
-                    value_name: b"2160p: 2160p resolution\0" as *const _ as *const _,
-                    value_nick: b"2160p\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aColorResolution::C3072p as i32,
-                    value_name: b"3072p: 3072p resolution\0" as *const _ as *const _,
-                    value_nick: b"3072p\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: 0,
-                    value_name: ptr::null(),
-                    value_nick: ptr::null(),
-                },
-            ];
-
-            let name = ffi::CString::new("GstK4aColorResolution").unwrap();
-            unsafe {
-                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
-                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
-                if type_ == 0 {
-                    // Register the type ONLY if not done before
-                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
-                }
-                TYPE = glib::translate::from_glib(type_);
-            }
-        });
-
-        unsafe {
-            assert_ne!(TYPE, glib::Type::Invalid);
-            TYPE
-        }
-    }
-}
-
 /// Represents the Azure Kinect's depth mode and is used here to implement it as a GStreamer property.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
 #[repr(u32)]
+#[genum(type_name = "GstK4aColorResolution")]
 pub enum K4aDepthMode {
+    #[genum(name = "NFOV 2x2 Binned", nick = "nfov_2x2_binned")]
     Nfov2x2Binned,
+    #[genum(name = "NFOV Unbinned", nick = "nfov_unbinned")]
     NfovUnbinned,
+    #[genum(name = "WFOV 2x2 Binned", nick = "wfov_2x2_binned")]
     Wfov2x2Binned,
+    #[genum(name = "WFOV unbinned", nick = "wfov_unbinned")]
     WfovUnbinned,
-}
-
-impl glib::translate::ToGlib for K4aDepthMode {
-    type GlibType = i32;
-
-    fn to_glib(&self) -> Self::GlibType {
-        *self as i32
-    }
-}
-impl glib::translate::FromGlib<i32> for K4aDepthMode {
-    fn from_glib(val: i32) -> Self {
-        match val {
-            0 => K4aDepthMode::Nfov2x2Binned,
-            1 => K4aDepthMode::NfovUnbinned,
-            2 => K4aDepthMode::Wfov2x2Binned,
-            3 => K4aDepthMode::WfovUnbinned,
-            _ => unreachable!("Invalid GstK4aColorResolution, options are: 0 (Nfov2x2Binned), 1 (NfovUnbinned), 2 (Wfov2x2Binned), or 3 (WfovUnbinned)"),
-        }
-    }
-}
-impl StaticType for K4aDepthMode {
-    fn static_type() -> Type {
-        K4aDepthMode::get_glib_type()
-    }
-}
-impl<'a> glib::value::FromValueOptional<'a> for K4aDepthMode {
-    unsafe fn from_value_optional(value: &glib::Value) -> Option<Self> {
-        Some(glib::value::FromValue::from_value(value))
-    }
-}
-impl<'a> glib::value::FromValue<'a> for K4aDepthMode {
-    unsafe fn from_value(value: &glib::Value) -> Self {
-        use glib::translate::ToGlibPtr;
-
-        glib::translate::from_glib(gobject_sys::g_value_get_enum(value.to_glib_none().0))
-    }
-}
-
-impl glib::value::SetValue for K4aDepthMode {
-    unsafe fn set_value(value: &mut glib::Value, this: &Self) {
-        use glib::translate::{ToGlib, ToGlibPtrMut};
-
-        gobject_sys::g_value_set_enum(value.to_glib_none_mut().0, this.to_glib())
-    }
-}
-
-impl K4aDepthMode {
-    pub fn get_glib_type() -> glib::Type {
-        use std::sync::Once;
-        static ONCE: Once = Once::new();
-        static mut TYPE: glib::Type = glib::Type::Invalid;
-
-        ONCE.call_once(|| {
-            use std::ffi;
-            use std::ptr;
-
-            static mut VALUES: [gobject_sys::GEnumValue; 5] = [
-                gobject_sys::GEnumValue {
-                    value: K4aDepthMode::Nfov2x2Binned as i32,
-                    value_name: b"NFOV 2x2 Binned\0" as *const _ as *const _,
-                    value_nick: b"nfov_2x2_binned\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aDepthMode::NfovUnbinned as i32,
-                    value_name: b"NFOV Unbinned\0" as *const _ as *const _,
-                    value_nick: b"nfov_unbinned\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aDepthMode::Wfov2x2Binned as i32,
-                    value_name: b"WFOV 2x2 Binned\0" as *const _ as *const _,
-                    value_nick: b"wfov_2x2_binned\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aDepthMode::WfovUnbinned as i32,
-                    value_name: b"WFOV unbinned\0" as *const _ as *const _,
-                    value_nick: b"wfov_unbinned\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: 0,
-                    value_name: ptr::null(),
-                    value_nick: ptr::null(),
-                },
-            ];
-
-            let name = ffi::CString::new("GstK4aDepthMode").unwrap();
-            unsafe {
-                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
-                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
-                if type_ == 0 {
-                    // Register the type ONLY if not done before
-                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
-                }
-                TYPE = glib::translate::from_glib(type_);
-            }
-        });
-
-        unsafe {
-            assert_ne!(TYPE, glib::Type::Invalid);
-            TYPE
-        }
-    }
 }
 
 /// Try to convert a `k4a::DepthMode` into a [K4aDepthMode](enum.K4aDepthMode.html). This is a
@@ -473,114 +168,27 @@ impl From<K4aDepthMode> for k4a::DepthMode {
 
 /// The Azure Kinect does not have a floating framerate, as with other cameras. We therefore
 /// represent it as an enum here. This enum is used to implement it as a GStreamer property.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
 #[repr(u32)]
+#[genum(type_name = "GstK4aFramerate")]
 pub enum K4aFramerate {
+    #[genum(name = "5 FPS", nick = "5fps")]
     FPS5,
+    #[genum(name = "15 FPS", nick = "15fps")]
     FPS15,
+    #[genum(
+        name = "30 FPS (not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)",
+        nick = "30fps"
+    )]
     FPS30,
 }
 
-impl glib::translate::ToGlib for K4aFramerate {
-    type GlibType = i32;
-
-    fn to_glib(&self) -> Self::GlibType {
-        *self as i32
-    }
-}
-impl glib::translate::FromGlib<i32> for K4aFramerate {
-    fn from_glib(val: i32) -> Self {
-        match val {
-            0 => K4aFramerate::FPS5,
-            1 => K4aFramerate::FPS15,
-            2 => K4aFramerate::FPS30,
-            _ => unreachable!(
-                "Invalid GstK4aFramerate, options are: 0 (5 FPS), 1 (15 FPS) or 2 (30 FPS)"
-            ),
-        }
-    }
-}
-impl StaticType for K4aFramerate {
-    fn static_type() -> Type {
-        K4aFramerate::get_glib_type()
-    }
-}
-impl<'a> glib::value::FromValueOptional<'a> for K4aFramerate {
-    unsafe fn from_value_optional(value: &glib::Value) -> Option<Self> {
-        Some(glib::value::FromValue::from_value(value))
-    }
-}
-impl<'a> glib::value::FromValue<'a> for K4aFramerate {
-    unsafe fn from_value(value: &glib::Value) -> Self {
-        use glib::translate::ToGlibPtr;
-
-        glib::translate::from_glib(gobject_sys::g_value_get_enum(value.to_glib_none().0))
-    }
-}
-
-impl glib::value::SetValue for K4aFramerate {
-    unsafe fn set_value(value: &mut glib::Value, this: &Self) {
-        use glib::translate::{ToGlib, ToGlibPtrMut};
-
-        gobject_sys::g_value_set_enum(value.to_glib_none_mut().0, this.to_glib())
-    }
-}
-
 impl K4aFramerate {
-    pub fn get_glib_type() -> glib::Type {
-        use std::sync::Once;
-        static ONCE: Once = Once::new();
-        static mut TYPE: glib::Type = glib::Type::Invalid;
-
-        ONCE.call_once(|| {
-            use std::ffi;
-            use std::ptr;
-
-            static mut VALUES: [gobject_sys::GEnumValue; 4] = [
-                gobject_sys::GEnumValue {
-                    value: K4aFramerate::FPS5 as i32,
-                    value_name: b"5 FPS\0" as *const _ as *const _,
-                    value_nick: b"5fps\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aFramerate::FPS15 as i32,
-                    value_name: b"15 FPS\0" as *const _ as *const _,
-                    value_nick: b"15fps\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: K4aFramerate::FPS30 as i32,
-                    value_name: b"30 FPS (not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)\0" as *const _ as *const _,
-                    value_nick: b"30fps\0" as *const _ as *const _,
-                },
-                gobject_sys::GEnumValue {
-                    value: 0,
-                    value_name: ptr::null(),
-                    value_nick: ptr::null(),
-                },
-            ];
-
-            let name = ffi::CString::new("GstK4aFramerate").unwrap();
-            unsafe {
-                // Lookup the type ID or return 0 if it has not yet been registered under the specific name
-                let mut type_ = gobject_sys::g_type_from_name(name.as_ptr());
-                if type_ == 0 {
-                    // Register the type ONLY if not done before
-                    type_ = gobject_sys::g_enum_register_static(name.as_ptr(), VALUES.as_ptr());
-                }
-                TYPE = glib::translate::from_glib(type_);
-            }
-        });
-
-        unsafe {
-            assert_ne!(TYPE, glib::Type::Invalid);
-            TYPE
-        }
-    }
-
     pub fn allowed_framerates() -> Vec<i32> {
         vec![5, 15, 30]
     }
 }
+
 /// Convert a [K4aFramerate](enum.K4aFramerate.html) into `k4a::Fps`.
 impl From<K4aFramerate> for k4a::Fps {
     fn from(fr: K4aFramerate) -> Self {

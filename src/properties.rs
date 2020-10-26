@@ -17,6 +17,7 @@
 use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate};
 use crate::settings::*;
 use glib::subclass;
+use glib::StaticType;
 use rgbd_timestamps::timestamp_mode::TimestampMode;
 
 lazy_static! {
@@ -90,7 +91,7 @@ pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 16] = [
             name,
             "Color Format",
             "Format of the color stream, applicable only when streaming from device",
-            K4aColorFormat::get_glib_type(),
+            K4aColorFormat::static_type(),
             DEFAULT_COLOR_FORMAT as i32,
             glib::ParamFlags::READWRITE,
         )
@@ -100,7 +101,7 @@ pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 16] = [
             name,
             "Color Resolution",
             "Resolution of the color stream, applicable only when streaming from device",
-            K4aColorResolution::get_glib_type(),
+            K4aColorResolution::static_type(),
             DEFAULT_COLOR_RESOLUTION as i32,
             glib::ParamFlags::READWRITE,
         )
@@ -110,7 +111,7 @@ pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 16] = [
             name,
             "Depth Mode",
             "Depth capture mode configuration, applicable only when streaming from device",
-            K4aDepthMode::get_glib_type(),
+            K4aDepthMode::static_type(),
             DEFAULT_DEPTH_MODE as i32,
             glib::ParamFlags::READWRITE,
         )
@@ -120,7 +121,7 @@ pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 16] = [
             name,
             "Framerate",
             "Common framerate of the selected video streams, applicable only when streaming from device.",
-            K4aFramerate::get_glib_type(),
+            K4aFramerate::static_type(),
             DEFAULT_FRAMERATE as i32,
             glib::ParamFlags::READWRITE,
         )
