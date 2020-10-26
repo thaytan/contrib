@@ -169,7 +169,7 @@ class LlvmRecipe(Recipe):
         # GVN causes segmentation fault during recursion higher than 290
         if self.settings.libc_build == "musl":
             ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
-        libc_inc = os.environ["LIBC_INCLUDE_PATH"]
+        libc_inc = self.env["LIBC_INCLUDE_PATH"]
         clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
         clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
         libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
@@ -231,7 +231,7 @@ class LlvmRecipe(Recipe):
         static_flags = ""
         if self.settings.libc_build == "musl":
             static_flags = "-static"
-        libc_inc = os.environ["LIBC_INCLUDE_PATH"]
+        libc_inc = self.env["LIBC_INCLUDE_PATH"]
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
         # -Wno-unused-command-line-argument is needed for some sanity tests in cmake
