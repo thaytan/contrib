@@ -52,6 +52,7 @@ class LlvmRecipe(Recipe):
         # Build and link all libs as shared
         cmake.definitions["LLVM_BUILD_LLVM_DYLIB"] = True
         cmake.definitions["LLVM_LINK_LLVM_DYLIB"] = True
+        cmake.definitions["BUILD_SHARED_LIBS"] = False
 
         # LLVM enable options
         cmake.definitions["LLVM_ENABLE_LIBCXX"] = True
