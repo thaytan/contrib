@@ -71,7 +71,7 @@ pub(crate) const DISABLE_STREAMING_INDICATOR: bool = false;
 pub(crate) struct Settings {
     pub(crate) device_settings: DeviceSettings,
     pub(crate) playback_settings: PlaybackSettings,
-    pub(crate) desired_streams: Streams,
+    pub(crate) desired_streams: EnabledStreams,
     pub(crate) rectify_depth: bool,
     pub(crate) attach_camera_meta: bool,
 }
@@ -104,7 +104,7 @@ impl Default for Settings {
                 framerate: DEFAULT_FRAMERATE,
                 get_capture_timeout: DEFAULT_GET_CAPTURE_TIMEOUT,
             },
-            desired_streams: Streams::default(),
+            desired_streams: EnabledStreams::default(),
             playback_settings: PlaybackSettings {
                 recording_location: String::default(),
                 loop_recording: DEFAULT_LOOP_RECORDING,
