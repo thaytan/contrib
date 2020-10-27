@@ -177,7 +177,7 @@ pub enum K4aFramerate {
     #[genum(name = "15 FPS", nick = "15fps")]
     FPS15,
     #[genum(
-        name = "30 FPS (not available for `depth-mode=WFOV_unbinned` or `color-resolution=3072p`)",
+        name = "30 FPS (not available for `depth-mode=wfov_unbinned` or `color-resolution=3072p`)",
         nick = "30fps"
     )]
     FPS30,
