@@ -235,11 +235,13 @@ class LlvmRecipe(Recipe):
         static_flags = ""
         if self.settings.libc_build == "musl":
             static_flags = "-static"
-        libc_inc = self.env["LIBC_INCLUDE_PATH"]
+        libc_inc = ""
+        if "LIBC_INCLUDE_PATH" in self.env:
+            libc_inc = f"-idirafter {self.env['LIBC_INCLUDE_PATH']}"
         clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
         libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
         # -Wno-unused-command-line-argument is needed for some sanity tests in cmake
-        cflags = f" -nostdinc -idirafter {clang_inc} -idirafter {libc_inc} {static_flags} -fPIC -flto=thin -Wno-unused-command-line-argument "
+        cflags = f" -nostdinc -idirafter {clang_inc} {libc_inc} {static_flags} -fPIC -flto=thin -Wno-unused-command-line-argument "
         cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
 
         self.env_info.CFLAGS = cflags
