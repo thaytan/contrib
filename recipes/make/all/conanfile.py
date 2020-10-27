@@ -4,7 +4,7 @@ from build import *
 class MakeRecipe(Recipe):
     description = "GNU make utility to maintain groups of programs"
     license = "GPL3"
-    requires = "cc/[^1.0.0]"
+    build_requires = "cc/[^1.0.0]"
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/make/make-{self.version}.tar.gz")
