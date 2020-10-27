@@ -5,8 +5,12 @@ class LlvmRecipe(Recipe):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     exports = ("disable-system-libs.patch",)
-    build_requires = ("cmake/[^3.18.4]", "ninja/[^1.10.0]")
-    requires = "libc/[^1.0.0]", "file/[^5.39]"
+    build_requires = (
+        "cmake/[^3.18.4]",
+        "ninja/[^1.10.0]",
+        "libc/[^1.0.0]",
+    )
+    requires = "file/[^5.39]"
 
     def configure(self):
         self.options["cmake"].bootstrap = True
