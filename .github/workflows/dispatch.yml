@@ -9,7 +9,6 @@ on:
         default: 'pkg/*'
       arguments:
         description: 'Additional Conan arguments'
-        required: true
         default: ''
 jobs:
   dispatch:
