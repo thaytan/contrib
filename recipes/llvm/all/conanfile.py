@@ -231,18 +231,3 @@ class LlvmRecipe(Recipe):
         self.env_info.LD = os.path.join(self.package_folder, "bin", "ld")
         self.env_info.STRIP = os.path.join(self.package_folder, "bin", "strip")
         self.env_info.OBJCOPY = os.path.join(self.package_folder, "bin", "objcopy")
-
-        static_flags = ""
-        if self.settings.libc_build == "musl":
-            static_flags = "-static"
-        libc_inc = ""
-        if "LIBC_INCLUDE_PATH" in self.env:
-            libc_inc = f"-idirafter {self.env['LIBC_INCLUDE_PATH']}"
-        clang_inc = os.path.join(self.package_folder, "lib", "clang", self.version, "include")
-        libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-        # -Wno-unused-command-line-argument is needed for some sanity tests in cmake
-        cflags = f" -nostdinc -idirafter {clang_inc} {libc_inc} {static_flags} -fPIC -flto=thin -Wno-unused-command-line-argument "
-        cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} {cflags} "
-
-        self.env_info.CFLAGS = cflags
-        self.env_info.CXXFLAGS = cxxflags
