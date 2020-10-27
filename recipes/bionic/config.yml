@@ -1,3 +1,4 @@
 - version: '28'
   image:
     bootstrap: true
+  profiles: [Android-armv8]
