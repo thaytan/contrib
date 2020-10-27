@@ -7,6 +7,10 @@ class CMakeRecipe(Recipe):
     options = {"bootstrap": [True, False]}
     default_options = ("bootstrap=False",)
 
+    def build_requirements(self):
+        if not self.options.bootstrap:
+            self.build_requires("cc/[^1.0.0]")
+
     def requirements(self):
         if not self.options.bootstrap:
             self.requires("cc/[^1.0.0]")
