@@ -185,6 +185,8 @@ class LlvmRecipe(Recipe):
         # Stage 2 build (lld, clang, libcxx, libcxxabi)
         with tools.environment_append(env):
             cmake.configure(source_folder=f"llvm-{self.version}", build_folder=f"stage2-{self.version}")
+            cmake.build(target="install-cxx")
+            cmake.build(target="install-compiler-rt")
             cmake.build(target="install-clang")
             cmake.build(target="install-clang-cpp")
             cmake.build(target="install-clang-resource-headers")
