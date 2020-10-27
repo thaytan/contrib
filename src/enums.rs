@@ -123,7 +123,7 @@ impl From<K4aColorResolution> for k4a::ColorResolution {
 /// Represents the Azure Kinect's depth mode and is used here to implement it as a GStreamer property.
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
 #[repr(u32)]
-#[genum(type_name = "GstK4aColorResolution")]
+#[genum(type_name = "GstK4aDepthMode")]
 pub enum K4aDepthMode {
     #[genum(name = "NFOV 2x2 Binned", nick = "nfov_2x2_binned")]
     Nfov2x2Binned,
