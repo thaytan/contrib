@@ -35,13 +35,13 @@ class LlvmRecipe(Recipe):
         cmake = CMake(self)
 
         # LLVM build options
-        if self.settings.arch_build == "x86_64":
+        if self.settings.arch == "x86_64":
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly;AArch64"
             arch = "x86_64"
-        elif self.settings.arch_build == "armv8":
+        elif self.settings.arch == "armv8":
             cmake.definitions["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
-        if self.settings.libc_build == "musl":
+        if self.settings.libc == "musl":
             abi = "musl"
         else:
             abi = "gnu"
@@ -91,7 +91,7 @@ class LlvmRecipe(Recipe):
         cmake.definitions["LIBCXX_ENABLE_SHARED"] = False
         cmake.definitions["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
         cmake.definitions["LIBCXX_USE_COMPILER_RT"] = True
-        if self.settings.libc_build == "musl":
+        if self.settings.libc == "musl":
             cmake.definitions["LIBCXX_HAS_MUSL_LIBC"] = True
 
         # libcxxabi options
@@ -144,7 +144,7 @@ class LlvmRecipe(Recipe):
 
         # Statically link everything with musl
         cflags = ""
-        if self.settings.libc_build == "musl":
+        if self.settings.libc == "musl":
             cflags = "-static"
         libcxx_lib = os.path.join(stage0_folder, "lib")
         env = {
@@ -171,7 +171,7 @@ class LlvmRecipe(Recipe):
         # Use stage 1 libs
         ldflags = ""
         # GVN causes segmentation fault during recursion higher than 290
-        if self.settings.libc_build == "musl":
+        if self.settings.libc == "musl":
             ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
         libc_inc = self.env["LIBC_INCLUDE_PATH"]
         clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
