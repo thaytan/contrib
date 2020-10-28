@@ -1,0 +1,57 @@
+include:
+  - project: 'aivero/cloud/cicd'
+    file: 'conan-ci.yml'
+variables:
+  SPECIFICS: '/rust'
+
+# scripts inspired by: https://users.rust-lang.org/t/my-gitlab-config-docs-tests/16396
+
+test:
+  stage: test
+  image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
+  tags:
+   - x86_64
+  before_script:
+    - conan --version
+    - conan config install https://gitlab.com/aivero/public/conan/conan-config.git
+    - conan profile update settings.compiler.libcxx=libstdc++11 linux_x86_64
+    - conan config set general.default_profile=linux_x86_64
+    - conan config set storage.path=${CI_PROJECT_DIR}/conan_data
+    - echo -e "[credential]\n\thelper = store" > ~/.gitconfig
+    - echo "https://gitlab-ci-token:${CI_PROJECT_DIR}/conan_data@gitlab.com" > ~/.git-credentials
+    - conan install . aivero/stable -if build
+    - source build/env.sh
+  script:
+    - rustc --version
+    - cargo --version
+    - cargo test --verbose
+
+pages:
+  stage: test
+  image: registry.gitlab.com/aivero/public/conan/conan-docker/slim
+  tags:
+    - x86_64
+  before_script:
+    - conan --version
+    - conan config install https://gitlab.com/aivero/public/conan/conan-config.git
+    - conan profile update settings.compiler.libcxx=libstdc++11 linux_x86_64
+    - conan config set general.default_profile=linux_x86_64
+    - conan config set storage.path=${CI_PROJECT_DIR}/conan_data
+    - echo -e "[credential]\n\thelper = store" > ~/.gitconfig
+    - echo "https://gitlab-ci-token:${CI_PROJECT_DIR}/conan_data@gitlab.com" > ~/.git-credentials
+    - conan install . aivero/stable -if build
+    - source build/env.sh
+  script:
+    - cargo doc --no-deps
+    - mv target/doc public
+    - echo '<meta http-equiv="refresh" content="0; url={{ LIBRARY NAME }}">' > public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+    - tags
+
+cache:
+  paths:
+    - target/

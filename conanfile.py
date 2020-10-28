@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from conans import ConanFile, tools
+import os
+from datetime import datetime
+
+
+def get_version():
+    git = tools.Git()
+    try:
+        tag, branch = git.get_tag(), git.get_branch()
+        return tag if tag and branch.startswith("HEAD") else branch
+    except:
+        return None
+
+
+def make_cargo_version(version_string):
+    try:
+        version = tools.Version(version_string, loose=False)
+        return "%d.%d.%d" % (version.major, version.minor, version.patch)
+    except:
+        return "0.0.0-nottagged"
+
+
+class RgbdTimestampsConan(ConanFile):
+    name = "rgbd-enums"
+    version = get_version()
+    description = "Definition of RGB-D enums for custom source elements that use video/rgbd CAPS"
+    url = "https://aivero.com"
+    license = "LGPL"
+    settings = "os", "arch", "compiler", "build_type",
+    exports_sources = [
+        "Cargo.toml",
+        "src/*"
+    ]
+    generators="env"
+
+    def source(self):
+        # Override the package version defined in the Cargo.toml file
+        tools.replace_path_in_file(file_path=("Cargo.toml"), search=("[package]\nname = \"%s\"\nversion = \"0.0.0-ohmyconanpleaseoverwriteme\"" % self.name), replace=(
+            "[package]\nname = \"%s\"\nversion = \"%s\"" % (self.name, make_cargo_version(self.version))))
+
+    def build_requirements(self):
+        self.build_requires("generators/[>=1.0.0]@%s/stable" % self.user)
+        self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
+
+    def requirements(self):
+        # Rust must be a requirement here (not a build requirement) because we are dynamically linking to libstd
+        self.requires("rust/[>=1.40.0]@%s/stable" % self.user)
+        self.requires("glib/[~2]@%s/stable" % self.user)
+
+    def build(self):
+        env = {
+            "RUSTFLAGS": "-C prefer-dynamic",
+        }
+        with tools.environment_append(env):
+
+            if self.settings.build_type == 'Release':
+                self.run("cargo build --release")
+            elif self.settings.build_type == 'Debug':
+                self.run("cargo build ")
+            else:
+                print('Invalid build_type selected')
+
+    def package(self):
+        self.copy(pattern="*librgbd_enums.so",
+                  dst=os.path.join(self.package_folder, "lib"), keep_path=False)
+        self.copy(pattern="*librgbd_enums.rlib",
+                  dst=os.path.join(self.package_folder, "lib"), keep_path=False)
