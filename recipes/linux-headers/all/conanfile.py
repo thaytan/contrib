@@ -11,7 +11,7 @@ class LinuxHeadersRecipe(Recipe):
         self.get(f"https://cdn.kernel.org/pub/linux/kernel/v{self.version.split('.')[0]}.x/linux-{self.version}.tar.xz")
 
     def build(self):
-        arch = {"x86_64": "x86_64", "armv8": "arm64"}[str(self.settings.arch_build)]
+        arch = {"x86_64": "x86_64", "armv8": "arm64"}[str(self.settings.arch)]
         args = [
             f"ARCH={arch}",
             f'INSTALL_HDR_PATH="{self.package_folder}"',
