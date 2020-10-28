@@ -19,7 +19,7 @@ class GlibcRecipe(Recipe):
         pathlib.Path(os.path.join(self.package_folder, "include", "gnu", "stubs.h")).touch()
 
         # Use system libgcc_s
-        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch_build)]
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         os.makedirs(os.path.join(self.package_folder, "lib"))
         with tools.chdir(os.path.join(self.package_folder, "lib")):
             # Symlink to glibc
