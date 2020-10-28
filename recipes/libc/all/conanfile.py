@@ -4,7 +4,6 @@ from build import *
 class LibcRecipe(Recipe):
     description = "Virtual libc"
     license = "MIT"
-    settings = "build_type", "compiler", "arch", "os", "libc"
     options = {}
     default_options = {}
 
