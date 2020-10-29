@@ -4,7 +4,10 @@ from build import *
 class ZlibRecipe(Recipe):
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
     license = "Zlib"
-    build_requires = ("make/[^4.3]",)
+    build_requires = (
+        "cc/[^1.0.0]",
+        "make/[^4.3]",
+    )
 
     def source(self):
         self.get(f"https://github.com/madler/zlib/archive/v{self.version}.tar.gz")
