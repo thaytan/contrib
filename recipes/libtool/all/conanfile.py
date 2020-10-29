@@ -6,6 +6,7 @@ class LibtoolRecipe(Recipe):
     license = "GPL"
     exports = "libtool-prefix-fix.patch"
     build_requires = (
+        "cc/[^1.0.0]",
         "automake/[^1.16.1]",
         "help2man/[^1.47.11]",
         "texinfo/[^6.6]",
