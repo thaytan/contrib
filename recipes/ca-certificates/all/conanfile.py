@@ -4,7 +4,6 @@ from build import *
 class CaCertificatesRecipe(Recipe):
     description = "Common CA certificates PEM files from Mozilla"
     license = "MPL-2.0"
-    settings = Recipe.settings + ("python",)
     options = {}
     default_options = {}
     build_requires = (
@@ -13,24 +12,20 @@ class CaCertificatesRecipe(Recipe):
         "openssl/[^3.0.0-alpha6]",
     )
 
-    def build_requirements(self):
-        self.build_requires(f"python/[~{self.settings.python}]")
-
     def source(self):
         self.get(f"https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{self.version}/ca-certificates-{self.version}.tar.bz2")
 
     def build(self):
         os.environ["DESTDIR"] = self.package_folder
         os.environ["CFLAGS"] += f" -ldl -lpthread -I{self.deps_cpp_info['openssl'].rootpath}/include"
-        self.make(install=False)
+        self.make(target="all")
 
+        # NetLock Arany contains invalid utf-8 characters, which is not supported in Python 3.6
+        self.exe("mv NetLock_Arany_*.crt NetLock_Arany.crt")
         # Combine certs to ca-certificates.crt
-        with tools.chdir(f"ca-certificates-{self.version}"):
-            # NetLock Arany contains invalid utf-8 characters, which is not supported in Python 3.6
-            self.run("mv NetLock_Arany_*.crt NetLock_Arany.crt")
-            with open("ca-certificates.crt", "w") as ca_cert:
-                for cert in glob.glob("*.crt"):
-                    ca_cert.write(pathlib.Path(cert).read_text())
+        with open("ca-certificates.crt", "w") as ca_cert:
+            for cert in glob.glob("*.crt"):
+                ca_cert.write(pathlib.Path(cert).read_text())
         os.symlink("ca-certificates.crt", "cert.pem")
 
     def package(self):
