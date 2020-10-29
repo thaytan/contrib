@@ -5,9 +5,10 @@ class ReadlineRecipe(Recipe):
     description = "GNU readline library"
     license = "GPL3"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
-        "ncurses/[^6.1]",
     )
+    requires = ("ncurses/[^6.1]",)
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/readline/readline-{self.version}.tar.gz")
