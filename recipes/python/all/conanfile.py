@@ -10,7 +10,7 @@ class PythonRecipe(Recipe):
         "make/[^4.3]",
     )
     requires = (
-        "openssl/[^3.0.0-alpha6]",
+        "libssl/[^1.0.0]",
         "expat/[^2.2.7]",
         "libffi/[^3.3]",
         "bzip2/[^1.0.8]",
