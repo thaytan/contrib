@@ -11,7 +11,10 @@ class OpensslRecipe(Recipe):
     )
 
     def source(self):
-        self.get(f"https://github.com/openssl/openssl/archive/openssl-{self.version}.tar.gz")
+        version = self.version
+        if self.version.startswith(1):
+            version = version.replace(".", "_")
+        self.get(f"https://github.com/openssl/openssl/archive/openssl-{version}.tar.gz")
 
     def build(self):
         args = [
