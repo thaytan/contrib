@@ -4,25 +4,21 @@ from build import *
 class RustcRecipe(Recipe):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT"
-    settings = Recipe.settings + ("python", "rust")
+    settings = Recipe.settings + ("rust",)
     build_requires = (
         "cmake/[^3.18.4]",
         "curl/[^7.72.0]",
         "pkgconf/[^1.7.3]",
         "git/[^2.29.1]",
+        "python/[^3]",
     )
     requires = (
+        "cc/[^1.0.0]",
         "zlib/[^1.2.11]",
         # Remove when openssl 3.0 is supported
         "openssl1/[^1.1.1h]",
         "libssl/[^1.0.0]",
     )
-
-    def build_requirements(self):
-        self.build_requires(f"python/[~{self.settings.python}]")
-
-    def requirements(self):
-        self.requires(f"llvm/[^{self.settings.compiler.version}]")
 
     def source(self):
         self.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
