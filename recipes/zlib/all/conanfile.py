@@ -13,9 +13,9 @@ class ZlibRecipe(Recipe):
         self.get(f"https://github.com/madler/zlib/archive/v{self.version}.tar.gz")
 
     def build(self):
-        args = [
-            "--static",
-        ]
+        args = []
+        if not self.options.shared:
+            args.append("--static")
         self.autotools(args)
 
     def package_info(self):
