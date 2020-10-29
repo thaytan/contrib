@@ -15,7 +15,7 @@ class OpensslRecipe(Recipe):
 
     def build(self):
         args = [
-            f"--prefix={self.package_foler}",
+            f"--prefix={self.package_folder}",
             "no-ssl3-method",
         ]
         if self.options.shared:
