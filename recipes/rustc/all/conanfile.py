@@ -26,7 +26,7 @@ class RustcRecipe(Recipe):
         self.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
 
     def build(self):
-        os.environ["RUSTFLAGS"] = "-Clinker-plugin-lto -Copt-level=2"
+        os.environ["RUSTFLAGS"] = "-g -Clinker-plugin-lto -Copt-level=2"
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         triple = f"{arch}-unknown-linux-gnu"
         args = [
@@ -48,4 +48,4 @@ class RustcRecipe(Recipe):
         self.exe("python x.py install")
 
     def package_info(self):
-        self.env_info.RUSTFLAGS = "-Clinker-plugin-lto -Copt-level=2"
+        self.env_info.RUSTFLAGS = "-g -Clinker-plugin-lto -Copt-level=2"
