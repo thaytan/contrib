@@ -5,6 +5,7 @@ class TexinfoRecipe(Recipe):
     description = "GNU documentation system for on-line information and printed output"
     license = "GPL3"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "perl/[^5.30.0]",
     )
