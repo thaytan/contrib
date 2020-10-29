@@ -16,9 +16,6 @@ class CaCertificatesRecipe(Recipe):
     def build_requirements(self):
         self.build_requires(f"python/[~{self.settings.python}]")
 
-    def configure(self):
-        self.options["openssl"].bootstrap = True
-
     def source(self):
         self.get(f"https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{self.version}/ca-certificates-{self.version}.tar.bz2")
 
