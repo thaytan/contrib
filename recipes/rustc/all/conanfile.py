@@ -1,9 +1,9 @@
 from build import *
 
 
-class RustRecipe(Recipe):
+class RustcRecipe(Recipe):
     description = "Systems programming language focused on safety, speed and concurrency"
-    license = "MIT", "Apache"
+    license = "MIT"
     settings = Recipe.settings + ("python", "rust")
     build_requires = (
         "cmake/[^3.18.4]",
