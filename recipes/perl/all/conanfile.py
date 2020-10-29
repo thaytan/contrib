@@ -4,30 +4,30 @@ from build import *
 class PerlRecipe(Recipe):
     description = "A highly capable, feature-rich programming language"
     license = "GPL"
-    build_requires = ("make/[^4.3]",)
-    exports = "link-m-pthread.patch"
+    build_requires = (
+        "cc/[^1.0.0]",
+        "make/[^4.3]",
+    )
 
     def source(self):
         self.get(f"https://github.com/Perl/perl5/archive/v{self.version}.tar.gz")
-        self.patch("link-m-pthread.patch")
 
     def build(self):
-        self.run("mv Configure configure", cwd=f"{self.name}-{self.version}")
-
+        os.environ["CFLAGS"] += "-lm -lpthread"
         args = [
+            f"-Dprefix={self.package_folder}",
             "-des",
             "-Dusethreads",
             "-Uusenm",
             "-Duseshrplib",
             "-Duselargefiles",
-            "-Dprefix=" + self.package_folder,
             "-Dldflags=''",
         ]
-        self.autotools(args)
+        self.exe("./Configure", args)
+        self.make()
 
     def package_info(self):
-        arch_conv = {"x86_64": "x86_64", "armv8": "aarch64"}
-        platform = arch_conv[str(self.settings.arch_build)] + "-linux"
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         self.env_info.PERL = "perl"
         self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version))
-        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, platform + "-thread-multi"))
+        self.env_info.PERL5LIB.append(os.path.join(self.package_folder, "lib", self.version, f"{arch}-linux-thread-multi"))
