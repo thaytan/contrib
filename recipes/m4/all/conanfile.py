@@ -4,7 +4,10 @@ from build import *
 class M4Recipe(Recipe):
     description = "The GNU macro processor"
     license = "GPL3"
-    build_requires = ("make/[^4.3]",)
+    build_requires = (
+        "cc/[^1.0.0]",
+        "make/[^4.3]",
+    )
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/m4/m4-{self.version}.tar.gz")
