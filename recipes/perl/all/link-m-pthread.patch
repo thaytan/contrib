@@ -1,0 +1,13 @@
+diff --git a/Makefile.SH b/Makefile.SH
+index 5777970..42edc75 100755
+--- a/Makefile.SH
++++ b/Makefile.SH
+@@ -378,7 +378,7 @@ nonxs_ext = $nonxs_list
+ ext = \$(dynamic_ext) \$(static_ext) \$(nonxs_ext)
+ DYNALOADER = DynaLoader\$(OBJ_EXT)
+ 
+-libs = $perllibs $cryptlib
++libs = -lm -lpthread $perllibs $cryptlib
+ 
+ public = \$(PERL_EXE) utilities
+ 

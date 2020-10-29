@@ -8,14 +8,16 @@ class PerlRecipe(Recipe):
         "cc/[^1.0.0]",
         "make/[^4.3]",
     )
+    exports = "link-m-pthread.patch"
 
     def source(self):
         self.get(f"https://github.com/Perl/perl5/archive/v{self.version}.tar.gz")
+        self.patch("link-m-pthread.patch")
 
     def build(self):
-        os.environ["CFLAGS"] += "-lm -lpthread"
         args = [
             f"-Dprefix={self.package_folder}",
+            f"-Doptimize={self.package_folder}",
             "-des",
             "-Dusethreads",
             "-Uusenm",
