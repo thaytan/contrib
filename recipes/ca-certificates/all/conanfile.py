@@ -24,7 +24,7 @@ class CaCertificatesRecipe(Recipe):
         self.exe("mv NetLock_Arany_*.crt NetLock_Arany.crt")
         # Combine certs to ca-certificates.crt
         with open("ca-certificates.crt", "w") as ca_cert:
-            for cert in glob.glob("*.crt"):
+            for cert in glob.glob(f"{self.src}/*.crt"):
                 ca_cert.write(pathlib.Path(cert).read_text())
         os.symlink("ca-certificates.crt", "cert.pem")
 
