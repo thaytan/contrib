@@ -4,7 +4,10 @@ from build import *
 class ExpatRecipe(Recipe):
     description = "An XML parser library"
     license = "MIT"
-    build_requires = ("make/[^4.3]",)
+    build_requires = (
+        "cc/[^1.0.0]",
+        "cmake/[^3.18.4]",
+    )
 
     def source(self):
         self.get(f"https://github.com/libexpat/libexpat/releases/download/R_{self.version.replace('.', '_')}/expat-{self.version}.tar.bz2")
