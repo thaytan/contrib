@@ -4,17 +4,11 @@ from build import *
 class OpensslRecipe(Recipe):
     description = "TLS/SSL and crypto library"
     license = "BSD"
-    options = {"shared": [True, False], "bootstrap": [True, False]}
-    default_options = {"shared": True, "bootstrap": False}
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",
         "perl/[^5.30.0]",
     )
-
-    def requirements(self):
-        if not self.options.bootstrap:
-            self.requires("ca-certificates/[^20191127]")
 
     def source(self):
         self.get(f"https://github.com/openssl/openssl/archive/openssl-{self.version}.tar.gz")
