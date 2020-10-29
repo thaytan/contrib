@@ -6,6 +6,7 @@ class AutoconfRecipe(Recipe):
     license = "GPL3"
     exports = "m4-include.patch"
     requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "m4/[^1.4.18]",
         "perl/[^5.30.0]",
