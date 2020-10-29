@@ -11,8 +11,7 @@ class CurlRecipe(Recipe):
     )
     requires = (
         "zlib/[^1.2.11]",
-        "openssl/[^3.0.0-alpha6]",
-        "ca-certificates/[^20191127]",
+        "libssl/[^1.0.0]",
     )
 
     def source(self):
