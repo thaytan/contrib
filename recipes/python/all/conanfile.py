@@ -4,17 +4,18 @@ from build import *
 class PythonRecipe(Recipe):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
+    settings = Recipe.settings + ("python",)
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
+    )
+    requires = (
+        "openssl/[^3.0.0-alpha6]",
         "expat/[^2.2.7]",
         "libffi/[^3.3]",
-        "zlib/[^1.2.11]",
         "bzip2/[^1.0.8]",
         "sqlite/[^3.30.1]",
-        "readline/[^8.0]",
     )
-    requires = ("openssl/[^3.0.0-alpha6]",)
 
     def source(self):
         self.get(f"https://www.python.org/ftp/python/{self.version}/Python-{self.version}.tar.xz")
@@ -43,6 +44,6 @@ class PythonRecipe(Recipe):
         self.env_info.PYTHONHOME = self.package_folder
         if "CC" in os.environ:
             ldshared = os.environ["CC"] + " -pthread -shared "
-            if self.settings.arch_build == "x86_64":
+            if self.settings.arch == "x86_64":
                 ldshared += "-m64 "
             self.env_info.LDSHARED = ldshared
