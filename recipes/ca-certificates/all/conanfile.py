@@ -4,15 +4,20 @@ from build import *
 class CaCertificatesRecipe(Recipe):
     description = "Common CA certificates PEM files from Mozilla"
     license = "MPL-2.0"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
-
+    settings = Recipe.settings + ("python",)
+    options = {}
+    default_options = {}
     build_requires = (
-        "openssl/[^3.0.0-alpha6]",
+        "cc/[^1.0.0]",
         "make/[^4.3]",
+        "openssl/[^3.0.0-alpha6]",
     )
 
     def build_requirements(self):
         self.build_requires(f"python/[~{self.settings.python}]")
+
+    def configure(self):
+        self.options["openssl"].bootstrap = True
 
     def source(self):
         self.get(f"https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{self.version}/ca-certificates-{self.version}.tar.bz2")
