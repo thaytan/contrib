@@ -11,7 +11,7 @@ class CCRecipe(Recipe):
 
     def package_info(self):
         static_flags = ""
-        if self.settings.libc_build == "musl":
+        if self.settings.libc == "musl":
             static_flags = "-static"
         libc_inc = self.env["LIBC_INCLUDE_PATH"]
         clang_inc = os.path.join(self.deps_cpp_info["llvm"].rootpath, "lib", "clang", self.deps_cpp_info["llvm"].version, "include")
