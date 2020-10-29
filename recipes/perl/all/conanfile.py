@@ -17,7 +17,6 @@ class PerlRecipe(Recipe):
     def build(self):
         args = [
             f"-Dprefix={self.package_folder}",
-            f"-Doptimize={self.package_folder}",
             "-des",
             "-Dusethreads",
             "-Uusenm",
