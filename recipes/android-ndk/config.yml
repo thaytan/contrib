@@ -1,2 +1,2 @@
-- version: '28'
+- version: '21.3'
   profiles: [Linux-x86_64]
