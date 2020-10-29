@@ -14,7 +14,10 @@ class OpensslRecipe(Recipe):
         self.get(f"https://github.com/openssl/openssl/archive/openssl-{self.version}.tar.gz")
 
     def build(self):
-        args = ["no-ssl3-method"]
+        args = [
+            f"--prefix={self.package_foler}",
+            "no-ssl3-method",
+        ]
         if self.options.shared:
             args.append("shared")
         if self.settings.arch == "x86_64":
