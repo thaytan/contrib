@@ -5,18 +5,21 @@ class CurlRecipe(Recipe):
     description = "An URL retrieval utility and library"
     license = "MIT"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "pkgconf/[^1.7.3]",
+    )
+    requires = (
         "zlib/[^1.2.11]",
         "openssl/[^3.0.0-alpha6]",
+        "ca-certificates/[^20191127]",
     )
-    requires = ("ca-certificates/[^20191127]",)
 
     def source(self):
         self.get(f"https://curl.haxx.se/download/curl-{self.version}.tar.gz")
 
     def build(self):
-        os.environ["CFLAGS"] += ("-ldl -lpthread",)
+        os.environ["CFLAGS"] += "-ldl -lpthread"
         self.autotools()
 
     def package_info(self):
