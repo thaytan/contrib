@@ -4,7 +4,10 @@ from build import *
 class BisonRecipe(Recipe):
     description = "Bison is a general-purpose parser generator"
     license = "GPL3"
-    build_requires = ("make/[^4.3]",)
+    build_requires = (
+        "cc/[^1.0.0]",
+        "make/[^4.3]",
+    )
     requires = ("m4/[^1.4.18]",)
 
     def source(self):
