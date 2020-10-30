@@ -6,7 +6,6 @@ class LlvmRecipe(Recipe):
     license = "custom"
     exports = ("disable-system-libs.patch",)
     build_requires = (
-        "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         "ninja/[^1.10.0]",
         "libc/[^1.0.0]",
