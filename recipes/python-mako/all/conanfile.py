@@ -1,7 +1,7 @@
 from build import *
 
 
-class PythonMakoRecipe(Recipe):
+class PythonMakoRecipe(PythonRecipe):
     description = "A super-fast templating language that borrows the best ideas from the existing templating languages"
     license = "Apache"
     build_requires = ("python-setuptools/[^50.3.0]",)
