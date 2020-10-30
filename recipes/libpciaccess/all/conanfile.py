@@ -5,6 +5,7 @@ class LibPciAccessRecipe(Recipe):
     description = "Generic PCI access library"
     license = "MIT"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "xorg-util-macros/[^1.19.1]",
     )
