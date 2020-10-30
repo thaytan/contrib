@@ -5,6 +5,7 @@ class FlexRecipe(Recipe):
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "bison/[^3.7.2]",
     )
