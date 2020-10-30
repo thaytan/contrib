@@ -4,8 +4,11 @@ from build import *
 class OpusRecipe(Recipe):
     description = "Modern audio compression for the internet"
     license = "BSD"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
-    build_requires = ("make/[^4.3]",)
+    build_requires = (
+        "cc/[^1.0.0]",
+        "cmake/[^3.18.4]",
+    )
 
     def source(self):
-        self.get(f"https://archive.mozilla.org/pub/opus/opus-{self.version}.tar.gz")
+        # CMake broken until next release (https://github.com/xiph/opus/issues/129)
+        self.get("https://github.com/xiph/opus/archive/86e5f5ea56529d688568929d036574a93311e82a.tar.gz")
