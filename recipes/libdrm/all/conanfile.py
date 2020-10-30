@@ -5,6 +5,7 @@ class LibdrmRecipe(Recipe):
     description = "Direct Rendering Manager headers and kernel modules"
     license = "MIT"
     build_requires = (
+        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "libpciaccess/[>=0.16]",
     )
@@ -13,9 +14,9 @@ class LibdrmRecipe(Recipe):
         self.get(f"http://dri.freedesktop.org/libdrm/libdrm-{self.version}.tar.xz")
 
     def build(self):
-        args = [
-            "-Dradeon=false",
-            "-Damdgpu=true",
-            "-Dnouveau=true",
-        ]
-        self.meson(args)
+        opts = {
+            "amdgpu": True,
+            "nouveau": True,
+            "radeon": False,
+        }
+        self.meson(opts)
