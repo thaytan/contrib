@@ -6,6 +6,7 @@ class LlvmRecipe(Recipe):
     license = "custom"
     exports = ("disable-system-libs.patch",)
     build_requires = (
+        "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         "ninja/[^1.10.0]",
         "libc/[^1.0.0]",
@@ -216,6 +217,7 @@ class LlvmRecipe(Recipe):
             os.symlink("ld.lld", "ld")
             os.symlink("clang", "cc")
             os.symlink("clang++", "c++")
+            os.symlink("clang-cpp", "cpp")
 
         # Delete component libs (They are part of the shared libs)
         for lib in os.listdir(os.path.join(self.package_folder, "lib")):
@@ -225,6 +227,7 @@ class LlvmRecipe(Recipe):
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
+        self.env_info.CPP = os.path.join(self.package_folder, "bin", "clang-cpp")
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.AS = os.path.join(self.package_folder, "bin", "llvm-as")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
