@@ -20,13 +20,5 @@ class NinjaRecipe(Recipe):
     def source(self):
         self.get(f"https://github.com/ninja-build/ninja/archive/v{self.version}.tar.gz")
 
-    def build(self):
-        cmake = CMake(self)
-        cmake.configure(source_folder=f"ninja-{self.version}")
-        cmake.build()
-
-    def package(self):
-        self.copy("ninja", "bin")
-
     def package_info(self):
         self.env_info.CONAN_CMAKE_GENERATOR = "Ninja"
