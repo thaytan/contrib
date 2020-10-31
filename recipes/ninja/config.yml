@@ -1,6 +1,6 @@
-- version: 1.10.0
+- version: 1.10.1
   image:
     bootstrap: true
   options:
     bootstrap: true
-- version: 1.10.0
+- version: 1.10.1
