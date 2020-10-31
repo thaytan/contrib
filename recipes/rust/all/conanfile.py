@@ -1,11 +1,14 @@
 from build import *
 
 
-class RustRecipe(Recipe):
+class RustRecipe(RustRecipe):
     description = "Virtual rust package"
     license = "MIT"
-    settings = Recipe.settings + ("rust",)
+    requires = (
+        "sccache/[^0.2.13]",
+        "pkgconf/[^1.7.3]",
+    )
 
     def requirements(self):
-        # Rust is not compatible between releases
+        # Rust is not compatible between major or minor releases
         self.requires(f"rustc/[~{self.settings.rust}]")
