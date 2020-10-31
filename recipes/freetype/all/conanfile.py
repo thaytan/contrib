@@ -19,3 +19,6 @@ class FreetypeRecipe(Recipe):
 
     def source(self):
         self.get(f"https://download-mirror.savannah.gnu.org/releases/freetype/freetype-{self.version}.tar.xz")
+
+    def build(self):
+        self.autotools()
