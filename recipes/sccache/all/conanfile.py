@@ -13,6 +13,11 @@ class SccacheRecipe(RustRecipe):
     def source(self):
         self.get(f"https://github.com/mozilla/sccache/archive/{self.version}.tar.gz")
 
+    def build(self):
+        # Disable LTO, since it breaks build
+        env_replace("RUSTFLAGS", "-Clinker-plugin-lto")
+        self.cargo()
+
     def package(self):
         self.copy(pattern="*/sccache", dst="bin", keep_path=False)
 
