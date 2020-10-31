@@ -4,6 +4,8 @@ from build import *
 class ShadercRecipe(Recipe):
     description = "A collection of tools, libraries, and tests for Vulkan shader compilation."
     license = "Apache"
+    options = {"shared": [True, False]}
+    default_options = {"shared": False}
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
