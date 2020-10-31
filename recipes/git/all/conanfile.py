@@ -17,7 +17,6 @@ class GitRecipe(Recipe):
     requires = (
         "curl/[^7.73.0]",
         "expat/[^2.2.7]",
-        "libssl/[^1.0.0]",
     )
 
     def source(self):
