@@ -5,10 +5,11 @@ class HarfbuzzRecipe(Recipe):
     description = "HarfBuzz text shaping engine"
     license = "MIT"
     build_requires = (
+        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
-        "freetype/[^2.10.3]",
         "gobject-introspection/[^1.66.1]",
     )
+    requires = (("freetype/[^2.10.3]", "private"),)
 
     def configure(self):
         # Avoid circular requirement
@@ -18,9 +19,9 @@ class HarfbuzzRecipe(Recipe):
         self.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = [
-            "-Dfreetype=enabled",
-            "-Dgobject=enabled",
-            "-Dintrospection=enabled",
-        ]
-        self.meson(args)
+        opts = {
+            "freetype": True,
+            "gobject": True,
+            "introspection": True,
+        }
+        self.meson(opts)
