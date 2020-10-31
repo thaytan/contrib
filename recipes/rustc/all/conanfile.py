@@ -36,7 +36,7 @@ class RustcRecipe(Recipe):
             "--enable-llvm-link-shared",
             "--enable-locked-deps",
             "--enable-extended",
-            "--tools=cargo",
+            "--tools=cargo,rustfmt,clippy",
             "--disable-docs",
             "--enable-vendor",
             "--release-channel=stable",
