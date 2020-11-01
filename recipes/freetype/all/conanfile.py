@@ -14,6 +14,7 @@ class FreetypeRecipe(Recipe):
     def requirements(self):
         if self.options.harfbuzz:
             self.requires("harfbuzz/[^2.7.2]")
+            self.requires(f"freetype-no-harfbuzz/[^{self.version}]", "private")
         else:
             self.requires("zlib/[^1.2.11]")
 
