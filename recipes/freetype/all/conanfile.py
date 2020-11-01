@@ -11,9 +11,14 @@ class FreetypeRecipe(Recipe):
         "autotools/[^1.0.0]",
     )
 
+    def configure(self):
+        # Avoid circular requirement
+        self.options["freetype-no-harfbuzz"].harfbuzz = False
+
     def requirements(self):
         if self.options.harfbuzz:
             self.requires("harfbuzz/[^2.7.2]")
+            # Harfbuzz requires freetype to build
             self.requires(f"freetype-no-harfbuzz/[^{self.version}]", "private")
         else:
             self.requires("zlib/[^1.2.11]")
