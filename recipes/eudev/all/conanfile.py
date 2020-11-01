@@ -1,4 +1,4 @@
-from conans import *
+from build import *
 
 
 class EudevRecipe(Recipe):
