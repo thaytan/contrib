@@ -48,11 +48,11 @@ class MesaRecipe(Recipe):
         }
         if self.options.x11:
             opts["platforms"] = "x11"
-        if self.settings.arch_build == "x86_64":
+        if self.settings.arch == "x86_64":
             opts["dri-drivers"] = "i915,i965"
             opts["gallium-drivers"] = "iris"
             opts["vulkan-drivers"] = "intel"
-        if self.settings.arch_build == "armv8":
+        if self.settings.arch == "armv8":
             opts["gallium-drivers"] = "nouveau,tegra"
         self.meson(opts)
 
