@@ -13,7 +13,7 @@ class HarfbuzzRecipe(Recipe):
 
     def configure(self):
         # Avoid circular requirement
-        self.options["freetype"].harfbuzz = False
+        self.options["freetype-no-harfbuzz"].harfbuzz = False
 
     def source(self):
         self.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")
