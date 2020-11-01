@@ -18,10 +18,11 @@ class FreetypeRecipe(Recipe):
     def requirements(self):
         if self.options.harfbuzz:
             self.requires("harfbuzz/[^2.7.2]")
-            # Harfbuzz requires freetype to build
+            # Using harfbuzz requires freetype
             self.requires(f"freetype-no-harfbuzz/[^{self.version}]", "private")
-        else:
             self.requires("zlib/[^1.2.11]")
+        else:
+            self.requires("zlib/[^1.2.11]", "private")
 
     def source(self):
         self.get(f"https://download-mirror.savannah.gnu.org/releases/freetype/freetype-{self.version}.tar.xz")
