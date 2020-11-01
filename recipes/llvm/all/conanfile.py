@@ -49,6 +49,7 @@ class LlvmRecipe(Recipe):
         # Build and link all libs as shared
         defs["LLVM_BUILD_LLVM_DYLIB"] = True
         defs["LLVM_LINK_LLVM_DYLIB"] = True
+        defs["CLANG_LINK_CLANG_DYLIB"] = True
         defs["BUILD_SHARED_LIBS"] = False
 
         # LLVM enable options
