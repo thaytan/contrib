@@ -1,19 +1,19 @@
 from build import *
 
 
-class LibRealsenseRecipe(Recipe):
+class LibRealsenseRecipe(PythonRecipe):
     description = "Intel RealSense SDK"
     license = "Apache"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     exports = "libusb-fix.patch", "pkgconfig-fix.patch"
     build_requires = (
+        "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         # "cuda/[^10.1.243]",
+    )
+    requres = (
+        "python/[^3.8.4]",
         "libusb/[^1.0.23]",
     )
-
-    def build_requirements(self):
-        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(f"https://github.com/IntelRealSense/librealsense/archive/v{self.version}.tar.gz")
@@ -22,6 +22,8 @@ class LibRealsenseRecipe(Recipe):
 
     def build(self):
         defs = {
+            "PYTHON_LIBRARIES": os.path.join(self.deps_cpp_info["python"].rootpath, "lib", "libpython.so"),
+            "PYTHON_INCLUDE_DIRS": os.path.join(self.deps_cpp_info["python"].rootpath, "include", f"python{self.settings.python}"),
             # "BUILD_WITH_CUDA": self.options.cuda,
             "BUILD_PYTHON_BINDINGS": True,
             "BUILD_EXAMPLES": False,
@@ -29,10 +31,7 @@ class LibRealsenseRecipe(Recipe):
             "BUILD_PCL_EXAMPLES": False,
             "BUILD_NODEJS_BINDINGS": False,
             "BUILD_UNIT_TESTS": False,
-            "PYTHON_INCLUDE_DIRS": os.path.join(self.deps_cpp_info["python"].rootpath, "include", "python3.8"),
-            "PYTHON_LIBRARIES": os.path.join(self.deps_cpp_info["python"].rootpath, "lib", "libpython.a"),
             "PYTHONLIBS_FOUND": True,
-            "PYTHON_MODULE_EXTENSION": "a",
         }
         self.cmake(defs)
 
