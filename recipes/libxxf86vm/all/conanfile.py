@@ -5,6 +5,7 @@ class Libxxf86vmRecipe(Recipe):
     description = "X11 XFree86 video mode extension library"
     license = "custom"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "xorg-util-macros/[^1.19.2]",
         "xorgproto/[^2020.1]",
