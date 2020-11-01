@@ -11,10 +11,12 @@ class FreetypeRecipe(Recipe):
         "autotools/[^1.0.0]",
     )
 
-    def requirements(self):
+    def build_requirements(self):
         if self.options.harfbuzz:
-            self.requires("harfbuzz/[^2.7.2]")
-        else:
+            self.build_requires("harfbuzz/[^2.7.2]", force_host_context=True)
+
+    def requirements(self):
+        if not self.options.harfbuzz:
             self.requires("zlib/[^1.2.11]")
 
     def source(self):
