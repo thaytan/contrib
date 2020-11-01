@@ -5,11 +5,12 @@ class FontconfigRecipe(Recipe):
     description = "A library for configuring and customizing font access"
     license = "MIT"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "gperf/[^3.1]",
-        "libuuid/[^1.0.3]",
     )
     requires = (
+        "libuuid/[^1.0.3]",
         "freetype/[^2.10.3]",
         "expat/[^2.2.7]",
     )
