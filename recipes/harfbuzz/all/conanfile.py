@@ -9,7 +9,7 @@ class HarfbuzzRecipe(Recipe):
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.66.1]",
     )
-    requires = (("freetype/[^2.10.3]", "private"),)
+    requires = (("freetype-no-harfbuzz/[^2.10.3]", "private"),)
 
     def configure(self):
         # Avoid circular requirement
