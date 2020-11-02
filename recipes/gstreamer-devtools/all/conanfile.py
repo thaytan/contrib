@@ -17,7 +17,7 @@ class GStreamerDevtoolsRecipe(Recipe):
         "nls=False",
     )
     build_requires = (
-        "base/[^1.0.0]",
+        "cc/[^1.0.0]",
         "meson/[^0.51.2]",
     )
     requires = (

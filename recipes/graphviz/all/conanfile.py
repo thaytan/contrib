@@ -5,6 +5,7 @@ class GraphvizRecipe(Recipe):
     description = "Graph Visualization Tools"
     license = "EPL"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "flex/[^2.6.4]",
         "bison/[^3.3]",

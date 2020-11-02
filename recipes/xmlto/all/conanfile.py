@@ -4,7 +4,7 @@ from build import *
 class XmltoRecipe(Recipe):
     description = "Convert xml to many other formats"
     license = "GPL"
-    build_requires = ("autotools/[^1.0.0]",)
+    build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
     requires = ("libxslt/[^1.1.34]",)
 
     def source(self):

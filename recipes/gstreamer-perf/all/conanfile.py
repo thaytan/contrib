@@ -5,6 +5,7 @@ class GStreamerPerfRecipe(Recipe):
     description = "Performance Evaluation tool for Gstreamer"
     license = "LGPL"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "automake/[^1.16.1]",
         "autoconf/[^2.69]",

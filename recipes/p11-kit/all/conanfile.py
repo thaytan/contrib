@@ -5,6 +5,7 @@ class P11KitRecipe(Recipe):
     description = "Loads and enumerates PKCS#11 modules"
     license = "BSD"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "pkgconf/[^1.7.3]",
         "libtasn1/[^4.16.0]",

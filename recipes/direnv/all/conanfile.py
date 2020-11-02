@@ -5,6 +5,7 @@ class DirenvRecipe(Recipe):
     description = "A shell extension that manages your environment"
     license = "MIT"
     build_requires = (
+        "cc/[^1.0.0]",
         "go/[^1.15.3]",
         "make/[^4.3]",
     )

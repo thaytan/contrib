@@ -4,7 +4,10 @@ from build import *
 class AtSpi2AtkRecipe(Recipe):
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
     license = "LGPL"
-    build_requires = ("meson/[^0.55.3]",)
+    build_requires = (
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
+    )
     requires = (
         "atk/[^2.36.0]",
         "at-spi2-core/[^2.38.0]",

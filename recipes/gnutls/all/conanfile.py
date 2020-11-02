@@ -5,6 +5,7 @@ class GnutlsRecipe(Recipe):
     description = "A library which provides a secure layer over a reliable transport layer"
     license = "custom"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "zlib/[^1.2.11]",
         "pkgconf/[^1.7.3]",

@@ -4,7 +4,7 @@ from build import *
 class LibxsltRecipe(Recipe):
     description = "XML stylesheet transformation library"
     license = "custom"
-    build_requires = ("autotools/[^1.0.0]",)
+    build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
     requires = ("libxml2/[^2.9.10]",)
 
     def source(self):

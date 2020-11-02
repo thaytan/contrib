@@ -6,7 +6,7 @@ class IntelVaapiDriverRecipe(Recipe):
     license = "MIT"
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
-    build_requires = ("meson/[^0.51.2]",)
+    build_requires = ("cc/[^1.0.0]", "meson/[^0.51.2]")
     requires = (
         "base/[^1.0.0]",
         "libdrm/[^2.4.96]",

@@ -4,7 +4,7 @@ from build import *
 class LibvaMesaDriverRecipe(Recipe):
     description = "VA-API user mode driver for Intel GEN Graphics family"
     license = "MIT"
-    build_requires = ("meson/[^0.51.2]",)
+    build_requires = ("cc/[^1.0.0]", "meson/[^0.51.2]")
     requires = (
         "libdrm/[^2.4.96]",
         "libva/[^2.3.0]",

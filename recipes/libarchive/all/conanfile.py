@@ -5,6 +5,7 @@ class LibarchiveRecipe(Recipe):
     description = "Multi-format archive and compression library"
     license = "BSD"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "expat/[^2.2.7]",
         "zlib/[^1.2.11]",

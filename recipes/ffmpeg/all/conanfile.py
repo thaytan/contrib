@@ -5,6 +5,7 @@ class FFMpegRecipe(Recipe):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "GPL3"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "yasm/[^1.3.0]",
     )

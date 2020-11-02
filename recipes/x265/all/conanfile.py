@@ -7,6 +7,7 @@ class X265Recipe(Recipe):
     options = {"high_bit_depth": [True, False], "main12": [True, False], "hdr10": [True, False]}
     default_options = "bit_depth=False", "main12=True", "hdr10=False"
     build_requires = (
+        "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         "yasm/[^1.3.0]",
     )

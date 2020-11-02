@@ -5,6 +5,7 @@ class OpenCVRecipe(Recipe):
     description = "OpenCV is an open source computer vision and machine learning software library."
     license = "BSD"
     build_requires = (
+        "cc/[^1.0.0]",
         "cmake/[^3.18.3]",
         "zlib/[^1.2.11]",
         "libpng/[^1.6.37]",

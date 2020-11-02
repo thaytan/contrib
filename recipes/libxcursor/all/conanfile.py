@@ -5,6 +5,7 @@ class LibxcursorRecipe(Recipe):
     description = "X cursor management library"
     license = "custom"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "xorg-util-macros/[^1.19.1]",
     )

@@ -8,7 +8,7 @@ class LibepoxyRecipe(Recipe):
         "x11": [True, False],
     }
     default_options = ("x11=True",)
-    build_requires = ("meson/[^0.55.3]",)
+    build_requires = ("cc/[^1.0.0]", "meson/[^0.55.3]")
     requires = ("mesa/[^20.2.1]",)
 
     def requirements(self):

@@ -5,6 +5,7 @@ class IslRecipe(Recipe):
     description = "Library for manipulating sets and relations of integer points bounded by linear constraints"
     license = "MIT"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "gmp/[^6.2.0]",
     )

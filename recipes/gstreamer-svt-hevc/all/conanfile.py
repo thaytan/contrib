@@ -5,7 +5,7 @@ class GStreamerSvtHevcRecipe(Recipe):
     description = "The Scalable Video Technology for HEVC Encoder GStreamer plugin"
     license = "LGPL"
     build_requires = (
-        "base/[^1.0.0]",
+        "cc/[^1.0.0]",
         "meson/[^0.51.2]",
     )
     requires = (

@@ -5,6 +5,7 @@ class DbusRecipe(Recipe):
     description = "Freedesktop.org message bus system"
     license = "GPL"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "autoconf-archive/[^2019.01.06]",
     )

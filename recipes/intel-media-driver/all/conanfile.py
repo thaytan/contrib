@@ -4,7 +4,7 @@ from build import *
 class IntelMediaDriverRecipe(Recipe):
     description = "Intel Media Driver for VAAPI Broadwell iGPUs"
     license = "MIT"
-    build_requires = ("cmake/[^3.18.4]",)
+    build_requires = ("cc/[^1.0.0]", "cmake/[^3.18.4]")
     requires = (
         "intel-gmmlib/[^20.3.2]",
         "libva/[^2.9.0]",

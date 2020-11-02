@@ -5,6 +5,7 @@ class LibtiffRecipe(Recipe):
     description = "Library for manipulation of TIFF images"
     license = "custom"
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "mesa/20.0.0",
     )

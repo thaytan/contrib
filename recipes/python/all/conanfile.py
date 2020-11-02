@@ -22,7 +22,7 @@ class PythonRecipe(Recipe):
 
     def build(self):
         # Python build scripts handles LTO
-        os.environ["CFLAGS"] = os.environ["CFLAGS"].replace("-flto=thin", "")
+        env_replace("CFLAGS", "-flto=thin")
 
         args = [
             f"--with-openssl={self.deps_cpp_info['openssl'].rootpath}",

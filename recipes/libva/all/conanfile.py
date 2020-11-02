@@ -6,7 +6,7 @@ class LibvaRecipe(Recipe):
     license = "MIT"
     options = {"x11": [True, False], "wayland": [True, False]}
     default_options = ("x11=True", "wayland=False")
-    build_requires = ("meson/[^0.55.3]",)
+    build_requires = ("cc/[^1.0.0]", "meson/[^0.55.3]")
     requires = (
         "libdrm/[^2.4.102]",
         "libxext/[^1.3.4]",

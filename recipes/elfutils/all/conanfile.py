@@ -6,6 +6,7 @@ class ElfutilsRecipe(Recipe):
     license = "LGPL3"
     exports = ("elfutils-clang.patch",)
     build_requires = (
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "zlib/[^1.2.11]",
         "libarchive/[^3.4.3]",

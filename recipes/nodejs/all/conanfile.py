@@ -5,7 +5,7 @@ class NodejsRecipe(Recipe):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
-    build_requires = ("autotools/[^1.0.0]",)
+    build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
     requires = (
         "openssl/[^1.1.1b]",
         "zlib/[^1.2.11]",

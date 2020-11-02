@@ -5,6 +5,7 @@ class LibVpxRecipe(Recipe):
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "yasm/[^1.3.0]",
     )

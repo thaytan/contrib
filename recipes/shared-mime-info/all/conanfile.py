@@ -5,6 +5,7 @@ class SharedMimeInfoRecipe(Recipe):
     description = "Freedesktop.org Shared MIME Info"
     license = "GPL2"
     build_requires = (
+        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "itstool/[^2.0.6]",
         "xz/[^5.2.4]",

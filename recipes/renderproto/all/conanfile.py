@@ -4,7 +4,7 @@ from build import *
 class RenderprotoRecipe(Recipe):
     description = "X11 Render extension wire protocol"
     license = "MIT"
-    build_requires = ("autotools/[^1.0.0]",)
+    build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
 
     def source(self):
         self.get(f"https://xorg.freedesktop.org/releases/individual/proto/renderproto-{self.version}.tar.gz")

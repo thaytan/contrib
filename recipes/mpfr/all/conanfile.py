@@ -5,6 +5,7 @@ class MpfrRecipe(Recipe):
     description = "Multiple-precision floating-point library"
     license = "LGPL"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "gmp/[^6.2.0]",
     )

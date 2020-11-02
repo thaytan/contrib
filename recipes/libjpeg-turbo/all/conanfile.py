@@ -5,6 +5,7 @@ class LibjpegTurboRecipe(Recipe):
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
     build_requires = (
+        "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         "yasm/[^1.3.0]",
         "zlib/[^1.2.11]",

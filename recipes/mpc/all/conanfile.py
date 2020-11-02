@@ -5,6 +5,7 @@ class MpcRecipe(Recipe):
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
     license = "LGPL"
     build_requires = (
+        "cc/[^1.0.0]",
         "make/[^4.3]",
         "mpfr/[^4.1.0]",
         "gmp/[^6.2.0]",

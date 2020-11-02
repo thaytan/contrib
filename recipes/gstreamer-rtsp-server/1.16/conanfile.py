@@ -15,6 +15,7 @@ class GStreamerRtspServerRecipe(Recipe):
         "rtspclientsink=True",
     )
     build_requires = (
+        "cc/[^1.0.0]",
         "meson/[^0.51.2]",
         "bison/[^3.3]",
         "flex/[^2.6.4]",

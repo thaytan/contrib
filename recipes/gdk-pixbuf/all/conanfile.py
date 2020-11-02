@@ -5,6 +5,7 @@ class GdkPixbufRecipe(Recipe):
     description = "An image loading library"
     license = "LGPL-2.1"
     build_requires = (
+        "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.66.1]",
         "gettext/[^0.21]",
