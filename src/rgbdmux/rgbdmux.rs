@@ -269,16 +269,13 @@ impl AggregatorImpl for RgbdMux {
 
                     // Get the requested stream formats of downstream element for each stream from video/rgbd CAPS,
                     // translate the format into elementary steam and forward it upstream
-                    if let Some(requested_stream_formats) =
-                        self.query_downstream_video_formats(aggregator)
+                    if let Some(downstream_format) = self
+                        .query_downstream_video_formats(aggregator)
+                        .get(stream_name)
                     {
+                        // Overwrite format, if downstream element requested it
                         for filter_caps in result.get_mut().unwrap().iter_mut() {
-                            // Overwrite format, if downstream element requested it
-                            if let Some(downstream_format) =
-                                requested_stream_formats.get(stream_name)
-                            {
-                                filter_caps.set::<String>("format", downstream_format);
-                            };
+                            filter_caps.set::<String>("format", downstream_format);
                         }
                     }
 
@@ -865,7 +862,7 @@ impl RgbdMux {
     fn query_downstream_video_formats(
         &self,
         aggregator: &gst_base::Aggregator,
-    ) -> Option<HashMap<String, String>> {
+    ) -> HashMap<String, String> {
         let src_pad = aggregator
             .get_static_pad("src")
             .expect("rgbdmux: Element must have a src pad to receive a src_query");
@@ -885,7 +882,7 @@ impl RgbdMux {
                 obj: aggregator,
                 "Cannot send CAPS query downstream. The src pad of this element is probably not yet linked.",
             );
-            return None;
+            return HashMap::new();
         }
 
         if let Some(requested_caps) = request_downstream_caps_query.get_result() {
@@ -896,7 +893,7 @@ impl RgbdMux {
                     obj: aggregator,
                     "Downstream element queried CAPS that are NOT fixed. Only fixed `video/rgbd` CAPS can be handled properly.",
                 );
-                return None;
+                return HashMap::new();
             }
 
             // Extract formats from these caps for use when creating new CAPS
@@ -907,7 +904,7 @@ impl RgbdMux {
                 obj: aggregator,
                 "Downstream element did not return a valid result for CAPS query.",
             );
-            None
+            HashMap::new()
         }
     }
 
@@ -916,14 +913,11 @@ impl RgbdMux {
     /// * `caps` - Formats are extracted from these `video/rgbd` CAPS.
     /// # Returns
     /// * `HashMap<String, String>` - Hashmap containing <stream, format>.
-    fn extract_formats_from_rgbd_caps(
-        &self,
-        caps: &gst::CapsRef,
-    ) -> Option<HashMap<String, String>> {
+    fn extract_formats_from_rgbd_caps(&self, caps: &gst::CapsRef) -> HashMap<String, String> {
         // Iterate over all fields in the input CAPS and retain only the format field
-        let formats = caps
-            .iter()
-            .next()?
+        caps.iter()
+            .next()
+            .expect("rgbdmux: Downstream element has not CAPS")
             .iter()
             .filter_map(|(field, value)| {
                 if !field.contains("_format") {
@@ -935,12 +929,7 @@ impl RgbdMux {
                     ))
                 }
             })
-            .collect::<HashMap<String, String>>();
-        if formats.is_empty() {
-            None
-        } else {
-            Some(formats)
-        }
+            .collect::<HashMap<String, String>>()
     }
 }
 
