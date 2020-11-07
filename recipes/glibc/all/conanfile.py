@@ -51,10 +51,17 @@ class GlibcRecipe(Recipe):
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
+            # Symlink files from libatomic1
+            libs = [
+                "libatomic.so.1",
+            ]
+            for lib in libs:
+                os.symlink(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy files from libgcc-7-dev
             libs = [
                 "libgcc_s.so",
                 "libgcc.a",
+                "libatomic.so",
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/{lib}", lib)
