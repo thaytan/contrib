@@ -1,10 +1,9 @@
 from build import *
 
 
-class PythonRecipe(Recipe):
+class PythonRecipe(PythonRecipe):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
-    settings = Recipe.settings + ("python",)
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",
@@ -28,13 +27,15 @@ class PythonRecipe(Recipe):
             f"--with-openssl={self.deps_cpp_info['openssl'].rootpath}",
             "--with-computed-gotos",
             "--enable-optimizations",
-            "--with-lto",
             "--enable-ipv6",
             "--with-system-expat",
             "--with-system-ffi",
             "--enable-loadable-sqlite-extensions",
             "--without-ensurepip",
         ]
+        if not self.options.shared:
+            args.append("--with-lto")
+
         self.autotools(args)
 
         os.symlink(f"python{self.settings.python}", os.path.join(self.package_folder, "bin", "python"))
