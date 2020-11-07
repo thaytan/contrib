@@ -33,7 +33,9 @@ class PythonRecipe(PythonRecipe):
             "--enable-loadable-sqlite-extensions",
             "--without-ensurepip",
         ]
-        if not self.options.shared:
+        if self.options.shared:
+            args.append("--enable-shared")
+        else:
             args.append("--with-lto")
 
         self.autotools(args)
