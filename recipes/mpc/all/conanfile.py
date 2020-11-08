@@ -8,10 +8,7 @@ class MpcRecipe(Recipe):
         "cc/[^1.0.0]",
         "make/[^4.3]",
     )
-    requires = (
-        "mpfr/[^4.1.0]",
-        "gmp/[^6.2.0]",
-    )
+    requires = ("mpfr/[^4.1.0]",)
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/mpc/mpc-{self.version}.tar.gz")
