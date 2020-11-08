@@ -5,7 +5,7 @@ class AutoconfRecipe(Recipe):
     description = "A GNU tool for automatically configuring source code"
     license = "GPL3"
     exports = "m4-include.patch"
-    requires = (
+    build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",
         "m4/[^1.4.18]",
