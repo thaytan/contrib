@@ -9,6 +9,9 @@ class AutoconfRecipe(Recipe):
         "cc/[^1.0.0]",
         "make/[^4.3]",
         "m4/[^1.4.18]",
+    )
+    requires = (
+        "make/[^4.3]",
         "perl/[^5.30.0]",
     )
 
