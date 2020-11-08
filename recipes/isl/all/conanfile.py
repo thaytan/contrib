@@ -7,8 +7,8 @@ class IslRecipe(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",
-        "gmp/[^6.2.0]",
     )
+    requires = ("gmp/[^6.2.0]",)
 
     def source(self):
         self.get(f"http://isl.gforge.inria.fr/isl-{self.version}.tar.xz")
