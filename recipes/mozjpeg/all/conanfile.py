@@ -17,10 +17,13 @@ class MozjpegRecipe(Recipe):
 
     def build(self):
         defs = {
-            "ENABLE_SHARED": False,
             "CMAKE_INSTALL_BINDIR": os.path.join(self.package_folder, "bin"),
             "CMAKE_INSTALL_DATAROOTDIR": os.path.join(self.package_folder, "share"),
             "CMAKE_INSTALL_INCLUDEDIR": os.path.join(self.package_folder, "include"),
             "CMAKE_INSTALL_LIBDIR": os.path.join(self.package_folder, "lib"),
         }
+        if self.options.shared:
+            defs["ENABLE_STATIC"] = False
+        else:
+            defs["ENABLE_SHARED"] = False
         self.cmake(defs)
