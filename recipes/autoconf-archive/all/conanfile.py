@@ -6,7 +6,7 @@ class AutoconfArchiveRecipe(Recipe):
     license = "GPL3"
     build_requires = (
         "cc/[^1.0.0]",
-        "autoconf/[^2.69]",
+        "autotools/[^1.0.0]",
     )
 
     def source(self):
