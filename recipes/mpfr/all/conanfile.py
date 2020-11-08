@@ -7,8 +7,8 @@ class MpfrRecipe(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",
-        "gmp/[^6.2.0]",
     )
+    requires = ("gmp/[^6.2.0]",)
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/mpfr/mpfr-{self.version}.tar.gz")
