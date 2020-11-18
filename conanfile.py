@@ -20,8 +20,10 @@ class AiveroRgbDToolkit(ConanFile):
 
     def requirements(self):
         self.requires("gst-rgbd/[~1]@%s/stable" % self.user)
-        self.requires("gst-k4a/[~1]@%s/stable" % self.user)
-        self.requires("gst-realsense/[~2]@%s/stable" % self.user)
+        # self.requires("gst-realsense/[~2]@%s/stable" % self.user)
+        self.requires("gst-realsense/temp_use_unsafe_timestamp_mode@%s/testing" % self.user)
+        # self.requires("gst-k4a/[~1]@%s/stable" % self.user)
+        self.requires("gst-k4a/temp_unsafe_timestamp_mode_registration@%s/testing" % self.user)
         self.requires("gstreamer-colorizer/[~0]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
         self.requires("gstreamer-plugins-good/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
