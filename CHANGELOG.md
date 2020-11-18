@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2020-Nov-18
+
+### Fixed
+
+- Multi-camera support.
+- If no `serial` or `recording-location` is specified, the first UNUSED device will be opened instead of the device with index of 0.
+
 ## [1.4.3] - 2020-Oct-27
 
 ### Fixed
