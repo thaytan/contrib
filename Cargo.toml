@@ -28,7 +28,7 @@ tag = "2.1.0"
 
 [dependencies.rgbd-timestamps]
 git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-brach = "temp_unsafe_timestamp_mode_registration"
+branch = "temp_unsafe_timestamp_mode_registration"
 
 [dependencies.k4a]
 git = "https://gitlab.com/aivero/public/k4a-rs"
