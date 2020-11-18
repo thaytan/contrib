@@ -53,7 +53,7 @@ impl Device {
     /// * `Err(K4aError::Failure)` on failure.
     pub fn open(index: u32) -> Result<Device> {
         let device_count = Self::get_number_of_connected_devices()?;
-        if !(index < device_count) {
+        if index >= device_count {
             return Err(K4aError::Failure(
                 "`Device` with the given index is not connected",
             ));
@@ -156,13 +156,9 @@ impl Device {
     /// * `Ok(Device)` on success.
     /// * `Err(K4aError::Failure)` on failure.
     pub fn open_first_unused() -> Result<Device> {
-        for index in 0..Self::get_number_of_connected_devices()? {
-            let device = Device::open(index);
-            if device.is_ok() {
-                return device;
-            }
-        }
-        Err(K4aError::Failure("No unused `Device` is connected"))
+        (0..Self::get_number_of_connected_devices()?)
+            .find_map(|index| Device::open(index).ok())
+            .ok_or(K4aError::Failure("No unused `Device` is connected"))
     }
 
     /// Start cameras of a [`Device`](../device/struct.Device.html).
