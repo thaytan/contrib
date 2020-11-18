@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2020-Nov-18
+
+### Added
+- `Device::open_first_unused()`, which allows opening of first UNUSED device as per https://gitlab.com/aivero/public/gstreamer/gst-k4a/-/issues/16.
+
+### Changed
+- Fixed multi-camera support
+
 ## [0.4.7] - 2020-07-31
 ### Changed
 - Bump dep version k4a-sys to 0.1.6 due to bindgen 0.55.0
