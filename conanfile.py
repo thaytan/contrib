@@ -19,14 +19,17 @@ class AiveroRgbDToolkit(ConanFile):
         self.version =  tools.get_env("CI_COMMIT_REF_SLUG", "master")
 
     def requirements(self):
-        self.requires("gst-rgbd/[>=0.4.0]@%s/stable" % self.user)
-        self.requires("gst-k4a/[>=1.1.1]@%s/stable" % self.user)
-        self.requires("gst-realsense/[>=2.1.1]@%s/stable" % self.user)
-        self.requires("gstreamer-colorizer/[>=0.1.2]@%s/stable" % self.user)
+        self.requires("gst-rgbd/[~1]@%s/stable" % self.user)
+        # self.requires("gst-realsense/[~2]@%s/stable" % self.user)
+        self.requires("gst-realsense/temp_use_unsafe_timestamp_mode@%s/testing" % self.user)
+        # self.requires("gst-k4a/[~1]@%s/stable" % self.user)
+        self.requires("gst-k4a/temp_unsafe_timestamp_mode_registration@%s/testing" % self.user)
+        self.requires("gstreamer-colorizer/[~0]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
         self.requires("gstreamer-plugins-good/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
         self.requires("gstreamer-plugins-bad/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
-        self.requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
+        ## `libglvnd` is currently removed because it causes problems for `glimagesink`
+        # self.requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
 
     def package(self):  
         self.copy(pattern="*.adoc*", keep_path=False)
