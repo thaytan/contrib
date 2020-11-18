@@ -492,12 +492,12 @@ impl K4aSrc {
         }
 
         // Open a `Device`
-        let device = if !settings.device_settings.serial.is_empty() {
-            // Open `Device` based on its `serial` number
-            Device::open_with_serial(&settings.device_settings.serial)?
-        } else {
+        let device = if settings.device_settings.serial.is_empty() {
             // If no serial is specified, open the first connected `Device`
-            Device::open(0)?
+            Device::open_first_unused()?
+        } else {
+            // Otherwise open `Device` with the selecter `serial` number
+            Device::open_with_serial(&settings.device_settings.serial)?
         };
 
         // Create `DeviceConfiguration` based on settings
