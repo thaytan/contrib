@@ -8,7 +8,7 @@ class AiveroRgbDToolkit(ConanFile):
     name = "aivero_rgbd_toolkit"
     description = "Package containing all open source RGB-D elements"
     url = "https://aivero.com"
-    license = "MIT"
+    license = "LGPL"
     settings = "os", "arch", "compiler", "build_type", "gstreamer"
     exports_sources = [
         "*.adoc",
