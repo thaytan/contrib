@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2020-Dec-02
+### Changed
+
+- Tag on temp_unsafe_timestamp_mode_registration branch
+
 ## [1.4.4] - 2020-Nov-18
 
 ### Fixed
@@ -27,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Replaced unsafe enum code with `GEnum` derive. 
+- Replaced unsafe enum code with `GEnum` derive.
 
 ## [1.4.0] - 2020-Oct-26
 
