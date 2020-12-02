@@ -47,11 +47,21 @@ impl Default for ClockInternals {
 impl ClockInternals {
     /// Check is `min_pts` and `max_pts` are synchronised within +/- 0.5 of the frame duration.
     /// # Arguments
-    /// * `min_pts` - The ealiest (smallest) pts timestamp from a single frameset.
+    /// * `min_pts` - The earliest (smallest) pts timestamp from a single frameset.
     /// * `max_pts` - The latest (largest) pts timestamp from a single frameset.
     #[inline]
     pub fn is_synchronised(&self, min_pts: &gst::ClockTime, max_pts: &gst::ClockTime) -> bool {
         // 2 represents 0.5 on the opposite side (for performance and because as {float} * gst::ClockTime is not implemented)
         2 * (max_pts - min_pts) < self.frameset_duration
+    }
+    /// Update duration in clock internals.
+    /// # Arguments
+    /// * `duration_sec` - The duration in seconds to be used to update clock internals.
+    /// * `deadline_multiplier` - Multiplier to use when calculating the deadline duration for a frame.
+    pub fn update_durations(&mut self, duration_sec : f32, deadline_multiplier : f32){
+        let duration = std::time::Duration::from_secs_f32(duration_sec);
+        self.frameset_duration = duration.into();
+        self.deadline_duration = duration.mul_f32(deadline_multiplier).into();
+
     }
 }

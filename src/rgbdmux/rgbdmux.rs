@@ -773,17 +773,15 @@ impl RgbdMux {
 
                     // Update `frameset_duration` and `deadline_duration`
                     let settings = self.settings.read().unwrap();
+
                     let (num, den): (i32, i32) = clock_internals.framerate.into();
-                    clock_internals.frameset_duration = gst::ClockTime::from_nseconds(
-                        std::time::Duration::from_secs_f32(den as f32 / num as f32).as_nanos()
-                            as u64,
-                    );
-                    clock_internals.deadline_duration = gst::ClockTime::from_nseconds(
-                        std::time::Duration::from_secs_f32(
-                            settings.deadline_multiplier * den as f32 / num as f32,
-                        )
-                        .as_nanos() as u64,
-                    );
+
+                    let duration_sec = match den as f32 / num as f32 {
+                        x if x.is_normal() => x,
+                        _ => 1f32 / DEFAULT_FRAMERATE as f32,
+                    };                    
+
+                    clock_internals.update_durations(duration_sec, settings.deadline_multiplier)
                 }
                 _ => {
                     gst_info!(
