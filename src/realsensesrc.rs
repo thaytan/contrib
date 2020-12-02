@@ -29,7 +29,6 @@ use ::rgbd_timestamps::*;
 use camera_meta::Distortion;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
 use rs2::{high_level_utils::StreamInfo, processing::ProcessingBlock};
-use rs2_sys::rs2_stream;
 
 use crate::errors::*;
 use crate::properties::*;
@@ -357,8 +356,13 @@ impl RealsenseSrc {
     /// * `Ok` - If no alignment is needed, or the frame was successfully aligned.
     /// * `Err` - If we fail to allocate a processing block for the alignment, or if the alignment
     /// fails.
-    fn try_align_frame(settings: &Settings, stream_id: &StreamId, frame: &mut rs2::frame::Frame) -> Result<(), RealsenseError> {
-        if let Some(align_to) = settings.align_to.clone() {
+    fn try_align_frame(
+        settings: &Settings,
+        stream_id: &StreamId,
+        frame: &mut rs2::frame::Frame,
+    ) -> Result<(), RealsenseError> {
+        if let Some(align_to) = settings.align_to {
+            gst_debug!(CAT, "Checking alignment of {}", stream_id.to_string());
             if settings.align_from.contains(&stream_id.to_string()) {
                 let pb = ProcessingBlock::create_align(align_to)?;
                 pb.process_frame(frame)?;
@@ -656,6 +660,7 @@ impl RealsenseSrc {
     /// * `tag` - The tag to give to the buffer. This may be used to identify the type of the stream later downstream.
     /// * `stream_descriptor` - Unique descriptor of the stream.
     /// * `is_buffer_main` - A flag that determine whether the currently proccessed buffer is main or auxiliary.
+    #[allow(clippy::too_many_arguments)]
     fn attach_frame_to_buffer(
         &self,
         push_src: &gst_base::PushSrc,
@@ -1690,7 +1695,9 @@ impl ObjectImpl for RealsenseSrc {
                     )
                 });
 
-                let streams = align_from.map(|s| s.split(',').map(|s| s.to_string()).collect::<Vec<String>>()).unwrap_or_else(|| vec![]);
+                let streams = align_from
+                    .map(|s| s.split(',').map(|s| s.to_string()).collect::<Vec<String>>())
+                    .unwrap_or_else(Vec::new);
 
                 gst_info!(
                     CAT,
@@ -1701,12 +1708,15 @@ impl ObjectImpl for RealsenseSrc {
                 settings.align_from = streams;
             }
             subclass::Property("align-to", ..) => {
-                let align_to = value.get::<String>().unwrap_or_else(|err| {
-                    panic!(
-                        "Failed to set property `align-to` due to incorrect type: {:?}",
-                        err
-                    )
-                }).and_then(|s| get_rs2_stream(&s));
+                let align_to = value
+                    .get::<String>()
+                    .unwrap_or_else(|err| {
+                        panic!(
+                            "Failed to set property `align-to` due to incorrect type: {:?}",
+                            err
+                        )
+                    })
+                    .and_then(|s| get_rs2_stream(&s));
                 gst_info!(
                     CAT,
                     obj: element,
@@ -1771,11 +1781,9 @@ impl ObjectImpl for RealsenseSrc {
                 .unwrap()
                 .timestamp_mode
                 .to_value()),
-            subclass::Property("align-from", ..) => {
-                Ok(settings.align_from.to_value())
-            }
+            subclass::Property("align-from", ..) => Ok(settings.align_from.to_value()),
             subclass::Property("align-to", ..) => {
-                let stream_name = settings.align_to.map(|s| get_stream_name(s));
+                let stream_name = settings.align_to.map(get_stream_name);
                 Ok(stream_name.to_value())
             }
             _ => unimplemented!("Property is not implemented"),
