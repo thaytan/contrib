@@ -52,6 +52,8 @@ pub(crate) const DEFAULT_DEPTH_HEIGHT: i32 = 720;
 pub(crate) const DEFAULT_COLOR_WIDTH: i32 = 1280;
 pub(crate) const DEFAULT_COLOR_HEIGHT: i32 = 720;
 
+pub(crate) const DEFAULT_ALIGN_FROM: Vec<String> = vec![];
+
 /// A struct containing properties of `realsensesrc`
 pub(crate) struct Settings {
     pub(crate) serial: Option<String>,
@@ -63,6 +65,8 @@ pub(crate) struct Settings {
     pub(crate) include_per_frame_metadata: bool,
     pub(crate) real_time_rosbag_playback: bool,
     pub(crate) attach_camera_meta: bool,
+    pub(crate) align_from: Vec<String>,
+    pub(crate) align_to: Option<rs2_sys::rs2_stream>,
 }
 
 /// A struct containing properties of `realsensesrc` about streams
@@ -149,6 +153,8 @@ impl Default for Settings {
             include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
             real_time_rosbag_playback: DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
             attach_camera_meta: DEFAULT_ATTACH_CAMERA_META,
+            align_from: DEFAULT_ALIGN_FROM,
+            align_to: None,
         }
     }
 }

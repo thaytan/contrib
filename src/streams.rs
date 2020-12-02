@@ -186,3 +186,22 @@ impl From<&EnabledStreams> for Streams {
         streams
     }
 }
+
+pub(crate) fn get_rs2_stream(stream_name: &str) -> Option<rs2_sys::rs2_stream> {
+    match stream_name {
+        "depth" => Some(rs2_sys::rs2_stream::RS2_STREAM_DEPTH),
+        "color" => Some(rs2_sys::rs2_stream::RS2_STREAM_COLOR),
+        // TODO: How to figure out which infra is what
+        "infra1" => Some(rs2_sys::rs2_stream::RS2_STREAM_INFRARED),
+        //"infra2" => Some(rs2_sys::rs2_stream::RS2_STREAM_INFRARED),
+        _ => None,
+    }
+}
+pub(crate) fn get_stream_name(stream: rs2_sys::rs2_stream) -> &'static str {
+    match stream {
+        rs2_sys::rs2_stream::RS2_STREAM_DEPTH => "depth",
+        rs2_sys::rs2_stream::RS2_STREAM_COLOR => "color",
+        rs2_sys::rs2_stream::RS2_STREAM_INFRARED => "infra1",
+        _ => "",
+    }
+}

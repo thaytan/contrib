@@ -28,7 +28,8 @@ use gst_base::subclass::prelude::*;
 use ::rgbd_timestamps::*;
 use camera_meta::Distortion;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
-use rs2::high_level_utils::StreamInfo;
+use rs2::{high_level_utils::StreamInfo, processing::ProcessingBlock};
+use rs2_sys::rs2_stream;
 
 use crate::errors::*;
 use crate::properties::*;
@@ -299,7 +300,7 @@ impl PushSrcImpl for RealsenseSrc {
     /// * `push_src` - Representation of `realsensesrc` element.
     fn create(&self, push_src: &gst_base::PushSrc) -> Result<gst::Buffer, gst::FlowError> {
         // Get new frames from RealSense pipeline
-        let frames = self.get_frameset()?;
+        let mut frames = self.get_frameset()?;
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
@@ -312,6 +313,16 @@ impl PushSrcImpl for RealsenseSrc {
             for (i, (stream_id, stream_descriptor)) in streams.iter().enumerate() {
                 // Only the first stream is considered to be 'main'
                 let is_stream_main = i == 0;
+
+                if let Some(align_to) = settings.align_to.clone() {
+                    if settings.align_from.contains(&stream_id.to_string()) {
+                        let pb = ProcessingBlock::create_align(align_to).map_err(|e| {
+                            gst_error!(CAT, "Frame alignment failed: {:?}", e);
+                            gst::FlowError::Error
+                        })?;
+                        pb.process_frame(&mut frames[i]);
+                    }
+                }
 
                 self.attach_frame_to_buffer(
                     push_src,
@@ -563,9 +574,11 @@ impl RealsenseSrc {
         };
 
         // Wait for frames
-        Ok(pipeline
+        let frames = pipeline
             .wait_for_frames(self.settings.read().unwrap().wait_for_frames_timeout)
-            .map_err(|_| gst::FlowError::Eos)?)
+            .map_err(|_| gst::FlowError::Eos)?;
+
+        Ok(frames)
     }
 
     /// Attempt to read the metadata from the given frame and serialize it using CapnProto. If this
@@ -1655,6 +1668,39 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 self.set_timestamp_mode(element, timestamp_mode);
             }
+            subclass::Property("align-from", ..) => {
+                let align_from = value.get::<String>().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `align-from` due to incorrect type: {:?}",
+                        err
+                    )
+                });
+
+                let streams = align_from.map(|s| s.split(',').map(|s| s.to_string()).collect::<Vec<String>>()).unwrap_or_else(|| vec![]);
+
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `align-from`  to {:?}",
+                    streams
+                );
+                settings.align_from = streams;
+            }
+            subclass::Property("align-to", ..) => {
+                let align_to = value.get::<String>().unwrap_or_else(|err| {
+                    panic!(
+                        "Failed to set property `align-to` due to incorrect type: {:?}",
+                        err
+                    )
+                }).and_then(|s| get_rs2_stream(&s));
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `align-to` to {:?}",
+                    align_to
+                );
+                settings.align_to = align_to;
+            }
             _ => unimplemented!("Property is not implemented"),
         };
     }
@@ -1711,6 +1757,13 @@ impl ObjectImpl for RealsenseSrc {
                 .unwrap()
                 .timestamp_mode
                 .to_value()),
+            subclass::Property("align-from", ..) => {
+                Ok(self.settings.read().unwrap().align_from.to_value())
+            }
+            subclass::Property("align-to", ..) => {
+                let stream_name = self.settings.read().unwrap().align_to.map(|s| get_stream_name(s));
+                Ok(stream_name.to_value())
+            }
             _ => unimplemented!("Property is not implemented"),
         }
     }
