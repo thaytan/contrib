@@ -66,12 +66,7 @@ impl Default for StreamResolution {
 
 impl Display for StreamResolution {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}x{}px",
-            self.width,
-            self.height
-        )
+        write!(f, "{}x{}px", self.width, self.height)
     }
 }
 
