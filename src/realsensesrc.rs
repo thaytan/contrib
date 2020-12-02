@@ -314,15 +314,10 @@ impl PushSrcImpl for RealsenseSrc {
                 // Only the first stream is considered to be 'main'
                 let is_stream_main = i == 0;
 
-                if let Some(align_to) = settings.align_to.clone() {
-                    if settings.align_from.contains(&stream_id.to_string()) {
-                        let pb = ProcessingBlock::create_align(align_to).map_err(|e| {
-                            gst_error!(CAT, "Frame alignment failed: {:?}", e);
-                            gst::FlowError::Error
-                        })?;
-                        pb.process_frame(&mut frames[i]);
-                    }
-                }
+                Self::try_align_frame(settings, stream_id, &mut frames[i]).map_err(|e| {
+                    gst_error!(CAT, "Frame alignment failed: {:?}", e);
+                    gst::FlowError::Error
+                })?;
 
                 self.attach_frame_to_buffer(
                     push_src,
@@ -353,6 +348,25 @@ impl PushSrcImpl for RealsenseSrc {
 }
 
 impl RealsenseSrc {
+    /// Attempt to align the given frame to the target frame specified in settings, if any.
+    /// # Arguments
+    /// * `settings` - The settings of the realsensesrc.
+    /// * `stream_id` - The id of the stream which the frame belongs to.
+    /// * `frame` - A mutable reference to the frame we should attempt to align.
+    /// # Returns
+    /// * `Ok` - If no alignment is needed, or the frame was successfully aligned.
+    /// * `Err` - If we fail to allocate a processing block for the alignment, or if the alignment
+    /// fails.
+    fn try_align_frame(settings: &Settings, stream_id: &StreamId, frame: &mut rs2::frame::Frame) -> Result<(), RealsenseError> {
+        if let Some(align_to) = settings.align_to.clone() {
+            if settings.align_from.contains(&stream_id.to_string()) {
+                let pb = ProcessingBlock::create_align(align_to)?;
+                pb.process_frame(frame)?;
+            }
+        }
+        Ok(())
+    }
+
     /// Configure the RealSense pipeline, while making sure the settings are valid.
     /// # Returns
     /// * `Ok(rs2::config::Config)` if realsenesrc could be configured to use serial or rosbag
@@ -1758,10 +1772,10 @@ impl ObjectImpl for RealsenseSrc {
                 .timestamp_mode
                 .to_value()),
             subclass::Property("align-from", ..) => {
-                Ok(self.settings.read().unwrap().align_from.to_value())
+                Ok(settings.align_from.to_value())
             }
             subclass::Property("align-to", ..) => {
-                let stream_name = self.settings.read().unwrap().align_to.map(|s| get_stream_name(s));
+                let stream_name = settings.align_to.map(|s| get_stream_name(s));
                 Ok(stream_name.to_value())
             }
             _ => unimplemented!("Property is not implemented"),

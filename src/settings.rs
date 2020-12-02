@@ -65,7 +65,9 @@ pub(crate) struct Settings {
     pub(crate) include_per_frame_metadata: bool,
     pub(crate) real_time_rosbag_playback: bool,
     pub(crate) attach_camera_meta: bool,
+    /// A list of stream names to align from.
     pub(crate) align_from: Vec<String>,
+    /// The stream identifier of the stream to align to.
     pub(crate) align_to: Option<rs2_sys::rs2_stream>,
 }
 

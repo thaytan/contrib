@@ -187,6 +187,12 @@ impl From<&EnabledStreams> for Streams {
     }
 }
 
+/// Get the rs2_sys stream identifier from the stream's name.
+/// # Arguments
+/// * `stream_name` - The name of the stream.
+/// # Returns
+/// * `Some` - If the stream name could be matched against a stream identifier.
+/// * `None` - If the stream name is not known.
 pub(crate) fn get_rs2_stream(stream_name: &str) -> Option<rs2_sys::rs2_stream> {
     match stream_name {
         "depth" => Some(rs2_sys::rs2_stream::RS2_STREAM_DEPTH),
@@ -197,6 +203,12 @@ pub(crate) fn get_rs2_stream(stream_name: &str) -> Option<rs2_sys::rs2_stream> {
         _ => None,
     }
 }
+
+/// Get the stream name from the rs2_sys stream identifier.
+/// # Arguments
+/// * `stream` - The rs2 stream identifier.
+/// # Returns
+/// The name of the stream.
 pub(crate) fn get_stream_name(stream: rs2_sys::rs2_stream) -> &'static str {
     match stream {
         rs2_sys::rs2_stream::RS2_STREAM_DEPTH => "depth",
