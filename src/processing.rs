@@ -48,7 +48,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_align(&self, align_to: rs2_stream) -> Result<Self, Error> {
+    pub fn create_align(align_to: rs2_stream) -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_align(align_to, error.inner()) },
@@ -68,7 +68,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_colorizer(&self) -> Result<Self, Error> {
+    pub fn create_colorizer() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_colorizer(error.inner()) },
@@ -87,7 +87,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_decimation_filter(&self) -> Result<Self, Error> {
+    pub fn create_decimation_filter() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_decimation_filter_block(error.inner()) },
@@ -108,7 +108,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_disparity_transform(&self, transform_to_disparity: bool) -> Result<Self, Error> {
+    pub fn create_disparity_transform(transform_to_disparity: bool) -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe {
@@ -131,7 +131,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_hole_filling_filter(&self) -> Result<Self, Error> {
+    pub fn create_hole_filling_filter() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_hole_filling_filter_block(error.inner()) },
@@ -150,7 +150,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_huffman_depth_decompress(&self) -> Result<Self, Error> {
+    pub fn create_huffman_depth_decompress() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_huffman_depth_decompress_block(error.inner()) },
@@ -168,7 +168,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_pointcloud(&self) -> Result<Self, Error> {
+    pub fn create_pointcloud() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_pointcloud(error.inner()) },
@@ -187,7 +187,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_rates_printer(&self) -> Result<Self, Error> {
+    pub fn create_rates_printer() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_rates_printer_block(error.inner()) },
@@ -205,7 +205,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_spatial_filter(&self) -> Result<Self, Error> {
+    pub fn create_spatial_filter() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_spatial_filter_block(error.inner()) },
@@ -224,7 +224,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_sync_processing(&self) -> Result<Self, Error> {
+    pub fn create_sync_processing() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_sync_processing_block(error.inner()) },
@@ -241,7 +241,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_temporal_filter(&self) -> Result<Self, Error> {
+    pub fn create_temporal_filter() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_temporal_filter_block(error.inner()) },
@@ -259,7 +259,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_threshold(&self) -> Result<Self, Error> {
+    pub fn create_threshold() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_threshold(error.inner()) },
@@ -277,7 +277,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_units_transform(&self) -> Result<Self, Error> {
+    pub fn create_units_transform() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_units_transform(error.inner()) },
@@ -299,7 +299,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_yuy_decoder(&self) -> Result<Self, Error> {
+    pub fn create_yuy_decoder() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_yuy_decoder(error.inner()) },
@@ -317,7 +317,7 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok(ProcessingBlock)` on success.
     /// * `Err(Error)` on failure.
-    pub fn create_zero_order_invalidation(&self) -> Result<Self, Error> {
+    pub fn create_zero_order_invalidation() -> Result<Self, Error> {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_zero_order_invalidation_block(error.inner()) },
