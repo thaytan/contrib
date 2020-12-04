@@ -17,22 +17,15 @@ readme = "README.md"
 
 [dependencies]
 glib = "0.10"
+gobject-sys = "0.10"
 gstreamer = "0.16"
 gstreamer-base = "0.16"
 gstreamer-video = "0.16"
 lazy_static = "1.4"
 
-[dependencies.gstreamer-depth-meta]
-git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "2.1.0"
-
-[dependencies.rgbd-timestamps]
-git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-branch = "temp_unsafe_timestamp_mode_registration"
-
-[dependencies.k4a]
-git = "https://gitlab.com/aivero/public/k4a-rs"
-tag = "0.5.0"
+gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", branch = "temp_unsafe_timestamp_mode_registration" }
+rgbd-timestamps = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", branch = "temp_unsafe_timestamp_mode_registration" }
+k4a = { git = "https://gitlab.com/aivero/public/k4a-rs", tag = "0.5.0" }
 
 [build-dependencies]
 gst-plugin-version-helper = "0.2"
