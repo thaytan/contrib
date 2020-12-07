@@ -9,6 +9,7 @@ use rs2::rs2_stream;
 /// `rs2_processing_block` handle.
 pub struct ProcessingBlock {
     pub(crate) handle: *mut rs2::rs2_processing_block,
+    pub(crate) frame_queue: *mut rs2::rs2_frame_queue,
 }
 
 /// Safe releasing of the `rs2_processing_block` handle.
@@ -16,12 +17,16 @@ impl Drop for ProcessingBlock {
     fn drop(&mut self) {
         unsafe {
             rs2::rs2_delete_processing_block(self.handle);
+            rs2::rs2_delete_frame_queue(self.frame_queue);
         }
     }
 }
 
+unsafe impl Send for ProcessingBlock {}
+unsafe impl Sync for ProcessingBlock {}
+
 impl ProcessingBlock {
-    /// This method is used to pass frame into a processing block.
+    /// This method is used to pass frame into a processing block and return the result.
     ///
     /// # Arguments
     /// * `frame` - Frame to process
@@ -29,15 +34,59 @@ impl ProcessingBlock {
     /// # Returns
     /// * `Ok()` on success.
     /// * `Err(Error)` on failure.
-    pub fn process_frame(&self, frame: &mut Frame) -> Result<(), Error> {
+    pub fn process_frame(&self, frame: &Frame) -> Result<Frame, Error> {
         let mut error = Error::default();
         unsafe {
             rs2::rs2_process_frame(self.handle, frame.handle, error.inner());
             if error.check() {
                 return Err(error);
             };
-            Ok(())
         }
+
+        let mut processed_frame: *mut rs2::rs2_frame = std::ptr::null_mut();
+        let ret = unsafe {
+            rs2::rs2_poll_for_frame(self.frame_queue, &mut processed_frame, error.inner())
+        };
+        if error.check() || ret == 0 {
+            return Err(error);
+        };
+
+        Ok(Frame {
+            handle: processed_frame,
+        })
+    }
+
+    /// Create a frame queue into which results of the processing block can be stored.
+    ///
+    /// # Arguments
+    /// * `capacity` - Capacity of the queue. Size of 1 is enough for synchronous operation.
+    ///
+    /// # Returns
+    /// * `Ok(rs2_frame_queue)` on success.
+    /// * `Err(Error)` on failure.
+    pub fn create_frame_queue(capacity: i32) -> Result<*mut rs2::rs2_frame_queue, Error> {
+        let mut error = Error::default();
+        let frame_queue = unsafe { rs2::rs2_create_frame_queue(capacity, error.inner()) };
+        if error.check() {
+            return Err(error);
+        };
+        Ok(frame_queue)
+    }
+
+    /// Enable the processing block and allow frames to be processed.
+    ///
+    /// # Returns
+    /// * `Ok()` on success.
+    /// * `Err(Error)` on failure.
+    fn start(&self) -> Result<(), Error> {
+        let mut error = Error::default();
+        unsafe {
+            rs2::rs2_start_processing_queue(self.handle, self.frame_queue, error.inner());
+        };
+        if error.check() {
+            return Err(error);
+        };
+        Ok(())
     }
 
     /// Creates Align processing block.
@@ -52,10 +101,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_align(align_to, error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -72,10 +123,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_colorizer(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -91,10 +144,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_decimation_filter_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -117,10 +172,12 @@ impl ProcessingBlock {
                     error.inner(),
                 )
             },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -135,10 +192,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_hole_filling_filter_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -154,10 +213,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_huffman_depth_decompress_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -172,10 +233,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_pointcloud(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -191,10 +254,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_rates_printer_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -209,10 +274,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_spatial_filter_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -228,10 +295,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_sync_processing_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -245,10 +314,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_temporal_filter_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -263,10 +334,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_threshold(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -281,10 +354,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_units_transform(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -303,10 +378,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_yuy_decoder(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }
@@ -321,10 +398,12 @@ impl ProcessingBlock {
         let mut error = Error::default();
         let processing_block = ProcessingBlock {
             handle: unsafe { rs2::rs2_create_zero_order_invalidation_block(error.inner()) },
+            frame_queue: Self::create_frame_queue(1)?,
         };
         if error.check() {
             Err(error)
         } else {
+            processing_block.start()?;
             Ok(processing_block)
         }
     }

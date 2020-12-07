@@ -27,6 +27,31 @@ impl Frame {
         // unsafe { rs2::rs2_release_frame(self.handle) };
     }
 
+    /// Extract individual frames from a frameset.
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<Frame>)` on success.
+    /// * `Err(Error)` on failure.
+    pub fn extract_frames(&self) -> Result<Vec<Frame>, Error> {
+        let mut error = Error::default();
+        unsafe {
+            let count = rs2::rs2_embedded_frames_count(self.handle, error.inner());
+            if error.check() {
+                return Err(error);
+            };
+            let mut res: Vec<Frame> = Vec::new();
+            for i in 0..count {
+                res.push(Frame {
+                    handle: rs2::rs2_extract_frame(self.handle, i, error.inner()),
+                });
+                if error.check() {
+                    return Err(error);
+                };
+            }
+            Ok(res)
+        }
+    }
+
     /// Retrieve [`Frame`](../frame/struct.Frame.html)'s parent
     /// [`Sensor`](../sensor/struct.Sensor.html).
     ///
