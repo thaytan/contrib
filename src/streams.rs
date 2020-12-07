@@ -13,9 +13,10 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use rs2_sys::rs2_stream;
+use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 
+use crate::errors::ConfigError;
 use crate::settings::EnabledStreams;
 
 /// ID/tag of the depth stream.
@@ -59,6 +60,30 @@ impl Display for StreamId {
                 StreamId::Color => STREAM_ID_COLOR,
             }
         )
+    }
+}
+
+impl TryFrom<&str> for StreamId {
+    type Error = ConfigError;
+
+    fn try_from(stream: &str) -> Result<Self, Self::Error> {
+        match stream {
+            "depth" => Ok(Self::Depth),
+            "color" => Ok(Self::Color),
+            "infra1" => Ok(Self::Infra1),
+            "infra2" => Ok(Self::Infra2),
+            _ => Err(ConfigError::Other(format!(
+                "{} is not a valid stream",
+                stream
+            ))),
+        }
+    }
+}
+
+impl TryFrom<String> for StreamId {
+    type Error = ConfigError;
+    fn try_from(stream: String) -> Result<Self, Self::Error> {
+        StreamId::try_from(stream.as_str())
     }
 }
 
@@ -185,36 +210,5 @@ impl From<&EnabledStreams> for Streams {
             streams.push((StreamId::Color, StreamId::Color.into()));
         }
         streams
-    }
-}
-
-/// Get the rs2_sys stream identifier from the stream's name.
-/// # Arguments
-/// * `stream_name` - The name of the stream.
-/// # Returns
-/// * `Some` - If the stream name could be matched against a stream identifier.
-/// * `None` - If the stream name is not known.
-pub(crate) fn get_rs2_stream(stream_name: &str) -> Option<rs2_stream> {
-    match stream_name {
-        "depth" => Some(rs2_stream::RS2_STREAM_DEPTH),
-        "color" => Some(rs2_stream::RS2_STREAM_COLOR),
-        // TODO: How to figure out which infra is what
-        "infra1" => Some(rs2_stream::RS2_STREAM_INFRARED),
-        //"infra2" => Some(rs2_sys::rs2_stream::RS2_STREAM_INFRARED),
-        _ => None,
-    }
-}
-
-/// Get the stream name from the rs2_sys stream identifier.
-/// # Arguments
-/// * `stream` - The rs2 stream identifier.
-/// # Returns
-/// The name of the stream.
-pub(crate) fn get_stream_name(stream: rs2_stream) -> &'static str {
-    match stream {
-        rs2_stream::RS2_STREAM_DEPTH => "depth",
-        rs2_stream::RS2_STREAM_COLOR => "color",
-        rs2_stream::RS2_STREAM_INFRARED => "infra1",
-        _ => "",
     }
 }

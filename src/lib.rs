@@ -21,7 +21,6 @@ extern crate gstreamer_base as gst_base;
 extern crate gstreamer_depth_meta as gst_depth_meta;
 extern crate gstreamer_video as gst_video;
 extern crate librealsense2 as rs2;
-extern crate librealsense2_sys as rs2_sys;
 #[macro_use]
 extern crate lazy_static;
 extern crate rgbd_timestamps;
