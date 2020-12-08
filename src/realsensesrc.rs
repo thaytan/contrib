@@ -528,8 +528,7 @@ impl RealsenseSrc {
 
         // Create align processing block if enabled
         if let Some(align_to) = settings.align_to {
-            let align_processing_block = &mut *self.align_processing_block.lock().unwrap();
-            *align_processing_block = Some(ProcessingBlock::create_align(
+            *self.align_processing_block.lock().unwrap() = Some(ProcessingBlock::create_align(
                 Into::<RsStreamDescriptor>::into(align_to).rs2_stream,
             )?);
         }
