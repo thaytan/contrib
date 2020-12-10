@@ -29,3 +29,4 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           package: ${{ github.event.inputs.package }}
           arguments: ${{ github.event.inputs.arguments }}
+          subdir: recipes
