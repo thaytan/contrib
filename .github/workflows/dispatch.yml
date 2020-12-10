@@ -10,6 +10,9 @@ on:
       arguments:
         description: 'Additional Conan arguments'
         default: ''
+      mode:
+        description: 'Dispatch mode'
+        default: 'conan_manual'
 jobs:
   dispatch:
     name: Conan Dispatch
@@ -22,6 +25,7 @@ jobs:
       - name: Conan Dispatch Action
         uses: aivero/conan-dispatch-action@test
         with:
+          mode: ${{ github.event.inputs.mode }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           package: ${{ github.event.inputs.package }}
           arguments: ${{ github.event.inputs.arguments }}

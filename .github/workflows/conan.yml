@@ -15,8 +15,7 @@ jobs:
       uses: aivero/conan-action@test
       with:
         package: ${{ github.event.client_payload.package }}
-        settings: ${{ github.event.client_payload.settings }}
-        options: ${{ github.event.client_payload.options }}
+        arguments: ${{ github.event.client_payload.arguments }}
         profile: ${{ github.event.client_payload.profile }}
         path: ${{ github.event.client_payload.path }}
       env:
@@ -37,4 +36,3 @@ jobs:
           ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
           ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
           ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
-
