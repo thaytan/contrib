@@ -6,7 +6,7 @@ jobs:
     name: '${{ github.event.client_payload.package }}: ${{ github.event.client_payload.profile }}'
     runs-on: ${{ github.event.client_payload.tags }}
     container:
-      image: ${{ github.event.client_payload.docker_image }}
+      image: ${{ github.event.client_payload.image }}
     steps:
     - uses: actions/checkout@v2
       with:
