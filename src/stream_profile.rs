@@ -25,6 +25,7 @@ impl Drop for StreamProfile {
 }
 
 /// Helper struct that contains data from [`StreamProfile`](../stream_profile/struct.Pipeline.html).
+#[derive(Debug)]
 pub struct StreamData {
     pub stream: rs2::rs2_stream,
     pub format: rs2::rs2_format,

@@ -173,27 +173,41 @@ impl Pipeline {
     /// * `Err(Error)` on failure.
     pub fn wait_for_frames(&self, timeout: u32) -> Result<Vec<Frame>, Error> {
         let mut error = Error::default();
-        unsafe {
-            let frames = rs2::rs2_pipeline_wait_for_frames(self.handle, timeout, error.inner());
-            if error.check() {
-                return Err(error);
-            };
-            let count = rs2::rs2_embedded_frames_count(frames, error.inner());
-            if error.check() {
-                return Err(error);
-            };
-            let mut res: Vec<Frame> = Vec::new();
-            for i in 0..count {
-                res.push(Frame {
-                    handle: rs2::rs2_extract_frame(frames, i, error.inner()),
-                });
-                if error.check() {
-                    return Err(error);
-                };
-            }
-            rs2::rs2_release_frame(frames);
-            Ok(res)
-        }
+        let frameset = Frame {
+            handle: unsafe {
+                rs2::rs2_pipeline_wait_for_frames(self.handle, timeout, error.inner())
+            },
+        };
+        if error.check() {
+            return Err(error);
+        };
+
+        frameset.extract_frames()
+    }
+
+    /// Wait until a new frameset becomes available. See
+    /// [`Pipeline::wait_for_frames()`](../pipeline/struct.Pipeline.html#method.wait_for_frames)
+    /// for more info.
+    ///
+    /// # Arguments
+    /// * `timeout` - Max time in milliseconds to wait until [`Error`](../error/struct.Error.html)
+    /// is returned.
+    ///
+    /// # Returns
+    /// * `Ok(Frame)` containing the entire frameset on success.
+    /// * `Err(Error)` on failure.
+    pub fn wait_for_frameset(&self, timeout: u32) -> Result<Frame, Error> {
+        let mut error = Error::default();
+        let frameset = Frame {
+            handle: unsafe {
+                rs2::rs2_pipeline_wait_for_frames(self.handle, timeout, error.inner())
+            },
+        };
+        if error.check() {
+            return Err(error);
+        };
+
+        Ok(frameset)
     }
 
     /// Wait until a new set of [`Frame`](../frame/struct.Frame.html)s becomes available. The
