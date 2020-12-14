@@ -10,6 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        submodules: recursive
         ref: ${{ github.event.client_payload.sha }}
     - name: Conan Create
       uses: aivero/conan-action@test
