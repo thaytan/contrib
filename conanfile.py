@@ -44,11 +44,11 @@ class RealsenseConan(ConanFile):
         self.build_requires("sccache/[>=0.2.12]@%s/stable" % self.user)
 
     def requirements(self):
-        self.requires("gstreamer-depth-meta/[>=0.2.0]@%s/stable" % self.user)
-        self.requires("rgbd-timestamps/[>=2.1.0]@%s/stable" % self.user)
+        self.requires("gstreamer-depth-meta/[~0]@%s/stable" % self.user)
+        self.requires("rgbd-timestamps/[~2]@%s/stable" % self.user)
         self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
-        self.requires("librealsense/[>=2.20.0]@%s/stable" % self.user)
-        self.requires("capnproto/[>=0.7.0]@%s/stable" % self.user)
+        self.requires("librealsense/[~2]@%s/stable" % self.user)
+        self.requires("capnproto/[~0]@%s/stable" % self.user)
 
     def build(self):
         if self.settings.build_type == 'Release':
