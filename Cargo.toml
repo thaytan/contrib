@@ -28,7 +28,7 @@ branch = "temp_unsafe_timestamp_mode_registration"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
-tag = "2.2.3"
+tag = "2.2.6"
 
 [build-dependencies]
 capnpc = "0.12"

@@ -629,6 +629,7 @@ impl RealsenseSrc {
     /// * `tag` - The tag to give to the buffer. This may be used to identify the type of the stream later downstream.
     /// * `stream_descriptor` - Unique descriptor of the stream.
     /// * `is_buffer_main` - A flag that determine whether the currently proccessed buffer is main or auxiliary.
+    #[allow(clippy::too_many_arguments)]
     fn attach_frame_to_buffer(
         &self,
         push_src: &gst_base::PushSrc,
