@@ -11,4 +11,4 @@ readme = "README.md"
 
 [dependencies.librealsense2-sys]
 git = "https://gitlab.com/aivero/public/librealsense-sys"
-tag = "0.5.2"
+tag = "0.5.3"
