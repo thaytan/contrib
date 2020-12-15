@@ -11,4 +11,4 @@ readme = "README.md"
 
 [build-dependencies]
 pkg-config = "0.3.18"
-bindgen = "0.55.0"
+bindgen = "0.56"
