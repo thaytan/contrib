@@ -12,3 +12,6 @@ class RustRecipe(RustRecipe):
     def requirements(self):
         # Rust is not compatible between major or minor releases
         self.requires(f"rustc/[~{self.settings.rust}]")
+
+    def package_info(self):
+        self.env_info.RUSTFLAGS = "-g -Copt-level=2"
