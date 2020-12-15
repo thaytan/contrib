@@ -28,7 +28,7 @@ impl Frame {
     }
 
     /// Extract individual frames from a frameset.
-    /// 
+    ///
     /// # Returns
     /// * `Ok(Vec<Frame>)` on success.
     /// * `Err(Error)` on failure.
