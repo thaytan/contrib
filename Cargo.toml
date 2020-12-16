@@ -28,8 +28,7 @@ tag = "2.1.0"
 
 [dependencies.librealsense2]
 git = "https://gitlab.com/aivero/public/librealsense-rs"
-# tag = "2.2.5"
-branch = "fix_processing_blocks"
+tag = "2.2.5"
 
 [build-dependencies]
 capnpc = "0.12"
