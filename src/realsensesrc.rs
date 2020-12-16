@@ -16,6 +16,7 @@
 
 use std::{
     collections::HashMap,
+    convert::TryFrom,
     convert::TryInto,
     sync::{Arc, Mutex, RwLock},
 };
@@ -28,7 +29,7 @@ use gst_base::subclass::prelude::*;
 use ::rgbd_timestamps::*;
 use camera_meta::Distortion;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
-use rs2::high_level_utils::StreamInfo;
+use rs2::{frame::Frame, high_level_utils::StreamInfo, processing::ProcessingBlock};
 
 use crate::errors::*;
 use crate::properties::*;
@@ -55,6 +56,8 @@ struct RealsenseSrc {
     internals: Mutex<RealsenseSrcInternals>,
     /// Contains timestamp internals utilised by `RgbdTimestamps` trait.
     timestamp_internals: Arc<Mutex<TimestampInternals>>,
+    /// Align processing block that either aligns `depth -> color` or `all streams -> depth`.
+    align_processing_block: Mutex<Option<ProcessingBlock>>,
 }
 
 /// Internals of the element that are under Mutex.
@@ -142,6 +145,7 @@ impl ObjectSubclass for RealsenseSrc {
             settings: RwLock::new(Settings::default()),
             internals: Mutex::new(RealsenseSrcInternals::default()),
             timestamp_internals: Arc::new(Mutex::new(TimestampInternals::default())),
+            align_processing_block: Mutex::new(None),
         }
     }
 }
@@ -217,7 +221,18 @@ impl BaseSrcImpl for RealsenseSrc {
                 );
 
                 // Add resolution fields for the stream.
-                let (width, height) = settings.streams.get_stream_resolution(*stream_id);
+                let (width, height) =
+                    if settings.align_to.is_none() || stream_id.to_string().contains("infra") {
+                        // Use the configured resolution if aligning is disabled. Infra streams are
+                        // not supported by align processing block and always keep their resolution.
+                        settings.streams.get_stream_resolution(*stream_id)
+                    } else {
+                        // Resolution of the target stream must be used when aligning the stream.
+                        // Applies to depth and color streams.
+                        settings
+                            .streams
+                            .get_stream_resolution(settings.align_to.unwrap().into())
+                    };
                 s.set(&format!("{}_width", stream_id), &width);
                 s.set(&format!("{}_height", stream_id), &height);
             }
@@ -298,8 +313,8 @@ impl PushSrcImpl for RealsenseSrc {
     /// # Arguments
     /// * `push_src` - Representation of `realsensesrc` element.
     fn create(&self, push_src: &gst_base::PushSrc) -> Result<gst::Buffer, gst::FlowError> {
-        // Get new frames from RealSense pipeline
-        let frames = self.get_frameset()?;
+        // Get new frameset from RealSense pipeline
+        let mut frameset = self.get_frameset()?;
 
         // Create the output buffer
         let mut output_buffer = gst::buffer::Buffer::new();
@@ -307,12 +322,26 @@ impl PushSrcImpl for RealsenseSrc {
         // Embed the frames in output_buffer
         {
             let settings = &self.settings.read().unwrap();
-
             let streams: Streams = (&settings.streams.enabled_streams).into();
+
+            // Align frames, if enabled and configured
+            if let Some(align_processing_block) =
+                self.align_processing_block.lock().unwrap().as_ref()
+            {
+                gst_trace!(CAT, obj: push_src, "Aligning frames");
+                frameset = align_processing_block
+                    .process_frame(&frameset)
+                    .map_err(|err| RealsenseError::from(err))?;
+            }
+
+            // Extract individual frames from the frameset
+            let frames = frameset
+                .extract_frames()
+                .map_err(|err| RealsenseError::from(err))?;
+
             for (i, (stream_id, stream_descriptor)) in streams.iter().enumerate() {
                 // Only the first stream is considered to be 'main'
                 let is_stream_main = i == 0;
-
                 self.attach_frame_to_buffer(
                     push_src,
                     settings,
@@ -497,6 +526,13 @@ impl RealsenseSrc {
                 .map_err(|err| RealsenseError(format!("Cannot serialise camera meta: {}", err)))?;
         }
 
+        // Create align processing block if enabled
+        if let Some(align_to) = settings.align_to {
+            *self.align_processing_block.lock().unwrap() = Some(ProcessingBlock::create_align(
+                Into::<RsStreamDescriptor>::into(align_to).rs2_stream,
+            )?);
+        }
+
         Ok(())
     }
 
@@ -551,7 +587,7 @@ impl RealsenseSrc {
     /// * `Err(gst::FlowError::Eos)` if no new frames are available.
     /// # Panics
     /// * If RealSense pipeline has not yet started
-    fn get_frameset(&self) -> Result<Vec<rs2::frame::Frame>, gst::FlowError> {
+    fn get_frameset(&self) -> Result<Frame, gst::FlowError> {
         let internals = self.internals.lock().unwrap();
 
         // Get RealSense pipeline
@@ -562,10 +598,12 @@ impl RealsenseSrc {
             }
         };
 
-        // Wait for frames
-        Ok(pipeline
-            .wait_for_frames(self.settings.read().unwrap().wait_for_frames_timeout)
-            .map_err(|_| gst::FlowError::Eos)?)
+        // Wait for frameset, i.e. rs2::Frame with multiple Frames attached to it
+        let frames = pipeline
+            .wait_for_frameset(self.settings.read().unwrap().wait_for_frames_timeout)
+            .map_err(|_| gst::FlowError::Eos)?;
+
+        Ok(frames)
     }
 
     /// Attempt to read the metadata from the given frame and serialize it using CapnProto. If this
@@ -575,7 +613,7 @@ impl RealsenseSrc {
     /// # Returns
     /// * `Ok(Vec<u8>)` on success.
     /// * `Err(gst::FlowError::Eos)` if metadata cannot be acquired.
-    fn get_frame_meta(&self, frame: &rs2::frame::Frame) -> Result<Vec<u8>, RealsenseError> {
+    fn get_frame_meta(&self, frame: &Frame) -> Result<Vec<u8>, RealsenseError> {
         let frame_meta = frame.get_metadata()?;
         capnp_serialize(frame_meta).map_err(|e| {
             RealsenseError(format!(
@@ -635,7 +673,7 @@ impl RealsenseSrc {
         push_src: &gst_base::PushSrc,
         settings: &Settings,
         output_buffer: &mut gst::Buffer,
-        frames: &[rs2::frame::Frame],
+        frames: &[Frame],
         tag: &str,
         stream_descriptor: &StreamDescriptor,
         is_buffer_main: bool,
@@ -1260,10 +1298,10 @@ impl RealsenseSrc {
     /// * `stream_type` - The type of the stream to look for.
     /// * `stream_id` - The id of the frame you wish to find.
     fn find_frame_with_id(
-        frames: &[rs2::frame::Frame],
+        frames: &[Frame],
         stream_type: rs2::rs2_stream,
         stream_id: i32,
-    ) -> Option<&rs2::frame::Frame> {
+    ) -> Option<&Frame> {
         frames.iter().find(|f| match f.get_stream_profile() {
             Ok(profile) => match profile.get_data() {
                 Ok(data) => {
@@ -1656,6 +1694,32 @@ impl ObjectImpl for RealsenseSrc {
                 );
                 self.set_timestamp_mode(element, timestamp_mode);
             }
+            subclass::Property("align-to", ..) => {
+                let align_to = value
+                    .get::<String>()
+                    .unwrap_or_else(|err| {
+                        panic!(
+                            "Failed to set property `align-to` due to incorrect type: {:?}",
+                            err
+                        )
+                    })
+                    .map(|target| {
+                        StreamId::try_from(target).unwrap_or_else(|err| {
+                            panic!(
+                                "Failed to set property `align-to` due to invalid value: {:?}",
+                                err
+                            )
+                        })
+                    });
+
+                gst_info!(
+                    CAT,
+                    obj: element,
+                    "Changing property `align-to` to {:?}",
+                    align_to
+                );
+                settings.align_to = align_to;
+            }
             _ => unimplemented!("Property is not implemented"),
         };
     }
@@ -1712,6 +1776,13 @@ impl ObjectImpl for RealsenseSrc {
                 .unwrap()
                 .timestamp_mode
                 .to_value()),
+            subclass::Property("align-to", ..) => {
+                Ok(if let Some(stream_name) = settings.align_to {
+                    stream_name.to_string().to_value()
+                } else {
+                    None::<String>.to_value()
+                })
+            }
             _ => unimplemented!("Property is not implemented"),
         }
     }

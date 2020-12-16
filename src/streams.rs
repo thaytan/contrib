@@ -13,8 +13,10 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 
+use crate::errors::ConfigError;
 use crate::settings::EnabledStreams;
 
 /// ID/tag of the depth stream.
@@ -58,6 +60,30 @@ impl Display for StreamId {
                 StreamId::Color => STREAM_ID_COLOR,
             }
         )
+    }
+}
+
+impl TryFrom<&str> for StreamId {
+    type Error = ConfigError;
+
+    fn try_from(stream: &str) -> Result<Self, Self::Error> {
+        match stream {
+            "depth" => Ok(Self::Depth),
+            "color" => Ok(Self::Color),
+            "infra1" => Ok(Self::Infra1),
+            "infra2" => Ok(Self::Infra2),
+            _ => Err(ConfigError::Other(format!(
+                "{} is not a valid stream",
+                stream
+            ))),
+        }
+    }
+}
+
+impl TryFrom<String> for StreamId {
+    type Error = ConfigError;
+    fn try_from(stream: String) -> Result<Self, Self::Error> {
+        StreamId::try_from(stream.as_str())
     }
 }
 
