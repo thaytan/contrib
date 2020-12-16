@@ -127,32 +127,29 @@ impl AggregatorImpl for RgbdMux {
         }
 
         // Check if all pads have valid buffers before muxing them
-        {
+        let (drop_if_missing, drop_to_synchronise, send_gap_events) = {
             let settings = self.settings.read().unwrap();
-            // Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers.
-            if settings.drop_if_missing {
-                if self
-                    .drop_buffers_if_one_missing(
-                        aggregator,
-                        &sink_pad_names,
-                        settings.send_gap_events,
-                    )
-                    .is_err()
-                {
-                    return Ok(gst::FlowSuccess::Ok);
-                }
-            }
+            (
+                settings.drop_if_missing,
+                settings.drop_to_synchronise,
+                settings.send_gap_events,
+            )
+        };
 
-            // Make sure the streams are synchronised
-            if settings.drop_to_synchronise {
-                let ret = self.check_synchronisation(
-                    aggregator,
-                    &sink_pad_names,
-                    settings.send_gap_events,
-                );
-                if ret.is_err() {
-                    return Ok(gst::FlowSuccess::Ok);
-                }
+        // Check all sink pads for queued buffers. If one pad has no queued buffer, drop all other buffers.
+        if drop_if_missing {
+            let ret =
+                self.drop_buffers_if_one_missing(aggregator, &sink_pad_names, send_gap_events);
+            if ret.is_err() {
+                return Ok(gst::FlowSuccess::Ok);
+            }
+        }
+
+        // Make sure the streams are synchronised
+        if drop_to_synchronise {
+            let ret = self.check_synchronisation(aggregator, &sink_pad_names, send_gap_events);
+            if ret.is_err() {
+                return Ok(gst::FlowSuccess::Ok);
             }
         }
 
@@ -197,6 +194,8 @@ impl AggregatorImpl for RgbdMux {
 
         // Insert the new sink pad name into the struct
         sink_pad_names.push(name.to_string());
+        sink_pad_names
+            .sort_by(|a, b| get_stream_priority(&a[5..]).cmp(&get_stream_priority(&b[5..])));
 
         // Activate the sink pad
         new_sink_pad
@@ -405,7 +404,7 @@ impl RgbdMux {
         &self,
         aggregator: &gst_base::Aggregator,
         clock_internals: &mut ClockInternals,
-        sink_pad_name: &String,
+        sink_pad_name: &str,
         main_buffer: &mut gst::BufferRef,
     ) {
         match Self::get_tagged_buffer(aggregator, sink_pad_name) {
