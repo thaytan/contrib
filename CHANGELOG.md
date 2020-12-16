@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.0.3] - 2020-Dec-15
+
+
+### Fixed
+
+- Enforce that some streams become the main stream if they are available.
+  - This fixes a bug where `dddqmeta` could become the main buffer for non determenistic
+    pad adds.
+
 ## [1.0.2] - 2020-Dec-1
 
 ### Fixed
