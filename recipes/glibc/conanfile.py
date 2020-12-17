@@ -81,8 +81,12 @@ class GlibcRecipe(Recipe):
             for lib in libs:
                 shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/{lib}", lib)
             # Copy linker lib
-            lib = f"ld-linux-{arch.replace('_', '-')}.so.2"
-            shutil.copy2(f"/lib64/{lib}", lib)
+            if arch == "x86_64":
+                lib = "ld-linux-x86_64.so.2"
+                shutil.copy2(f"/lib64/{lib}", lib)
+            elif arch == "aarch64":
+                lib = "ld-linux-aarch64.so.1"
+                shutil.copy2(f"/lib/{lib}", lib)
 
     def package_info(self):
         self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib")
