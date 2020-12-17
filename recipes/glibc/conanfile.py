@@ -28,6 +28,7 @@ class GlibcRecipe(Recipe):
                 "librt.so",
                 "libresolv.so",
                 "libutil.so",
+                "libatomic.so.1",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
@@ -42,16 +43,16 @@ class GlibcRecipe(Recipe):
             # Copy and fix linker scripts from glibc-dev
             ld_scripts = [
                 "libc.so",
-                "libm.so",
                 "libpthread.so",
             ]
+            # libm.so is not a linker script on aarch64
+            if arch == "x86_64":
+                ld_scripts.append("libm.so")
+            else:
+                os.symlink("libm.so.6", "libm.so")
             for ld_script in ld_scripts:
-                # libm.so is no a linker script on aarch64
-                if arch == "aarch64" and ld_script == "libm.so":
-                    os.symlink("libm.so.6", "libm.so")
-                else:
-                    shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{ld_script}", ld_script)
-                    tools.replace_path_in_file(ld_script, f"/usr/lib/{arch}-linux-gnu/", "")
+                shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{ld_script}", ld_script)
+                tools.replace_path_in_file(ld_script, f"/usr/lib/{arch}-linux-gnu/", "")
             # Copy base glibc and fix linker scripts
             libs = [
                 "libc.so.6",
@@ -69,12 +70,6 @@ class GlibcRecipe(Recipe):
                 shutil.copy2(f"/lib/{arch}-linux-gnu/{lib}", lib)
                 for ld_script in ld_scripts:
                     tools.replace_path_in_file(ld_script, f"/lib/{arch}-linux-gnu/{lib}", lib, strict=False)
-            # Symlink files from libatomic1
-            libs = [
-                "libatomic.so.1",
-            ]
-            for lib in libs:
-                os.symlink(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy files from libgcc-7-dev
             libs = [
                 "libgcc_s.so",
