@@ -63,6 +63,8 @@ pub(crate) struct Settings {
     pub(crate) include_per_frame_metadata: bool,
     pub(crate) real_time_rosbag_playback: bool,
     pub(crate) attach_camera_meta: bool,
+    /// The stream identifier of the stream to align to.
+    pub(crate) align_to: Option<StreamId>,
 }
 
 /// A struct containing properties of `realsensesrc` about streams
@@ -149,6 +151,7 @@ impl Default for Settings {
             include_per_frame_metadata: DEFAULT_ENABLE_METADATA,
             real_time_rosbag_playback: DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
             attach_camera_meta: DEFAULT_ATTACH_CAMERA_META,
+            align_to: None,
         }
     }
 }

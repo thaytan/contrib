@@ -19,7 +19,7 @@ use rgbd_timestamps::timestamp_mode::TimestampMode;
 use crate::settings::*;
 
 lazy_static! {
-pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 18] = [
+pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 19] = [
     subclass::Property("serial", |name| {
         glib::ParamSpec::string(
             name,
@@ -183,6 +183,16 @@ pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 18] = [
             "If enabled, `video/rgbd` will also contain the meta associated with RealSense camera, such as \
              intrinsics and extrinsics.",
             DEFAULT_ATTACH_CAMERA_META,
+            glib::ParamFlags::READWRITE,
+        )
+    }),
+    subclass::Property("align-to", |name| {
+        glib::ParamSpec::string(
+            name,
+            "The stream to align to",
+            "The name of the stream to align to (target). Supported values are 'depth' and 'color'. \
+             Note that aligning of 'infra1' and 'infra2' streams to 'color' is not supported.",
+            None,
             glib::ParamFlags::READWRITE,
         )
     }),
