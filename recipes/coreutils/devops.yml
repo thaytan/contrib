@@ -1,0 +1,3 @@
+- version: '8.32'
+  image:
+    bootstrap: true
