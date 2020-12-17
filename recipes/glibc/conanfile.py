@@ -33,9 +33,10 @@ class GlibcRecipe(Recipe):
                 "crtn.o",
                 "Scrt1.o",
                 "libc_nonshared.a",
-                "libmvec_nonshared.a",
                 "libpthread_nonshared.a",
             ]
+            if arch == "x86_64":
+                libs.append("libmvec_nonshared.a")
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy and fix linker scripts from glibc-dev
