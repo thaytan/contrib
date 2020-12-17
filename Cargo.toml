@@ -23,8 +23,8 @@ gstreamer-base = "0.16"
 gstreamer-video = "0.16"
 lazy_static = "1.4"
 
-gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", branch = "temp_unsafe_timestamp_mode_registration" }
-rgbd-timestamps = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", branch = "temp_unsafe_timestamp_mode_registration" }
+gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", branch = "2.2.0" }
+rgbd-timestamps = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", branch = "2.2.0" }
 k4a = { git = "https://gitlab.com/aivero/public/k4a-rs", tag = "0.5.0" }
 
 [build-dependencies]
