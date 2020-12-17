@@ -47,7 +47,9 @@ class GlibcRecipe(Recipe):
             ]
             for ld_script in ld_scripts:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{ld_script}", ld_script)
-                if not (arch == "aarch64" and ld_script == "libm.so"):
+                if arch == "aarch64" and ld_script == "libm.so":
+                    os.symlink("libm.so.6", "libm.so")
+                else:
                     tools.replace_path_in_file(ld_script, f"/usr/lib/{arch}-linux-gnu/", "")
             # Copy base glibc and fix linker scripts
             libs = [
