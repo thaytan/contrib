@@ -231,7 +231,7 @@ impl BaseSrcImpl for RealsenseSrc {
                         // Applies to depth and color streams.
                         settings
                             .streams
-                            .get_stream_resolution(settings.align_to.unwrap().into())
+                            .get_stream_resolution(settings.align_to.unwrap())
                     };
                 s.set(&format!("{}_width", stream_id), &width);
                 s.set(&format!("{}_height", stream_id), &height);
@@ -331,13 +331,11 @@ impl PushSrcImpl for RealsenseSrc {
                 gst_trace!(CAT, obj: push_src, "Aligning frames");
                 frameset = align_processing_block
                     .process_frame(&frameset)
-                    .map_err(|err| RealsenseError::from(err))?;
+                    .map_err(RealsenseError::from)?;
             }
 
             // Extract individual frames from the frameset
-            let frames = frameset
-                .extract_frames()
-                .map_err(|err| RealsenseError::from(err))?;
+            let frames = frameset.extract_frames().map_err(RealsenseError::from)?;
 
             for (i, (stream_id, stream_descriptor)) in streams.iter().enumerate() {
                 // Only the first stream is considered to be 'main'
