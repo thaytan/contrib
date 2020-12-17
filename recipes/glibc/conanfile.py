@@ -22,35 +22,48 @@ class GlibcRecipe(Recipe):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         os.makedirs(os.path.join(self.package_folder, "lib"))
         with tools.chdir(os.path.join(self.package_folder, "lib")):
-            # Symlink to glibc
-            libs = [
-                "libc.so.6",
-                "libm.so.6",
-                "libdl.so.2",
-                "librt.so.1",
-                "libpthread.so.0",
-                "libresolv.so.2",
-                "libutil.so.1",
-                "libgcc_s.so.1",
-            ]
-            for lib in libs:
-                os.symlink(f"/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy from glibc-dev
             libs = [
-                "libc.so",
-                "libm.so",
                 "libdl.so",
                 "librt.so",
-                "libpthread.so",
                 "libresolv.so",
                 "libutil.so",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
                 "Scrt1.o",
+                "libc_nonshared.a",
+                "libmvec_nonshared.a",
+                "libpthread_nonshared.a",
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
+            # Copy and fix linker scripts from glibc-dev
+            ld_scripts = [
+                "libc.so",
+                "libm.so",
+                "libpthread.so",
+            ]
+            for ld_script in ld_scripts:
+                shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{ld_script}", ld_script)
+                tools.replace_path_in_file(ld_script, f"/usr/lib/{arch}-linux-gnu/", "")
+            # Copy base glibc and fix linker scripts
+            libs = [
+                "libc.so.6",
+                "libm.so.6",
+                "libpthread.so.0",
+                "libdl.so.2",
+                "librt.so.1",
+                "libresolv.so.2",
+                "libutil.so.1",
+                "libgcc_s.so.1",
+                "libselinux.so.1",
+                "libpcre.so.3",
+            ]
+            for lib in libs:
+                shutil.copy2(f"/lib/{arch}-linux-gnu/{lib}", lib)
+                for ld_script in ld_scripts:
+                    tools.replace_path_in_file(ld_script, f"/lib/{arch}-linux-gnu/{lib}", lib, strict=False)
             # Symlink files from libatomic1
             libs = [
                 "libatomic.so.1",
@@ -65,6 +78,9 @@ class GlibcRecipe(Recipe):
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/{lib}", lib)
+            # Copy linker lib
+            lib = f"ld-linux-{arch.replace('_', '-')}.so.2"
+            shutil.copy2(f"/lib64/{lib}", lib)
 
     def package_info(self):
         self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib")
