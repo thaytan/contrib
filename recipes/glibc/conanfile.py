@@ -20,8 +20,8 @@ class GlibcRecipe(Recipe):
 
         # Use system libgcc_s
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
-        os.makedirs(os.path.join(self.package_folder, "lib"))
-        with tools.chdir(os.path.join(self.package_folder, "lib")):
+        os.makedirs(os.path.join(self.package_folder, "lib-dev"))
+        with tools.chdir(os.path.join(self.package_folder, "lib-dev")):
             # Copy from glibc-dev
             libs = [
                 "libdl.so",
@@ -57,6 +57,7 @@ class GlibcRecipe(Recipe):
             libs = [
                 "libc.so.6",
                 "libm.so.6",
+                "libmvec.so.1",
                 "libpthread.so.0",
                 "libdl.so.2",
                 "librt.so.1",
@@ -87,5 +88,5 @@ class GlibcRecipe(Recipe):
                 shutil.copy2(f"/lib/{lib}", lib)
 
     def package_info(self):
-        self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib")
+        self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib-dev")
         self.env_info.LIBC_INCLUDE_PATH = os.path.join(self.package_folder, "include")
