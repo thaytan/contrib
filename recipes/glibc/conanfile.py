@@ -57,7 +57,6 @@ class GlibcRecipe(Recipe):
             libs = [
                 "libc.so.6",
                 "libm.so.6",
-                "libmvec.so.1",
                 "libpthread.so.0",
                 "libdl.so.2",
                 "librt.so.1",
@@ -67,6 +66,8 @@ class GlibcRecipe(Recipe):
                 "libselinux.so.1",
                 "libpcre.so.3",
             ]
+            if arch == "x86_64":
+                libs.append("libmvec.so.1")
             for lib in libs:
                 shutil.copy2(f"/lib/{arch}-linux-gnu/{lib}", lib)
                 for ld_script in ld_scripts:
