@@ -1,7 +1,7 @@
 from build import *
 
 
-class RustcRecipe(RustRecipe):
+class RustcRecipe(Recipe):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT"
     build_requires = (
@@ -45,4 +45,4 @@ class RustcRecipe(RustRecipe):
         self.exe("python x.py install")
 
     def package_info(self):
-        self.env_info.RUSTFLAGS = "-g -Clinker-plugin-lto -Copt-level=2"
+        self.env_info.RUSTFLAGS = "-g -Copt-level=2"
