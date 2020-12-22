@@ -1,44 +1,38 @@
 from build import *
 
 
-class GstPluginsGoodRecipe(Recipe):
+class GstPluginsGoodRecipe(GstreamerRecipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
-    options = {"x11": [True, False]}
-    default_options = ("x11=True",)
-    build_requires = ("cc/[^1.0.0]", "meson/[^0.55.3]")
+    build_requires = (
+        "cc/[^1.0.0]", 
+        "meson/[^0.55.3]",
+    )
     requires = (
-        "libpng/[^1.6.37]",
         "libvpx/[^1.8.0]",
         "libjpeg-turbo/[^2.0.3]",
-        "gst-plugins-base/[^1.18.1]")
+        "gst-plugins-base/[^1.18.1]",
     )
-
-    def requirements(self):
-        if self.options.x11:
-            self.requires("libxdamage/[^1.1.5]")
 
     def source(self):
         self.get(f"https://github.com/GStreamer/gst-plugins-good/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = [
-            "-Dautodetect=enabled",
-            "-Drtp=enabled",
-            "-Drtsp=enabled",
-            "-Drtpmanager=enabled",
-            "-Dudp=enabled",
-            "-Dpng=enabled",
-            "-Disomp4=enabled",
-            "-Dvideofilter=enabled",
-            "-Dvpx=enabled",
-            "-Dmultifile=enabled",
-            "-Dmatroska=enabled",
-            "-Dvideomixer=enabled",
-            "-Dximagesrc=enabled",
-            "-Dximagesrc-xdamage=enabled",
-            "-Dxshm=enabled",
-            "-Djpeg=enabled",
-        ]
-        self.meson(args)
+        opts = {
+            "autodetect": True,
+            "rtp": True,
+            "rtsp": True,
+            "rtpmanager": True,
+            "udp": True,
+            "png": True,
+            "isomp4": True,
+            "videofilter": True,
+            "vpx": True,
+            "multifile": True,
+            "matroska": True,
+            "videomixer": True,
+            "ximagesrc": True,
+            "ximagesrc-xdamage": True,
+            "jpeg": True,
+        }
+        self.meson(opts)
