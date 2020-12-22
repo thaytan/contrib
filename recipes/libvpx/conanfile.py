@@ -19,5 +19,9 @@ class LibVpxRecipe(Recipe):
             "--disable-install-docs",
             "--disable-install-srcs",
         ]
+        if self.options.shared:
+            args.append("--enable-shared")
+            args.append("--disable-static")
         os.environ["STRIP"] = "no"
+        os.environ["LDFLAGS"] = "-lpthread"
         self.autotools(args)
