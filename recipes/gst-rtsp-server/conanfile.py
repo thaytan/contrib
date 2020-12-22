@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerRtspServerRecipe(Recipe):
+class GstRtspServerRecipe(Recipe):
     description = "A framework for streaming media"
     license = "LGPL"
     options = {

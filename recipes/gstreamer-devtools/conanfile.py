@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerDevtoolsRecipe(Recipe):
+class GstDevtoolsRecipe(Recipe):
     description = "Development and debugging tools for GStreamer"
     license = "LGPL"
     options = {
@@ -21,7 +21,7 @@ class GStreamerDevtoolsRecipe(Recipe):
         "meson/[^0.51.2]",
     )
     requires = (
-        "gstreamer-plugins-base/[^1.16]",
+        "gst-plugins-base/[^1.16]",
         "json-glib/[~1.4.4]",
     )
 

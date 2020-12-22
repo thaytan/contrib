@@ -1,22 +1,23 @@
 from build import *
 
 
-class GstreamerNvJetsonEgl(Recipe):
+class GstNvJetsonEgl(Recipe):
     description = "NVIDIA jetson egl element"
     license = "LGPL"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
-    gst_version = "1.16"
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
     )
+    requires = (
+        "mesa/[^19.2.0]",
+        "gst-plugins-base/[^1.18.1]",
+    )
 
     def requirements(self):
-        self.requires("mesa/[^19.2.0]")
         self.requires(f"nv-jetson-drivers/[^{self.version}]")
         self.requires(f"nv-jetson-v4l2/[^{self.version}]")
-        self.requires(f"gstreamer-plugins-base/[^{self.gst_version}]")
 
     def source(self):
         if self.options.jetson in ("TX2", "Xavier"):

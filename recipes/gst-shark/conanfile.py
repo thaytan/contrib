@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstreamerSharkRecipe(Recipe):
+class GstSharkRecipe(Recipe):
     description = "GstShark is a front-end for GStreamer traces "
     license = "LGPL"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")

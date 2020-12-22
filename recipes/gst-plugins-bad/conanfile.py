@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerPluginsBadRecipe(Recipe):
+class GstPluginsBadRecipe(Recipe):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     exports = "reduce_latency.patch"
@@ -53,6 +53,9 @@ class GStreamerPluginsBadRecipe(Recipe):
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
     )
+    requires = (
+        "gst-plugins-base/[^1.18.1]",
+    )
 
     def configure(self):
         if self.settings.arch_build != "x86_64":
@@ -66,7 +69,6 @@ class GStreamerPluginsBadRecipe(Recipe):
             self.build_requires("orc/[^0.4.31]")
 
     def requirements(self):
-        self.requires(f"gstreamer-plugins-base/[~{self.settings.gstreamer}]")
         if self.options.webrtc:
             self.requires("libnice/[^0.1]")
         if self.options.srtp:

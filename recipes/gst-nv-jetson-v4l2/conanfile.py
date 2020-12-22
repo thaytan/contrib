@@ -7,20 +7,21 @@ mapper = {
 }
 
 
-class GstreamerNvJetsonV4l2(Recipe):
+class GstNvJetsonV4l2(Recipe):
     description = "NVIDIA jetson v4l2 element"
     license = "LGPL"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
-    gst_version = "1.16.0"
     exports_sources = {"patches/*"}
     build_requires = ("pkgconf/[^1.6.3]",)
+    requires(
+        "gst-plugins-base/[^1.18.1]",
+        "libglvnd/[^1.2.0]",
+    )
 
     def requirements(self):
         self.requires(f"nv-jetson-drivers/[^{self.version}]")
         self.requires(f"nv-jetson-v4l2/[^{self.version}]")
-        self.requires(f"gstreamer-plugins-base/[^{self.gst_version}]")
-        self.requires("libglvnd/[^1.2.0]")
 
     def source(self):
         self.get(f"https://developer.nvidia.com/embedded/dlc/r{self.version.replace('.', '-')}_Release_v1.0/Sources/{mapper[str(self.options.jetson)]}/public_sources.tbz2")

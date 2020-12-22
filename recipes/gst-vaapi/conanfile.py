@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerVaapiRecipe(Recipe):
+class GstVaapiRecipe(Recipe):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
@@ -24,10 +24,10 @@ class GStreamerVaapiRecipe(Recipe):
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
     )
-    requires = ("libva/[^2.9.0]",)
-
-    def requirements(self):
-        self.requires(f"gstreamer-plugins-bad/[~{self.settings.gstreamer}]")
+    requires = (
+        "libva/[^2.9.0]",
+        "gst-plugins-bad/[^1.18.1]",
+    )
 
     def source(self):
         self.get(f"https://github.com/GStreamer/gstreamer-vaapi/archive/{self.version}.tar.gz")

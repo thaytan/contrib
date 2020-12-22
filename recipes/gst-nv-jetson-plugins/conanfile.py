@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstreamerNvJetsonPluginsRecipe(Recipe):
+class GstNvJetsonPluginsRecipe(Recipe):
     description = "Demo conan package"
     license = "MIT"
     exports_sources = ["lib/gstreamer-1.0/*.so"]

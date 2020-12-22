@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerPluginsGoodRecipe(Recipe):
+class GstPluginsGoodRecipe(Recipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
@@ -12,10 +12,10 @@ class GStreamerPluginsGoodRecipe(Recipe):
         "libpng/[^1.6.37]",
         "libvpx/[^1.8.0]",
         "libjpeg-turbo/[^2.0.3]",
+        "gst-plugins-base/[^1.18.1]")
     )
 
     def requirements(self):
-        self.requires(f"gstreamer-plugins-base/[~{self.settings.gstreamer}]")
         if self.options.x11:
             self.requires("libxdamage/[^1.1.5]")
 

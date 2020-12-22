@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerPluginsBaseRecipe(GstreamerRecipe):
+class GstPluginsBaseRecipe(GstreamerRecipe):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
     options = {
@@ -21,7 +21,7 @@ class GStreamerPluginsBaseRecipe(GstreamerRecipe):
         "meson/[^0.55.2]",
     )
     requires = (
-        "gstreamer/[^1.18.1]",
+        "gst/[^1.18.1]",
         "opus/[^1.3.1]",
         "pango/[^1.43.0]",
         "orc/[^0.4.29]",

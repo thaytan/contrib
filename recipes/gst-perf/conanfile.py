@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerPerfRecipe(Recipe):
+class GstPerfRecipe(Recipe):
     description = "Performance Evaluation tool for Gstreamer"
     license = "LGPL"
     build_requires = (
@@ -10,10 +10,10 @@ class GStreamerPerfRecipe(Recipe):
         "automake/[^1.16.1]",
         "autoconf/[^2.69]",
     )
-
-    def requirements(self):
-        self.requires("glib/[^2.62.0]")
-        self.requires(f"gstreamer/[^{self.gst_version}]")
+    requires = (
+        "glib/[^2.62.0]",
+        "gst/[^1.18.1]",
+    )
 
     def source(self):
         git = tools.Git()

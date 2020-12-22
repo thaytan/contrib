@@ -1,7 +1,7 @@
 from build import *
 
 
-class GStreamerPythonRecipe(Recipe):
+class GstPythonRecipe(Recipe):
     description = "Gstreamer Python bindings"
     license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
