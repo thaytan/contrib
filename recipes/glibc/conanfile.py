@@ -89,5 +89,6 @@ class GlibcRecipe(Recipe):
                 shutil.copy2(f"/lib/{lib}", lib)
 
     def package_info(self):
-        self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib-dev")
         self.env_info.LIBC_INCLUDE_PATH = os.path.join(self.package_folder, "include")
+        self.env_info.LIBC_LIBRARY_PATH = os.path.join(self.package_folder, "lib-dev")
+        self.env_info.CMAKE_LIBRARY_PATH = os.path.join(self.package_folder, "lib-dev")
