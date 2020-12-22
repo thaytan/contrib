@@ -5,7 +5,7 @@ class RustRecipe(RustRecipe):
     description = "Virtual rust package"
     license = "MIT"
     requires = (
-        "sccache/[^0.2.13]",
+        "sccache/[^0.2.14]",
         "pkgconf/[^1.7.3]",
     )
 
