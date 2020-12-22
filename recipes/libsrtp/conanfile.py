@@ -8,6 +8,12 @@ class LibsrtpRecipe(Recipe):
         "cc/[^1.0.0]", 
         "cmake/[^3.18.4]",
     )
+    exports_sources = (
+        "libsrtp2.pc",
+    )
 
     def source(self):
         self.get(f"https://github.com/cisco/libsrtp/archive/v{self.version}.tar.gz")
+
+    def package(self):
+        self.copy("libsrtp2.pc", dst="lib/pkgconfig")
