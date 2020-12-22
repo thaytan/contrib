@@ -4,14 +4,10 @@ from build import *
 class GstPluginsBadRecipe(Recipe):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
-    exports = "reduce_latency.patch"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     options = {
         "introspection": [True, False],
         "videoparsers": [True, False],
         "gl": [True, False],
-        "nvdec": [True, False],
-        "nvenc": [True, False],
         "nvcodec": [True, False],
         "pnm": [True, False],
         "webrtc": [True, False],
@@ -31,8 +27,6 @@ class GstPluginsBadRecipe(Recipe):
         "introspection=True",
         "videoparsers=True",
         "gl=True",
-        "nvdec=False",
-        "nvenc=False",
         "nvcodec=False",
         "pnm=True",
         "webrtc=True",
@@ -54,23 +48,20 @@ class GstPluginsBadRecipe(Recipe):
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
-        "gst-plugins-base/[^1.18.1]",
+        "libnice/[^0.1.18]",
     )
+    exports = "reduce_latency.patch"
 
     def configure(self):
-        if self.settings.arch_build != "x86_64":
-            self.options.remove("nvdec")
-            self.options.remove("nvenc")
+        if self.settings.arch != "x86_64":
             self.options.remove("nvcodec")
 
     def build_requirements(self):
-        if self.settings.arch_build == "x86_64" and (self.options.nvenc or self.options.nvdec):
+        if self.settings.arch == "x86_64" and self.options.nvcodec:
             self.build_requires("cuda/[~10.1]")
             self.build_requires("orc/[^0.4.31]")
 
     def requirements(self):
-        if self.options.webrtc:
-            self.requires("libnice/[^0.1]")
         if self.options.srtp:
             self.requires("libsrtp/[^2.2.0]")
         if self.options.opencv:
@@ -84,24 +75,22 @@ class GstPluginsBadRecipe(Recipe):
         self.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = []
-        args.append("-Dvideoparsers=" + ("enabled" if self.options.videoparsers else "disabled"))
-        args.append("-Dgl=" + ("enabled" if self.options.gl else "disabled"))
-        args.append("-Dpnm=" + ("enabled" if self.options.pnm else "disabled"))
-        args.append("-Dwebrtc=" + ("enabled" if self.options.webrtc else "disabled"))
-        args.append("-Dsrtp=" + ("enabled" if self.options.srtp else "disabled"))
-        args.append("-Drtmp2=" + ("enabled" if self.options.rtmp2 else "disabled"))
-        args.append("-Ddtls=" + ("enabled" if self.options.srtp else "disabled"))
-        args.append("-Dmpegtsmux=" + ("enabled" if self.options.mpegtsmux else "disabled"))
-        args.append("-Dmpegtsdemux=" + ("enabled" if self.options.mpegtsdemux else "disabled"))
-        args.append("-Ddebugutils=" + ("enabled" if self.options.debugutils else "disabled"))
-        args.append("-Dopencv=" + ("enabled" if self.options.opencv else "disabled"))
-        args.append("-Dclosedcaption=" + ("enabled" if self.options.closedcaption else "disabled"))
-        args.append("-Dinter=" + ("enabled" if self.options.inter else "disabled"))
-        args.append("-Dwebp=" + ("enabled" if self.options.webp else "disabled"))
-        if self.settings.arch_build == "x86_64":
-            args.append("-Dnvdec=" + ("enabled" if self.options.nvdec else "disabled"))
-            args.append("-Dnvenc=" + ("enabled" if self.options.nvenc else "disabled"))
-            if self.version == "master":
-                args.append("-Dnvcodec=" + ("enabled" if self.options.nvcodec else "disabled"))
-        self.meson(args)
+        opts = {
+            "videoparsers": self.options.videoparsers,
+            "gl": self.options.gl,
+            "pnm": self.options.pnm,
+            "webrtc": self.options.webrtc,
+            "srtp": self.options.srtp,
+            "rtmp2": self.options.rtmp2,
+            "dtls": self.options.srtp,
+            "mpegtsmux": self.options.mpegtsmux,
+            "mpegtsdemux": self.options.mpegtsdemux,
+            "debugutils": self.options.debugutils,
+            "opencv": self.options.opencv,
+            "closedcaption": self.options.closedcaption,
+            "inter": self.options.inter,
+            "webp": self.options.webp,
+        }
+        if self.settings.arch == "x86_64":
+            opts["nvcodec"] = self.options.nvcodec
+        self.meson(opts)
