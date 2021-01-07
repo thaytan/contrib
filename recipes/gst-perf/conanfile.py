@@ -12,7 +12,7 @@ class GstPerfRecipe(Recipe):
     )
     requires = (
         "glib/[^2.62.0]",
-        "gst/[^1.18.1]",
+        "gst/[^1.18]",
     )
 
     def source(self):

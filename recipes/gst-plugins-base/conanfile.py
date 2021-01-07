@@ -21,7 +21,7 @@ class GstPluginsBaseRecipe(GstreamerRecipe):
         "meson/[^0.55.2]",
     )
     requires = (
-        "gst/[^1.18.1]",
+        "gst/[^1.18]",
         "opus/[^1.3.1]",
         "pango/[^1.43.0]",
         "orc/[^0.4.29]",

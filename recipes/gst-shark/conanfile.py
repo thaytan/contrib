@@ -4,9 +4,12 @@ from build import *
 class GstSharkRecipe(Recipe):
     description = "GstShark is a front-end for GStreamer traces "
     license = "LGPL"
-    build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
+    build_requires = (
+        "cc/[^1.0.0]", 
+        "autotools/[^1.0.0]",
+    )
     requires = (
-        "gstreamer/[^1.16.0]",
+        "gstreamer/[^1.18]",
         "graphviz/[^2.42.1]",
     )
 

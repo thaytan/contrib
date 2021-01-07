@@ -12,7 +12,7 @@ class GstNvJetsonEgl(Recipe):
     )
     requires = (
         "mesa/[^19.2.0]",
-        "gst-plugins-base/[^1.18.1]",
+        "gst-plugins-base/[^1.18]",
     )
 
     def requirements(self):

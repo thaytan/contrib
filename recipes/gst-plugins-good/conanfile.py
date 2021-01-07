@@ -11,7 +11,7 @@ class GstPluginsGoodRecipe(GstreamerRecipe):
     requires = (
         "libvpx/[^1.8.0]",
         "libjpeg-turbo/[^2.0.3]",
-        "gst-plugins-base/[^1.18.1]",
+        "gst-plugins-base/[^1.18]",
     )
 
     def source(self):

@@ -10,7 +10,7 @@ class LibNiceRecipe(GstreamerRecipe):
     )
     requires = (
         "openssl1/[^1.1.1h]",
-        "gst-plugins-base/[^1.18.1]",
+        "gst-plugins-base/[^1.18]",
     )
 
     def source(self):

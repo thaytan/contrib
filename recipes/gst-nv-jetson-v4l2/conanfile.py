@@ -15,7 +15,7 @@ class GstNvJetsonV4l2(Recipe):
     exports_sources = {"patches/*"}
     build_requires = ("pkgconf/[^1.6.3]",)
     requires(
-        "gst-plugins-base/[^1.18.1]",
+        "gst-plugins-base/[^1.18]",
         "libglvnd/[^1.2.0]",
     )
 

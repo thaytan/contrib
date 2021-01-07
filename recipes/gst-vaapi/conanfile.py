@@ -26,7 +26,7 @@ class GstVaapiRecipe(Recipe):
     )
     requires = (
         "libva/[^2.9.0]",
-        "gst-plugins-bad/[^1.18.1]",
+        "gst-plugins-bad/[^1.18]",
     )
 
     def source(self):
