@@ -17,4 +17,4 @@ class GObjectIntrospectionRecipe(PythonRecipe):
         self.get(f"https://github.com/GNOME/gobject-introspection/archive/{self.version}.tar.gz")
 
     def package_info(self):
-        self.env_info.PYTHONPATH += os.path.join(self.package_folder, "lib", "gobject-introspection")
+        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "gobject-introspection"))
