@@ -384,6 +384,21 @@ impl RgbdDemux {
                 "Pad `{}` was already created during previous CAPS negotiation with upstream element",
                 new_src_pad_name
             );
+            // Check if the pad requires new CAPS re-negotiation with downstream element
+            let existing_pad = src_pads.get_mut(stream_name).unwrap();
+            if let Some(current_caps) = &existing_pad.pad.get_current_caps() {
+                if current_caps != new_pad_caps {
+                    // Deactivate and mark the pad for reconfiguration
+                    existing_pad
+                        .pad
+                        .set_active(false)
+                        .expect("rgbdmux: Could not deactivate new src pad");
+                    existing_pad.pad.mark_reconfigure();
+
+                    // Prepare the pad for streaming again, i.e. send events and activate it
+                    self.prepare_new_pad(existing_pad, stream_name, new_pad_caps);
+                }
+            }
             return;
         }
 
