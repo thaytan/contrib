@@ -16,7 +16,7 @@ class LinuxHeadersRecipe(Recipe):
             f"ARCH={arch}",
             f'INSTALL_HDR_PATH="{self.package_folder}"',
         ]
-        self.make(args, "headers_install")
+        self.make(args, target="headers_install")
 
     def package_info(self):
         self.env_info.CPATH.append(os.path.join(self.package_folder, "include"))
