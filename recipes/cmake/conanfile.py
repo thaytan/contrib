@@ -7,10 +7,6 @@ class CMakeRecipe(Recipe):
     options = {}
     default_options = ()
 
-    def build_requirements(self):
-        if self.name == "cmake":
-            self.build_requires("cc/[^1.0.0]")
-
     def requirements(self):
         if self.name == "cmake":
             self.requires("cc/[^1.0.0]")
