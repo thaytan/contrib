@@ -4,6 +4,8 @@ from build import *
 class CMakeRecipe(Recipe):
     description = "A cross-platform open-source make system"
     license = "custom"
+    options = {}
+    default_options = ()
 
     def build_requirements(self):
         if self.name == "cmake":
