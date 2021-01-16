@@ -74,6 +74,7 @@ class GlibcRecipe(Recipe):
                     tools.replace_path_in_file(ld_script, f"/lib/{arch}-linux-gnu/{lib}", lib, strict=False)
             # Copy files from libgcc-7-dev
             libs = [
+                "libstdc++.so",
                 "libgcc_s.so",
                 "libgcc.a",
                 "libatomic.so",
