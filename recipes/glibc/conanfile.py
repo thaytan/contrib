@@ -12,16 +12,20 @@ class GlibcRecipe(Recipe):
         self.get(f"https://ftp.gnu.org/gnu/glibc/glibc-{self.version}.tar.xz")
 
     def build(self):
+        # Copy libstdc++ headers
+        shutil.copytree("/usr/include/c++/7", os.path.join(self.package_folder, "include")) 
+
         self.autotools(target="install-headers")
 
     def package(self):
         # install-headers does not create include/gnu/stubs.h
         pathlib.Path(os.path.join(self.package_folder, "include", "gnu", "stubs.h")).touch()
 
-        # Use system libgcc_s
+        # Copy glibc and gcc libs 
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
-        os.makedirs(os.path.join(self.package_folder, "lib-dev"))
-        with tools.chdir(os.path.join(self.package_folder, "lib-dev")):
+        lib_dir = os.path.join(self.package_folder, "lib-dev")
+        os.makedirs(lib_dir)
+        with tools.chdir(lib_dir):
             # Copy from glibc-dev
             libs = [
                 "libdl.so",
