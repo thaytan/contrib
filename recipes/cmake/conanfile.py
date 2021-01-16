@@ -4,15 +4,13 @@ from build import *
 class CMakeRecipe(Recipe):
     description = "A cross-platform open-source make system"
     license = "custom"
-    options = {"bootstrap": [True, False]}
-    default_options = ("bootstrap=False",)
 
     def build_requirements(self):
-        if not self.options.bootstrap:
+        if self.name == "cmake":
             self.build_requires("cc/[^1.0.0]")
 
     def requirements(self):
-        if not self.options.bootstrap:
+        if self.name == "cmake":
             self.requires("cc/[^1.0.0]")
             self.requires("ninja/[^1.10.0]")
             self.requires("pkgconf/[^1.7.3]")
