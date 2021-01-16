@@ -2,8 +2,6 @@
   version: 3.18.4
   image:
     bootstrap: true
-  options:
-    bootstrap: true
 - version: 3.18.4
   image:
     bootstrap: true
