@@ -4,12 +4,10 @@ from build import *
 class NinjaRecipe(Recipe):
     description = "Small build system with a focus on speed"
     license = "Apache"
-    options = {"bootstrap": [True, False]}
-    default_options = ("bootstrap=False",)
     build_requires = ("cmake-bootstrap/[^3.18.4]",)
 
     def build_requirements(self):
-        if not self.options.bootstrap:
+        if self.name == "ninja":
             self.build_requires("cc/[^1.0.0]")
             self.build_requires("make/[^4.3]")
 
