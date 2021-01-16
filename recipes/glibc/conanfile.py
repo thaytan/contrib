@@ -77,6 +77,8 @@ class GlibcRecipe(Recipe):
                 "libgcc_s.so",
                 "libgcc.a",
                 "libatomic.so",
+                "crtbegin.o",
+                "crtend.o",
             ]
             for lib in libs:
                 shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/{lib}", lib)
