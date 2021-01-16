@@ -6,15 +6,11 @@ class LlvmRecipe(Recipe):
     license = "custom"
     exports = ("disable-system-libs.patch",)
     build_requires = (
-        "cmake/[^3.18.4]",
-        "ninja/[^1.10.0]",
+        "cmake-bootstrap/[^3.18.4]",
+        "ninja-bootstrap/[^1.10.0]",
         "libc/[^1.0.0]",
     )
     requires = "file/[^5.39]"
-
-    def configure(self):
-        self.options["cmake"].bootstrap = True
-        self.options["ninja"].bootstrap = True
 
     def source(self):
         self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
