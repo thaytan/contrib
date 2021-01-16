@@ -15,7 +15,7 @@ jobs:
       uses: aivero/conan-action@test
       with:
         package: ${{ github.event.client_payload.package }}
-        arguments: ${{ github.event.client_payload.arguments }}
+        args: ${{ github.event.client_payload.args }}
         profile: ${{ github.event.client_payload.profile }}
         path: ${{ github.event.client_payload.path }}
       env:
