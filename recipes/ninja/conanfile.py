@@ -6,16 +6,12 @@ class NinjaRecipe(Recipe):
     license = "Apache"
     options = {"bootstrap": [True, False]}
     default_options = ("bootstrap=False",)
-    build_requires = ("cmake/[^3.18.4]",)
+    build_requires = ("cmake-bootstrap/[^3.18.4]",)
 
     def build_requirements(self):
         if not self.options.bootstrap:
             self.build_requires("cc/[^1.0.0]")
             self.build_requires("make/[^4.3]")
-
-    def configure(self):
-        # Avoid circular requirement
-        self.options["cmake"].bootstrap = True
 
     def source(self):
         self.get(f"https://github.com/ninja-build/ninja/archive/v{self.version}.tar.gz")
