@@ -71,31 +71,25 @@ class LlvmRecipe(Recipe):
         defs["CLANG_ENABLE_STATIC_ANALYZER"] = True
 
         # libcxx
-        if self.settings.compiler.libcxx == "libc++":
-            defs["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
-            defs["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
+        defs["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
+        defs["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
 
-            # compiler-rt options
-            defs["COMPILER_RT_BUILD_SANITIZERS"] = False
-            defs["COMPILER_RT_BUILD_XRAY"] = False
-            defs["COMPILER_RT_BUILD_LIBFUZZER"] = False
+        # compiler-rt options
+        defs["COMPILER_RT_BUILD_SANITIZERS"] = False
+        defs["COMPILER_RT_BUILD_XRAY"] = False
+        defs["COMPILER_RT_BUILD_LIBFUZZER"] = False
 
-            # libcxx options
-            defs["LIBCXX_ENABLE_SHARED"] = False
-            defs["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
-            defs["LIBCXX_USE_COMPILER_RT"] = True
-            if self.settings.libc == "musl":
-                defs["LIBCXX_HAS_MUSL_LIBC"] = True
+        # libcxx options
+        defs["LIBCXX_ENABLE_SHARED"] = False
+        defs["LIBCXX_ENABLE_STATIC_ABI_LIBRARY"] = True
+        defs["LIBCXX_USE_COMPILER_RT"] = True
+        if self.settings.libc == "musl":
+            defs["LIBCXX_HAS_MUSL_LIBC"] = True
 
-            # libcxxabi options
-            defs["LIBCXXABI_ENABLE_SHARED"] = False
-            defs["LIBCXXABI_USE_COMPILER_RT"] = True
+        # libcxxabi options
+        defs["LIBCXXABI_ENABLE_SHARED"] = False
+        defs["LIBCXXABI_USE_COMPILER_RT"] = True
         
-        # Copy system libstdc++ (TODO: build it)
-        else: 
-            shutil.copytree("/usr/include/c++/7", os.path.join(self.package_folder, "include", "c++", "v1")) 
-            shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/libstdc++.so", "libstdc++.so")
-
         ###########
         # Stage 0 #
         ###########
@@ -109,6 +103,8 @@ class LlvmRecipe(Recipe):
 
         # Stage 0 build (lld, clang, ar)
         targets = [
+            "install-cxx",
+            "install-compiler-rt",
             "install-clang",
             "install-clang-cpp",
             "install-clang-resource-headers",
@@ -119,11 +115,6 @@ class LlvmRecipe(Recipe):
             "install-lld",
             "install-llvm-tblgen",
         ]
-        if self.settings.compiler.libcxx == "libc++":
-            targets += [
-                "install-cxx",
-                "install-compiler-rt",
-            ]
         self.cmake(
             defs,
             targets=targets,
@@ -150,23 +141,22 @@ class LlvmRecipe(Recipe):
 
         # Only needed for building libcxx
         cflags = ""
-        if self.settings.compiler.libcxx == "libc++":
-            # Install stage 1 to build directory
-            stage1_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
-            defs["CMAKE_INSTALL_PREFIX"] = stage1_folder
+        # Install stage 1 to build directory
+        stage1_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
+        defs["CMAKE_INSTALL_PREFIX"] = stage1_folder
 
-            # Statically link everything with musl
-            if self.settings.libc == "musl":
-                cflags = "-static"
+        # Statically link everything with musl
+        if self.settings.libc == "musl":
+            cflags = "-static"
 
-            libcxx_lib = os.path.join(stage0_folder, "lib")
-            os.environ["LIBRARY_PATH"] = libcxx_lib
-            os.environ["CFLAGS"] = cflags
-            os.environ["CXXLAGS"] = cflags
-            os.environ["LDFLAGS"] = cflags
+        libcxx_lib = os.path.join(stage0_folder, "lib")
+        os.environ["LIBRARY_PATH"] = libcxx_lib
+        os.environ["CFLAGS"] = cflags
+        os.environ["CXXLAGS"] = cflags
+        os.environ["LDFLAGS"] = cflags
 
-            # Stage 1 build (cxx, cxxabi)
-            self.cmake(defs, targets=["install-cxx", "install-compiler-rt",], build_folder=f"stage1-{self.version}")
+        # Stage 1 build (cxx, cxxabi)
+        self.cmake(defs, targets=["install-cxx", "install-compiler-rt",], build_folder=f"stage1-{self.version}")
 
         ###########
         # Stage 2 #
@@ -175,28 +165,23 @@ class LlvmRecipe(Recipe):
         # Install stage 2 to package directory
         defs["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
-        # Use stage 1 libs
+        # Use stage 1 libs and incs
         ldflags = ""
-        if self.settings.compiler.libcxx == "libc++":
-            # GVN causes segmentation fault during recursion higher than 290
-            if self.settings.libc == "musl":
-                ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
-            libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
-            libcxx_lib = os.path.join(stage1_folder, "lib")
-            clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
-            clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
-        else:
-            libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
-            libcxx_lib = os.path.join(self.package_folder, "lib")
-            clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
-            clang_lib = os.path.join(stage0_folder, "lib", "clang", self.version, "lib", "linux")
-
+        # GVN causes segmentation fault during recursion higher than 290
+        if self.settings.libc == "musl":
+            ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
+        libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
+        libcxx_lib = os.path.join(stage1_folder, "lib")
+        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
+        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
         libc_inc = self.env["LIBC_INCLUDE_PATH"]
         os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
         os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
         os.environ["LIBRARY_PATH"] = libcxx_lib
 
         targets = [
+            "install-cxx",
+            "install-compiler-rt",
             "install-cxx",
             "install-compiler-rt",
             "install-libclang",
@@ -220,11 +205,6 @@ class LlvmRecipe(Recipe):
             "install-llvm-libraries",
             "install-llvm-headers",
         ]
-        if self.settings.compiler.libcxx == "libc++":
-            targets += [
-                "install-cxx",
-                "install-compiler-rt",
-            ]   
         # Stage 2 build (lld, clang, libcxx, libcxxabi)
         self.cmake(
             defs,
