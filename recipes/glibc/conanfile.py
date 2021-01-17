@@ -12,9 +12,6 @@ class GlibcRecipe(Recipe):
         self.get(f"https://ftp.gnu.org/gnu/glibc/glibc-{self.version}.tar.xz")
 
     def build(self):
-        # Copy libstdc++ headers
-        shutil.copytree("/usr/include/c++/7", os.path.join(self.package_folder, "include")) 
-
         self.autotools(target="install-headers")
 
     def package(self):
@@ -78,7 +75,6 @@ class GlibcRecipe(Recipe):
                     tools.replace_path_in_file(ld_script, f"/lib/{arch}-linux-gnu/{lib}", lib, strict=False)
             # Copy files from libgcc-7-dev
             libs = [
-                "libstdc++.so",
                 "libgcc_s.so",
                 "libgcc.a",
                 "libatomic.so",
