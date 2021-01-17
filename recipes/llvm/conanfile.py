@@ -176,8 +176,8 @@ class LlvmRecipe(Recipe):
         defs["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
         # Use stage 1 libs
+        ldflags = ""
         if self.settings.compiler.libcxx == "libc++":
-            ldflags = ""
             # GVN causes segmentation fault during recursion higher than 290
             if self.settings.libc == "musl":
                 ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
