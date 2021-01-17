@@ -185,7 +185,6 @@ class LlvmRecipe(Recipe):
             libcxx_lib = os.path.join(stage1_folder, "lib")
             clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
             clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
-            os.environ["LIBRARY_PATH"] = libcxx_lib
         else:
             libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
             libcxx_lib = os.path.join(self.package_folder, "lib")
@@ -195,6 +194,7 @@ class LlvmRecipe(Recipe):
         libc_inc = self.env["LIBC_INCLUDE_PATH"]
         os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
         os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
+        os.environ["LIBRARY_PATH"] = libcxx_lib
 
         targets = [
             "install-cxx",
