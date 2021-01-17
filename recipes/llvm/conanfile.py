@@ -90,6 +90,11 @@ class LlvmRecipe(Recipe):
             # libcxxabi options
             defs["LIBCXXABI_ENABLE_SHARED"] = False
             defs["LIBCXXABI_USE_COMPILER_RT"] = True
+        
+        # Copy system libstdc++ (TODO: build it)
+        else: 
+            shutil.copytree("/usr/include/c++/7", os.path.join(self.package_folder, "include", "c++", "v1")) 
+            shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/libstdc++.so", "libstdc++.so")
 
         ###########
         # Stage 0 #
@@ -144,17 +149,17 @@ class LlvmRecipe(Recipe):
         ###########
 
         # Only needed for building libcxx
+        cflags = ""
         if self.settings.compiler.libcxx == "libc++":
             # Install stage 1 to build directory
             stage1_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
             defs["CMAKE_INSTALL_PREFIX"] = stage1_folder
 
             # Statically link everything with musl
-            cflags = ""
             if self.settings.libc == "musl":
                 cflags = "-static"
-            libcxx_lib = os.path.join(stage0_folder, "lib")
 
+            libcxx_lib = os.path.join(stage0_folder, "lib")
             os.environ["LIBRARY_PATH"] = libcxx_lib
             os.environ["CFLAGS"] = cflags
             os.environ["CXXLAGS"] = cflags
@@ -176,15 +181,20 @@ class LlvmRecipe(Recipe):
             # GVN causes segmentation fault during recursion higher than 290
             if self.settings.libc == "musl":
                 ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
-            libc_inc = self.env["LIBC_INCLUDE_PATH"]
-            clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
-            clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
             libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
             libcxx_lib = os.path.join(stage1_folder, "lib")
+            clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
+            clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
             os.environ["LIBRARY_PATH"] = libcxx_lib
-            os.environ["CFLAGS"] = cflags  # Needed for tests
-            os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
-            os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
+        else:
+            libcxx_inc = os.path.join(self.package_folder, "include", "c++", "v1")
+            libcxx_lib = os.path.join(self.package_folder, "lib")
+            clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
+            clang_lib = os.path.join(stage0_folder, "lib", "clang", self.version, "lib", "linux")
+
+        libc_inc = self.env["LIBC_INCLUDE_PATH"]
+        os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
+        os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
 
         targets = [
             "install-cxx",
