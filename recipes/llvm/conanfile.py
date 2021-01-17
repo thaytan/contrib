@@ -212,6 +212,10 @@ class LlvmRecipe(Recipe):
             build_folder=f"stage2-{self.version}",
         )
 
+        # Create linker script that point libstdc++ to libc++
+        with open(os.path.join(self.package_folder, "lib", "libstdc++.so"), "w") as lib:
+            lib.write("GROUP ( -lc++ )") 
+
         # Make lld, clang, clang++, clang-cpp default
         with tools.chdir(os.path.join(self.package_folder, "bin")):
             os.symlink("ld.lld", "ld")
