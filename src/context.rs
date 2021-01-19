@@ -1,6 +1,6 @@
 // License: MIT. See LICENSE file in root directory.
 // Copyright(c) 2019 Aivero. All Rights Reserved.
-use crate::device::Device;
+use crate::device::{Device, DeviceList};
 use crate::error::Error;
 use crate::record_playback::Playback;
 use crate::sensor::Sensor;
@@ -50,16 +50,18 @@ impl Context {
     /// * `Err(Error)` on failure.
     pub fn query_devices(&self) -> Result<Vec<Device>, Error> {
         let mut error = Error::default();
-        let device_list = unsafe { rs2::rs2_query_devices(self.handle, error.inner()) };
+        let device_list = DeviceList {
+            handle: unsafe { rs2::rs2_query_devices(self.handle, error.inner()) },
+        };
         if error.check() {
             return Err(error);
         };
 
-        let count = unsafe { rs2::rs2_get_device_count(device_list, error.inner()) };
+        let count = unsafe { rs2::rs2_get_device_count(device_list.handle, error.inner()) };
         let mut res: Vec<Device> = Vec::new();
         for i in 0..count {
             res.push(Device {
-                handle: unsafe { rs2::rs2_create_device(device_list, i, error.inner()) },
+                handle: unsafe { rs2::rs2_create_device(device_list.handle, i, error.inner()) },
             });
             if error.check() {
                 return Err(error);
