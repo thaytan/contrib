@@ -14,4 +14,4 @@ class RustRecipe(RustRecipe):
         self.requires(f"rustc/[~{self.settings.rust}]")
 
     def package_info(self):
-        self.env_info.RUSTFLAGS = "-g -Copt-level=2"
+        self.env_info.RUSTFLAGS = "-g"
