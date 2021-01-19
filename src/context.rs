@@ -21,6 +21,8 @@ impl Drop for Context {
     }
 }
 
+unsafe impl Send for Context {}
+
 impl Context {
     /// Creates `RealSense` [`Context`](../context/struct.Context.html) that is
     /// required for the rest of the API, while utlising the current version.
