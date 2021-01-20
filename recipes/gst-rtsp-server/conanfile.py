@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstRtspServerRecipe(Recipe):
+class GstRtspServerRecipe(GstRecipe):
     description = "A framework for streaming media"
     license = "LGPL"
     options = {
@@ -31,12 +31,9 @@ class GstRtspServerRecipe(Recipe):
         self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/{self.version}/gst-rtsp-server-{self.version}.tar.gz")
 
     def build(self):
-        args = []
-        args.append("-Dcheck=" + ("enabled" if self.options.examples else "disabled"))
-        args.append("-Dtools=" + ("enabled" if self.options.tests else "disabled"))
-        args.append("-Dintrospection=" + ("enabled" if self.options.introspection else "disabled"))
-        args.append("-Drtspclientsink=" + ("enabled" if self.options.rtspclientsink else "disabled"))
-        self.meson(args)
-
-    def package_info(self):
-        self.env_info.GI_TYPELIB_PATH.append(os.path.join(self.package_folder, "lib", "girepository-1.0"))
+        opts = {}
+        opts["check"] = self.options.examples
+        opts["tools"] = self.options.tests
+        opts["introspection"] = self.options.introspection
+        opts["rtspclientsink"] = self.options.rtspclientsink
+        self.meson(opts)
