@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstPluginsBadRecipe(Recipe):
+class GstPluginsBadRecipe(GstRecipe):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     options = {
