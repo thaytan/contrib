@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstRecipe(GstreamerRecipe):
+class GstRecipe(GstRecipe):
     description = "A framework for streaming media"
     license = "LGPL"
     options = {
