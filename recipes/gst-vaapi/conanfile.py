@@ -34,4 +34,4 @@ class GstVaapiRecipe(GstRecipe):
     def build(self):
         opts = {}
         opts["with_encoders"] = self.options.encoders
-        self.meson(args)
+        self.meson(opts)
