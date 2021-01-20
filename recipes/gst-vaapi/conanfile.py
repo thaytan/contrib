@@ -1,10 +1,9 @@
 from build import *
 
 
-class GstVaapiRecipe(Recipe):
+class GstVaapiRecipe(GstRecipe):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
     options = {
         "encoders": [True, False],
         "egl": [True, False],
@@ -33,6 +32,6 @@ class GstVaapiRecipe(Recipe):
         self.get(f"https://github.com/GStreamer/gstreamer-vaapi/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = []
-        args.append("-Dwith_encoders=" + ("yes" if self.options.encoders else "no"))
+        opts = {}
+        opts["with_encoders"] = self.options.encoders
         self.meson(args)
