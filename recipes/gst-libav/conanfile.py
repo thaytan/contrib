@@ -1,10 +1,13 @@
 from build import *
 
 
-class GstLibavRecipe(Recipe):
+class GstLibavRecipe(GstRecipe):
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
     license = "GPL"
-    build_requires = ("cc/[^1.0.0]", "meson/[^0.51.2]")
+    build_requires = (
+        "cc/[^1.0.0]", 
+        "meson/[^0.51.2]"
+    )
     requires = (
         "glib/[^2.58.1]",
         "gst-plugins-base/[^1.18]",
