@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstPluginsGoodRecipe(GstreamerRecipe):
+class GstPluginsGoodRecipe(GstRecipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     build_requires = (
