@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstPluginsBaseRecipe(GstreamerRecipe):
+class GstPluginsBaseRecipe(GstRecipe):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
     options = {
