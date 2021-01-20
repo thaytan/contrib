@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibNiceRecipe(GstreamerRecipe):
+class LibNiceRecipe(GstRecipe):
     description = "An implementation of the IETF's Interactive Connectivity Establishment (ICE) standard"
     license = "LGPL"
     build_requires = (
