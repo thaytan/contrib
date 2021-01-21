@@ -7,6 +7,18 @@ use crate::sensor::Sensor;
 // Expose `rs2_camera_info` for external use.
 pub use rs2::rs2_camera_info;
 
+pub struct DeviceList {
+    pub(crate) handle: *mut rs2::rs2_device_list,
+}
+
+impl Drop for DeviceList {
+    fn drop(&mut self) {
+        unsafe {
+            rs2::rs2_delete_device_list(self.handle);
+        }
+    }
+}
+
 /// Struct representation of a [`Device`](../device/struct.Device.html) that wraps
 /// around `rs2_device` handle, which exposes the functionality of RealSense devices.
 pub struct Device {
