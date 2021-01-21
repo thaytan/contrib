@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Context` now implements `Send`
 
+### Fixed
+
+- Fixes memory leak in `Context::query_devices`
+
 ## [2.2.6] - 2020-Dec-15
 
 ### Fixed
