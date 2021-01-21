@@ -9,7 +9,7 @@ class CMakeRecipe(Recipe):
 
     def build_requirements(self):
         if self.name == "cmake":
-            self.requires(f"cmake-bootstrap/{self.version}")
+            self.build_requires(f"cmake-bootstrap/{self.version}")
 
     def requirements(self):
         if self.name == "cmake":
