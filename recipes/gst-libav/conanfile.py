@@ -6,7 +6,7 @@ class GstLibavRecipe(GstRecipe):
     license = "GPL"
     build_requires = (
         "cc/[^1.0.0]", 
-        "meson/[^0.51.2]"
+        "meson/[>=0.55.3]",
     )
     requires = (
         "gst-plugins-base/[^1.18]",
