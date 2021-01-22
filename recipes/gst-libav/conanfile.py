@@ -9,7 +9,6 @@ class GstLibavRecipe(GstRecipe):
         "meson/[^0.51.2]"
     )
     requires = (
-        "glib/[^2.58.1]",
         "gst-plugins-base/[^1.18]",
         "ffmpeg/[^4.1]",
     )
