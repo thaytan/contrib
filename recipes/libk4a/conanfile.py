@@ -1,7 +1,7 @@
 from build import *
 
 
-class KinectAzureSensorSDKRecipe(Recipe):
+class Libk4a(Recipe):
     description = "Azure Kinect SDK"
     license = "MIT"
     exports = "k4a.pc"
