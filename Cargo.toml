@@ -1,7 +1,7 @@
 [package]
 name = "gst-realsense"
-version = "0.0.0-ohmyconanpleaseoverwriteme"
-authors = ["Niclas Moeslund Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
+version = "0.0.0"
+authors = ["Niclas Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
 license = "LGPL"
 description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
 keywords = ["Realsense", "Source", "GStreamer", "Rust"]
@@ -11,33 +11,24 @@ readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-glib = "0.10"
-gstreamer = "0.16"
-gstreamer-base = "0.16"
-gstreamer-video = "0.16"
-lazy_static = "1.4"
-capnp = "0.12"
-
-[dependencies.gstreamer-depth-meta]
-git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "2.2.0"
-
-[dependencies.rgbd-timestamps]
-git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "2.2.0"
-
-[dependencies.librealsense2]
-git = "https://gitlab.com/aivero/public/librealsense-rs"
-tag = "2.2.6"
+glib = "0.10.3"
+gstreamer = "0.16.5"
+gstreamer-base = "0.16.5"
+gstreamer-video = "0.16.6"
+lazy_static = "1.4.0"
+capnp = "0.14.0"
+gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
+rgbd-timestamps = { path = "../rgbd-timestamps" }
+librealsense2 = { path = "../librealsense-rs" }
 
 [build-dependencies]
-capnpc = "0.12"
-gst-plugin-version-helper = "0.2"
+capnpc = "0.14.2"
+gst-plugin-version-helper = "0.2.0"
 
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
-version = "1"
+version = "1.5.0"
 default-features = false # Disable features which are enabled by default
 features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
 

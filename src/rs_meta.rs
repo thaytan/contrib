@@ -65,7 +65,7 @@ pub mod rs_meta_serialization {
         }
 
         let mut enc: Vec<u8> = Vec::new();
-        serialize_packed::write_message(&mut enc, &message)?;
+        serialize_packed::write_message(&mut enc, &message).unwrap();
         Ok(enc)
     }
 }

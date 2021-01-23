@@ -96,7 +96,7 @@ impl ObjectSubclass for RealsenseSrc {
             "Realsense Source",
             "Source/RGB-D/Realsense",
             "Stream `video/rgbd` from a RealSense device",
-            "Niclas Moeslund Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
+            "Niclas Overby <niclas.overby@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
 
         // Install properties for streaming from RealSense
