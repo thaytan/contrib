@@ -3,7 +3,7 @@ from build import *
 
 class Libtasn1Recipe(Recipe):
     description = "The ASN.1 library used in GNUTLS"
-    license = "GPL3"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",

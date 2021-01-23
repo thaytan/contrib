@@ -3,7 +3,7 @@ from build import *
 
 class Deepstream(Recipe):
     description = "Complete streaming analytics toolkit for AI-based video"
-    license = "proprietary"
+    license = "Proprietary"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
     default_options = ("jetson=TX2",)
 

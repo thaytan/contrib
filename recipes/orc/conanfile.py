@@ -3,7 +3,7 @@ from build import *
 
 class OrcRecipe(Recipe):
     description = "Optimized Inner Loop Runtime Compiler"
-    license = "LGPL-2.1"
+    license = "LGPL"
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[^0.55.3]",

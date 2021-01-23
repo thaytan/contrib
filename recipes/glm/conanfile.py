@@ -3,7 +3,7 @@ from build import *
 
 class GlmRecipe(Recipe):
     description = "OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications."
-    license = "MIT License"
+    license = "MIT"
     exports_sources = ["glm.pc"]
 
     def source(self):

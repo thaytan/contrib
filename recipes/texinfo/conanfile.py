@@ -3,7 +3,7 @@ from build import *
 
 class TexinfoRecipe(Recipe):
     description = "GNU documentation system for on-line information and printed output"
-    license = "GPL3"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",

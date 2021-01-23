@@ -3,7 +3,7 @@ from build import *
 
 class ZlibRecipe(Recipe):
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
-    license = "Zlib"
+    license = "custom"
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",

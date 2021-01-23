@@ -3,7 +3,7 @@ from build import *
 
 class LinuxHeadersRecipe(Recipe):
     description = "Linux headers"
-    license = "GPL2"
+    license = "GPL"
     options = {}
     default_options = {}
 

@@ -3,7 +3,7 @@ from build import *
 
 class AlsaLibRecipe(Recipe):
     description = "An alternative implementation of Linux sound support"
-    license = "LGPL2.1"
+    license = "LGPL"
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",

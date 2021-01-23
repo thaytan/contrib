@@ -3,7 +3,7 @@ from build import *
 
 class SccacheRecipe(RustRecipe):
     description = "Development and debugging tools for GStreamer"
-    license = "Apache2"
+    license = "Apache"
     build_requires = (
         "rustc/[^1.47.0]",
         "pkgconf/[^1.7.3]",

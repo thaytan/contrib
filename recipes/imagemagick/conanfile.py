@@ -3,7 +3,7 @@ from build import *
 
 class ImagemagickRecipe(Recipe):
     description = "An image viewing/manipulation program"
-    license = "GPL2"
+    license = "GPL"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
     requires = ("libpng/[^1.6.37]",)
 

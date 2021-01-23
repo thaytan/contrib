@@ -3,7 +3,7 @@ from build import *
 
 class GTestRecipe(Recipe):
     description = "Google's C++ test framework"
-    license = "BSD3"
+    license = "BSD"
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",

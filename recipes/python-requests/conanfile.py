@@ -3,8 +3,7 @@ from build import *
 
 class PythonRequestsRecipe(Recipe):
     description = "Python Requests module"
-    license = "Apache 2.0"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
+    license = "Apache"
     build_requires = (
         "pkgconf/[^1.6.3]",
         "python-setuptools/[^41.2.0]",

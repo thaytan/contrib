@@ -3,7 +3,7 @@ from build import *
 
 class NettleRecipe(Recipe):
     description = "A low-level cryptographic library"
-    license = "GPL2"
+    license = "GPL"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
     requires = ("gmp/[^6.2.0]",)
 

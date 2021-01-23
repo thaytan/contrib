@@ -3,7 +3,7 @@ from build import *
 
 class M4Recipe(Recipe):
     description = "The GNU macro processor"
-    license = "GPL3"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",

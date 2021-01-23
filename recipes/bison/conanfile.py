@@ -3,7 +3,7 @@ from build import *
 
 class BisonRecipe(Recipe):
     description = "Bison is a general-purpose parser generator"
-    license = "GPL3"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",

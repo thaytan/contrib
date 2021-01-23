@@ -3,7 +3,7 @@ from build import *
 
 class GLibRecipe(Recipe):
     description = "GLib provides the core application building blocks for libraries and applications written in C"
-    license = "LGPL2.1"
+    license = "LGPL"
     build_requires = ("cc/[^1.0.0]", "meson/[^0.55.3]")
     requires = (
         "libffi/[^3.3]",

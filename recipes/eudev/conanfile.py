@@ -3,7 +3,7 @@ from build import *
 
 class EudevRecipe(Recipe):
     description = "OpenRC compatible fork of systemd-udev"
-    license = "GPL2"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",

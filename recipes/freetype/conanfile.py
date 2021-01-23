@@ -3,7 +3,7 @@ from build import *
 
 class FreetypeRecipe(Recipe):
     description = "FreeType is a software library to render fonts"
-    license = "GPL2"
+    license = "GPL"
     options = {"harfbuzz": [True, False]}
     default_options = ("harfbuzz=True",)
     build_requires = (

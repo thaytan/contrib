@@ -3,7 +3,7 @@ from build import *
 
 class GdkPixbufRecipe(Recipe):
     description = "An image loading library"
-    license = "LGPL-2.1"
+    license = "LGPL"
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[^0.55.3]",

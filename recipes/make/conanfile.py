@@ -3,7 +3,7 @@ from build import *
 
 class MakeRecipe(Recipe):
     description = "GNU make utility to maintain groups of programs"
-    license = "GPL3"
+    license = "GPL"
     build_requires = "cc/[^1.0.0]"
 
     def source(self):

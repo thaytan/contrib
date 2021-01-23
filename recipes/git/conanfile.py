@@ -8,7 +8,7 @@ LDFLAGS=-ldl
 
 class GitRecipe(Recipe):
     description = "The fast distributed version control system"
-    license = "GPL2"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",

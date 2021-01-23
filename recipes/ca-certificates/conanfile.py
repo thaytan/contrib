@@ -3,7 +3,7 @@ from build import *
 
 class CaCertificatesRecipe(Recipe):
     description = "Common CA certificates PEM files from Mozilla"
-    license = "MPL-2.0"
+    license = "MPL"
     options = {}
     default_options = {}
     build_requires = (

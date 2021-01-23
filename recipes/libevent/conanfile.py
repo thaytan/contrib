@@ -3,7 +3,7 @@ from build import *
 
 class LibeventRecipe(Recipe):
     description = "Event notification library https://libevent.org"
-    license = "BSD-3-Clause"
+    license = "BSD"
     exports = "uninstall.patch"
     build_requires = (
         "env-generator/1.0.0",

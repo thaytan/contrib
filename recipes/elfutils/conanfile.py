@@ -3,7 +3,7 @@ from build import *
 
 class ElfutilsRecipe(Recipe):
     description = "Utilities and DSOs to handle ELF files and DWARF data"
-    license = "LGPL3"
+    license = "LGPL"
     exports = ("elfutils-clang.patch",)
     build_requires = (
         "cc/[^1.0.0]",

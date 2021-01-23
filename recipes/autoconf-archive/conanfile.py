@@ -3,7 +3,7 @@ from build import *
 
 class AutoconfArchiveRecipe(Recipe):
     description = "A collection of freely re-usable Autoconf macros"
-    license = "GPL3"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",

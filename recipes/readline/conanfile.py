@@ -3,7 +3,7 @@ from build import *
 
 class ReadlineRecipe(Recipe):
     description = "GNU readline library"
-    license = "GPL3"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",

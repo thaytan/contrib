@@ -3,7 +3,7 @@ from build import *
 
 class AutoconfRecipe(Recipe):
     description = "A GNU tool for automatically configuring source code"
-    license = "GPL3"
+    license = "GPL"
     exports = "m4-include.patch"
     build_requires = (
         "cc/[^1.0.0]",

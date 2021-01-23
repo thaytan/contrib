@@ -3,7 +3,7 @@ from build import *
 
 class PythonPillowRecipe(Recipe):
     description = "Python Image Library"
-    license = "Python-Imaging-Library-License"
+    license = "BSD"
     settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
     build_requires = (
         "cc/[^1.0.0]",

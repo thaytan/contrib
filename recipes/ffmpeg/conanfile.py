@@ -3,7 +3,7 @@ from build import *
 
 class FFMpegRecipe(Recipe):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
-    license = "GPL3"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",

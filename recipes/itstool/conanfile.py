@@ -3,8 +3,7 @@ from build import *
 
 class ItstoolRecipe(Recipe):
     description = "XML to PO and back again"
-    license = "GPL3"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
+    license = "GPL"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")
     requires = ("libxml2/[^2.9.10]",)
 

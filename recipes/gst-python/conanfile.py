@@ -3,8 +3,7 @@ from build import *
 
 class GstPythonRecipe(Recipe):
     description = "Gstreamer Python bindings"
-    license = "https://gitlab.freedesktop.org/gstreamer/gstreamer/raw/master/COPYING"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "gstreamer"
+    license = "LGPL"
     requires = (
         "gstreamer/[~1.16]",
         "gobject-introspection/1.66.1",

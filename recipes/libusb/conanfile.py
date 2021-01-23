@@ -3,7 +3,7 @@ from build import *
 
 class LibUSBRecipe(Recipe):
     description = "A cross-platform library to access USB devices"
-    license = "LGPL-2.1"
+    license = "LGPL"
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",

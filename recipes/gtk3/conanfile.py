@@ -3,7 +3,7 @@ from build import *
 
 class Gtk3Recipe(Recipe):
     description = "GObject-based multi-platform GUI toolkit"
-    license = "LGPL-2.1"
+    license = "LGPL"
     options = {
         "introspection": [True, False],
         "x11": [True, False],

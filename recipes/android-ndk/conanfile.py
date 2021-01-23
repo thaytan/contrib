@@ -3,8 +3,7 @@ from build import *
 
 class AndroidNdkRecipe(Recipe):
     description = "Android NDK"
-    license = "Apache-2.0"
-    settings = "build_type", "compiler", "arch", "os", "libc"
+    license = "Apache"
     options = {}
     default_options = {}
 

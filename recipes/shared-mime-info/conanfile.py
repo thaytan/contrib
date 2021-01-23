@@ -3,7 +3,7 @@ from build import *
 
 class SharedMimeInfoRecipe(Recipe):
     description = "Freedesktop.org Shared MIME Info"
-    license = "GPL2"
+    license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[^0.55.3]",
