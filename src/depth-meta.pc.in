@@ -4,8 +4,7 @@ libdir=${prefix}/lib
 includedir=${prefix}/include
 
 Name: depth-meta
-Description: Library with GStreamer Metadata for depth streaming
-Version: @GIT_PKG_VERSION@
+ADescription: Library with GStreamer Metadata for depth streaming
 Requires: gstreamer-1.0, gstreamer-video-1.0
 
 Libs: -L${libdir} -ldepth-meta

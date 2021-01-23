@@ -7,6 +7,4 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-execute_process(COMMAND conan install -g=cmake -s build_type=${CMAKE_BUILD_TYPE} -if ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR})
-
 add_subdirectory(src)

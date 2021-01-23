@@ -9,7 +9,6 @@ target_link_libraries(depth-meta ${GSTREAMER_LDFLAGS} ${GSTREAMER_PLUGINS_BASE_L
 include_directories(depth-meta ${GSTREAMER_INCLUDE_DIRS} ${GSTREAMER_PLUGINS_BASE_INCLUDE_DIRS})
 
 set(DEST_DIR "${CMAKE_INSTALL_PREFIX}")
-set(GIT_PKG_VERSION "$ENV{GIT_PKG_VER}")
 configure_file("depth-meta.pc.in" "depth-meta.pc" @ONLY)
 
 install(TARGETS depth-meta
