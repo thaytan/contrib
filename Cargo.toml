@@ -1,7 +1,7 @@
 [package]
 name = "gst-rgbd"
-version = "0.0.0-ohmyconanpleaseoverwriteme" # Overwritten during conan create.
-authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
+version = "0.0.0" # Overwritten during conan create.
+authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>", "Niclas Overby <niclas.overby@aivero.com"]
 license = "LGPL"
 description = "GStreamer plugin for demuxing and muxing `video/rgbd` streams"
 keywords = ["RGB-D", "Demux", "Mux", "GStreamer", "Rust"]
@@ -11,21 +11,18 @@ readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-glib = "0.10"
-gstreamer = "0.16"
-gstreamer-base = { version = "0.16", features = ["v1_14_1"] }
-lazy_static = "1.4"
-
-[dependencies.gstreamer-depth-meta]
-git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs"
-tag = "2.1.0"
+glib = "0.10.3"
+gstreamer = "0.16.5"
+gstreamer-base = { version = "0.16.5", features = ["v1_14_1"] }
+lazy_static = "1.4.0"
+gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
 
 [build-dependencies]
-gst-plugin-version-helper = "0.2"
+gst-plugin-version-helper = "0.2.0"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
-version = "1"
+version = "1.5.0"
 default-features = false # Disable features which are enabled by default
 features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
 
