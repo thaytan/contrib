@@ -1,6 +1,6 @@
 use crate::extrinsics::Extrinsics;
 use crate::intrinsics::Intrinsics;
-use k4a_sys::k4a_calibration_camera_t;
+use libk4a_sys::k4a_calibration_camera_t;
 
 /// Safe rust wrapper for the [k4a_calibration_camera_t](https://microsoft.github.io/Azure-Kinect-Sensor-SDK/release/1.3.x/structk4a__calibration__camera__t.html) struct.
 /// Camera calibration contains intrinsic and extrinsic calibration information for a camera.

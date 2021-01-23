@@ -1,5 +1,5 @@
 use crate::error::*;
-use k4a_sys::*;
+use libk4a_sys::*;
 
 use crate::image::Image;
 

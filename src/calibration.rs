@@ -1,4 +1,4 @@
-use k4a_sys::*;
+use libk4a_sys::*;
 
 use crate::camera_calibration::CameraCalibration;
 use crate::extrinsics::Extrinsics;

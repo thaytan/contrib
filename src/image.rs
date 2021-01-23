@@ -1,4 +1,4 @@
-use k4a_sys::*;
+use libk4a_sys::*;
 
 use crate::error::{K4aError, Result};
 use std::convert::TryInto;

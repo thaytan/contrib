@@ -1,4 +1,4 @@
-use k4a_sys::*;
+use libk4a_sys::*;
 
 /// Struct representation [`Record`](../record/struct.Record.html) that wraps around `k4a_record_t`,
 /// which is a handle to a recording opened for record.

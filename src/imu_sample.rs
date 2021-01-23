@@ -1,4 +1,4 @@
-use k4a_sys::*;
+use libk4a_sys::*;
 
 /// Struct representation of [`ImuSample`](../imu_sample/struct.ImuSample.html) that wraps around
 /// `k4a_imu_sample_t`, which manages an IMU buffer and associated metadata.

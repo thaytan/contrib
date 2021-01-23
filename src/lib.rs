@@ -13,18 +13,18 @@ pub mod transformation;
 pub mod utilities;
 
 // Give direct access to these structs in external applications.
-pub use k4a_sys::DeviceConfiguration;
-pub use k4a_sys::RecordConfiguration;
+pub use libk4a_sys::DeviceConfiguration;
+pub use libk4a_sys::RecordConfiguration;
 
 // Give direct access to these enumerations in external applications.
-pub use k4a_sys::CalibrationModelType;
-pub use k4a_sys::CalibrationType;
-pub use k4a_sys::ColorControlCommand;
-pub use k4a_sys::ColorResolution;
-pub use k4a_sys::DepthMode;
-pub use k4a_sys::FirmwareBuild;
-pub use k4a_sys::FirmwareSignature;
-pub use k4a_sys::Fps;
-pub use k4a_sys::ImageFormat;
-pub use k4a_sys::PlaybackSeekOrigin;
-pub use k4a_sys::WiredSyncMode;
+pub use libk4a_sys::CalibrationModelType;
+pub use libk4a_sys::CalibrationType;
+pub use libk4a_sys::ColorControlCommand;
+pub use libk4a_sys::ColorResolution;
+pub use libk4a_sys::DepthMode;
+pub use libk4a_sys::FirmwareBuild;
+pub use libk4a_sys::FirmwareSignature;
+pub use libk4a_sys::Fps;
+pub use libk4a_sys::ImageFormat;
+pub use libk4a_sys::PlaybackSeekOrigin;
+pub use libk4a_sys::WiredSyncMode;

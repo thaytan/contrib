@@ -1,4 +1,4 @@
-use k4a_sys::{
+use libk4a_sys::{
     k4a_calibration_intrinsic_parameters_t, k4a_calibration_intrinsics_t, CalibrationModelType,
 };
 

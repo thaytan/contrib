@@ -1,7 +1,0 @@
-/target
-**/*.rs.bk
-Cargo.lock
-*.code-workspace
-.vscode
-.idea/
-build/
