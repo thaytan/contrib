@@ -1,34 +1,16 @@
-from conans import ConanFile, CMake, tools
-import os
+from build import *
 
-class GstreamerColorizerConan(ConanFile):
-    name = "gstreamer-colorizer"
-    license = "LGPL"
-    description = "Plugin to colorize 16 bit grayscale depth images with a color map"
-    url = "https://aivero.com"
-    settings = "os", "arch", "compiler", "build_type", "gstreamer"
-    exports_sources = ["CMakeLists.txt", "src/*"]
-
-    def set_version(self):
-        git = tools.Git(folder=self.recipe_folder)
-        tag, branch = git.get_tag(), git.get_branch()
-        self.version = tag if tag and branch.startswith("HEAD") else branch
-
-    def build_requirements(self):
-        self.build_requires("cmake/[>=3.15.3]@%s/stable" % (self.user))
-
-    def requirements(self):
-        self.requires("gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
-
-    def build(self):
-        env = {
-            "GIT_PKG_VER": "%s" % self.version,
-        }
-        with tools.environment_append(env):
-            cmake = CMake(self)
-            cmake.configure()
-            cmake.build()
-            cmake.install()
-
-    def package_info(self):
-        self.env_info.GST_PLUGIN_PATH.append(os.path.join(self.package_folder, "lib", "gstreamer-1.0"))
+class GstColorizer(GstProject):
+    license = "Apache"
+    description = "Library to stream depth video"
+    exports_sources = (
+        "CMakeLists.txt", 
+        "src/*"
+    )
+    build_requires = (
+        "cc/[^1.0.0]",
+        "cmake/[^3.18.4]"
+    )
+    requires = (
+        "gst-plugins-base/[^1.18.1]"
+    )
