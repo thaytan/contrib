@@ -15,14 +15,14 @@ fn main() {
             .collect(),
         Err(err) => std::panic!(err),
     };
-    pkg_config::Config::new()
-        .atleast_version("1.0.22")
-        .probe("libusb-1.0")
-        .unwrap();
-    println!("cargo:rustc-flags=-l dylib=stdc++");
-    println!("cargo:rustc-link-lib=realsense-file");
+    //pkg_config::Config::new()
+    //    .atleast_version("1.0.22")
+    //    .probe("libusb-1.0")
+    //    .unwrap();
+    //println!("cargo:rustc-flags=-l");
+    //println!("cargo:rustc-link-lib=realsense-file");
     let bindings = bindgen::Builder::default()
-        .header("wrapper.h")
+        .header("src/wrapper.h")
         .rustified_enum("rs2_log_severity")
         .rustified_enum("rs2_camera_info")
         .rustified_enum("rs2_format")
