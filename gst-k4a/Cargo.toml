@@ -1,0 +1,40 @@
+[package]
+name = "gst-k4a"
+version = "0.0.0" # Overwritten during conan create.
+authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
+license = "LGPL"
+description = "GStreamer plugin containing `video/rgbd` source for an Azure Kinect DK (K4A) device"
+keywords = [
+    "Azure Kinect",
+    "K4A",
+    "Source",
+    "GStreamer",
+    "Rust",
+]
+repository = "https://gitlab.com/aivero/public/gstreamer/gst-k4a"
+edition = "2018"
+readme = "README.md"
+
+[dependencies]
+glib = "0.10.3"
+gstreamer = "0.16.5"
+gstreamer-base = "0.16.5"
+gstreamer-video = "0.16.6"
+lazy_static = "1.4.0"
+gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
+rgbd-timestamps = { path = "../rgbd-timestamps" }
+libk4a = { path = "../libk4a-rs" }
+
+[build-dependencies]
+gst-plugin-version-helper = "0.2.0"
+
+# Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
+[dev-dependencies.cargo-husky]
+version = "1.5.0"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
+
+[lib]
+name = "gstk4asrc"
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"

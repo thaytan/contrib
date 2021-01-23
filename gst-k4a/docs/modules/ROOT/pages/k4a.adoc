@@ -1,0 +1,232 @@
+[[k4a]]
+= Azure Kinect
+
+// tag::k4a[]
+
+This GStreamer plugin allows streaming of `video/rgbd` video from an Azure Kinect (K4A) camera or recording.
+
+* *Repository:* https://gitlab.com/aivero/public/gstreamer/gst-k4a/[GitLab]
+* *Device:* https://azure.microsoft.com/en-us/services/kinect-dk/[Microsoft Azure Kinect (K4A)]
+* *Source:* Physical device or https://docs.microsoft.com/en-us/azure/kinect-dk/record-sensor-streams-file[`.mkv` recording]
+* *Available video streams:*  depth, ir, color
+* *Additional streams:* imu, mic_array 
+    ** Currently not supported
+
+== Motivation
+
+Provide an easy access to K4A frames in GStreamer for further processing and streaming. This is accomplished by wrapping around https://github.com/microsoft/Azure-Kinect-Sensor-SDK[k4a] library via its https://gitlab.com/aivero/public/k4a-rs[Rust bindings].
+
+
+== Minimal GStreamer Pipeline
+
+The pipeline below streams _depth_, _ir_, and _color_ from the first physical device that can be found on local system. These are then visualised in real-time with the help of `glimagesink`s.
+
+This example requires xref:rgbd:ROOT:pages$rgbd.adoc[`rgbddemux`] in order to demultiplex a single `video/rgbd` stream into multiple `video/x-raw` streams.
+
+[source,sourceCode,bash]
+----
+gst-launch-1.0 rgbddemux name=k4ademux \
+k4asrc enable-depth=true enable-ir=true enable-color=true ! \
+k4a_demux.sink \
+k4a_demux.src_depth ! queue ! glimagesink \
+k4a_demux.src_ir ! queue ! glimagesink \
+k4a_demux.src_color ! queue ! glimagesink
+----
+
+
+== Description
+
+The `k4asrc` element utilises https://gstreamer.freedesktop.org/documentation/base/gstbasesrc.html[GstBaseSrc] as a base class.
+
+
+=== Pads and CAPS
+
+This element has only a single `.src` pad, which is used to output all streams.
+
+----
+SRC template: 'src'
+    Availability: Always
+    CAPS:
+        video/rgbd
+            streams = "depth,ir,color,camerameta"
+            framerate = {5/1, 15/1, 30/1}
+----
+
+
+The `k4asrc` determines and fixates CAPS on its own based purely on the properties set on this element. Re-negotiation is currently NOT supported. 
+
+
+For each enabled `enable-*` property, `k4asrc` will include an addition stream in `streams` of the `video/rgbd` CAPS. All enabled video streams will have a
+`*_format`, `*_width` and `*_height` field, which can vary among the streams. Stream for _camerameta_ does not require these fields and will therefore not be used. Finally, one common `framerate` is included in the CAPS and applies to all streams. Below is an example of valid CAPS that are fixated.
+
+----
+video/rgbd
+    streams = "depth,color,camerameta"
+    framerate = 30/1
+    depth_format = "GRAY16_LE"
+    depth_width = 1280
+    depth_height = 720
+    color_format = "RGB"
+    color_width = 1920
+    color_height = 1080
+----
+
+The priority of fields in `streams` for K4A is _depth_ > _ir_ > _color_, where the first of these is considered to be the *main stream*.
+
+
+
+
+
+=== Stream Source
+
+The `k4asrc` can be configured to stream RGB-D video from one of two sources.
+
+* _Physical Camera_ connected to local device. This is the default option.
+    ** If more than one device is connected, you can use `serial` property to specify which one to use. Serial number can be found via `k4aviewer`.
+    ** The element waits for availability of the next frameset, where the timeout duration can be specified by `get-capture-timeout` property.
+* _K4A Recording_ containing recoding of RGB-D video, which one specifies with filepath by `recording-location` property.
+    ** You can use `k4arecorder` to create a new file whenever you need one.
+    ** Looping can be set via `loop-rosbag` property, however, behaviour for certain timestamping modes is undefined and might not work as expected.
+
+Note, that you can only play the recorded streams when streaming from playback. Enabling stream not present in the recording will throw an exception.
+
+
+=== Output
+
+The `k4asrc` produces `video/rgbd` https://gstreamer.freedesktop.org/documentation/gstreamer/gstbuffer.html[GstBuffer]s, that each contain the following data based on its properties.
+
+* Frame data for *main stream*, typically the _depth_ stream.
+* A full GstBuffer for each *auxiliary stream*, e.g. _ir_, _color_ or any of the meta streams. 
+
+The buffers for all *auxiliary streams* are attached to the GstBuffer for the *main stream* by the use of `BufferMeta` described in xref:depthmeta:ROOT:pages$depth-meta.adoc[Depth Meta]. Furthermore, all buffers, both for *main stream* and *auxiliary streams*, are tagged accordingly using the `TagsMeta`.
+
+
+==== Video Format
+
+The `k4asrc` always outputs the _depth_ and _ir_ video streams with the following formats, if enabled.
+
+----
+depth_format = "GRAY16_LE"
+ir_format = "GRAY16_LE"
+----
+
+The output format of the _color_ stream can be configured with `color-format` property as `mjpg`, `nv12`, `yuv2` and `bgra32`. Note that `nv12` and `yuv2` variants can be enabled only when streaming _color_ with resolution of _720p_.
+----
+color_format = "MJPG"
+             = "NV12" (720p only)
+             = "YUV2" (720p only)
+             = "BGRA32"
+----
+
+=== Depth Mode, Color Resolution and Framerate Configuration
+
+K4A can be configured for four distinct depth modes via `depth-mode` property, i.e. `nfov_2x2_binned`, `nfov_unbinned`, `wfov_2x2_binned` and `wfov_unbinned`. These modes have effect on resolution as well as supported framerate. Below is the matrix of the corresponding modes, taken from https://docs.microsoft.com/en-us/azure/kinect-dk/hardware-specification[K4A docs].
+
+|===
+| Mode | Resolution | FoI (Field of Interest) | FPS | Operating range | Exposure time 
+
+| NFOV unbinned
+| 640x576
+| 75°x65°
+| 0, 5, 15, 30
+| 0.5 - 3.86 m
+| 12.8 ms
+
+| NFOV 2x2 binned
+| 320x288
+| 75°x65°
+| 0, 5, 15, 30
+| 0.5 - 5.46 m
+| 12.8 ms
+
+| WFOV 2x2 binned
+| 512x512
+| 120°x120°
+| 0, 5, 15, 30
+| 0.25 - 2.88 m
+| 12.8 ms
+
+| WFOV unbinned
+| 1024x1024
+| 120°x120°
+| 0, 5, 15
+| 0.25 - 2.21 m
+| 20.3 ms
+|===
+
+The streaming profile of _ir_ is also affected by `depth-mode` and shares resolution and framerate with _depth_ stream. If `k4asrc enable-depth=false enable-ir=true ...`, the _ir_ is streamed without _depth_ at resolution of 1024x1024px.
+
+The resolution of _color_ stream can be configured via `color-resolution` property. Available variants are `720p`, `1080p`, `1440p`, `1536p`, `2160p` and `3072p`. The _color_ resolution matrix below is also taken from https://docs.microsoft.com/en-us/azure/kinect-dk/hardware-specification[K4A docs].
+
+|===
+| RGB Camera Resolution (HxV) | Aspect Ratio | Format Options | Frame Rates (FPS) | Nominal FOV (HxV)(post-processed)
+
+|1280x720
+|16:9
+|MJPEG/YUY2/NV12
+|0, 5, 15, 30
+|90°x59°
+
+|1920x1080
+|16:9
+|MJPEG
+|0, 5, 15, 30
+|90°x59°
+
+|2560x1440
+|16:9
+|MJPEG
+|0, 5, 15, 30
+|90°x59°
+
+|2048x1536
+|4:3
+|MJPEG
+|0, 5, 15, 30
+|90°x74.3°
+
+|3840x2160
+|16:9
+|MJPEG
+|0, 5, 15, 30
+|90°x59°
+
+|4096x3072
+|4:3
+|MJPEG
+|0, 5, 15
+|90°x74.3°
+|===
+
+Finally, the framerate of all streams is determined by `framerate` property, which is available as `5fps`, `15fps` or `30fps`.
+
+Note, that you cannot reconfigure these properties when streaming from playback. A warning will be posted about the discrepancy in requested and available configuration. Hereafter, the properties will have no effect and the recorded configuration will be automatically used for streaming.
+
+
+==== Timestamping and Synchronisation
+
+All GstBuffers for *main stream* and all *auxiliary streams* are explicitly given `duration` as well as `pts` and `dts` timestamps. You can set the timestamping mode via `timestamp-mode` property, please see xref:system:concepts:e-timestamping-and-synchronisation.adoc[Timestamping and Synchronisation] for more details. 
+
+Streaming from physical device sets the element always to a *live* mode. Playback from recording is by default *non-live*, however, `real-time-playback` property can be set to *true* in order to provide a pseudo-live streaming.
+
+
+==== Camera Metadata
+
+You can enable `attach-camera-meta` to stream meta associated with K4A device such as intrinsics, extrinsics and depth scale. Please see xref:system:concepts:g-camera-meta.adoc[Camera Meta] for more details.
+
+
+==== Depth Rectification
+
+If desired, _depth_ frames can be rectified and registered to _color_ frames by setting `rectify-depth` flag. This produces _depth_ frames where each pixel matches the corresponding pixel coordinate of the _color_ frames, which also means that the resulting _depth_ stream will have resolution equal to the color stream. Note that color stream must be enabled when streaming from a physical device, or recorded as a part of recording that is played back.
+
+
+== States
+
+The diagram below describes the `k4asrc` states and which `k4a` calls are executed when the `k4asrc` changes to the given states.
+
+[plantuml, k4asrc-sequence, png]
+....
+include::ROOT:partial$k4asrc-sequence.plantuml[]
+....
+
+// end::k4a[]
