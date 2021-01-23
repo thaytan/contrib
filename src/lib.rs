@@ -23,7 +23,7 @@ extern crate gstreamer_depth_meta as gst_depth_meta;
 extern crate gstreamer_video as gst_video;
 #[macro_use]
 extern crate lazy_static;
-extern crate k4a;
+extern crate libk4a;
 extern crate rgbd_timestamps;
 
 pub mod enums;

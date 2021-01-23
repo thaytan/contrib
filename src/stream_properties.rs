@@ -16,8 +16,8 @@
 
 use crate::error::*;
 use crate::utilities::*;
-use k4a::utilities::*;
-use k4a::{DeviceConfiguration, RecordConfiguration};
+use libk4a::utilities::*;
+use libk4a::{DeviceConfiguration, RecordConfiguration};
 pub(crate) use std::convert::TryFrom;
 
 /// A struct that helps during fixation of CAPS.

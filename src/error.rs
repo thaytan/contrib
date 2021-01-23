@@ -14,7 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use k4a::error::K4aError;
+use libk4a::error::K4aError;
 use std::{error, fmt};
 
 /// Enumeration representation of an `K4aError` that can be returned by the `K4aSrc` element.

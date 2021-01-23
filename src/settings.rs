@@ -17,7 +17,7 @@
 use crate::enums::*;
 use crate::error::*;
 use crate::streams::*;
-use k4a::{ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
+use libk4a::{ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
 use std::convert::{From, TryFrom};
 
 // Streams enabled by default
@@ -62,8 +62,8 @@ pub(crate) const DEFAULT_REAL_TIME_PLAYBACK: bool = false;
 
 // TODO: If desired, make these into properties with the appropriate support
 pub(crate) const DEPTH_DELAY_OFF_COLOR_USEC: i32 = 0;
-pub(crate) const WIRED_SYNCH_MODE: k4a::WiredSyncMode =
-    k4a::WiredSyncMode::K4A_WIRED_SYNC_MODE_STANDALONE;
+pub(crate) const WIRED_SYNCH_MODE: libk4a::WiredSyncMode =
+    libk4a::WiredSyncMode::K4A_WIRED_SYNC_MODE_STANDALONE;
 pub(crate) const SUBORDINATE_DELAY_OFF_MASTER_USEC: u32 = 0;
 pub(crate) const DISABLE_STREAMING_INDICATOR: bool = false;
 
@@ -130,10 +130,10 @@ impl TryFrom<&Settings> for DeviceConfiguration {
 
         // Create `DeviceConfiguration` based on settings
         Ok(DeviceConfiguration {
-            color_format: k4a::ImageFormat::from(device_settings.color_format),
+            color_format: libk4a::ImageFormat::from(device_settings.color_format),
             color_resolution: ColorResolution::from(settings),
             depth_mode: DepthMode::from(settings),
-            camera_fps: k4a::Fps::from(device_settings.framerate),
+            camera_fps: libk4a::Fps::from(device_settings.framerate),
             synchronized_images_only: synchronised_images_only,
             depth_delay_off_color_usec: DEPTH_DELAY_OFF_COLOR_USEC,
             wired_sync_mode: WIRED_SYNCH_MODE,

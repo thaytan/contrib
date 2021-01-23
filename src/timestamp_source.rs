@@ -16,8 +16,8 @@
 
 /// An enum that countains source of the timestamp, either Image or ImuSample.
 pub(crate) enum TimestampSource<'a> {
-    Image(&'a k4a::image::Image),
-    ImuSample(&'a k4a::imu_sample::ImuSample),
+    Image(&'a libk4a::image::Image),
+    ImuSample(&'a libk4a::imu_sample::ImuSample),
 }
 
 impl<'a> TimestampSource<'a> {

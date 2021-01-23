@@ -29,16 +29,16 @@ use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
-use k4a::calibration::Calibration;
-use k4a::camera_calibration::CameraCalibration;
-use k4a::capture::Capture;
-use k4a::device::Device;
-use k4a::error::K4aError;
-use k4a::imu_sample::ImuSample;
-use k4a::playback::Playback;
-use k4a::transformation::Transformation;
-use k4a::CalibrationType::*;
-use k4a::*;
+use libk4a::calibration::Calibration;
+use libk4a::camera_calibration::CameraCalibration;
+use libk4a::capture::Capture;
+use libk4a::device::Device;
+use libk4a::error::K4aError;
+use libk4a::imu_sample::ImuSample;
+use libk4a::playback::Playback;
+use libk4a::transformation::Transformation;
+use libk4a::CalibrationType::*;
+use libk4a::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -1029,9 +1029,9 @@ impl K4aSrc {
     /// # Returns
     /// * `camera_meta::Intrinsics` containing the converted intrinsics.
     fn k4a_intrinsics_to_camera_meta_intrinsics(
-        k4a_intrinsics: &k4a::intrinsics::Intrinsics,
+        k4a_intrinsics: &libk4a::intrinsics::Intrinsics,
     ) -> camera_meta::Intrinsics {
-        use k4a::CalibrationModelType::*;
+        use libk4a::CalibrationModelType::*;
         let c = &k4a_intrinsics.parameters;
         let distortion = match k4a_intrinsics.type_ {
             K4A_CALIBRATION_LENS_DISTORTION_MODEL_BROWN_CONRADY => Distortion::K4aBrownConrady(
@@ -1066,7 +1066,7 @@ impl K4aSrc {
     /// # Returns
     /// * `camera_meta::Transformation` containing the converted transformation.
     fn k4a_extrinsics_to_camera_meta_transformation(
-        k4a_extrinsics: k4a::extrinsics::Extrinsics,
+        k4a_extrinsics: libk4a::extrinsics::Extrinsics,
     ) -> camera_meta::Transformation {
         camera_meta::Transformation::new(
             camera_meta::Translation::from(k4a_extrinsics.translation),
@@ -1082,7 +1082,7 @@ impl K4aSrc {
     ///
     /// # Returns
     /// * `k4a::CalibrationType` containing the corresponding calibration type.
-    fn determine_main_stream_calibration_type(streams: EnabledStreams) -> k4a::CalibrationType {
+    fn determine_main_stream_calibration_type(streams: EnabledStreams) -> libk4a::CalibrationType {
         if streams.depth | streams.ir {
             K4A_CALIBRATION_TYPE_DEPTH
         } else {

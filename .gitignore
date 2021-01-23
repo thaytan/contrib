@@ -1,9 +1,0 @@
-/target
-**/*.rs.bk
-==== BASE ====
-Cargo.lock
-.idea/
-.vscode/
-build/
-cmake-build-*
-*.code-workspace

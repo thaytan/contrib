@@ -16,7 +16,7 @@
 
 use crate::error::*;
 
-/// Convert `k4a::ImageFormat` into `&str` that contains appropriate GStreamer CAPS format.
+/// Convert `libk4a::ImageFormat` into `&str` that contains appropriate GStreamer CAPS format.
 ///
 /// # Arguments
 /// * `image_format` - image format to convert.
@@ -25,10 +25,10 @@ use crate::error::*;
 /// * `Ok(&'static str)` on sucess.
 /// * `Err(K4aError::Failure)` if conversion of custom format is attempted.
 pub(crate) fn k4a_image_format_to_gst_video_format(
-    image_format: k4a::ImageFormat,
+    image_format: libk4a::ImageFormat,
 ) -> Result<&'static str, K4aSrcError> {
     use gst_video::VideoFormat;
-    use k4a::ImageFormat::*;
+    use libk4a::ImageFormat::*;
     match image_format {
         K4A_IMAGE_FORMAT_COLOR_MJPG => Ok("image/jpeg"),
         K4A_IMAGE_FORMAT_COLOR_NV12 => Ok(VideoFormat::Nv12.to_str()),
