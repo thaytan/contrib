@@ -1,0 +1,4 @@
+# k4a-sys
+
+Unofficial rust FFI bindings for Azure Kinect SDK that were generated using `bindgen`.
+This repo is MIT licensed. Please see the LICENSE file.
