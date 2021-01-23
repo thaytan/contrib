@@ -1,0 +1,10 @@
+[requires]
+k4a/[>=1.3.0]@aivero/stable
+clang/[>=9.0.0]@aivero/stable
+
+[build_requires]
+rust/[>=1.40.0]@aivero/stable
+env-generator/[>=1.0.0]@aivero/stable
+
+[generators]
+env

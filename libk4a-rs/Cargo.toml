@@ -1,0 +1,14 @@
+[package]
+name = "libk4a"
+version = "0.0.0"
+authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
+description = "Rust FFI bindings for Azure Kinect SDK"
+keywords = ["Azure Kinect SDK", "Rust", "FFI", "idiomatic", "safe"]
+repository = "https://gitlab.com/aivero/public/k4a-rs"
+license = "MIT"
+edition = "2018"
+readme = "README.md"
+
+
+[dependencies]
+libk4a-sys = { path = "../libk4a-rs-sys" }
