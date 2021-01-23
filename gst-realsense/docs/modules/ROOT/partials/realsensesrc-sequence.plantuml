@@ -1,0 +1,102 @@
+@startuml realsensesrc
+Actor user
+entity "Gstreamer Pipeline" as g_pipe
+entity "realsensesrc" as src
+entity "librealsense2" as lrs
+entity "GStreamer" as go
+
+autoactivate on
+user -> g_pipe: realsensesrc \n serial=728...
+note left
+  load GSt
+  pipeline with
+  realsensesrc
+end note
+
+==pipeline goto GST_STATE_READY ==
+
+g_pipe -> src **: create
+src -> lrs: rs2::context.query_devices()
+return rs2::device_list
+
+src->lrs : select device by serial
+return rs2::sensor
+note right
+  Select device
+end note
+|||
+
+loop for (info: rs2::rs2_camera_info)
+  src->lrs: rs2::device.supports(info)
+  return bool
+  src->lrs: rs2::device.get_info(info)
+  return const char* info_string
+  src->src: store info
+  return
+end
+src -> go: gst_tag_setter_add_tag_valist_values(...,infos, NULL)
+return
+note right
+  Register per-stream
+  metadata as
+  Gst tags
+end note
+|||
+src -> lrs: rs2::sensor.get_stream_profiles()
+return std::vector<rs2::stream_profile>
+
+loop for (profile: std::vector<rs2::stream_profile>)
+  src->src: Create profile_list of supported profiles
+  return
+end
+src -> go: g_object_class_install_properties(...,...,options)
+return
+note right
+  Install all
+  supported
+  video profiles
+  as an option
+end note
+|||
+
+loop for (option: rs2::rs2_option)
+  src->lrs: rs2::sensor.supports(option)
+  return bool
+  src->lrs: rs2::sensor.get_option_range
+  return  rs2::option_range
+  src->src: store option
+  return
+end
+src -> go: g_object_class_install_properties(...,...,options)
+return
+note right
+  Install all
+  supported
+  RS camera options
+  as properties/options
+end note
+
+src --> go: gst_bus_add_watch(bus, bus_call...);
+note right
+  Register callback
+  for parameter changes
+end note
+|||
+
+g_pipe -> src: caps negotiation \n (CAPS)
+note right
+  - pixel_format
+  - width
+  - height
+  - framerate
+end note
+
+==pipeline goto GST_STATE_PLAYING ==
+
+g_pipe --> src: state=playing
+src -> lrs: rs2::sensor.start()
+
+==pipeline goto GST_STATE_READY ==
+src --> lrs: rs2::sensor.stop()
+
+@enduml

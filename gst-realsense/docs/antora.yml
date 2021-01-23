@@ -1,0 +1,5 @@
+name: realsense
+title: RealSense
+version: 1.2.0
+nav:
+  - modules/ROOT/nav.adoc
