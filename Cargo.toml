@@ -1,7 +1,7 @@
 [package]
 name = "librealsense2"
-version = "2.2.5"
-authors = ["Niclas Moeslund Overby <noverby@prozum.dk>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
+version = "0.0.0"
+authors = ["Niclas Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
 description = "Rust FFI bindings for librealsense"
 keywords = ["librealsense", "Rust", "FFI", "idiomatic", "safe"]
 repository = "https://gitlab.com/aivero/public/librealsense-rs"
@@ -9,6 +9,5 @@ license = "MIT"
 edition = "2018"
 readme = "README.md"
 
-[dependencies.librealsense2-sys]
-git = "https://gitlab.com/aivero/public/librealsense-sys"
-tag = "0.5.3"
+[dependencies]
+librealsense2-sys = { path = "../librealsense-rs-sys" }
