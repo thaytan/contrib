@@ -24,7 +24,7 @@ fn main() {
     }
 
     let bindings = bindgen::Builder::default()
-        .header("wrapper.h")
+        .header("src/wrapper.h")
         .rustified_enum("k4a_result_t")
         .rustified_enum("k4a_buffer_result_t")
         .rustified_enum("k4a_wait_result_t")

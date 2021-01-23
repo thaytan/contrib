@@ -1,6 +1,6 @@
 [package]
-name = "k4a-sys"
-version = "0.1.6"
+name = "libk4a-sys"
+version = "0.0.0"
 authors = ["Andrej Orsula <andrej.orsula@aivero.com>"]
 description = "Rust FFI bindings for Azure Kinect SDK"
 keywords = ["Azure Kinect SDK", "Rust", "FFI", "generated", "unsafe"]
@@ -12,5 +12,5 @@ build = "build.rs"
 
 
 [build-dependencies]
-bindgen = "0.55.0"
-pkg-config = "0.3"
+bindgen = "0.56.0"
+pkg-config = "0.3.19"
