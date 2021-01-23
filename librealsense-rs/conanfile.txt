@@ -1,0 +1,6 @@
+[build_requires]
+clang/[~9]@aivero/stable
+generators/1.0.0@aivero/stable
+
+[requires]
+librealsense/[~2.40]@aivero/stable
