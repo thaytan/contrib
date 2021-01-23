@@ -1,7 +1,0 @@
-include:
-  - project: 'aivero/cloud/cicd'
-    file: 'conan-ci.yml'
-variables:
-  SPECIFICS: '/rust'
-
-# scripts inspired by: https://users.rust-lang.org/t/my-gitlab-config-docs-tests/16396
