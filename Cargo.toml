@@ -1,7 +1,7 @@
 [package]
 name = "gstreamer-frame-aligner"
-version = "0.0.0-ohmyconanpleaseoverwriteme"
-authors = ["João Alves <joao.alves@aivero.com>"]
+version = "0.0.0"
+authors = ["Joao Alves <joao.alves@aivero.com>"]
 license = "Proprietary"
 description = "GStreamer plugin to align depth frames to color frames"
 keywords = ["GStreamer", "Rust"]
@@ -10,20 +10,20 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-glib = { version = "0.9" }
-gstreamer-depth-meta = { git = "https://gitlab.com/aivero/public/gstreamer/gst-depth-meta-rs", tag="1.2.0" }
-gstreamer = { version = "0.15" }
-gstreamer-base = { version = "0.15" }
-gstreamer-video = "0.15"
+glib = "0.10.3"
+gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
+gstreamer = "0.16.5"
+gstreamer-base = "0.16.5"
+gstreamer-video = "0.16.6"
 lazy_static = "1.4.0"
-nalgebra = { version = "0.21", features = ["serde-serialize"] }
-serde = "1.0"
-serde_yaml = "0.8"
-dirs = "2.0"
+nalgebra = { version = "0.24.0", features = ["serde-serialize"] }
+serde = "1.0.120"
+serde_yaml = "0.8.15"
+dirs = "3.0.1"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
-version = "1"
+version = "1.5.0"
 default-features = false # Disable features which are enabled by default
 features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
 
