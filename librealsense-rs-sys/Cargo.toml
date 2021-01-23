@@ -1,0 +1,14 @@
+[package]
+name = "librealsense2-sys"
+version = "0.5.2"
+authors = ["Niclas Overby <niclas.overby@aivero.com>"]
+description = "Rust FFI bindings for librealsense"
+keywords = ["librealsense", "Rust", "FFI", "generated", "unsafe"]
+repository = "https://gitlab.com/aivero/public/librealsense-sys"
+license = "MIT"
+edition = "2018"
+readme = "README.md"
+
+[build-dependencies]
+pkg-config = "0.3.19"
+bindgen = "0.56.0"
