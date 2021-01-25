@@ -17,7 +17,7 @@ class LibvaRecipe(Recipe):
         self.get(f"https://github.com/intel/libva/archive/{self.version}.tar.gz")
 
     def build(self):
-        args = []
-        args.append("-Dwith_x11=" + ("yes" if self.options.x11 else "no"))
-        args.append("-Dwith_wayland=" + ("yes" if self.options.wayland else "no"))
-        self.meson(args)
+        opts = {}
+        opts["with_x11"] = self.options.x11
+        opts["with_wayland"] = self.options.wayland
+        self.meson(opts)
