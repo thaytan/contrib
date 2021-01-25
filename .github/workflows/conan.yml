@@ -1,4 +1,4 @@
-name: Conan Create and Upload
+name: Conan Runner
 on:
   repository_dispatch: ~
 jobs:
