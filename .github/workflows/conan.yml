@@ -1,0 +1,38 @@
+name: Conan Create and Upload
+on:
+  repository_dispatch: ~
+jobs:
+  build:
+    name: '${{ github.event.client_payload.package }}: ${{ github.event.client_payload.profile }}'
+    runs-on: ${{ github.event.client_payload.tags }}
+    container:
+      image: ${{ github.event.client_payload.image }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.client_payload.sha }}
+    - name: Conan Create
+      uses: aivero/conan-action@test
+      with:
+        package: ${{ github.event.client_payload.package }}
+        args: ${{ github.event.client_payload.args }}
+        profile: ${{ github.event.client_payload.profile }}
+        path: ${{ github.event.client_payload.path }}
+      env:
+        CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
+        CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
+        CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
+        CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
+        CONAN_REPO_ALL: ${{ secrets.CONAN_REPO_ALL }}
+        CONAN_REPO_INTERNAL: ${{ secrets.CONAN_REPO_INTERNAL }}
+        CONAN_REPO_PUBLIC: ${{ secrets.CONAN_REPO_PUBLIC }}
+    - uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: build-logs
+        path: |
+          ${{ env.CONAN_PKG_PATH }}/build/**/meson-logs/*-log.txt
+          ${{ env.CONAN_PKG_PATH }}/build/**/config.log
+          ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
+          ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
+          ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log

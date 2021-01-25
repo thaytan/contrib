@@ -1,0 +1,28 @@
+name: Conan Dispatch
+on:
+  push: ~
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package/Version'
+        required: true
+        default: 'pkg/*'
+      arguments:
+        description: 'Additional Conan arguments'
+        default: ''
+jobs:
+  dispatch:
+    name: Conan Dispatch
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[NO-CICD]')"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Conan Dispatch Action
+        uses: aivero/conan-dispatch-action@test
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          root: recipes
+          package: ${{ github.event.inputs.package }}
+          arguments: ${{ github.event.inputs.arguments }}
