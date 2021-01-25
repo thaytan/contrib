@@ -7,24 +7,24 @@ class GstRtspServerRecipe(GstRecipe):
     options = {
         "examples": [True, False],
         "tests": [True, False],
+        "introspection": [True, False],
         "rtspclientsink": [True, False],
     }
     default_options = (
         "examples=False",
         "tests=False",
+        "introspection=True",
         "rtspclientsink=True",
     )
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.51.2]",
+        "meson/[>=0.51.2]",
         "bison/[^3.3]",
         "flex/[^2.6.4]",
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
-        "glib/[^2.62.0]",
-        "gstreamer/[~1.16]",
-        "gstreamer-plugins-base/[~1.16]",
+        "gst-plugins-base/[^1.18]",
     )
 
     def source(self):
@@ -32,8 +32,8 @@ class GstRtspServerRecipe(GstRecipe):
 
     def build(self):
         opts = {}
-        opts["check"] = self.options.examples
-        opts["tools"] = self.options.tests
+        opts["examples"] = self.options.examples
+        opts["tests"] = self.options.tests
         opts["introspection"] = self.options.introspection
         opts["rtspclientsink"] = self.options.rtspclientsink
         self.meson(opts)
