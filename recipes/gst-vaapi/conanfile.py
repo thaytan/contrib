@@ -6,21 +6,13 @@ class GstVaapiRecipe(GstRecipe):
     license = "LGPL"
     options = {
         "encoders": [True, False],
-        "egl": [True, False],
-        "x11": [True, False],
-        "drm": [True, False],
-        "glx": [True, False],
     }
     default_options = (
         "encoders=True",
-        "egl=True",
-        "x11=True",
-        "drm=True",
-        "glx=True",
     )
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
+        "meson/[>=0.55.3]",
         "gobject-introspection/[^1.59.3]",
     )
     requires = (
