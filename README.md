@@ -20,13 +20,13 @@ Please adhere to the following standards:
 # Step-by-Step
 
 1. Make sure you have [rust](https://www.rust-lang.org/) and [GStreamer](https://gstreamer.freedesktop.org/documentation/installing/index.html?gi-language=c) installed on your system.
-2. Clone the project: `https://gitlab.com/aivero/public/gstreamer/gst-realsense.git` and `cd gst-realsense`
+2. Clone the project: `https://github.com/aivero/contrib.git` and `cd contrib`
 3. Create a new branch for you feature, please use a meaningful name: `git checkout -b my-branch-name`
 4. Implement you changes, please try to keep you commits small.
 5. Commit you changes: `git add src/your-files` and `git commit`. Please try to give the commits a meaningful commit subject and message.
 6. Push changes to your feature branch: `git push --set-upstream origin my-branch-name` .
 7. Open a merge request
-    1. Navigate to https://gitlab.com/aivero/public/gstreamer/gst-realsense in a browser
+    1. Navigate to https://github.com/aivero/contrib in a browser
     2. Click *Merge Requests* on the right-hand side panel
     3. Click *New merge request*
     4. Select you newly added branch as source and master as target.
