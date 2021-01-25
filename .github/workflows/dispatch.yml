@@ -23,6 +23,5 @@ jobs:
         uses: aivero/conan-dispatch-action@test
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          root: recipes
           package: ${{ github.event.inputs.package }}
           arguments: ${{ github.event.inputs.arguments }}
