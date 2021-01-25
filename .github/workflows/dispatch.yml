@@ -12,7 +12,7 @@ on:
         default: ''
 jobs:
   dispatch:
-    name: Conan Dispatch
+    name: 'Dispatch: ${{ github.event.inputs.package }} - Args: "${{ github.event.inputs.arguments }}"'
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[NO-CICD]')"
     steps:
