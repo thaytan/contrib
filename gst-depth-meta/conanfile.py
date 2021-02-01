@@ -12,5 +12,9 @@ class GstDepthMeta(GstProject):
         "cmake/[^3.18.4]"
     )
     requires = (
-        "gst-plugins-base/[^1.18.1]"
+        "gst-plugins-base/[^1.18]"
     )
+
+    def build(self):
+        os.environ["CONAN_BRANCH"] = branch()
+        self.cmake()
