@@ -1,9 +1,9 @@
-name: Conan Runner
+name: Runner
 on:
   repository_dispatch: ~
 jobs:
   build:
-    name: '${{ github.event.client_payload.package }}: ${{ github.event.client_payload.profile }}'
+    name: ${{ github.event.event_type }}
     runs-on: ${{ github.event.client_payload.tags }}
     container:
       image: ${{ github.event.client_payload.image }}
@@ -11,13 +11,11 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.client_payload.sha }}
-    - name: Conan Create
-      uses: aivero/conan-action@test
+    - name: Runner
+      uses: aivero/runner-action@test
       with:
-        package: ${{ github.event.client_payload.package }}
-        args: ${{ github.event.client_payload.args }}
-        profile: ${{ github.event.client_payload.profile }}
-        path: ${{ github.event.client_payload.path }}
+        cmds: ${{ github.event.client_payload.cmds }}
+        cmdsPost: ${{ github.event.client_payload.cmdsPost }}
       env:
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}

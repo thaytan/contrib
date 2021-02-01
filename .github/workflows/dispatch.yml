@@ -1,27 +1,27 @@
-name: Conan Dispatch
+name: Dispatch
 on:
   push: ~
   workflow_dispatch:
     inputs:
-      package:
-        description: 'Package/Version'
+      component:
+        description: 'Component/Version'
         required: true
-        default: 'pkg/*'
+        default: 'comp/*'
       arguments:
-        description: 'Additional Conan arguments'
+        description: 'Additional arguments'
         default: ''
 jobs:
   dispatch:
-    name: 'Dispatch: ${{ github.event.inputs.package }} - Args: "${{ github.event.inputs.arguments }}"'
+    name: '${{ github.event.inputs.component }}: ${{ github.event.inputs.arguments }}'
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[NO-CICD]')"
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 2
-      - name: Conan Dispatch Action
-        uses: aivero/conan-dispatch-action@test
+      - name: Dispatch Action
+        uses: aivero/dispatch-action@test
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          package: ${{ github.event.inputs.package }}
+          component: ${{ github.event.inputs.component }}
           arguments: ${{ github.event.inputs.arguments }}
