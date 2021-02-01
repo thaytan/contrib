@@ -10,6 +10,10 @@ on:
       arguments:
         description: 'Additional arguments'
         default: ''
+      mode:
+        description: 'Mode'
+        required: true
+        default: 'manual'
 jobs:
   dispatch:
     name: '${{ github.event.inputs.component }}: ${{ github.event.inputs.arguments }}'
@@ -24,4 +28,5 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           component: ${{ github.event.inputs.component }}
+          mode: ${{ github.event.inputs.mode }}
           arguments: ${{ github.event.inputs.arguments }}
