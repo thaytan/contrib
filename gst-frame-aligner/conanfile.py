@@ -9,4 +9,4 @@ class GstreamerFrameAligner(GstRustProject):
         "cmake/[^3.18.4]",
         "capnproto/[^0.8.0]",
     )
-    requires = ("gst-depth-meta/master")
+    requires = (f"gst-depth-meta/{branch()}")
