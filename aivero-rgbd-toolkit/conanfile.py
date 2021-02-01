@@ -1,17 +1,15 @@
 from build import *
 
+
 class AiveroRgbDToolkit(GstProject):
     description = "Package containing all open source RGB-D elements"
     license = "LGPL"
-    exports_sources = [
-        "*.adoc",
-        "scripts/*"
-    ]
+    exports_sources = ["*.adoc", "scripts/*"]
     requires = (
-        "gst-rgbd/master",
-        "gst-realsense/master",
-        "gst-k4a/master",
-        "gst-colorizer/master",
+        f"gst-rgbd/{branch()}",
+        f"gst-realsense/{branch()}",
+        f"gst-k4a/{branch()}",
+        f"gst-colorizer/{branch()}",
         "gst-plugins-good/[~1.18]",
         "gst-plugins-bad/[~1.18]",
         ## `libglvnd` is currently removed because it causes problems for `glimagesink`
@@ -22,13 +20,13 @@ class AiveroRgbDToolkit(GstProject):
         # Don't build anything
         pass
 
-    def package(self):  
+    def package(self):
         self.copy(pattern="*.adoc*", keep_path=False)
         self.copy("*", src="scripts/", dst="scripts", keep_path=False)
 
     def deploy(self):
         install_path = os.getcwd()
-        self.copy("*.adoc",  dst="readmes", keep_path=False)
+        self.copy("*.adoc", dst="readmes", keep_path=False)
         self.copy("*", src="scripts/", dst="scripts", keep_path=False)
         # Gstreamer binaries
         self.copy_deps("*gst-inspect-1.0", dst="bin", keep_path=False)
