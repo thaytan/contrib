@@ -9,5 +9,5 @@ class GstK4a(GstRustProject):
     requires = (
         "k4a/[^1.4.1]",
         "capnproto/[^0.8.0]",
-        "gst-depth-meta/master",
+        f"gst-depth-meta/{branch()}",
     )
