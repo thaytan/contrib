@@ -8,5 +8,5 @@ class GstDepthMetaRs(GstRustProject):
         "capnproto/[^0.8.0]",
     )
     requires = (
-        "gst-depth-meta/master",
+        f"gst-depth-meta/{branch()}",
     )
