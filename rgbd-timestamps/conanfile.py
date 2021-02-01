@@ -8,5 +8,5 @@ class RgbdTimestamps(GstRustProject):
     )
     requires = (
         "capnproto/[^0.8.0]",
-        "gst-depth-meta/master",
+        f"gst-depth-meta/{branch()}",
     )
