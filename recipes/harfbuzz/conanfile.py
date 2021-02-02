@@ -11,10 +11,6 @@ class HarfbuzzRecipe(Recipe):
     )
     requires = (("freetype-no-harfbuzz/[^2.10.3]", "private"),)
 
-    def configure(self):
-        # Avoid circular requirement
-        self.options["freetype-no-harfbuzz"].harfbuzz = False
-
     def source(self):
         self.get(f"https://github.com/harfbuzz/harfbuzz/archive/{self.version}.tar.gz")
 
