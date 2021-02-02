@@ -8,7 +8,7 @@ jobs:
     container:
       image: ${{ github.event.client_payload.image }}
     steps:
-    - uses: aivero/checkout
+    - uses: aivero/checkout@main
       with:
         ref: ${{ github.event.client_payload.sha }}
         submodules: true
