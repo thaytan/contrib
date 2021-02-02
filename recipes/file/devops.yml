@@ -1,3 +1,2 @@
 - version: '5.39'
-  image:
-    bootstrap: true
+  bootstrap: true

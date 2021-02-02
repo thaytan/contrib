@@ -1,5 +1,4 @@
 - name: cmake-bootstrap
   version: 3.18.4
-  image:
-    bootstrap: true
+  bootstrap: true
 - version: 3.18.4

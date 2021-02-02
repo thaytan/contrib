@@ -1,3 +1,2 @@
 - version: 1.2.1
-  image:
-    bootstrap: true
+  bootstrap: true
