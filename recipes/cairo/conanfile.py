@@ -23,7 +23,6 @@ class CairoRecipe(Recipe):
         "glib/[^2.66.1]",
         "pixman/[^0.40.0]",
         "fontconfig/[^2.13.92]",
-        "libpng/[^1.6.37]",
     )
 
     def build_requirements(self):
