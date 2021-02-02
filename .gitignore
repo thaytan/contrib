@@ -1,0 +1,6 @@
+*-*.src
+env.sh
+conanfile.txt
+conanbuildinfo.txt  
+graph_info.json
+*.lock

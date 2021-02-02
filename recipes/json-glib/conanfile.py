@@ -1,0 +1,19 @@
+from build import *
+
+
+class JsonGlibBaseRecipe(Recipe):
+    description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
+    license = "GPL"
+    build_requires = (
+        "cc/[^1.0.0]",
+        "meson/[^0.51.2]",
+        "gettext/[^0.20.1]",
+        "gobject-introspection/[^1.59.3]",
+    )
+    requires = (
+        "base/[^1.0.0]",
+        "glib/[^2.62.0]",
+    )
+
+    def source(self):
+        self.get(f"https://gitlab.gnome.org/GNOME/json-glib/-/archive/{self.version}/json-glib-{self.version}.tar.gz")

@@ -1,0 +1,21 @@
+diff --git a/libtoolize.in b/libtoolize.in
+index 798bd0ab..af27bbd2 100644
+--- a/libtoolize.in
++++ b/libtoolize.in
+@@ -1901,11 +1901,11 @@ func_require_seen_libtool ()
+   pkgmacro_files="@pkgmacro_files@"
+ 
+   # Locations for important files:
+-  prefix="@prefix@"
+-  datadir="@datadir@"
+-  pkgauxdir="@pkgauxdir@"
+-  pkgltdldir="@pkgdatadir@"
+-  aclocaldir="@aclocaldir@"
++  prefix=$LIBTOOL_PREFIX
++  datadir=$LIBTOOL_PREFIX/share
++  pkgauxdir=$LIBTOOL_PREFIX/share/libtool/build-aux
++  pkgltdldir=$LIBTOOL_PREFIX/share/libtool
++  aclocaldir=$LIBTOOL_PREFIX/share/aclocal
+ 
+   # Allow the user to override the master libtoolize repository:
+   if test -n "$_lt_pkgdatadir"; then

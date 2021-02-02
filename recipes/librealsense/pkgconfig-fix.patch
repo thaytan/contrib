@@ -1,0 +1,12 @@
+diff --git a/config/librealsense.pc.in b/config/librealsense.pc.in
+--- a/config/librealsense.pc.in
++++ b/config/librealsense.pc.in
+@@ -2,7 +2,7 @@ prefix=@CMAKE_INSTALL_PREFIX@
+ exec_prefix=${prefix}
+ includedir=${prefix}/include
+ #TODO: libdir=${exec_prefix}/lib@MULTI_ARCH_SUFFIX@
+-libdir= ${prefix}/lib/x86_64-linux-gnu
++libdir= ${prefix}/lib
+
+ Name:
+ Description: Intel(R) RealSense(tm) Cross Platform API

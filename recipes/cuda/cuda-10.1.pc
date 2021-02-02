@@ -1,0 +1,9 @@
+prefix=/opt/cuda
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: cuda
+Description: CUDA Driver Library
+Version: 10.1
+Libs: -L${libdir} -lcuda
+Cflags: -I${includedir}

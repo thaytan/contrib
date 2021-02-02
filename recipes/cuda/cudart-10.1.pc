@@ -1,0 +1,9 @@
+prefix=/opt/cuda
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: cudart
+Description: CUDA Runtime Library
+Version: 10.1
+Libs: -L${libdir} -lcudart
+Cflags: -I${includedir}

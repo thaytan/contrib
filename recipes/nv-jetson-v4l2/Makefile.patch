@@ -1,0 +1,10 @@
+--- libv4l2/Makefile	2019-12-10 07:32:03.000000000 +0100
++++ libv4l2/Makefile.patching	2020-03-31 14:22:24.866699614 +0200
+@@ -27,7 +27,6 @@
+ 	DEST_DIR = /opt/nvidia/deepstream/deepstream-4.0/lib/
+ 	SYM_LINK_DIR = $(DEST_DIR)
+ else
+-	DEST_DIR = /usr/lib/$(MACHINE)-linux-gnu/tegra
+ 	SYM_LINK_DIR = $(shell realpath $(DEST_DIR)/..)
+ endif
+ 

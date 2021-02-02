@@ -1,0 +1,11 @@
+--- gst-v4l2/gstv4l2.c	2019-10-17 09:38:50.531373831 +0200
++++ gst-v4l2/gstv4l2.c	2019-10-17 09:39:25.545042879 +0200
+@@ -327,7 +327,7 @@
+     nvvideo4linux2,
+     "Nvidia elements for Video 4 Linux",
+     plugin_init,
+-    "1.14.0",
++    "1.16.0",
+     "LGPL",
+     "nvvideo4linux2",
+     "http://nvidia.com/")

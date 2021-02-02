@@ -1,0 +1,40 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3c0f625..2f6f86c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -230,10 +230,34 @@ if (_GLFW_X11)
+         message(FATAL_ERROR "The Xcursor headers were not found")
+     endif()
+ 
++    # Check for Xrender
++    if (NOT X11_Xrender_FOUND)
++        message(FATAL_ERROR "The Xrender headers were not found")
++    endif()
++
++    # Check for Xi
++    if (NOT X11_Xi_FOUND)
++        message(FATAL_ERROR "The Xi headers were not found")
++    endif()
++
++    # Check for Xext
++    if (NOT X11_Xext_FOUND)
++      message(FATAL_ERROR "The Xext headers were not found")
++    endif()
++
++    # Check for Xfixes
++    if (NOT X11_Xfixes_FOUND)
++      message(FATAL_ERROR "The Xfixes headers were not found")
++    endif()
++
+     list(APPEND glfw_INCLUDE_DIRS "${X11_Xrandr_INCLUDE_PATH}"
+                                   "${X11_Xinerama_INCLUDE_PATH}"
+                                   "${X11_Xkb_INCLUDE_PATH}"
+-                                  "${X11_Xcursor_INCLUDE_PATH}")
++                                  "${X11_Xcursor_INCLUDE_PATH}"
++                                  "${X11_Xrender_INCLUDE_PATH}"
++                                  "${X11_Xi_INCLUDE_PATH}"
++                                  "${X11_Xext_INCLUDE_PATH}"
++                                  "${X11_Xfixes_INCLUDE_PATH}")
+ endif()
+ 
+ #--------------------------------------------------------------------
