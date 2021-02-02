@@ -12,7 +12,8 @@ class FreetypeRecipe(Recipe):
     def requirements(self):
         if self.name == "freetype":
             self.requires("harfbuzz/[^2.7.2]")
-        self.requires("libpng/[^1.6.37]")
+        else:
+            self.requires("libpng/[^1.6.37]", "private")
 
     def source(self):
         self.get(f"https://download-mirror.savannah.gnu.org/releases/freetype/freetype-{self.version}.tar.xz")
