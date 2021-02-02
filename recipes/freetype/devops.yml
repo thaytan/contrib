@@ -1,5 +1,3 @@
 - name: freetype-no-harfbuzz
   version: '2.10.3'
-  options:
-    harfbuzz: false
 - version: '2.10.3'
