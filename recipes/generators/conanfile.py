@@ -3,9 +3,6 @@ from conans.model import Generator
 
 
 class env(Generator):
-    def __init__(self, conanfile):
-        super().__init__(Recipe)
-
     @property
     def filename(self):
         return "env.sh"
@@ -26,9 +23,6 @@ class env(Generator):
 
 
 class direnv(Generator):
-    def __init__(self, conanfile):
-        super().__init__(Recipe)
-
     @property
     def filename(self):
         return ".envrc"
@@ -50,7 +44,7 @@ class direnv(Generator):
 
 class gdb(Generator):
     def __init__(self, conanfile):
-        super().__init__(Recipe)
+        super().__init__(conanfile)
 
     @property
     def filename(self):
@@ -70,9 +64,6 @@ class gdb(Generator):
 
 
 class tools(Generator):
-    def __init__(self, conanfile):
-        super().__init__(Recipe)
-
     @property
     def filename(self):
         pass
@@ -140,9 +131,6 @@ def replace_prefix_in_pc_file(pc_file, prefix):
 
 
 class pkgconf(Generator):
-    def __init__(self, conanfile):
-        super().__init__(Recipe)
-
     @property
     def filename(self):
         pass
