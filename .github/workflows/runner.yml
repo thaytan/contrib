@@ -8,9 +8,10 @@ jobs:
     container:
       image: ${{ github.event.client_payload.image }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: aivero/checkout
       with:
         ref: ${{ github.event.client_payload.sha }}
+        submodules: true
     - name: Runner
       uses: aivero/runner-action@test
       with:
