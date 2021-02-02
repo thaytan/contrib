@@ -28,7 +28,8 @@ class GitRecipe(Recipe):
         args = [
             f"prefix={self.package_folder}",
         ]
-        self.autotools(args)
+        self.make(args, target="all")
+        self.make(args, target="install")
 
     def package_info(self):
         self.env_info.GIT_SSL_CAINFO = os.path.join(self.deps_cpp_info["ca-certificates"].rootpath, "etc", "ssl", "certs", "cert.pem")
