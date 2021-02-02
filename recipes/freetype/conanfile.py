@@ -10,7 +10,7 @@ class FreetypeRecipe(Recipe):
     )
 
     def requirements(self):
-        if self.name == "harfbuzz":
+        if self.name == "freetype":
             self.requires("harfbuzz/[^2.7.2]")
         else:
             self.requires("libpng/[^1.6.37]")
