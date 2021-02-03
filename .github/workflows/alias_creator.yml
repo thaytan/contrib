@@ -15,7 +15,7 @@ jobs:
     - name: Create and upload aliases
       uses: aivero/runner-action@test
       with:
-        cmds: "['python contrib/scripts/upload_aliases.py']"
+        cmds: "['python scripts/upload_aliases.py']"
       env:
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
