@@ -1,4 +1,5 @@
 from build import *
+from conans import tools as conantools
 
 # These come from https://developer.nvidia.com/embedded/downloads
 download_tx2_url = {
@@ -25,8 +26,8 @@ class NvJetsonDrivers(Recipe):
             self.get(download_tx2_url[self.version])
         else:
             raise KeyError("Unknown option: " + self.options.jetson)
-        tools.untargz("Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
-        tools.rmdir("Linux_for_Tegra")
+        tools.untargz(f"{self.name}-{self.version}.src/nv_tegra/nvidia_drivers.tbz2", self.source_folder)
+        conantools.rmdir(f"{self.name}-{self.version}.src")
 
     def package(self):
         lib_folder = os.path.join(self.package_folder, "lib")
