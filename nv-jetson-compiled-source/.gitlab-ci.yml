@@ -1,0 +1,57 @@
+include:
+  - project: 'aivero/cloud/cicd'
+    file: 'conan-ci-base.yml'
+  - local: '.gitlab-ci-tx1.yml'
+
+# #######
+# Build and test the Release version:
+# #######
+
+armv8-bionic-release-stable:
+  extends:
+    - .core
+    - .armv8
+    - .release
+    - .stable
+  variables:
+    CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
+
+armv8-bionic-release-testing:
+  extends:
+    - .core
+    - .armv8
+    - .release
+    - .testing
+  variables:
+    CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
+
+armv8-bionic-release-stable-package:
+  extends:
+    - .armv8
+    - .release
+    - .stable
+    - .package
+  variables:
+    CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
+
+# #######
+# Build and test the Debug version:
+# #######
+
+armv8-bionic-debug-stable:
+  extends:
+    - .core
+    - .armv8
+    - .debug
+    - .stable
+  variables:
+    CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
+
+armv8-bionic-debug-testing:
+  extends:
+    - .core
+    - .armv8
+    - .debug
+    - .testing
+  variables:
+    CONAN_SKIP_BROKEN_SYMLINKS_CHECK: "True"
