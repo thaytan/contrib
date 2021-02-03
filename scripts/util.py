@@ -65,6 +65,7 @@ def find_instances():
 # Create alias from newest commit hash to branch
 @background
 def create_alias(name, branch, old_branch, fetch_repo, upload_repo=None):
+    print(name, branch, old_branch, fetch_repo, upload_repo)
     match = None
     # Find hash locally
     (exit_code, output) = call("conan", ["get", f"{name}/{old_branch}"], ret_exit_code=True)
@@ -88,7 +89,7 @@ def create_alias(name, branch, old_branch, fetch_repo, upload_repo=None):
 
 def create_aliases(branch, old_branch, fetch_repo, upload_repo=None):
     for name in find_instances():
-        print(name)
+        print(name, branch, old_branch, fetch_repo, upload_repo)
         create_alias(name, branch, old_branch, fetch_repo, upload_repo)
 
 
