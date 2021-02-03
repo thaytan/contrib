@@ -3,15 +3,14 @@ on:
   create
 jobs:
   creator:
-    name: '${{ github.ref }}'
+    name: '${{ github.event.ref }}'
     runs-on: x64
     container:
       image: aivero/conan:bionic-x86_64
     steps:
     - uses: aivero/checkout@main
       with:
-        ref: ${{ github.event.client_payload.sha }}
-        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        ref: ${{ github.event.ref }}
     - name: Create and upload aliases
       uses: aivero/runner-action@test
       with:
