@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: aivero/checkout@main
       with:
-        ref: ${{ github.event.ref }}
+        ref: ${{ github.event.sha }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
     - name: Create and upload aliases
       uses: aivero/runner-action@test
