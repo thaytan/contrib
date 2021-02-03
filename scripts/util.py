@@ -85,7 +85,7 @@ def create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo=None)
     else:
         # Fallback to HEAD commit hash
         sha = commit
-    call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"], True)
+    call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"])
     if upload_repo:
         print(f"Uploading alias: {name}/{branch} to {name}/{sha}")
         call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", upload_repo])
