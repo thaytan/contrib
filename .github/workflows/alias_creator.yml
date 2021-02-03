@@ -10,7 +10,6 @@ jobs:
     - uses: aivero/checkout@main
       with:
         ref: ${{ github.event.client_payload.sha }}
-        submodules: true
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
     - name: Create and upload aliases
       uses: aivero/runner-action@test
