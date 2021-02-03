@@ -11,6 +11,7 @@ jobs:
     - uses: aivero/checkout@main
       with:
         ref: ${{ github.event.ref }}
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}
     - name: Create and upload aliases
       uses: aivero/runner-action@test
       with:
