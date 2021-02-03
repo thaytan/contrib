@@ -50,9 +50,6 @@ def find_instances():
     # Get name of all conan package instances
     ints = set()
     for devops_path in devops_paths:
-        if devops_path
-        print(devops_path)
-        continue
         with open(devops_path, "r") as devops_file:
             conf = yaml.safe_load(devops_file)
             for instance in conf:
