@@ -10,6 +10,8 @@ print(f"Fetching from: {fetch_repo}")
 upload_repo = os.environ["CONAN_REPO_UPLOAD"]
 print(f"Uploading to: {upload_repo}")
 
+util.setup_conan()
+
 util.create_aliases(
     commit,
     branch,

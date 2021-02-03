@@ -36,6 +36,17 @@ def call(cmd, args, show=False, ret_exit_code=False):
     return fulloutput
 
 
+def setup_conan():
+    call("conan", ["config", "install" os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
+    repos = (
+       os.environ["CONAN_REPO_ALL"],
+       os.environ["CONAN_REPO_INTERNAL"],
+       os.environ["CONAN_REPO_PUBLIC"],
+    )
+    for repo in repos:
+        call("conan", ["user", os.environ["CONAN_LOGIN_USERNAME"], "-p" os.environ["CONAN_LOGIN_PASSWORD"], "-r", repo])
+
+
 def find_branches():
     reflog = call("git", ["reflog"])
     match = re.search("^.*from (.*) to (.*)\n", reflog)
