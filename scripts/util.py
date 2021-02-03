@@ -63,8 +63,7 @@ def find_instances():
 
 # Create alias from newest commit hash to branch
 @background
-def create_alias(name, branch, old_branch, fetch_repo, upload_repo=None):
-    print(name, branch, old_branch, fetch_repo, upload_repo)
+def create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo=None):
     match = None
     # Find hash locally
     (exit_code, output) = call("conan", ["get", f"{name}/{old_branch}"], ret_exit_code=True)
@@ -79,17 +78,17 @@ def create_alias(name, branch, old_branch, fetch_repo, upload_repo=None):
         sha = match[1]
     else:
         # Fallback to HEAD commit hash
-        sha = sys.argv[1]
+        sha = commit
     call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"], True)
     if upload_repo:
         print(f"Uploading alias: {name}/{branch} to {name}/{sha}")
         call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", upload_repo])
 
 
-def create_aliases(branch, old_branch, fetch_repo, upload_repo=None):
+def create_aliases(commit, branch, old_branch, fetch_repo, upload_repo=None):
     for name in find_instances():
-        print(name, branch, old_branch, fetch_repo, upload_repo)
-        create_alias(name, branch, old_branch, fetch_repo, upload_repo)
+        print(name, commit, branch, old_branch, fetch_repo, upload_repo)
+        create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo)
 
 
 @background
