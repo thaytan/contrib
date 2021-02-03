@@ -2,7 +2,8 @@ name: Alias remover
 on:
   delete
 jobs:
-  build:
+  remover:
+    name: 'Remove aliases: ${{ github.ref }}'
     runs-on: x64
     container:
       image: aivero/conan:bionic-x86_64
