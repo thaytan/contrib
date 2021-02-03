@@ -285,7 +285,7 @@ impl ObjectSubclass for FrameAligner {
             "Frame Aligner",
             "(In-place transform/RGB-D",
             "Align depth and color streas from video/rgbd stream",
-            "João Alves <joao.alves@aivero.com>",
+            "Joao Alves <joao.alves@aivero.com>",
         );
         klass.install_properties(&PROPERTIES);
 

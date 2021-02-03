@@ -73,7 +73,7 @@ impl ObjectSubclass for RgbdDemux {
             "RGB-D Demuxer",
             "Demuxer/RGB-D",
             "Demuxes a single `video/rgbd` stream into multiple elementary streams",
-            "Raphael Dürscheid <rd@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
+            "Raphael Duerscheid <rd@aivero.com>, Andrej Orsula <andrej.orsula@aivero.com>, Tobias Morell <tobias.morell@aivero.com>",
         );
 
         klass.install_properties(&PROPERTIES);
