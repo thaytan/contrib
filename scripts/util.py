@@ -37,7 +37,7 @@ def call(cmd, args, show=False, ret_exit_code=False):
 
 
 def setup_conan():
-    call("conan", ["config", "install" os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
+    call("conan", ["config", "install", os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
     repos = (
        os.environ["CONAN_REPO_ALL"],
        os.environ["CONAN_REPO_INTERNAL"],
