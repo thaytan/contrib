@@ -4,3 +4,4 @@ conanfile.txt
 conanbuildinfo.txt  
 graph_info.json
 *.lock
+__pycache__
