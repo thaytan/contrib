@@ -1,7 +1,7 @@
 import util
 import os
 
-branch = os.environ["GITHUB_REF"].split("/")[2]
+branch = os.environ["GIT_REF"]
 repo = os.environ["CONAN_REPO_REMOVE"]
 
 util.setup_conan([repo])
