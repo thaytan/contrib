@@ -17,11 +17,10 @@ def background(f):
 
 def call(cmd, args, show=False, ret_exit_code=False):
     # print(f"Running command: {cmd} {' '.join(args)}")
-    child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE)
     fulloutput = b""
     while True:
-        output = child.stderr.readline()
-        output += child.stdout.readline()
+        output = child.stdout.readline()
         if output == b"" and child.poll() is not None:
             break
         if output:
@@ -96,7 +95,7 @@ def create_aliases(branch, old_branch, fetch_repo, upload_repo=None):
 @background
 def remove_alias(branch, repo):
     for name in find_instances():
-        call("conan", ["remove", f"{name}/{branch}", "-f", "-r", upload_repo])
+        call("conan", ["remove", f"{name}/{branch}", "-f", "-r", repo])
 
 
 def remove_aliases(branch, repo):
