@@ -16,7 +16,6 @@ def background(f):
 
 
 def call(cmd, args, show=False, ret_exit_code=False):
-    # print(f"Running command: {cmd} {' '.join(args)}")
     child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     fulloutput = b""
     while True:
@@ -93,7 +92,6 @@ def create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo=None)
 
 def create_aliases(commit, branch, old_branch, fetch_repo, upload_repo=None):
     for name in find_instances():
-        print(name, commit, branch, old_branch, fetch_repo, upload_repo)
         create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo)
 
 
