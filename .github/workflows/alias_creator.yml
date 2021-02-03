@@ -13,7 +13,7 @@ jobs:
         ref: ${{ github.event.ref }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
     - name: Create and upload aliases
-      uses: aivero/runner-action@test
+      uses: aivero/runner-action@master
       with:
         cmds: '["python3 scripts/upload_aliases.py"]'
       env:

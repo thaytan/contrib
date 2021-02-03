@@ -12,7 +12,7 @@ jobs:
       with:
         ref: ${{ github.event.client_payload.sha }}
     - name: Runner
-      uses: aivero/runner-action@test
+      uses: aivero/runner-action@master
       with:
         cmds: ${{ github.event.client_payload.cmds }}
         cmdsPost: ${{ github.event.client_payload.cmdsPost }}
