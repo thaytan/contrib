@@ -21,4 +21,4 @@ jobs:
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
         CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
         CONAN_REPO_ALL: ${{ secrets.CONAN_REPO_ALL }}
-        CONAN_REPO_UPLOAD: ${{ secrets.CONAN_REPO_PUBLIC }}
+        CONAN_REPO_REMOVE: ${{ secrets.CONAN_REPO_PUBLIC }}
