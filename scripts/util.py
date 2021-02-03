@@ -17,7 +17,7 @@ def background(f):
 
 def call(cmd, args, show=False, ret_exit_code=False):
     # print(f"Running command: {cmd} {' '.join(args)}")
-    child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE)
+    child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     fulloutput = b""
     while True:
         output = child.stdout.readline()
