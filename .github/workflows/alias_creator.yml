@@ -3,7 +3,7 @@ on:
   create
 jobs:
   creator:
-    name: 'Create aliases: ${{ github.ref }}'
+    name: '${{ github.ref }}'
     runs-on: x64
     container:
       image: aivero/conan:bionic-x86_64
