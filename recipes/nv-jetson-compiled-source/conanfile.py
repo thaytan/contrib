@@ -95,7 +95,7 @@ class NvJetsonCompiledSource(GstProject):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-            self.autotools()
+            # self.autotools()
 
     def package(self):
         lib_folder = os.path.join(self.package_folder, "lib")
