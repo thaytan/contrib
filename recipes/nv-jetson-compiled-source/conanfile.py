@@ -61,11 +61,11 @@ class NvJetsonCompiledSource(GstProject):
     def build(self):
 
         with tools.chdir("gstegl_src/gst-egl"):
-            # autotools = AutoToolsBuildEnvironment(self)
-            # autotools.configure()
-            # autotools.make()
-            # autotools.install()
-            self.autotools()
+            autotools = AutoToolsBuildEnvironment(self)
+            autotools.configure()
+            autotools.make()
+            autotools.install()
+            # self.autotools()
         pc_path_base = os.path.join(self.package_folder, "lib", "pkgconfig")
         pc_path_egl = os.path.join(pc_path_base, "gstreamer-egl-1.0.pc")
         self.run('sed -i "s/Requires: .*/Requires: gstreamer-1.0 libglvnd x11/" %s' % pc_path_egl)
@@ -85,17 +85,17 @@ class NvJetsonCompiledSource(GstProject):
         with tools.chdir("gstomx1_src/gst-omx1"), tools.environment_append(env):
             print(os.environ["LD_LIBRARY_PATH"])
 
-            # self.run("libtoolize --copy --force")
-            # self.run("aclocal -I m4 -I common/m4")
-            # self.run("autoheader")
-            # self.run("autoconf")
-            # self.run("automake -a -c")
-            # # self.run("./autogen.sh")
-            # autotools = AutoToolsBuildEnvironment(self)
-            # autotools.configure(args=args)
-            # autotools.make()
-            # autotools.install()
-            self.autotools()
+            self.run("libtoolize --copy --force")
+            self.run("aclocal -I m4 -I common/m4")
+            self.run("autoheader")
+            self.run("autoconf")
+            self.run("automake -a -c")
+            # self.run("./autogen.sh")
+            autotools = AutoToolsBuildEnvironment(self)
+            autotools.configure(args=args)
+            autotools.make()
+            autotools.install()
+            # self.autotools()
 
     def package(self):
         lib_folder = os.path.join(self.package_folder, "lib")
