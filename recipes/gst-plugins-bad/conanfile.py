@@ -5,56 +5,60 @@ class GstPluginsBadRecipe(GstRecipe):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
     options = {
-        "introspection": [True, False],
-        "videoparsers": [True, False],
-        "gl": [True, False],
-        "nvcodec": [True, False],
-        "pnm": [True, False],
-        "webrtc": [True, False],
-        "srtp": [True, False],
-        "rtmp2": [True, False],
-        "dtls": [True, False],
-        "mpegtsmux": [True, False],
-        "mpegtsdemux": [True, False],
-        "debugutils": [True, False],
-        "opencv": [True, False],
         "closedcaption": [True, False],
-        "aiveropatchlatency": [True, False],
+        "debugutils": [True, False],
+        "dtls": [True, False],
+        "gl": [True, False],
         "inter": [True, False],
+        "introspection": [True, False],
+        "mpegtsdemux": [True, False],
+        "mpegtsmux": [True, False],
+        "msdk": [True, False],
+        "nvcodec": [True, False],
+        "opencv": [True, False],
+        "pnm": [True, False],
+        "rtmp2": [True, False],
+        "srtp": [True, False],
+        "videoparsers": [True, False],
         "webp": [True, False],
+        "webrtc": [True, False],
+        "x265": [True, False],
     }
     default_options = (
-        "introspection=True",
-        "videoparsers=True",
-        "gl=True",
-        "nvcodec=False",
-        "pnm=True",
-        "webrtc=True",
-        "srtp=True",
-        "rtmp2=True",
-        "dtls=True",
-        "mpegtsmux=True",
-        "mpegtsdemux=True",
-        "debugutils=True",
-        "opencv=False",
         "closedcaption=False",
-        "aiveropatchlatency=False",
+        "debugutils=True",
+        "dtls=True",
+        "gl=True",
         "inter=False",
+        "introspection=True",
+        "mpegtsdemux=True",
+        "mpegtsmux=True",
+        "msdk=False",
+        "nvcodec=False",
+        "opencv=False",
+        "pnm=True",
+        "rtmp2=True",
+        "srtp=True",
+        "videoparsers=True",
         "webp=True",
+        "webrtc=True",
+        "x265=False",
     )
+
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[^0.55.3]",
         "gobject-introspection/[^1.59.3]",
+        "gst-plugins-base/[^1.18]",
     )
-    requires = (
-        "libnice/[^0.1.18]",
-    )
-    exports = "reduce_latency.patch"
+    requires = ("libnice/[^0.1.18]",)
 
     def configure(self):
         if self.settings.arch != "x86_64":
+            self.options.remove("nvdec")
+            self.options.remove("nvenc")
             self.options.remove("nvcodec")
+            self.options.remove("msdk")
 
     def build_requirements(self):
         if self.settings.arch == "x86_64" and self.options.nvcodec:
@@ -70,27 +74,40 @@ class GstPluginsBadRecipe(GstRecipe):
             self.requires("pango/[^1.4.3]")
         if self.options.webp:
             self.requires("libwebp/[^1.1.0]")
+        if self.settings.arch == "x86_64" and (self.options.msdk):
+            self.requires("intel-media-sdk/[>=20.2]")
+            self.requires("libgudev/[>=233]")
+        if self.options.x265:
+            self.requires("x265/[>=2.7]")
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
+        git = tools.Git(folder="gst-plugins-bad")
+        if "1.16" in self.settings.gstreamer:
+            print("Getting {self.settings.gstreamer} from https://gitlab.freedesktop.org/meh/gst-plugins-bad.git")
+            self.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
+
+        elif "1.18" in self.settings.gstreamer:
+            self.get(f"https://gitlab.freedesktop.org/meh/gst-plugins-bad/-/archive/1.18-backports/gst-plugins-bad-1.18-backports.tar.gz")
 
     def build(self):
         opts = {
-            "videoparsers": self.options.videoparsers,
-            "gl": self.options.gl,
-            "pnm": self.options.pnm,
-            "webrtc": self.options.webrtc,
-            "srtp": self.options.srtp,
-            "rtmp2": self.options.rtmp2,
-            "dtls": self.options.srtp,
-            "mpegtsmux": self.options.mpegtsmux,
-            "mpegtsdemux": self.options.mpegtsdemux,
-            "debugutils": self.options.debugutils,
-            "opencv": self.options.opencv,
             "closedcaption": self.options.closedcaption,
+            "debugutils": self.options.debugutils,
+            "dtls": self.options.dtls,
+            "gl": self.options.gl,
             "inter": self.options.inter,
+            "mpegtsdemux": self.options.mpegtsdemux,
+            "mpegtsmux": self.options.mpegtsmux,
+            "opencv": self.options.opencv,
+            "pnm": self.options.pnm,
+            "rtmp2": self.options.rtmp2,
+            "srtp": self.options.srtp,
+            "videoparsers": self.options.videoparsers,
             "webp": self.options.webp,
+            "webrtc": self.options.webrtc,
+            "x265": self.options.x265,
         }
         if self.settings.arch == "x86_64":
+            opts["msdk"] = self.options.msdk
             opts["nvcodec"] = self.options.nvcodec
         self.meson(opts)
