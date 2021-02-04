@@ -34,7 +34,7 @@ class NvJetsonCompiledSource(GstProject):
     settings = {"os": None, "compiler": None, "build_type": None, "arch": "armv8", "hardware": {"l4t": {"board", "version"}}, "gstreamer": None}
     exports = ["*.patch"]
 
-    build_requires = ("autotools/[^1.0.0]",)
+    build_requires = ("autotools/[^1.0.0]", "pkgconf/[^1.7.3]")
     requires = ("gst-plugins-base/[^1.18]",)
 
     def requirements(self):
