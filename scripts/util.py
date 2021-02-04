@@ -96,11 +96,11 @@ def create_aliases(commit, branch, old_branch, fetch_repo, upload_repo=None):
 
 
 @background
-def remove_alias(branch, repo):
+def remove_alias(name, branch, repo):
     print(f"Removing alias: {name}/{branch}")
     call("conan", ["remove", f"{name}/{branch}", "-f", "-r", repo])
 
 
 def remove_aliases(branch, repo):
     for name in find_instances():
-        remove_alias(branch, repo)
+        remove_alias(name, branch, repo)
