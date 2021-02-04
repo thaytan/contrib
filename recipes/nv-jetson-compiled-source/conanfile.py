@@ -34,7 +34,7 @@ class NvJetsonCompiledSource(GstProject):
     settings = {"os": None, "compiler": None, "build_type": None, "arch": "armv8", "hardware": {"l4t": {"board", "version"}}, "gstreamer": None}
     exports = ["*.patch"]
 
-    build_requires = ("autotools/[^1.0.0]", "pkgconf/[^1.7.3]")
+    build_requires = ("autotools/[^1.0.0]", "pkgconf/[^1.7.3]", "cc/[^1.0.0]")
     requires = ("gst-plugins-base/[^1.18]",)
 
     def requirements(self):
@@ -95,7 +95,7 @@ class NvJetsonCompiledSource(GstProject):
             autotools.configure(args=args)
             autotools.make()
             autotools.install()
-            # self.autotools()
+            self.autotools()
 
     def package(self):
         lib_folder = os.path.join(self.package_folder, "lib")
