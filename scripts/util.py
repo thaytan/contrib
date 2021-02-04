@@ -16,8 +16,7 @@ def background(f):
 
 
 def call(cmd, args, show=False, ret_exit_code=False):
-    # print(f"Running command: {cmd} {' '.join(args)}")
-    child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE)
+    child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     fulloutput = b""
     while True:
         output = child.stdout.readline()
@@ -36,15 +35,10 @@ def call(cmd, args, show=False, ret_exit_code=False):
     return fulloutput
 
 
-def setup_conan():
-    call("conan", ["config", "install" os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
-    repos = (
-       os.environ["CONAN_REPO_ALL"],
-       os.environ["CONAN_REPO_INTERNAL"],
-       os.environ["CONAN_REPO_PUBLIC"],
-    )
+def setup_conan(repos):
+    call("conan", ["config", "install", os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
     for repo in repos:
-        call("conan", ["user", os.environ["CONAN_LOGIN_USERNAME"], "-p" os.environ["CONAN_LOGIN_PASSWORD"], "-r", repo])
+        call("conan", ["user", os.environ["CONAN_LOGIN_USERNAME"], "-p", os.environ["CONAN_LOGIN_PASSWORD"], "-r", repo])
 
 
 def find_branches():
@@ -90,7 +84,7 @@ def create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo=None)
     else:
         # Fallback to HEAD commit hash
         sha = commit
-    call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"], True)
+    call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"])
     if upload_repo:
         print(f"Uploading alias: {name}/{branch} to {name}/{sha}")
         call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", upload_repo])
@@ -98,16 +92,15 @@ def create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo=None)
 
 def create_aliases(commit, branch, old_branch, fetch_repo, upload_repo=None):
     for name in find_instances():
-        print(name, commit, branch, old_branch, fetch_repo, upload_repo)
         create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo)
 
 
 @background
-def remove_alias(branch, repo):
-    for name in find_instances():
-        call("conan", ["remove", f"{name}/{branch}", "-f", "-r", repo])
+def remove_alias(name, branch, repo):
+    print(f"Removing alias: {name}/{branch}")
+    call("conan", ["remove", f"{name}/{branch}", "-f", "-r", repo])
 
 
 def remove_aliases(branch, repo):
     for name in find_instances():
-        remove_alias(branch, repo)
+        remove_alias(name, branch, repo)

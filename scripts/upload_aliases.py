@@ -2,7 +2,7 @@ import util
 import os
 
 commit = os.environ["GITHUB_SHA"]
-branch = os.environ["GITHUB_REF"].split("/")[2]
+branch = os.environ["GIT_REF"]
 print(f"Branch: {branch}")
 old_branch = "master"
 fetch_repo = os.environ["CONAN_REPO_ALL"]
@@ -10,7 +10,7 @@ print(f"Fetching from: {fetch_repo}")
 upload_repo = os.environ["CONAN_REPO_UPLOAD"]
 print(f"Uploading to: {upload_repo}")
 
-util.setup_conan()
+util.setup_conan((fetch_repo, upload_repo))
 
 util.create_aliases(
     commit,

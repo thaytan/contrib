@@ -18,7 +18,7 @@ class GlibcRecipe(Recipe):
         # install-headers does not create include/gnu/stubs.h
         pathlib.Path(os.path.join(self.package_folder, "include", "gnu", "stubs.h")).touch()
 
-        # Copy glibc and gcc libs 
+        # Copy glibc and gcc libs
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         lib_dir = os.path.join(self.package_folder, "lib-dev")
         os.makedirs(lib_dir)
@@ -54,6 +54,7 @@ class GlibcRecipe(Recipe):
             for ld_script in ld_scripts:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{ld_script}", ld_script)
                 tools.replace_path_in_file(ld_script, f"/usr/lib/{arch}-linux-gnu/", "")
+                tools.replace_path_in_file(ld_script, f"/lib/{arch}-linux-gnu/", "")
             # Copy base glibc and fix linker scripts
             libs = [
                 "libc.so.6",

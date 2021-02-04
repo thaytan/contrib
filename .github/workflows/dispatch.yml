@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 2
       - name: Dispatch Action
-        uses: aivero/dispatch-action@test
+        uses: aivero/dispatch-action@master
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           component: ${{ github.event.inputs.component }}

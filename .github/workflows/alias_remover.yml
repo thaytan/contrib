@@ -3,20 +3,21 @@ on:
   delete
 jobs:
   remover:
-    name: '${{ github.ref }}'
+    name: '${{ github.event.ref_type }}: ${{ github.event.ref }}'
     runs-on: x64
     container:
       image: aivero/conan:bionic-x86_64
     steps:
     - uses: aivero/checkout@main
       with:
-        ref: ${{ github.event.client_payload.sha }}
+        ref: ${{ github.sha }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
     - name: Create and upload aliases
-      uses: aivero/runner-action@test
+      uses: aivero/runner-action@master
       with:
-        cmds: '["python3 scripts/remove_aliases.py"]'
+        cmds: '["ls", "python3 scripts/remove_aliases.py"]'
       env:
+        GIT_REF: ${{ github.event.ref }}
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
