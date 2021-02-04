@@ -1,1 +1,4 @@
 - version: 32.4.3
+  profiles: [Linux-armv8-l4t-t186]
+- version: 32.4.3
+  profiles: [Linux-armv8-l4t-t210]
