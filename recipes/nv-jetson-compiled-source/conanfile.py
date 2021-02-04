@@ -1,5 +1,6 @@
 import os
 import re
+from build import *
 
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 from pathlib import Path
@@ -25,7 +26,7 @@ def get_lib_dir(basedir, libname):
         return basedir
 
 
-class NvJetsonDrivers(ConanFile):
+class NvJetsonCompiledSource(GstProject):
     name = "nv-jetson-compiled-source"
     version = tools.get_env("GIT_TAG", "32.4.3")
     license = "LGPL"
@@ -34,17 +35,17 @@ class NvJetsonDrivers(ConanFile):
                 "hardware": {"l4t": {"board", "version"}}, "gstreamer": None}
     exports = ["*.patch"]
 
-    def build_requirements(self):
-        self.build_requires("generators/1.0.0@%s/stable" % self.user)
-        self.build_requires("autotools/[>=1.0.0]@%s/stable" % self.user)
+    build_requires = (
+        "autotools/[^1.0.0]",
+    )
+    requires = (
+        "gst-plugins-base/[^1.18]",
+    )
+
 
     def requirements(self):
-        self.requires(
-            "gstreamer-plugins-base/[~%s]@%s/stable" % (self.settings.gstreamer, self.user))
-        self.requires("glib/[~2]@%s/stable" % self.user)
-        self.requires("libglvnd/[~1]@%s/stable" % self.user)
-        self.requires("nv-jetson-drivers/%s@%s/stable" %
-                      (self.settings.hardware.version, self.user))
+        self.requires(f"nv-jetson-drivers/{self.settings.hardware.version}")
+        
 
     def source(self):
         if self.settings.hardware.board == "t186":
@@ -70,10 +71,11 @@ class NvJetsonDrivers(ConanFile):
     def build(self):
 
         with tools.chdir("gstegl_src/gst-egl"):
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure()
-            autotools.make()
-            autotools.install()
+            # autotools = AutoToolsBuildEnvironment(self)
+            # autotools.configure()
+            # autotools.make()
+            # autotools.install()
+            self.autotools()
         pc_path_base = os.path.join(self.package_folder, "lib", "pkgconfig")
         pc_path_egl = os.path.join(pc_path_base, "gstreamer-egl-1.0.pc")
         self.run(
@@ -96,17 +98,18 @@ class NvJetsonDrivers(ConanFile):
         with tools.chdir("gstomx1_src/gst-omx1"), tools.environment_append(env):
             print(os.environ["LD_LIBRARY_PATH"])
 
-            self.run("libtoolize --copy --force")
-            self.run("aclocal -I m4 -I common/m4")
-            self.run("autoheader")
-            self.run("autoconf")
-            self.run("automake -a -c")
-            # self.run("./autogen.sh")
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=args)
-            autotools.make()
-            autotools.install()
-
+            # self.run("libtoolize --copy --force")
+            # self.run("aclocal -I m4 -I common/m4")
+            # self.run("autoheader")
+            # self.run("autoconf")
+            # self.run("automake -a -c")
+            # # self.run("./autogen.sh")
+            # autotools = AutoToolsBuildEnvironment(self)
+            # autotools.configure(args=args)
+            # autotools.make()
+            # autotools.install()
+            self.autotools()
+            
     def package(self):
         lib_folder = os.path.join(self.package_folder, "lib")
 
