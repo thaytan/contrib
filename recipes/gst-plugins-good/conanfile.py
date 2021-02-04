@@ -4,35 +4,85 @@ from build import *
 class GstPluginsGoodRecipe(GstRecipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
-    build_requires = (
-        "cc/[^1.0.0]", 
-        "meson/[^0.55.3]",
-    )
-    requires = (
-        "libvpx/[^1.8.0]",
-        "libjpeg-turbo/[^2.0.3]",
-        "gst-plugins-base/[^1.18]",
+    exports = "0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch"
+    options = {
+        "aivero_rvl_matroska": [True, False],
+        "autodetect": [True, False],
+        "isomp4": [True, False],
+        "jpeg": [True, False],
+        "matroska": [True, False],
+        "multifile": [True, False],
+        "png": [True, False],
+        "rtp": [True, False],
+        "rtsp": [True, False],
+        "udp": [True, False],
+        "videofilter": [True, False],
+        "videomixer": [True, False],
+        "vpx": [True, False],
+        "ximagesrc_xdamage": [True, False],
+        "ximagesrc_xshm": [True, False],
+        "ximagesrc": [True, False],
+    }
+    default_options = (
+        "aivero_rvl_matroska=True",
+        "autodetect=True",
+        "isomp4=True",
+        "jpeg=True",
+        "matroska=True",
+        "multifile=True",
+        "png=True",
+        "rtp=True",
+        "rtsp=True",
+        "udp=True",
+        "videofilter=True",
+        "videomixer=True",
+        "vpx=True",
+        "ximagesrc_xdamage=False",
+        "ximagesrc_xshm=True",
+        "ximagesrc=True",
     )
 
+    build_requires = (
+        "cc/[^1.0.0]",
+        "meson/[^0.55.3]",
+    )
+    requires = ("gst-plugins-base/[^1.18]",)
+
+    def requirements(self):
+        # gst-plugins-bad -> pango -> freetype -> png
+        # if self.options.png:
+        #     self.requires("libpng/[^1.6.37]")
+        if self.options.vpx:
+            self.requires("libvpx/[^1.8.0]")
+        if self.options.jpeg:
+            self.requires("libjpeg-turbo/[^2.0.3]")
+
     def source(self):
-        self.get(f"https://github.com/GStreamer/gst-plugins-good/archive/{self.version}.tar.gz")
+        # This needs to stay in place until we have ditched the 1.16 Gstreamer version.
+        if "1.18" in self.settings.gstreamer:
+            git = tools.Git(folder=f"{self.name}-{self.version}.src")
+            git.clone("https://gitlab.freedesktop.org/meh/gst-plugins-good.git", "1.18-backports")
+            if self.options.aivero_rvl_matroska:
+                git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch')
+        else:
+            self.get(f"https://github.com/GStreamer/gst-plugins-good/archive/{self.version}.tar.gz")
 
     def build(self):
         opts = {
             "autodetect": True,
-            "rtp": True,
-            "rtsp": True,
-            "rtpmanager": True,
-            "udp": True,
-            "png": True,
             "isomp4": True,
-            "videofilter": True,
-            "vpx": True,
-            "multifile": True,
-            "matroska": True,
-            "videomixer": True,
-            "ximagesrc": True,
-            "ximagesrc-xdamage": True,
             "jpeg": True,
+            "matroska": True,
+            "multifile": True,
+            "png": True,
+            "rtp": True,
+            "rtpmanager": True,
+            "rtsp": True,
+            "udp": True,
+            "videofilter": True,
+            "videomixer": True,
+            "vpx": True,
+            "ximagesrc-xdamage": True,
+            "ximagesrc": True,
         }
         self.meson(opts)
