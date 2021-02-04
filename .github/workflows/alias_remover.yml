@@ -12,10 +12,9 @@ jobs:
       with:
         ref: ${{ github.sha }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
-    - name: Create and upload aliases
-      uses: aivero/runner-action@master
+    - uses: aivero/runner-action@master
       with:
-        cmds: '["ls", "python3 scripts/remove_aliases.py"]'
+        cmds: '["python3 scripts/remove_aliases.py"]'
       env:
         GIT_REF: ${{ github.event.ref }}
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
