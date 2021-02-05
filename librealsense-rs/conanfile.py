@@ -7,6 +7,5 @@ class Librealsense(GstRustProject):
         "rust/[^1.0.0]",
     )
     requires = (
-        f"gst-depth-meta/{branch()}",
         "librealsense/[^2.39.0]",
     )
