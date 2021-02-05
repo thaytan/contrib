@@ -1,0 +1,72 @@
+= Gstreamer VAAPI Environment
+// tag::driverenvironment[]
+
+This guide instructs you how to setup the LIBVA driver environment in order to use the Gstreamer VAAPI elements. 
+
+Following these instructions is equivalent to running `vaapi_env.sh` script.
+
+== LibVA Driver Setup
+
+**Intel Graphics before Comet Lake architecture (excluding)**
+
+When using this setup one should set the LIBVA_DRIVER_NAME as followsx:
+```
+export LIBVA_DRIVER_NAME=i965
+gst-inspect-1.0 vaapi
+```
+You should see multiple elements (>0) included in the output of gst-inspect.
+
+If that alone does not solve it, try to rremove the gstreamer cache after setting LIBVA_DRIVER_NAME:
+```
+export LIBVA_DRIVER_NAME=i965
+rm -rf ~/.cache/gstreamer-1.0/
+gst-inspect-1.0 vaapi
+```
+
+**Intel Graphics after Comet Lake architecture (including)**
+
+When using this setup one should set the LIBVA_DRIVER_NAME as follows:
+```
+export LIBVA_DRIVER_NAME=iHD
+gst-inspect-1.0 vaapi
+```
+You should see multiple elements (>0) included in the output of gst-inspect.
+
+If that alone does not solve it, try to rremove the gstreamer cache after setting LIBVA_DRIVER_NAME:
+```
+export LIBVA_DRIVER_NAME=iHD
+rm -rf ~/.cache/gstreamer-1.0/
+gst-inspect-1.0 vaapi
+```
+
+**AMD Graphics when using open source AMDGPU driver**
+
+When using this setup one should set the LIBVA_DRIVER_NAME as follows:
+```
+export LIBVA_DRIVER_NAME=radeonsi
+gst-inspect-1.0 vaapi
+```
+You should see multiple elements (>0) included in the output of gst-inspect.
+
+If that alone does not solve it, try to rremove the gstreamer cache after setting LIBVA_DRIVER_NAME:
+```
+export LIBVA_DRIVER_NAME=radeonsi
+rm -rf ~/.cache/gstreamer-1.0/
+gst-inspect-1.0 vaapi
+```
+
+**AMD Graphics when using closed source Catalyst driver**
+
+When using this setup one should set the LIBVA_DRIVER_NAME as follows:
+```
+export LIBVA_DRIVER_NAME=fglrx
+gst-inspect-1.0 vaapi
+```
+You should see multiple elements (>0) included in the output of gst-inspect.
+
+If that alone does not solve it, try to rremove the gstreamer cache after setting LIBVA_DRIVER_NAME:
+```
+export LIBVA_DRIVER_NAME=fglrx
+rm -rf ~/.cache/gstreamer-1.0/
+gst-inspect-1.0 vaapi
+```
