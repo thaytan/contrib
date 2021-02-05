@@ -27,8 +27,6 @@ def get_lib_dir(basedir, libname):
 
 
 class NvJetsonCompiledSource(GstProject):
-    name = "nv-jetson-compiled-source"
-    version = tools.get_env("GIT_TAG", "32.4.3")
     license = "LGPL"
     description = "Compiled elements from NVIDIAs Jetson sources"
     settings = {"os": None, "compiler": None, "build_type": None, "arch": "armv8", "hardware": {"l4t": {"board", "version"}}, "gstreamer": None}
