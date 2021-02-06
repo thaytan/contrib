@@ -10,13 +10,14 @@ jobs:
     steps:
     - uses: aivero/checkout@main
       with:
-        ref: ${{ github.event.client_payload.sha }}
+        ref: ${{ github.event.client_payload.commit }}
     - name: Runner
       uses: aivero/runner-action@master
       with:
         cmds: ${{ github.event.client_payload.cmds }}
         cmdsPost: ${{ github.event.client_payload.cmdsPost }}
       env:
+        GITHUB_REF: ${{ github.event.client_payload.branch }}
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
