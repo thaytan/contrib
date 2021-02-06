@@ -4,7 +4,6 @@ on:
 jobs:
   remover:
     name: '${{ github.event.ref_type }}: ${{ github.event.ref }}'
-    runs-on: x64
     container:
       image: aivero/conan:bionic-x86_64
     steps:
