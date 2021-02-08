@@ -1,6 +1,12 @@
 name: Cancel workflows
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      workflow_id:
+        description: 'Workflow to cancel'
+        default: 'runner.yml'
+ 
 
 jobs:
   cancel:
@@ -12,3 +18,4 @@ jobs:
         with:
           access_token: ${{ github.token }}
           ignore_sha: true
+          workflow_id: ${{ github.event.inputs.workflow_id }}
