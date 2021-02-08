@@ -14,7 +14,7 @@ class GstPluginsBaseRecipe(GstRecipe):
         "shared=True",
         "introspection=True",
         "x11=True",
-        "audioresample=False",
+        "audioresample=True",
     )
     build_requires = (
         "cc/[^1.0.0]",
