@@ -18,4 +18,7 @@ class SwigRecipe(PythonRecipe):
 
     def build(self):
         os.environ["PATH"] += os.path.join(self.package_folder, "bin")
-        self.autotools()
+        args = [
+            "--without-pcre",
+        ]
+        self.autotools(args)
