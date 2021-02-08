@@ -25,6 +25,14 @@ jobs:
         CONAN_REPO_ALL: ${{ secrets.CONAN_REPO_ALL }}
         CONAN_REPO_INTERNAL: ${{ secrets.CONAN_REPO_INTERNAL }}
         CONAN_REPO_PUBLIC: ${{ secrets.CONAN_REPO_PUBLIC }}
+    - name: Report status
+      uses: aivero/status-action@master
+      if: ${{ always() }}
+      with:
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        component: ${{ github.event.client_payload.component }} 
+        commit: ${{ github.event.client_payload.commit }}
+        status: ${{ job.status }}
     - uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
