@@ -6,6 +6,7 @@ jobs:
     name: '${{ github.event.ref_type }}: ${{ github.event.ref }}'
     container:
       image: aivero/conan:bionic-x86_64
+    runs-on: ubuntu-latest
     steps:
     - uses: aivero/checkout@main
       with:
