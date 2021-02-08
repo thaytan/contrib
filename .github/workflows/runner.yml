@@ -17,7 +17,7 @@ jobs:
         cmds: ${{ github.event.client_payload.cmds }}
         cmdsPost: ${{ github.event.client_payload.cmdsPost }}
       env:
-        GITHUB_REF: ${{ github.event.client_payload.branch }}
+        GIT_REF: ${{ github.event.client_payload.branch }}
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
