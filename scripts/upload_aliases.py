@@ -2,7 +2,7 @@ import util
 import os
 
 commit = os.environ["GITHUB_SHA"]
-branch = os.environ["GIT_REF"]
+branch = os.environ["GITHUB_REF"].split("/")[2]
 print(f"Branch: {branch}")
 old_branch = "master"
 fetch_repo = os.environ["CONAN_REPO_ALL"]
