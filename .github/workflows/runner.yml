@@ -30,7 +30,7 @@ jobs:
       if: ${{ always() }}
       with:
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        component: ${{ github.event.client_payload.component }} 
+        context: ${{ github.event.client_payload.context }} 
         commit: ${{ github.event.client_payload.commit }}
         status: ${{ job.status }}
     - uses: actions/upload-artifact@v2
