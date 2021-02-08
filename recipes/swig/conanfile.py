@@ -17,7 +17,6 @@ class SwigRecipe(PythonRecipe):
         self.get(f"https://downloads.sourceforge.net/swig/swig-{self.version}.tar.gz")
 
     def build(self):
-        os.environ["PATH"] += os.path.join(self.package_folder, "bin")
         args = [
             "--without-pcre",
         ]
