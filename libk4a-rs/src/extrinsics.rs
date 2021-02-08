@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Extrinsics {
     pub rotation: [f32; 9],
     pub translation: [f32; 3],
