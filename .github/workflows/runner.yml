@@ -8,38 +8,45 @@ jobs:
     container:
       image: ${{ github.event.client_payload.image }}
     steps:
-    - uses: aivero/checkout@main
-      with:
-        ref: ${{ github.event.client_payload.commit }}
-    - name: Runner
-      uses: aivero/runner-action@master
-      with:
-        cmds: ${{ github.event.client_payload.cmds }}
-        cmdsPost: ${{ github.event.client_payload.cmdsPost }}
-      env:
-        GIT_REF: ${{ github.event.client_payload.branch }}
-        CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
-        CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
-        CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
-        CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
-        CONAN_REPO_ALL: ${{ secrets.CONAN_REPO_ALL }}
-        CONAN_REPO_INTERNAL: ${{ secrets.CONAN_REPO_INTERNAL }}
-        CONAN_REPO_PUBLIC: ${{ secrets.CONAN_REPO_PUBLIC }}
-    - name: Report status
-      uses: aivero/status-action@master
-      if: ${{ always() }}
-      with:
-        token: ${{ secrets.REPO_ACCESS_TOKEN }}
-        context: ${{ github.event.client_payload.context }} 
-        commit: ${{ github.event.client_payload.commit }}
-        status: ${{ job.status }}
-    - uses: actions/upload-artifact@v2
-      if: ${{ always() }}
-      with:
-        name: build-logs
-        path: |
-          ${{ env.CONAN_PKG_PATH }}/build/**/meson-logs/*-log.txt
-          ${{ env.CONAN_PKG_PATH }}/build/**/config.log
-          ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
-          ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
-          ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
+      - 
+        uses: aivero/checkout@main
+        with:
+          ref: ${{ github.event.client_payload.commit }}
+          submodules: true
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      - 
+        name: Runner
+        uses: aivero/runner-action@master
+        with:
+          cmdsPre: ${{ github.event.client_payload.cmds.pre }}
+          cmds: ${{ github.event.client_payload.cmds.main }}
+          cmdsPost: ${{ github.event.client_payload.cmds.post }}
+        env:
+          GIT_REF: ${{ github.event.client_payload.branch }}
+          CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
+          CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
+          CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
+          CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
+          CONAN_REPO_ALL: ${{ secrets.CONAN_REPO_ALL }}
+          CONAN_REPO_INTERNAL: ${{ secrets.CONAN_REPO_INTERNAL }}
+          CONAN_REPO_PUBLIC: ${{ secrets.CONAN_REPO_PUBLIC }}
+      - 
+        name: Report status
+        uses: aivero/status-action@master
+        if: ${{ always() }}
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          context: ${{ github.event.client_payload.context }}
+          commit: ${{ github.event.client_payload.commit }}
+          status: ${{ job.status }}
+      - 
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: build-logs
+          path: |
+            ${{ env.CONAN_PKG_PATH }}/build/**/meson-logs/*-log.txt
+            ${{ env.CONAN_PKG_PATH }}/build/**/config.log
+            ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
+            ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
+            ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
