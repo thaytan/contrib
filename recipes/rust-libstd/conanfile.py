@@ -12,3 +12,6 @@ class RustLibstd(RustRecipe):
 
     def imports(self):
         self.copy("*libstd-*.so", excludes="*rustlib*")
+
+    def package(self):
+        self.copy("*libstd-*.so")
