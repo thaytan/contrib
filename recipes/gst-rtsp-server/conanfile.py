@@ -28,7 +28,10 @@ class GstRtspServerRecipe(GstRecipe):
     )
 
     def source(self):
-        self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/{self.version}/gst-rtsp-server-{self.version}.tar.gz")
+        if "1.18" in self.settings.gstreamer:
+            self.get(f"https://gitlab.freedesktop.org/raffael_santi/gst-rtsp-server/-/archive/backport_update-sdp_signal/gst-rtsp-server-backport_update-sdp_signal.tar.gz")
+        else:
+            self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/{self.version}/gst-rtsp-server-{self.version}.tar.gz")
 
     def build(self):
         opts = {}
