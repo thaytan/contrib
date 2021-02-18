@@ -22,7 +22,7 @@ jobs:
           cmds: ${{ github.event.client_payload.cmds.main }}
           cmdsPost: ${{ github.event.client_payload.cmds.post }}
         env:
-          GIT_REF: ${{ github.event.client_payload.branch }}
+          GIT_REF: ${{ github.event.client_payload.version }}
           CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
           CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
           CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
@@ -50,3 +50,126 @@ jobs:
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
             ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
+      - 
+        name: "Tar files"
+        if: ${{ github.event.client_payload.docker && success() }}
+        run: tar -cvf ${{ github.event.client_payload.component }}/install-${{ github.event.client_payload.component }}.tar ${{ github.event.client_payload.component }}/install-*
+      - 
+        name: Store conan deployed ${{ github.event.client_payload.component }}
+        uses: actions/upload-artifact@v2
+        if: ${{ github.event.client_payload.docker && success() }}
+        with:
+          name: conan-install-${{ github.event.client_payload.component }}
+          path: |
+            ${{ github.event.client_payload.component }}/install-${{ github.event.client_payload.component }}.tar
+  
+  docker_build:
+    name: "Docker build: ${{ github.event.client_payload.component }}"
+    needs: build
+    if: ${{ github.event.client_payload.docker && success() }}
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        uses: aivero/checkout@main
+        with:
+          ref: ${{ github.event.client_payload.commit }}
+          submodules: true
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      - 
+        name: Download conan deployed ${{ github.event.client_payload.component }}
+        uses: actions/download-artifact@v2
+        with:
+          name: conan-install-${{ github.event.client_payload.component }}
+      - 
+        name: "Untar files"
+        run: tar -xvf install-${{ github.event.client_payload.component }}.tar
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1      
+      - 
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - 
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PUSH_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ github.event.client_payload.component }}
+          file: ${{ github.event.client_payload.docker.dockerfile }}
+          push: true
+          platforms: ${{ github.event.client_payload.docker.platform }}
+          tags: ${{ github.event.client_payload.docker.tag }}
+  
+  balena-deploy:
+    needs: docker_build
+    if: ${{ contains(github.event.client_payload.component, 'deepcore-daemon') && ( contains(github.event.client_payload.profile, '186') || contains(github.event.client_payload.profile, '210') ) }}
+    runs-on: ubuntu-latest
+    env:
+      BALENA_DOCKER_DIR: ${{ github.event.client_payload.component }}/docker
+    steps:
+      - 
+        id: lowercase-profile
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ github.event.client_payload.profile }}
+      - 
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: "set version"
+        run: sed -i "s#\${DEEPCORE_DAEMON_VERSION}#${{ github.event.client_payload.version }}#" ${{ env.BALENA_DOCKER_DIR }}/docker-compose.yml
+      - 
+        name: "set hardware"
+        run: sed -i "s#\${CONAN_PROFILE}#${{ steps.lowercase-profile.outputs.lowercase }}#" ${{ env.BALENA_DOCKER_DIR }}/docker-compose.yml
+      - 
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PUSH_TOKEN }}
+      - 
+        name: "Pull containers"
+        run: docker-compose -f ${{ env.BALENA_DOCKER_DIR }}/docker-compose.yml pull
+      - 
+        name: Balena Deploy
+        uses: aivero/balena-cli-action@master
+        if: success()
+        timeout-minutes: 5
+        env:
+          APPLICATION: staging-${{ steps.lowercase-profile.outputs.lowercase }}
+        with:
+          balena_api_token: ${{ secrets.BALENA_TOKEN }}
+          balena_command: "balena deploy ${{ env.APPLICATION }} --emulated -s ${{ env.BALENA_DOCKER_DIR }}"
+          balena_secrets: |
+            {
+              "ghcr.io": {
+                "username": "${{ github.actor }}",
+                "password": "${{ secrets.GHCR_PUSH_TOKEN }}"
+              }
+            }
+      - 
+        name: Balena Deploy
+        uses: aivero/balena-cli-action@master
+        if: success()
+        timeout-minutes: 5
+        env:
+          APPLICATION: staging-${{ steps.lowercase-profile.outputs.lowercase }}
+        with:
+          balena_api_token: ${{ secrets.BALENA_TOKEN }}
+          balena_command: balena app ${{ env.APPLICATION }} | grep COMMIT | awk '{print $2}' | xargs balena tag set version ${{ github.event.client_payload.version }}  --release
+      - 
+        name: Balena Deploy
+        uses: aivero/balena-cli-action@master
+        if: success()
+        timeout-minutes: 5
+        env:
+          APPLICATION: staging-${{ steps.lowercase-profile.outputs.lowercase }}
+        with:
+          balena_api_token: ${{ secrets.BALENA_TOKEN }}
+          balena_command: balena app ${{ env.APPLICATION }} | grep COMMIT | awk '{print $2}' | xargs balena tag set commit_sha ${{ github.event.client_payload.commit }}  --release
