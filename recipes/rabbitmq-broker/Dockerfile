@@ -1,4 +1,4 @@
-ARG VERSION=3
+ARG VERSION=3.8.12
 FROM rabbitmq:${VERSION}-management-alpine
 
 RUN rabbitmq-plugins enable rabbitmq_mqtt
