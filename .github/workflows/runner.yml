@@ -52,12 +52,12 @@ jobs:
             ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
       - 
         name: "Tar files"
-        if: ${{ github.event.client_payload.docker && success() }}
+        if: ${{ github.event.client_payload.docker && contains(github.event.client_payload.cmds.main, 'install-') && success() }}
         run: tar -cvf ${{ github.event.client_payload.component }}/install-${{ github.event.client_payload.component }}.tar ${{ github.event.client_payload.component }}/install-*
       - 
         name: Store conan deployed ${{ github.event.client_payload.component }}
         uses: actions/upload-artifact@v2
-        if: ${{ github.event.client_payload.docker && success() }}
+        if: ${{ github.event.client_payload.docker && success() && contains(github.event.client_payload.cmds.main, 'install-') }}
         with:
           name: conan-install-${{ github.event.client_payload.component }}
           path: |
