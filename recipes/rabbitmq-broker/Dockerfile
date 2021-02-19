@@ -1,5 +1,6 @@
 ARG VERSION=3.8.12
 FROM rabbitmq:${VERSION}-management-alpine
+LABEL org.opencontainers.image.source https://github.com/aivero/contrib
 
 RUN rabbitmq-plugins enable rabbitmq_mqtt
 RUN rabbitmq-plugins enable rabbitmq_web_mqtt
