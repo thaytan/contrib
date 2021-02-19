@@ -113,7 +113,7 @@ impl Frame {
     /// * `Err(Error)` on failure.
     ///
     /// # Example
-    /// ```
+    /// ```no_run
     /// use librealsense2::pipeline::Pipeline;
     /// use librealsense2::context::Context;
     /// use librealsense2::metadata::MetadataAttribute;
@@ -155,7 +155,7 @@ impl Frame {
     /// * `Err(Error)` on failure.
     ///
     /// # Example
-    /// ```
+    /// ```no_run
     /// use librealsense2::pipeline::Pipeline;
     /// use librealsense2::context::Context;
     /// use librealsense2::metadata::MetadataAttribute;
@@ -196,7 +196,7 @@ impl Frame {
     /// * `Err(Error)` on failure.
     ///
     /// # Example
-    /// ```
+    /// ```no_run
     /// use librealsense2::pipeline::Pipeline;
     /// use librealsense2::context::Context;
     /// let pipeline = Pipeline::new(&Context::new().unwrap()).unwrap();
