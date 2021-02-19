@@ -101,6 +101,8 @@ jobs:
         with:
           context: ${{ github.event.client_payload.component }}
           file: ${{ github.event.client_payload.docker.dockerfile }}
+          build-args: |
+            VERSION=${{ github.event.client_payload.version }} 
           push: true
           platforms: ${{ github.event.client_payload.docker.platform }}
           tags: ${{ github.event.client_payload.docker.tag }}
@@ -114,7 +116,7 @@ jobs:
     steps:
       - 
         id: lowercase-profile
-        uses: ASzc/change-string-case-action@v1
+        uses: ASzc/change-string-case-action@v2
         with:
           string: ${{ github.event.client_payload.profile }}
       - 
