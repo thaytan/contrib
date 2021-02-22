@@ -16,4 +16,7 @@ class IntelMediaDriverRecipe(Recipe):
 
     def build(self):
         os.environ["CPATH"] += ":" + ":".join(self.deps_cpp_info["libx11"].include_paths + self.deps_cpp_info["xorgproto"].include_paths)
-        self.cmake()
+        defs = {
+            "BYPASS_MEDIA_ULT": "yes"
+        }
+        self.cmake(defs)
