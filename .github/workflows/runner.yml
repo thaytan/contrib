@@ -50,18 +50,14 @@ jobs:
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
             ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
-      - 
-        name: "Tar files"
-        if: ${{ github.event.client_payload.docker && contains(github.event.client_payload.cmds.main, 'install-') && success() }}
-        run: tar -cvf ${{ github.event.client_payload.component }}/install-${{ github.event.client_payload.component }}.tar ${{ github.event.client_payload.component }}/install-*
-      - 
+       - 
         name: Store conan deployed ${{ github.event.client_payload.component }}
         uses: actions/upload-artifact@v2
-        if: ${{ github.event.client_payload.docker && success() && contains(github.event.client_payload.cmds.main, 'install-') }}
+        if: ${{ success() && contains(github.event.client_payload.cmds.main, 'conan install') }}
         with:
           name: conan-install-${{ github.event.client_payload.component }}
           path: |
-            ${{ github.event.client_payload.component }}/install-${{ github.event.client_payload.component }}.tar
+            ${{ github.event.client_payload.component }}/install/*.tar.bz2
   
   docker_build:
     name: "Docker build: ${{ github.event.client_payload.component }}"
@@ -84,7 +80,7 @@ jobs:
       - 
         name: "Untar files"
         if: contains(github.event.client_payload.cmds.main, 'install-')
-        run: tar -xvf install-${{ github.event.client_payload.component }}.tar
+        run: tar -xvf install-${{ github.event.client_payload.component }}.tar.bz2
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1      
