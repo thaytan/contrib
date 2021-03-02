@@ -4,7 +4,7 @@ from build import *
 class Libxml2Recipe(Recipe):
     description = "XML parsing library, version 2"
     license = "MIT"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
+    settings = GstRustProject.settings + ("python",)
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
