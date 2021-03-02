@@ -50,7 +50,7 @@ jobs:
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
             ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
-       - 
+      - 
         name: Store conan deployed ${{ github.event.client_payload.component }}
         uses: actions/upload-artifact@v2
         if: ${{ success() && contains(github.event.client_payload.cmds.main, 'conan install') }}
