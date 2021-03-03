@@ -13,7 +13,7 @@ class CudaRecipe(Recipe):
     exports_sources = ("*.pc")
     build_requires = (
         "cc/[^1.0.0]",
-        "libxml2/[>=2.9.10]",
+        "libxml2/[^2.9.10]",
     )
 
     def source(self):
