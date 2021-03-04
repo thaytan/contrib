@@ -25,10 +25,10 @@ class LlvmRecipe(Recipe):
         defs = {}
         # LLVM build options
         if self.settings.arch == "x86_64":
-            defs["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly;AArch64"
+            defs["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly;AArch64;NVPTX"
             arch = "x86_64"
         elif self.settings.arch == "armv8":
-            defs["LLVM_TARGETS_TO_BUILD"] = "AArch64"
+            defs["LLVM_TARGETS_TO_BUILD"] = "AArch64;NVPTX"
             arch = "aarch64"
         if self.settings.libc == "musl":
             abi = "musl"
