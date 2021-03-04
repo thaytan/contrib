@@ -14,11 +14,11 @@ class LlvmRecipe(Recipe):
 
     def source(self):
         self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz", os.path.join(f"llvm-{self.version}", "projects", "clang"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz", os.path.join(f"llvm-{self.version}", "projects", "lld"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz", os.path.join(f"llvm-{self.version}", "projects", "compiler-rt"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz", os.path.join(f"llvm-{self.version}", "projects", "libcxx"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz", os.path.join(f"llvm-{self.version}", "projects", "libcxxabi"))
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "clang"))
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "lld"))
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "compiler-rt"))
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "libcxx"))
+        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "libcxxabi"))
         self.patch("disable-system-libs.patch")
 
     def build(self):
