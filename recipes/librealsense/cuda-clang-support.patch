@@ -1,0 +1,55 @@
+diff --git a/src/cuda/cuda-conversion.cu b/src/cuda/cuda-conversion.cu
+index a9c04d7..071c539 100644
+--- a/src/cuda/cuda-conversion.cu
++++ b/src/cuda/cuda-conversion.cu
+@@ -254,27 +254,27 @@ void rscuda::unpack_yuy2_cuda_helper(const uint8_t* h_src, uint8_t* h_dst, int n
+     case RS2_FORMAT_Y16:
+         size = 2;
+         d_dst = alloc_dev<uint8_t>(n * size);
+-        kernel_unpack_yuy2_y16_cuda << <numBlocks, RS2_CUDA_THREADS_PER_BLOCK >> > (d_src.get(), d_dst.get(), superPix);
++        kernel_unpack_yuy2_y16_cuda<<<numBlocks, RS2_CUDA_THREADS_PER_BLOCK>>>(d_src.get(), d_dst.get(), superPix);
+         break;
+     case RS2_FORMAT_RGB8:
+         size = 3;
+         d_dst = alloc_dev<uint8_t>(n * size);
+-        kernel_unpack_yuy2_rgb8_cuda << <numBlocks, RS2_CUDA_THREADS_PER_BLOCK >> > (d_src.get(), d_dst.get(), superPix);
++        kernel_unpack_yuy2_rgb8_cuda <<<numBlocks, RS2_CUDA_THREADS_PER_BLOCK>>> (d_src.get(), d_dst.get(), superPix);
+         break;
+     case RS2_FORMAT_BGR8:
+         size = 3;
+         d_dst = alloc_dev<uint8_t>(n * size);
+-        kernel_unpack_yuy2_bgr8_cuda << <numBlocks, RS2_CUDA_THREADS_PER_BLOCK >> > (d_src.get(), d_dst.get(), superPix);
++        kernel_unpack_yuy2_bgr8_cuda <<<numBlocks, RS2_CUDA_THREADS_PER_BLOCK>>> (d_src.get(), d_dst.get(), superPix);
+         break;
+     case RS2_FORMAT_RGBA8:
+         size = 4;
+         d_dst = alloc_dev<uint8_t>(n * size);
+-        kernel_unpack_yuy2_rgba8_cuda << <numBlocks, RS2_CUDA_THREADS_PER_BLOCK >> > (d_src.get(), d_dst.get(), superPix);
++        kernel_unpack_yuy2_rgba8_cuda <<<numBlocks, RS2_CUDA_THREADS_PER_BLOCK>>> (d_src.get(), d_dst.get(), superPix);
+         break;
+     case RS2_FORMAT_BGRA8:
+         size = 4;
+         d_dst = alloc_dev<uint8_t>(n * size);
+-        kernel_unpack_yuy2_bgra8_cuda << <numBlocks, RS2_CUDA_THREADS_PER_BLOCK >> > (d_src.get(), d_dst.get(), superPix);
++        kernel_unpack_yuy2_bgra8_cuda <<<numBlocks, RS2_CUDA_THREADS_PER_BLOCK>>> (d_src.get(), d_dst.get(), superPix);
+         break;
+     default:
+         assert(false);
+@@ -324,7 +324,7 @@ void rscuda::y8_y8_from_y8i_cuda_helper(uint8_t* const dest[], int count, const
+     auto result = cudaMemcpy(d_src.get(), source, count * sizeof(rscuda::y8i_pixel), cudaMemcpyHostToDevice);
+     assert(result == cudaSuccess);
+ 
+-    kernel_split_frame_y8_y8_from_y8i_cuda << <numBlocks, RS2_CUDA_THREADS_PER_BLOCK >> > (d_dst_0.get(), d_dst_1.get(), count, d_src.get());
++    kernel_split_frame_y8_y8_from_y8i_cuda <<<numBlocks, RS2_CUDA_THREADS_PER_BLOCK>>> (d_dst_0.get(), d_dst_1.get(), count, d_src.get());
+     cudaDeviceSynchronize();
+ 
+     result = cudaGetLastError();
+@@ -460,7 +460,7 @@ void rscuda::unpack_z16_y16_from_sr300_inzi_cuda(uint16_t * const dest, const ui
+     auto result = cudaMemcpy(d_src.get(), source, count * sizeof(uint16_t), cudaMemcpyHostToDevice);
+     assert(result == cudaSuccess);
+ 
+-    kernel_z16_y16_from_sr300_inzi_cuda << <numBlocks, RS2_CUDA_THREADS_PER_BLOCK >> > (d_src.get(), d_dst.get(), count);
++    kernel_z16_y16_from_sr300_inzi_cuda <<<numBlocks, RS2_CUDA_THREADS_PER_BLOCK>>> (d_src.get(), d_dst.get(), count);
+     cudaDeviceSynchronize();
+ 
+     result = cudaMemcpy(dest, d_dst.get(), count * sizeof(uint16_t), cudaMemcpyDeviceToHost);

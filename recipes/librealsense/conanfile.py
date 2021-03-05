@@ -4,7 +4,7 @@ from build import *
 class LibRealsenseRecipe(PythonRecipe):
     description = "Intel RealSense SDK"
     license = "Apache"
-    exports = "libusb-fix.patch", "pkgconfig-fix.patch"
+    exports = "libusb-fix.patch", "pkgconfig-fix.patch", "cuda-clang-support.patch"
     options = {"cuda": [True, False], "python": [True, False]}
     default_options = ("cuda=True", "python=True")
     build_requires = (
@@ -23,6 +23,7 @@ class LibRealsenseRecipe(PythonRecipe):
         self.get(f"https://github.com/IntelRealSense/librealsense/archive/v{self.version}.tar.gz")
         self.patch("pkgconfig-fix.patch")
         self.patch("libusb-fix.patch")
+        self.patch("cuda-clang-support.patch")
 
     def build(self):
         defs = {
