@@ -7,7 +7,7 @@ driver_map = {
 }
 
 arch_map = {
-    "armv8": "aarch64",
+    "armv8": "sbsa",
     "x86_64": "x86_64",
 }
 
