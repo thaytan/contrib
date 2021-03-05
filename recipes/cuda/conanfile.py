@@ -52,6 +52,7 @@ class CudaRecipe(PythonRecipe):
         arch = arch_map[str(self.settings.arch)]
         self.copy("nvvm")
         self.copy("*", dst="bin", src="cuda_nvcc/bin")
+        self.copy("*", dst="bin", src="cuda_nvcc/nvvm/bin")
         self.copy("*", dst="lib", src=f"cuda_cudart/targets/{arch}-linux/lib")
         self.copy("*.h*", dst="include", src=f"cuda_cudart/targets/{arch}-linux/include")
         self.copy("*.h*", dst="include", src=f"cuda_nvcc/targets/{arch}-linux/include")
@@ -63,8 +64,3 @@ class CudaRecipe(PythonRecipe):
             os.symlink(f"libnvcuvid.so.{driver_map[self.version]}", "libnvcuvid.so.1")
             os.symlink("libnvcuvid.so.1", "libnvcuvid.so")
         self.copy(pattern="*.pc", dst="lib/pkgconfig")
-
-    def package_info(self):
-        self.env_info.CUDACXX = "clang"
-        gpu_arch = "sm_60" if self.settings.arch == "x86_64" else "sm_50"
-        self.env_info.CUDAFLAGS = f" --cuda-gpu-arch={gpu_arch} -I{os.path.join(self.package_folder, 'include')} --cuda-path={self.package_folder}"
