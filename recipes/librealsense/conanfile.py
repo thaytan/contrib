@@ -27,8 +27,7 @@ class LibRealsenseRecipe(PythonRecipe):
     def build(self):
         defs = {
             "BUILD_WITH_CUDA": self.options.cuda,
-            "BUILD_WITH_PYTHON": self.options.python,
-            "BUILD_PYTHON_BINDINGS": False,
+            "BUILD_PYTHON_BINDINGS": self.options.python,
             "BUILD_EXAMPLES": False,
             "BUILD_GRAPHICAL_EXAMPLES": False,
             "BUILD_PCL_EXAMPLES": False,
