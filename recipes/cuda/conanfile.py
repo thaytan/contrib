@@ -12,6 +12,11 @@ arch_map = {
 }
 
 
+nv_arch_map = {
+    "armv8": "aarch64",
+    "x86_64": "x86_64",
+}
+
 class CudaRecipe(PythonRecipe):
     description = "NVIDIA's GPU programming toolkit"
     license = "Proprietary"
@@ -23,6 +28,7 @@ class CudaRecipe(PythonRecipe):
 
     def build(self):
         arch = arch_map[str(self.settings.arch)]
+        nv_arch = nv_arch_map[str(self.settings.arch)]
         nv_version = driver_map[self.version]
         if self.settings.arch == "x86_64":
             if (self.version.startswith("10")):
@@ -37,8 +43,8 @@ class CudaRecipe(PythonRecipe):
         os.mkdir(tmp_dir)
         self.run(f'sh cuda.run  --silent --override --override-driver-check --tmpdir={tmp_dir} --extract="{self.build_folder}"')
         os.remove("cuda.run")
-        self.run(f"sh NVIDIA-Linux-{arch}-{nv_version}.run --extract-only")
-        os.remove(f"NVIDIA-Linux-{arch}-{nv_version}.run")
+        self.run(f"sh NVIDIA-Linux-{nv_arch}-{nv_version}.run --extract-only")
+        os.remove(f"NVIDIA-Linux-{nv_arch}-{nv_version}.run")
         self.run("rm -rf libcublas")
         self.run("rm -rf cuda-samples")
 
