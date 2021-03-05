@@ -64,3 +64,10 @@ class CudaRecipe(PythonRecipe):
             os.symlink(f"libnvcuvid.so.{driver_map[self.version]}", "libnvcuvid.so.1")
             os.symlink("libnvcuvid.so.1", "libnvcuvid.so")
         self.copy(pattern="*.pc", dst="lib/pkgconfig")
+
+    def package_info(self):
+        self.env_info.CUDACXX = "clang++"
+        # NVIDIA archs: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+        gpu_arch = "sm_60" if self.settings.arch == "x86_64" else "sm_50"
+        self.env_info.CUDAFLAGS = f" --cuda-gpu-arch={gpu_arch} -I{os.path.join(self.package_folder, 'include')} --cuda-path={self.package_folder}"
+
