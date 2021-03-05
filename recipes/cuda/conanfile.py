@@ -6,8 +6,13 @@ driver_map = {
     "11.2.1": "460.32.03",
 }
 
+arch_map = {
+    "armv8": "aarch64",
+    "x86_64": "x86_64",
+}
 
-class CudaRecipe(Recipe):
+
+class CudaRecipe(PythonRecipe):
     description = "NVIDIA's GPU programming toolkit"
     license = "Proprietary"
     exports_sources = ("*.pc")
@@ -16,27 +21,42 @@ class CudaRecipe(Recipe):
         "libxml2/[^2.9.10]",
     )
 
-    def source(self):
-        tools.download(f"https://developer.download.nvidia.com/compute/cuda/{self.version}/local_installers/cuda_{self.version}_{driver_map[self.version]}_linux.run", filename=f"cuda_{self.version}_linux.run")
-
     def build(self):
-        self.run(f'sh cuda_{self.version}_linux.run  --silent --override --override-driver-check --extract="{self.build_folder}"')
-        # self.run(f"sh cuda_{self.version}_linux.run  --silent --override --override-driver-check --toolkit --toolkitpath={self.package_folder}")
-        os.remove(f"cuda_{self.version}_linux.run")
-        self.run(f"sh NVIDIA-Linux-x86_64-{driver_map[self.version]}.run --extract-only")
-        os.remove(f"NVIDIA-Linux-x86_64-{driver_map[self.version]}.run")
+        arch = arch_map[str(self.settings.arch)]
+        nv_version = driver_map[self.version]
+        if self.settings.arch == "x86_64":
+            if (self.version.startswith("10")):
+                version_short =  ".".join(self.version.split(".")[:2])
+                tools.download(f"https://developer.download.nvidia.com/compute/cuda/{version_short}/Prod/local_installers/cuda_{self.version}_{nv_version}_linux.run", filename=f"cuda.run")
+            else:
+                tools.download(f"https://developer.download.nvidia.com/compute/cuda/{self.version}/local_installers/cuda_{self.version}_{nv_version}_linux.run", filename=f"cuda.run")
+        elif self.settings.arch == "armv8":
+                tools.download(f"https://developer.download.nvidia.com/compute/cuda/{self.version}/local_installers/cuda_{self.version}_{nv_version}_linux_sbsa.run", filename=f"cuda.run")
+
+        tmp_dir = os.path.join(self.build_folder, "tmp")
+        os.mkdir(tmp_dir)
+        self.run(f'sh cuda.run  --silent --override --override-driver-check --tmpdir={tmp_dir} --extract="{self.build_folder}"')
+        os.remove("cuda.run")
+        self.run(f"sh NVIDIA-Linux-{arch}-{nv_version}.run --extract-only")
+        os.remove(f"NVIDIA-Linux-{arch}-{nv_version}.run")
         self.run("rm -rf libcublas")
         self.run("rm -rf cuda-samples")
 
     def package(self):
-        for toolkit in ("cuda-toolkit", "cuda-toolkit/nvvm"):
-            self.copy("*", dst="bin", src=f"{toolkit}/bin")
-            self.copy("*", dst="lib", src=f"{toolkit}/lib64")
-            self.copy("*", dst="include", src=f"{toolkit}/include")
-        self.copy("*.bc", src="cuda-toolkit")
+        arch = arch_map[str(self.settings.arch)]
+        os.mkdir(os.path.join(self.package_folder, "bin"))
+        self.copy("*.h*", dst="include", src=f"cuda_cudart/targets/{arch}-linux/include")
+        self.copy("*.h*", dst="include", src=f"cuda_nvcc/targets/{arch}-linux/include")
+        self.copy("*.h*", dst="include", src=f"libcurand/targets/{arch}-linux/include")
+        self.copy("*.bc", src="cuda_nvcc")
         self.copy("*libcuda.so*", dst="lib", keep_path=False, symlinks=True)
         self.copy("*libnvcuvid.so*", dst="lib", keep_path=False, symlinks=True)
         with tools.chdir(os.path.join(self.package_folder, "lib")):
             os.symlink(f"libnvcuvid.so.{driver_map[self.version]}", "libnvcuvid.so.1")
             os.symlink("libnvcuvid.so.1", "libnvcuvid.so")
         self.copy(pattern="*.pc", dst="lib/pkgconfig")
+
+    def package_info(self):
+        self.env_info.CUDACXX = "clang"
+        gpu_arch = "sm_61" if self.settings.arch == "x86_64" else "sm_53"
+        self.env_info.CUDAFLAGS = f" --cuda-gpu-arch={gpu_arch} -I{os.path.join(self.package_folder, 'include')} --cuda-path={self.package_folder}"
