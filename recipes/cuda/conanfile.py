@@ -44,13 +44,14 @@ class CudaRecipe(PythonRecipe):
 
     def package(self):
         arch = arch_map[str(self.settings.arch)]
-        os.mkdir(os.path.join(self.package_folder, "bin"))
+        self.copy("*", dst="bin", src="cuda_nvcc/bin")
+        self.copy("*", dst="lib", src=f"cuda_cudart/targets/{arch}-linux/lib")
         self.copy("*.h*", dst="include", src=f"cuda_cudart/targets/{arch}-linux/include")
         self.copy("*.h*", dst="include", src=f"cuda_nvcc/targets/{arch}-linux/include")
         self.copy("*.h*", dst="include", src=f"libcurand/targets/{arch}-linux/include")
         self.copy("*.bc", src="cuda_nvcc")
-        self.copy("*libcuda.so*", dst="lib", keep_path=False, symlinks=True)
-        self.copy("*libnvcuvid.so*", dst="lib", keep_path=False, symlinks=True)
+        self.copy("*libcuda.so*", dst="lib", keep_path=False)
+        self.copy("*libnvcuvid.so*", dst="lib", keep_path=False)
         with tools.chdir(os.path.join(self.package_folder, "lib")):
             os.symlink(f"libnvcuvid.so.{driver_map[self.version]}", "libnvcuvid.so.1")
             os.symlink("libnvcuvid.so.1", "libnvcuvid.so")
