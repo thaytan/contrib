@@ -12,6 +12,7 @@ class LibNiceRecipe(GstRecipe):
         "openssl1/[^1.1.1h]",
         "gst-plugins-base/[^1.18]",
     )
+    exports_sources = "nice.pc"
 
     def source(self):
         self.get(
