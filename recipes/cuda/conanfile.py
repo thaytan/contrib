@@ -44,6 +44,7 @@ class CudaRecipe(PythonRecipe):
 
     def package(self):
         arch = arch_map[str(self.settings.arch)]
+        self.copy("nvvm")
         self.copy("*", dst="bin", src="cuda_nvcc/bin")
         self.copy("*", dst="lib", src=f"cuda_cudart/targets/{arch}-linux/lib")
         self.copy("*.h*", dst="include", src=f"cuda_cudart/targets/{arch}-linux/include")
