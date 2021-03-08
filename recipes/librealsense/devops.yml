@@ -1,1 +1,11 @@
+# x86 dev deployment 
 - version: 2.42.0
+  options:
+    cuda: True
+    python: False
+- version: 2.42.0
+  options:
+    cuda: False
+    python: False
+    
+
