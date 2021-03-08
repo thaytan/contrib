@@ -1,2 +1,2 @@
 - version: '21.3'
-  profiles: [Linux-x86_64]
+  profiles: [linux-x86_64]
