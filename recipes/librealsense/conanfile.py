@@ -6,7 +6,7 @@ class LibRealsenseRecipe(PythonRecipe):
     license = "Apache"
     exports = "libusb-fix.patch", "pkgconfig-fix.patch", "cuda-clang-support.patch"
     options = {"cuda": [True, False], "python": [True, False]}
-    default_options = ("cuda=True", "python=False")
+    default_options = ("cuda=False", "python=False")
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
