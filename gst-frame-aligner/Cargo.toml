@@ -5,7 +5,7 @@ authors = ["Joao Alves <joao.alves@aivero.com>"]
 license = "Proprietary"
 description = "GStreamer plugin to align depth frames to color frames"
 keywords = ["GStreamer", "Rust"]
-repository = "https://gitlab.com/aivero/frontend/gst-pointcloud-display"
+repository = "https://github.com/aivero/contrib"
 edition = "2018"
 readme = "README.md"
 
