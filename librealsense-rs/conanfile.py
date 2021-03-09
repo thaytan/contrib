@@ -1,6 +1,6 @@
 from build import *
 
-class Librealsense(GstRustProject):
+class LibrealsenseRs(GstRustProject):
     description = "Rust FFI bindings for librealsense"
     license = "LGPL"
     build_requires = (

@@ -9,3 +9,7 @@ class GstRealsense(GstRustProject):
         "librealsense/[^2.39.0]",
         f"rgbd-timestamps/{branch()}",
     )
+
+    def build(self):
+        # We need to rebuild the rust bindings every time we tag a new release.
+        self.cargo(clean=["librealsense2", "librealsense2-sys"])
