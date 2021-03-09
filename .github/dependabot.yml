@@ -84,3 +84,17 @@ updates:
       interval: "weekly"
     pull-request-branch-name:
       separator: "-"
+  - package-ecosystem: "cargo"
+    directory: "/librealsense-rs-sys"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+    pull-request-branch-name:
+      separator: "-"
+  - package-ecosystem: "cargo"
+    directory: "/librealsense-rs"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+    pull-request-branch-name:
+      separator: "-"
