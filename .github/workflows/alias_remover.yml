@@ -1,6 +1,7 @@
 name: Alias remover
 on:
-  delete
+  delete: ~
+  workflow_dispatch: ~
 jobs:
   remover:
     name: '${{ github.event.ref_type }}: ${{ github.event.ref }}'
