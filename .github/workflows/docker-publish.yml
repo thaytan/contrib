@@ -14,29 +14,6 @@ on:
   pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-         image_name:
-          - bionic-x86_64
-          - bionic-x86_64-bootstrap
-          - bionic-armv8
-          - bionic-armv8-bootstrap
-          - alpine-x86_64
-          - alpine-x86_64-bootstrap
-          - alpine-armv8
-          - alpine-armv8-bootstrap
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install qemu-user-static
-        run: sudo apt update && sudo apt install qemu-user-static
-        if: ${{ contains(matrix.image_name, 'armv8') }}
-
-      - name: Run tests
-        run: docker build . --file ${{ matrix.image_name }}.Dockerfile
-
   push:
     needs: test
 
