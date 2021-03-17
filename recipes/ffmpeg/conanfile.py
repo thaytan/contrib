@@ -35,10 +35,5 @@ class FFMpegRecipe(Recipe):
         if self.settings.hardware == "rpi":
             if self.settings.arch == "armv8":
                 args += ["--enable-gpl", "--enable-nonfree", "--arch=aarch64"]
-                #args += ["--enable-libfreetype", "--enable-libopus"]
-                #args += ["--enable-libx264", "--enable-libx265", "--enable-libvpx"]
-                #args += ["--enable-libwebp", "--enable-libdrm"]
-                #args += ["--enable-libaom", "--enable-libass", "--enable-libxml2"]
-                #args += ["--enable-libfdk-aac", "--enable-libmp3lame", "--enable-libvorbis"]
 
         self.autotools(args)
