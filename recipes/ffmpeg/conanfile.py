@@ -24,9 +24,10 @@ class FFMpegRecipe(Recipe):
         # intended for rpi 64-bit build, may need alternate implementation
         if self.settings.arch == "armv8":
             args += ["--enable-gpl", "--enable-nonfree", "--arch=aarch64"]
-            #args += ["--enable-nonfree", "--arch=aarch64", "--enable-libaom", "--enable-libass"]
-            #args += ["--enable-libfdk-aac", "--enable-libfreetype", "--enable-libmp3lame", "--enable-libopus"]
-            #args += ["--enable-libvorbis", "--enable-libvpx", "--enable-libx264", "--enable-libx265"]
-            #args += ["--enable-libxml2", "--enable-libwebp", "--enable-libdrm"]
+            #args += ["--enable-libfreetype", "--enable-libopus"]
+            #args += ["--enable-libwebp", "--enable-libdrm"]
+            #args += ["--enable-libaom", "--enable-libass", "--enable-libxml2"]
+            #args += ["--enable-libfdk-aac", "--enable-libmp3lame", "--enable-libvorbis"]
+            #args += ["--enable-libx264", "--enable-libx265", "--enable-libvpx"]
 
         self.autotools(args)
