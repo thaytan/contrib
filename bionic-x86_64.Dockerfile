@@ -12,6 +12,6 @@ RUN apt update && \
   rm -rf /var/lib/apt/lists/*
 RUN conan config install https://codeload.github.com/aivero/conan-config/zip/master -sf conan-config-master
 RUN conan config set general.default_profile=linux-x86_64
-RUN conan install git/2.30.0@ -g tools -if /usr/local/bin
-RUN conan install rust/1.0.0@
-RUN chmod -R 777 /root
+RUN conan install git/2.30.0@ -g tools -if /usr/local/bin && \
+    conan install rust/1.0.0@ && \
+    chmod -R 777 /root
