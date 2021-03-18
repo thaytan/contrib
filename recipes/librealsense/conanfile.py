@@ -4,6 +4,7 @@ from build import *
 class LibRealsenseRecipe(PythonRecipe):
     description = "Intel RealSense SDK"
     license = "Apache"
+    settings = PythonRecipe.settings + ("hardware",)
     exports = "libusb-fix.patch", "pkgconfig-fix.patch", "cuda-clang-support.patch"
     options = {"cuda": [True, False], "python": [True, False]}
     default_options = ("cuda=False", "python=False")
@@ -36,4 +37,7 @@ class LibRealsenseRecipe(PythonRecipe):
             "BUILD_NODEJS_BINDINGS": False,
             "BUILD_UNIT_TESTS": False,
         }
+        if self.settings.hardware == "l4t":
+            # Workaround for https://github.com/IntelRealSense/librealsense/issues/6656 
+            defs["FORCE_LIBUVC"] = True
         self.cmake(defs)
