@@ -4,6 +4,7 @@ from build import *
 class GstPluginsGoodRecipe(GstRecipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
+    settings = GstRecipe.settings + ("hardware",)
     exports = "0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch"
     options = {
         "aivero_rvl_matroska": [True, False],
@@ -22,6 +23,7 @@ class GstPluginsGoodRecipe(GstRecipe):
         "ximagesrc_xdamage": [True, False],
         "ximagesrc_xshm": [True, False],
         "ximagesrc": [True, False],
+        "v4l2": [True, False],
     }
     default_options = (
         "aivero_rvl_matroska=True",
@@ -40,6 +42,7 @@ class GstPluginsGoodRecipe(GstRecipe):
         "ximagesrc_xdamage=False",
         "ximagesrc_xshm=True",
         "ximagesrc=True",
+        "v4l2=False",
     )
 
     build_requires = (
@@ -48,6 +51,12 @@ class GstPluginsGoodRecipe(GstRecipe):
         "git/[^2.30.0]",
     )
     requires = ("gst-plugins-base/[^1.18]",)
+
+    def configure(self):
+        if self.settings.hardware == "rpi":
+            if self.settings.arch == "armv8":
+                # enable v4l2 for rpi 64-bit
+                self.options.v4l2 = True
 
     def requirements(self):
         # gst-plugins-bad -> pango -> freetype -> png
@@ -86,4 +95,5 @@ class GstPluginsGoodRecipe(GstRecipe):
             "ximagesrc-xdamage": True,
             "ximagesrc": True,
         }
+        opts["v4l2"] = self.options.v4l2
         self.meson(opts)
