@@ -55,8 +55,6 @@ class GstPluginsGoodRecipe(GstRecipe):
     def configure(self):
         if self.settings.hardware == "rpi":
             if self.settings.arch == "armv8":
-                # we don't define OS version for rpi 64-bit OS
-                del self.settings.hardware.version
                 # enable v4l2 for rpi 64-bit
                 self.options.v4l2 = True
 

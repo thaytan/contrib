@@ -6,14 +6,6 @@ class FFMpegRecipe(Recipe):
     license = "LGPL"
     settings = Recipe.settings + ("hardware",)
 
-    def configure(self):
-        if self.settings.hardware == "rpi":
-            if self.settings.arch == "armv8":
-                # we don't define OS version for rpi 64-bit OS
-                del self.settings.hardware.version
-                # enable ffmpeg
-                self.options.ffmpeg = True
-
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
@@ -31,9 +23,9 @@ class FFMpegRecipe(Recipe):
             "--cxx=c++",
         ]
 
-        # intended for rpi 64-bit build, may need alternate implementation
+        # additional args for rpi.4 64-bit
         if self.settings.hardware == "rpi":
             if self.settings.arch == "armv8":
-                args += ["--enable-gpl", "--enable-nonfree", "--arch=aarch64"]
+                args += ["--enable-nonfree", "--arch=aarch64"]
 
         self.autotools(args)
