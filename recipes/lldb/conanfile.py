@@ -3,7 +3,7 @@ from build import *
 
 class Lldb(Recipe):
     description = "Next generation, high-performance debugger"
-    license = "custom:Apache 2.0 with LLVM Exception"
+    license = "Apache"
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
