@@ -188,6 +188,7 @@ class LlvmRecipe(Recipe):
             "install-clang",
             "install-clang-cpp",
             "install-clang-resource-headers",
+            "install-clang-headers"
             "install-ar",
             "install-ranlib",
             "install-strip",
