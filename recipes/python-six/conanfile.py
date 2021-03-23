@@ -1,12 +1,12 @@
 from build import *
 
 
-class PythonSixRecipe(Recipe):
+class PythonSixRecipe(PythonRecipe):
     description = "Python 2 and 3 compatibility utilities"
     license = "MIT"
     build_requires = (
         "autotools/1.0.0",
-        "python-setuptools/[^41.2.0]",
+        "python-setuptools/[>=41.2.0]",
     )
 
     def source(self):
