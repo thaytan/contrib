@@ -1,1 +1,6 @@
-- version: 1.18.3
+-
+  version: 1.18.3
+  profiles:
+    - linux-armv8-rpi-pi4
+    - linux-armv8-l4t-t186
+    - linux-x86_64
