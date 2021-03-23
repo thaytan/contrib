@@ -73,8 +73,8 @@ jobs:
           path: |
             ${{ github.event.client_payload.component }}/*.tar.bz2
   
-  docker_build:
-    name: "Docker build: ${{ github.event.client_payload.component }}"
+  docker-build:
+    name: Docker build
     needs: build
     if: ${{ github.event.client_payload.docker && success() }}
     runs-on: ubuntu-latest
@@ -134,7 +134,8 @@ jobs:
           tags: ${{ github.event.client_payload.docker.tag }}
   
   balena-deploy:
-    needs: docker_build
+    name: Balena deploy
+    needs: docker-build
     if: ${{ contains(github.event.client_payload.component, 'deepcore-daemon') && ( contains(github.event.client_payload.profile, '186') || contains(github.event.client_payload.profile, '210') ) }}
     runs-on: ubuntu-latest
     env:
