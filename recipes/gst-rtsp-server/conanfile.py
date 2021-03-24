@@ -4,6 +4,7 @@ from build import *
 class GstRtspServerRecipe(GstRecipe):
     description = "A framework for streaming media"
     license = "LGPL"
+    exports = "*.patch"
     options = {
         "examples": [True, False],
         "tests": [True, False],
@@ -29,7 +30,14 @@ class GstRtspServerRecipe(GstRecipe):
 
     def source(self):
         if "1.18" in self.settings.gstreamer:
-            self.get(f"https://gitlab.freedesktop.org/raffael_santi/gst-rtsp-server/-/archive/backport_update-sdp_signal/gst-rtsp-server-backport_update-sdp_signal.tar.gz")
+            git = tools.Git(folder=f"{self.name}-{self.version}.src")
+            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-rtsp-server.git", self.version)
+
+            # Apply:  rtspclientsink: Add "update-sdp" signal that allows updating the SDP before... 
+            # Not required from 1.20 onward
+            # https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/commit/ac5213dcdf09f95c71329005a865a39867c3e7c1
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../ac5213dcdf09f95c71329005a865a39867c3e7c1.patch')
+
         else:
             self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/{self.version}/gst-rtsp-server-{self.version}.tar.gz")
 

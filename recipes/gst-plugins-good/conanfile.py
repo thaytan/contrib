@@ -5,7 +5,7 @@ class GstPluginsGoodRecipe(GstRecipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     settings = GstRecipe.settings + ("hardware",)
-    exports = "0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch"
+    exports = "*.patch"
     options = {
         "aivero_rvl_matroska": [True, False],
         "autodetect": [True, False],
@@ -68,13 +68,33 @@ class GstPluginsGoodRecipe(GstRecipe):
             self.requires("libjpeg-turbo/[^2.0.3]")
 
     def source(self):
-        # This needs to stay in place until we have ditched the 1.16 Gstreamer version.
         if "1.18" in self.settings.gstreamer:
             git = tools.Git(folder=f"{self.name}-{self.version}.src")
-            git.clone("https://gitlab.freedesktop.org/meh/gst-plugins-good.git", "1.18-backports")
+            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-plugins-good.git", self.version)
             if self.options.aivero_rvl_matroska:
                 git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch')
-        else:
+       
+            # Apply: vpxenc: add configure_encoder virtual method 
+            # Not required from 1.20 onward
+            # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/c58436d97bb74d45338d237376312778b20751e8
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../c58436d97bb74d45338d237376312778b20751e8.patch')
+            
+            # Apply: vp9enc: expose tile-columns and tile-rows properties    
+            # Not required from 1.20 onward
+            # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/75259ea6c0ad70cf7ff569bf3856255fadfaed2b
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../75259ea6c0ad70cf7ff569bf3856255fadfaed2b.patch')
+            
+            # Apply: vpxenc: change default for deadline to good quality   
+            # Not required from 1.20 onward
+            # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/d3b70c1aab80fbaa4967121b04a179f1d7f9222f
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../d3b70c1aab80fbaa4967121b04a179f1d7f9222f.patch')
+            
+            # Apply: vp9enc: expose row-mt property  
+            # Not required from 1.20 onward
+            # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/db6b580a23b72813caf4bfdc87f660bb36fbad3a
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../db6b580a23b72813caf4bfdc87f660bb36fbad3a.patch')
+
+        else: 
             self.get(f"https://github.com/GStreamer/gst-plugins-good/archive/{self.version}.tar.gz")
 
     def build(self):

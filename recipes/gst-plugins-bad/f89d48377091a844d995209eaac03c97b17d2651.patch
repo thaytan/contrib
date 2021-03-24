@@ -1,0 +1,152 @@
+From f89d48377091a844d995209eaac03c97b17d2651 Mon Sep 17 00:00:00 2001
+From: Mathieu Duponchelle <mathieu@centricular.com>
+Date: Tue, 12 Jan 2021 19:12:42 +0100
+Subject: [PATCH] webrtc: expose transport property on sender and receiver
+
+As advised by !1366#note_629558 , the nice transport should be
+accessed through:
+
+> transceiver->sender/receiver->transport/rtcp_transport->icetransport
+
+All the objects on the path can be accessed through properties
+except sender/receiver->transport. This patch addresses that.
+
+Part-of: <https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/merge_requests/1952>
+---
+ ext/webrtc/webrtctransceiver.c    |  9 +++++++--
+ gst-libs/gst/webrtc/rtpreceiver.c | 21 +++++++++++++++++++++
+ gst-libs/gst/webrtc/rtpsender.c   | 25 +++++++++++++++++++++++--
+ 3 files changed, 51 insertions(+), 4 deletions(-)
+
+diff --git a/ext/webrtc/webrtctransceiver.c b/ext/webrtc/webrtctransceiver.c
+index f26536741a..8954938627 100644
+--- a/ext/webrtc/webrtctransceiver.c
++++ b/ext/webrtc/webrtctransceiver.c
+@@ -59,12 +59,17 @@ webrtc_transceiver_set_transport (WebRTCTransceiver * trans,
+ 
+   gst_object_replace ((GstObject **) & trans->stream, (GstObject *) stream);
+ 
+-  if (rtp_trans->sender)
++  if (rtp_trans->sender) {
+     gst_object_replace ((GstObject **) & rtp_trans->sender->transport,
+         (GstObject *) stream->transport);
+-  if (rtp_trans->receiver)
++    g_object_notify (G_OBJECT (rtp_trans->sender), "transport");
++  }
++
++  if (rtp_trans->receiver) {
+     gst_object_replace ((GstObject **) & rtp_trans->receiver->transport,
+         (GstObject *) stream->transport);
++    g_object_notify (G_OBJECT (rtp_trans->receiver), "transport");
++  }
+ 
+   if (rtp_trans->sender)
+     gst_object_replace ((GstObject **) & rtp_trans->sender->rtcp_transport,
+diff --git a/gst-libs/gst/webrtc/rtpreceiver.c b/gst-libs/gst/webrtc/rtpreceiver.c
+index 768e9876d3..847af5de27 100644
+--- a/gst-libs/gst/webrtc/rtpreceiver.c
++++ b/gst-libs/gst/webrtc/rtpreceiver.c
+@@ -49,6 +49,7 @@ enum
+ enum
+ {
+   PROP_0,
++  PROP_TRANSPORT,
+ };
+ 
+ //static guint gst_webrtc_rtp_receiver_signals[LAST_SIGNAL] = { 0 };
+@@ -94,7 +95,13 @@ static void
+ gst_webrtc_rtp_receiver_get_property (GObject * object, guint prop_id,
+     GValue * value, GParamSpec * pspec)
+ {
++  GstWebRTCRTPReceiver *receiver = GST_WEBRTC_RTP_RECEIVER (object);
+   switch (prop_id) {
++    case PROP_TRANSPORT:
++      GST_OBJECT_LOCK (receiver);
++      g_value_set_object (value, receiver->transport);
++      GST_OBJECT_UNLOCK (receiver);
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+       break;
+@@ -125,6 +132,20 @@ gst_webrtc_rtp_receiver_class_init (GstWebRTCRTPReceiverClass * klass)
+   gobject_class->get_property = gst_webrtc_rtp_receiver_get_property;
+   gobject_class->set_property = gst_webrtc_rtp_receiver_set_property;
+   gobject_class->finalize = gst_webrtc_rtp_receiver_finalize;
++
++  /**
++   * GstWebRTCRTPReceiver:transport:
++   *
++   * The DTLS transport for this receiver
++   *
++   * Since: 1.20
++   */
++  g_object_class_install_property (gobject_class,
++      PROP_TRANSPORT,
++      g_param_spec_object ("transport", "Transport",
++          "The DTLS transport for this receiver",
++          GST_TYPE_WEBRTC_DTLS_TRANSPORT,
++          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+ }
+ 
+ static void
+diff --git a/gst-libs/gst/webrtc/rtpsender.c b/gst-libs/gst/webrtc/rtpsender.c
+index 3a8a9044f0..03343c1740 100644
+--- a/gst-libs/gst/webrtc/rtpsender.c
++++ b/gst-libs/gst/webrtc/rtpsender.c
+@@ -39,8 +39,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
+ #define gst_webrtc_rtp_sender_parent_class parent_class
+ G_DEFINE_TYPE_WITH_CODE (GstWebRTCRTPSender, gst_webrtc_rtp_sender,
+     GST_TYPE_OBJECT, GST_DEBUG_CATEGORY_INIT (gst_webrtc_rtp_sender_debug,
+-        "webrtcsender", 0, "webrtcsender");
+-    );
++        "webrtcsender", 0, "webrtcsender"););
+ 
+ enum
+ {
+@@ -55,6 +54,7 @@ enum
+   PROP_SENDER,
+   PROP_STOPPED,
+   PROP_DIRECTION,
++  PROP_TRANSPORT,
+ };
+ 
+ //static guint gst_webrtc_rtp_sender_signals[LAST_SIGNAL] = { 0 };
+@@ -100,7 +100,14 @@ static void
+ gst_webrtc_rtp_sender_get_property (GObject * object, guint prop_id,
+     GValue * value, GParamSpec * pspec)
+ {
++  GstWebRTCRTPSender *sender = GST_WEBRTC_RTP_SENDER (object);
++
+   switch (prop_id) {
++    case PROP_TRANSPORT:
++      GST_OBJECT_LOCK (sender);
++      g_value_set_object (value, sender->transport);
++      GST_OBJECT_UNLOCK (sender);
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+       break;
+@@ -131,6 +138,20 @@ gst_webrtc_rtp_sender_class_init (GstWebRTCRTPSenderClass * klass)
+   gobject_class->get_property = gst_webrtc_rtp_sender_get_property;
+   gobject_class->set_property = gst_webrtc_rtp_sender_set_property;
+   gobject_class->finalize = gst_webrtc_rtp_sender_finalize;
++
++  /**
++   * GstWebRTCRTPSender:transport:
++   *
++   * The DTLS transport for this sender
++   *
++   * Since: 1.20
++   */
++  g_object_class_install_property (gobject_class,
++      PROP_TRANSPORT,
++      g_param_spec_object ("transport", "Transport",
++          "The DTLS transport for this sender",
++          GST_TYPE_WEBRTC_DTLS_TRANSPORT,
++          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+ }
+ 
+ static void
+-- 
+GitLab
+
