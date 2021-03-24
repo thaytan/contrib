@@ -4,6 +4,7 @@ from build import *
 class GstPluginsBadRecipe(GstRecipe):
     description = "A set of plugins that aren't up to par compared to the rest"
     license = "LGPL"
+    exports = "*.patch"
     options = {
         "closedcaption": [True, False],
         "debugutils": [True, False],
@@ -83,11 +84,21 @@ class GstPluginsBadRecipe(GstRecipe):
     def source(self):
         git = tools.Git(folder="gst-plugins-bad")
         if "1.16" in self.settings.gstreamer:
-            print("Getting {self.settings.gstreamer} from https://gitlab.freedesktop.org/meh/gst-plugins-bad.git")
             self.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
 
         elif "1.18" in self.settings.gstreamer:
-            self.get(f"https://gitlab.freedesktop.org/meh/gst-plugins-bad/-/archive/1.18-backports/gst-plugins-bad-1.18-backports.tar.gz")
+            git = tools.Git(folder=f"{self.name}-{self.version}.src")
+            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-plugins-bad.git", self.version)
+            # Apply: webrtc: expose transport property on sender and receiver
+            # Not required for 1.20 onward
+            # https://gitlab.freedesktop.org/meh/gst-plugins-bad/-/commit/f89d48377091a844d995209eaac03c97b17d2651
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../f89d48377091a844d995209eaac03c97b17d2651.patch')
+
+            # Apply: webrtcbin: Accept end-of-candidate pass it to libnice
+            # Probably not required from 1.20 onward
+            # https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/commit/825a79f01f58bdae0ff68d11bda22499a7d8ad6c?merge_request_iid=1139
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../825a79f01f58bdae0ff68d11bda22499a7d8ad6c.patch')
+
 
     def build(self):
         opts = {
