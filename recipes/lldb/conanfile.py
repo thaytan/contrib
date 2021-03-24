@@ -20,8 +20,10 @@ class Lldb(Recipe):
         self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lldb-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "lldb"))
 
     def build(self):
-        defs = {}
+        targets = [
+            "install-LLVMOption", 
+            "install-lldb"
+        ]
         self.cmake(
-            defs,
-            targets=["install-lldb"],
+            targets=targets,
         )
