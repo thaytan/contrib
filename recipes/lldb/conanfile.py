@@ -22,7 +22,8 @@ class Lldb(Recipe):
     def build(self):
         targets = [
             "install-LLVMOption", 
-            "install-lldb"
+            "install-lldb",
+            "install-liblldb",
         ]
         self.cmake(
             targets=targets,
