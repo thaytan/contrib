@@ -16,7 +16,7 @@ gstreamer = "0.16.5"
 gstreamer-base = "0.16.5"
 gstreamer-video = "0.16.6"
 lazy_static = "1.4.0"
-nalgebra = { version = "0.24.0", features = ["serde-serialize"] }
+nalgebra = { version = "0.25.3", features = ["serde-serialize"] }
 serde = "1.0.120"
 serde_yaml = "0.8.15"
 dirs = "3.0.1"
