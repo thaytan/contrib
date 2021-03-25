@@ -1,7 +1,7 @@
 from build import *
 
 
-class Lldb(Recipe):
+class Lldb(PythonRecipe):
     description = "Next generation, high-performance debugger"
     license = "Apache"
     options = {}
@@ -10,6 +10,7 @@ class Lldb(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
+        "swig/[^4.0.2]",
     )
     requires = (
         "llvm/[^11.0.1]",
@@ -28,6 +29,7 @@ class Lldb(Recipe):
             "install-lldb",
             "install-lldb-server",
             "install-liblldb",
+            "install-llvm-dwarfdump",
         ]
         self.cmake(
             targets=targets,
