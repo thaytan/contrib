@@ -25,12 +25,20 @@ class Lldb(PythonRecipe):
         self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lldb-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "lldb"))
 
     def build(self):
+        defs = {
+            "LLDB_PYTHON_RELATIVE_PATH": os.path.join("lib", "python"),
+        }
         targets = [
             "install-lldb",
             "install-lldb-server",
             "install-liblldb",
             "install-llvm-dwarfdump",
+            "install-lldb-python-scripts",
         ]
         self.cmake(
-            targets=targets,
+            defs,
+            targets,
         )
+
+    def package_info(self):
+        self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "lib", "python"))
