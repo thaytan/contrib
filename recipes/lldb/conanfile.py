@@ -4,6 +4,9 @@ from build import *
 class Lldb(Recipe):
     description = "Next generation, high-performance debugger"
     license = "Apache"
+    options = {}
+    default_options = {}
+
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
@@ -21,7 +24,6 @@ class Lldb(Recipe):
 
     def build(self):
         targets = [
-            "install-LLVMOption", 
             "install-lldb",
             "install-liblldb",
         ]
