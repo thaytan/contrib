@@ -26,6 +26,7 @@ class Lldb(Recipe):
     def build(self):
         targets = [
             "install-lldb",
+            "install-lldb-server",
             "install-liblldb",
         ]
         self.cmake(
