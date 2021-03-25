@@ -9,7 +9,7 @@ jobs:
       image: ${{ github.event.client_payload.image }}
     steps:
       - 
-        uses: aivero/checkout@main
+        uses: actions/checkout@v2
         with:
           ref: ${{ github.event.client_payload.commit }}
           submodules: recursive
