@@ -13,6 +13,7 @@ class Lldb(Recipe):
     )
     requires = (
         "llvm/[^11.0.1]",
+        "libedit/[^20190324-3.1]",
         "python/[^3.8.5]",
         "python-six/[^1.15.0]",
     )
