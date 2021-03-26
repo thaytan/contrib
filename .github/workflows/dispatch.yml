@@ -25,7 +25,7 @@ jobs:
           submodules: true
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
       - name: Dispatch Action
-        uses: aivero/dispatch-action@master
+        uses: aivero/actions/dispatch@master
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           component: ${{ github.event.inputs.component }}

@@ -16,7 +16,7 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
       - 
         name: Runner
-        uses: aivero/runner-action@master
+        uses: aivero/actions/runner@master
         with:
           cmdsPre: ${{ github.event.client_payload.cmds.pre }}
           cmds: ${{ github.event.client_payload.cmds.main }}
@@ -32,7 +32,7 @@ jobs:
           CONAN_REPO_PUBLIC: ${{ secrets.CONAN_REPO_PUBLIC }}
       - 
         name: Report status
-        uses: aivero/status-action@master
+        uses: aivero/actions/status@master
         if: ${{ always() }}
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
