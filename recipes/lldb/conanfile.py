@@ -30,6 +30,7 @@ class Lldb(PythonRecipe):
         }
         targets = [
             "install-lldb",
+            "install-lldb-argdumper",
             "install-lldb-server",
             "install-liblldb",
             "install-llvm-dwarfdump",
