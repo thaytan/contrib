@@ -9,11 +9,11 @@ jobs:
       image: aivero/conan:bionic-x86_64
     runs-on: ubuntu-latest
     steps:
-    - uses: aivero/checkout@main
+    - uses: actions/checkout@v2
       with:
         ref: ${{ github.sha }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
-    - uses: aivero/runner-action@master
+    - uses: aivero/actions/runner@master
       with:
         cmds: '["python3 scripts/remove_aliases.py"]'
       env:

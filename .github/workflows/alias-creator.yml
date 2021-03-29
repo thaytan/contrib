@@ -9,12 +9,12 @@ jobs:
       image: aivero/conan:bionic-x86_64
     runs-on: ubuntu-latest
     steps:
-    - uses: aivero/checkout@main
+    - uses: actions/checkout@v2
       with:
         ref: ${{ github.sha }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
     - name: Create and upload aliases
-      uses: aivero/runner-action@master
+      uses: aivero/actions/runner@master
       with:
         cmds: '["python3 scripts/upload_aliases.py"]'
       env:
