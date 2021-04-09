@@ -1,1 +1,6 @@
 - version: 1.18.4
+  profiles: ["linux-x86_64", "linux-armv8"]
+- version: 1.18.4
+  profiles: ["linux-x86_64"]
+  options:
+    x265: True
