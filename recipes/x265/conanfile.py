@@ -14,13 +14,11 @@ class X265Recipe(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
-        "nasm/[^2.15.05]",
-        "numactl/[^2.0.14]",
+        "nasm/[^2.15.05]"
     )
 
     def source(self):
-        self.get(
-            f"https://github.com/videolan/x265/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/videolan/x265/archive/{self.version}.tar.gz")
         self.patch("no-integrated-as.patch")
 
     def build(self):

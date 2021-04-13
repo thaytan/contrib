@@ -1,0 +1,13 @@
+diff --git a/source/CMakeLists.txt b/source/CMakeLists.txt
+index 1d1a613..9b487f2 100644
+--- a/source/CMakeLists.txt
++++ b/source/CMakeLists.txt
+@@ -546,7 +546,7 @@ if((MSVC_IDE OR XCODE OR GCC) AND ENABLE_ASSEMBLY)
+             add_custom_command(
+                 OUTPUT ${ASM}.${SUFFIX}
+                 COMMAND ${CMAKE_CXX_COMPILER}
+-                ARGS ${ARM_ARGS} -c ${ASM_SRC} -o ${ASM}.${SUFFIX}
++                ARGS -fno-integrated-as ${ARM_ARGS} -c ${ASM_SRC} -o ${ASM}.${SUFFIX}
+                 DEPENDS ${ASM_SRC})
+         endforeach()
+     elseif(X86)
