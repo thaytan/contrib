@@ -11,3 +11,4 @@ class Libelf(Recipe):
 
     def source(self):
         self.get(f"https://fossies.org/linux/misc/old/libelf-{self.version}.tar.gz")
+        self.download(f"https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD", "config.guess")
