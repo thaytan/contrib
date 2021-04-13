@@ -63,6 +63,27 @@ class gdb(Generator):
         return content
 
 
+class lldb(Generator):
+    def __init__(self, conanfile):
+        super().__init__(conanfile)
+
+    @property
+    def filename(self):
+        pass
+
+    @property
+    def content(self):
+        content = {".lldbinit": ""}
+        if not "SOURCE_MAP" in self.conanfile.env:
+            return {}
+        for map in self.conanfile.env["SOURCE_MAP"]:
+            if not "|" in map:
+                continue
+            content[".lldbinit"] += "settings set target.source-map %s %s\n" % tuple(map.split("|"))
+
+        return content
+
+
 class tools(Generator):
     @property
     def filename(self):
