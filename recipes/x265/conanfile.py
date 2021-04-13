@@ -4,21 +4,31 @@ from build import *
 class X265Recipe(Recipe):
     description = "x265 is the leading H.265 / HEVC encoder software library"
     license = "GPL"
-    options = {"high_bit_depth": [True, False], "main12": [True, False], "hdr10": [True, False]}
-    default_options = "bit_depth=False", "main12=True", "hdr10=False"
+    exports = "no-integrated-as.patch"
+    options = {
+        "high_bit_depth": [True, False],
+        "main12": [True, False],
+        "hdr10": [True, False]
+    }
+    default_options = "high_bit_depth=False", "main12=True", "hdr10=False"
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
-        "yasm/[^1.3.0]",
+        "nasm/[^2.15.05]",
+        "numactl/[^2.0.14]",
     )
 
     def source(self):
-        self.get(f"https://github.com/videolan/x265/archive/{self.version}.tar.gz")
+        self.get(
+            f"https://github.com/videolan/x265/archive/{self.version}.tar.gz")
+        self.patch("no-integrated-as.patch")
 
     def build(self):
+        #os.environ["CFLAGS"] = os.environ["CFLAGS"] + "-fno-integrated-as"
+        #os.environ["CXXFLAGS"] = os.environ["CXXFLAGS"] + "-fno-integrated-as"
         defs = {
             "HIGH_BIT_DEPTH": self.options.high_bit_depth,
             "MAIN12": self.options.main12,
             "ENABLE_HDR10_PLUS": self.options.hdr10,
         }
-        self.cmake(defs)
+        self.cmake(defs, source_folder=os.path.join(self.src, 'source'))
