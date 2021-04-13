@@ -14,7 +14,8 @@ class X265Recipe(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
-        "nasm/[^2.15.05]"
+        "nasm/[^2.15.05]",
+        "binutils/[^2.36.1]"
     )
 
     def source(self):
@@ -22,8 +23,6 @@ class X265Recipe(Recipe):
         self.patch("no-integrated-as.patch")
 
     def build(self):
-        #os.environ["CFLAGS"] = os.environ["CFLAGS"] + "-fno-integrated-as"
-        #os.environ["CXXFLAGS"] = os.environ["CXXFLAGS"] + "-fno-integrated-as"
         defs = {
             "HIGH_BIT_DEPTH": self.options.high_bit_depth,
             "MAIN12": self.options.main12,
