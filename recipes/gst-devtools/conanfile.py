@@ -27,8 +27,22 @@ class GstDevtoolsRecipe(GstRecipe):
     )
 
     def source(self):
-        # if "1.18" in self.settings.gstreamer:
-        #     self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-devtools/-/archive/{self.version}/gst-devtools-{self.version}.tar.bz2")
-        # else:
-        #     self.get(f"https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror/-/archive/{self.version}/gst-devtools-mirror-{self.version}.tar.gz")
-        self.get(f"https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror/-/archive/{self.version}/gst-devtools-mirror-{self.version}.tar.gz")
+        if "1.18" in self.settings.gstreamer:
+            self.get(
+                f"https://gitlab.freedesktop.org/gstreamer/gst-devtools/-/archive/{self.version}/gst-devtools-{self.version}.tar.bz2"
+            )
+        else:
+            self.get(
+                f"https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror/-/archive/{self.version}/gst-devtools-mirror-{self.version}.tar.gz"
+            )
+
+    def build(self):
+        opts = {
+            "debug_viewer": False,
+            "doc": self.options.gtk_doc,
+            "introspection": self.options.introspection,
+            "nls": self.options.nls,
+            "tests": self.options.tests,
+            "validate": True,
+        }
+        self.meson(opts)
