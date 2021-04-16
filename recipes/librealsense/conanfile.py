@@ -21,7 +21,7 @@ class LibRealsenseRecipe(PythonRecipe):
             self.requires(f"python/[^3.8]")
 
     def configure(self):
-        if self.settings.hardware == "l4t":
+        if self.settings.arch == "armv8":
             self.options.libuvc = True
 
     def source(self):
