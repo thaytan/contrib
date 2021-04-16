@@ -1,8 +1,9 @@
-# x86 dev deployment 
+# x86 dev deployment
 - version: 2.39.0
   profiles: ["linux-x86_64", "linux-armv8-l4t-t186", "linux-armv8-l4t-t210"]
   options:
     cuda: True
 - version: 2.39.0
+  profiles: ["linux-x86_64", "linux-armv8-l4t-t186", "linux-armv8-l4t-t210"]
   options:
     cuda: False
