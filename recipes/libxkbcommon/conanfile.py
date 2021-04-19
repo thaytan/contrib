@@ -19,8 +19,8 @@ class LibxkbcommonRecipe(Recipe):
         self.get(f"https://github.com/xkbcommon/libxkbcommon/archive/xkbcommon-{self.version}.tar.gz")
 
     def build(self):
-        args = [
-            "-Denable-wayland=false",
-            "-Denable-docs=false",
-        ]
-        self.meson(args)
+        opts = {
+            "enable-wayland": False,
+            "enable-docs": False,
+        }
+        self.meson(opts)
