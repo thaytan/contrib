@@ -1,4 +1,4 @@
-tfrom build import *
+from build import *
 
 
 class SharedMimeInfoRecipe(Recipe):
@@ -23,6 +23,6 @@ class SharedMimeInfoRecipe(Recipe):
 
     def build(self):
         opts = {
-          "update-mimedb": False,
+            "update-mimedb": False,
         }
         self.meson(opts)
