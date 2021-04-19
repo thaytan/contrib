@@ -19,7 +19,6 @@ class GdkPixbuf2(Recipe):
         "meson/[>=0.55.3]",
         "gobject-introspection/[^1.66.1]",
         "gettext/[^0.21]",
-        "gtk-doc/[^1.33.2]",
     )
 
     def requirements(self):
@@ -38,6 +37,7 @@ class GdkPixbuf2(Recipe):
             "installed_tests": False,
             "relocatable": True,
             "introspection": self.options.introspection,
+            "man": False,
         }
         self.meson(opts)
         if self.name == "gdk-pixbuf2":
