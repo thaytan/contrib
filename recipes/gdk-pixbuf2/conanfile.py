@@ -42,11 +42,21 @@ class GdkPixbuf2(Recipe):
             "man": False,
         }
         self.meson(opts)
+
         if self.name == "gdk-pixbuf2":
+            # Save loaders cache (overwritten by librsvg)
+            cache_path = os.path.join(self.package_folder, "lib", "gdk-pixbuf-2.0", "2.10.0", "loaders.cache")
+            with open(cache_path, "r") as cache_file:
+                cache = cache_file.read()
+
             os.environ["PKG_CONFIG_PATH"] += f":{os.path.join(self.package_folder, 'lib', 'pkgconfig')}"
             os.environ["PATH"] += f":{os.path.join(self.package_folder, 'bin')}"
             os.environ["XDG_DATA_DIRS"] += f":{os.path.join(self.package_folder, 'share')}"
             self.autotools(source_folder=f"librsvg-{self.librsvg_version}.src")
+
+            # Append loaders cache
+            with open(cache_path, "a") as cache_file:
+                cache = cache_file.write(cache)
 
     def package_info(self):
         self.env_info.GDK_PIXBUF_MODULE_FILE = os.path.join(self.package_folder, "lib", "gdk-pixbuf-2.0", "2.10.0", "loaders.cache")
