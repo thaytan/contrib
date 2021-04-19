@@ -8,6 +8,7 @@ class GtkDoc(Recipe):
         "cc/[^1.0.0]",
         "meson/[>=0.55.0]",
         "itstool/[^2.0.6]",
+        "gettext/[^0.21]",
     )
     requires = (
         "python-pygments/[^2.8.1]",
