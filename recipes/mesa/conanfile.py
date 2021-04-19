@@ -44,6 +44,7 @@ class MesaRecipe(Recipe):
             "glvnd": True,
             "egl": True,
             "gles2": True,
+            "opengl": True,
         }
         if self.options.x11:
             opts["platforms"] = "x11"
