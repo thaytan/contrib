@@ -25,7 +25,7 @@ class GstPluginsBaseRecipe(GstRecipe):
         "opus/[^1.3.1]",
         "pango/[^1.43.0]",
         "orc/[^0.4.29]",
-        "mesa/[^20.2.1]",
+        "mesa/[>=20.2.1]",
     )
 
     def build_requirements(self):
