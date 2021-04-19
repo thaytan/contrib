@@ -1,3 +1,4 @@
 - name: gdk-pixbuf2-no-librsvg
   version: "2.42.6"
+  debugPkg: true
 - version: "2.42.6"
