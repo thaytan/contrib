@@ -53,7 +53,7 @@ class MesaRecipe(Recipe):
             opts["gallium-drivers"] = "iris"
             opts["vulkan-drivers"] = "intel"
         if self.settings.arch == "armv8":
-            opts["gallium-drivers"] = "nouveau,tegra"
+            opts["gallium-drivers"] = "nouveau,tegra,swrast"
         self.meson(opts)
 
     def package_info(self):
