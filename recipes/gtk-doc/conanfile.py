@@ -11,6 +11,7 @@ class GtkDoc(Recipe):
     )
     requires = (
         "python/[^3.8]",
+        "python-pygments/[^2.8.1]",
         "glib/[^2.66.1]",
     )
 
