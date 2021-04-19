@@ -1,4 +1,4 @@
-from build import *
+tfrom build import *
 
 
 class SharedMimeInfoRecipe(Recipe):
@@ -19,10 +19,10 @@ class SharedMimeInfoRecipe(Recipe):
 
     def source(self):
         self.get(f"https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/{self.version}/shared-mime-info-{self.version}.tar.gz")
-        tools.replace_in_file(os.path.join(f"shared-mime-info-{self.version}", "data", "meson.build"), "build_by_default: true", "build_by_default: false")
+        tools.replace_in_file(os.path.join(self.src, "data", "meson.build"), "build_by_default: true", "build_by_default: false")
 
     def build(self):
-        args = [
-            "-Dupdate-mimedb=false",
-        ]
-        self.meson(args)
+        opts = {
+          "update-mimedb": False,
+        }
+        self.meson(opts)
