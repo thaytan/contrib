@@ -8,7 +8,7 @@ class ItstoolRecipe(Recipe):
     requires = ("libxml2/[^2.9.10]",)
 
     def requirements(self):
-        self.requires(f"python/[~{self.settings.python}]")
+        self.requires(f"python/[^3.8]")
 
     def source(self):
         self.get(f"https://github.com/itstool/itstool/archive/{self.version}.tar.gz")
