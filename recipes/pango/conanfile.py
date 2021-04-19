@@ -4,6 +4,14 @@ from build import *
 class PangoRecipe(Recipe):
     description = "A library for layout and rendering of text"
     license = "GPL"
+    options = {
+        "shared": [True, False],
+        "introspection": [True, False],
+    }
+    default_options = (
+        "shared=True",
+        "introspection=True",
+    )
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[^0.55.3]",
@@ -22,5 +30,6 @@ class PangoRecipe(Recipe):
             "fontconfig": True,
             "freetype": True,
             "cairo": True,
+            "introspection": self.options.introspection,
         }
         self.meson(opts)
