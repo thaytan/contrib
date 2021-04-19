@@ -47,3 +47,6 @@ class GdkPixbuf2(Recipe):
             os.environ["PATH"] += f":{os.path.join(self.package_folder, 'bin')}"
             os.environ["XDG_DATA_DIRS"] += f":{os.path.join(self.package_folder, 'share')}"
             self.autotools(source_folder=f"librsvg-{self.librsvg_version}.src")
+
+    def package_info(self):
+        self.env_info.GDK_PIXBUF_MODULE_FILE = os.path.join(self.package_folder, "lib", "gdk-pixbuf-2.0", "2.10.0", "loaders.cache")
