@@ -6,8 +6,8 @@ class LibtiffRecipe(Recipe):
     license = "custom"
     build_requires = (
         "cc/[^1.0.0]",
-        "autotools/[^1.0.0]",
-        "mesa/[>=20.0.0]",
+        "cmake/[^3.18.0]",
+        "mesa/[>=21.0.0]",
     )
     requires = (
         "zlib/[^1.2.11]",
