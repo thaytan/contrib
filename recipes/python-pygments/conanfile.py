@@ -12,6 +12,3 @@ class PythonPygments(PythonRecipe):
 
     def source(self):
         self.get(f"https://pypi.org/packages/source/P/Pygments/Pygments-{self.version}.tar.gz")
-
-    def build(self):
-        self.setuptools()
