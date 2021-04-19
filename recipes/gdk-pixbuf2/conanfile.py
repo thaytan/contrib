@@ -22,11 +22,11 @@ class GdkPixbuf2(Recipe):
         "gobject-introspection/[^1.66.1]",
         "gettext/[^0.21]",
     )
-
-    def requirements(self):
-        self.requires("shared-mime-info/[^2.0]")
-        self.requires("libjpeg-turbo/[^2.0.5]")
-        self.requires("pango/[^1.48.4]")
+    requires = (
+        "shared-mime-info/[^2.0]",
+        "pango/[^1.48.4]",
+        "libtiff/[^4.3.0rc1]",
+    )
 
     def source(self):
         self.get(f"https://github.com/GNOME/gdk-pixbuf/archive/{self.version}.tar.gz")
