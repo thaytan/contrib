@@ -17,6 +17,7 @@ class GdkPixbuf2(Recipe):
         "cc/[^1.0.0]",
         "rust/[^1.0.0]",
         "meson/[>=0.55.3]",
+        "gtk-doc/[^1.33.2]",
         "gobject-introspection/[^1.66.1]",
         "gettext/[^0.21]",
     )
