@@ -35,7 +35,7 @@ class GstPluginsBadRecipe(GstRecipe):
         "mpegtsdemux=True",
         "mpegtsmux=True",
         "msdk=False",
-        "nvcodec=False",
+        "nvcodec=True",
         "opencv=False",
         "pnm=True",
         "rtmp2=True",
@@ -56,14 +56,12 @@ class GstPluginsBadRecipe(GstRecipe):
 
     def configure(self):
         if self.settings.arch != "x86_64":
-            self.options.remove("nvdec")
-            self.options.remove("nvenc")
             self.options.remove("nvcodec")
             self.options.remove("msdk")
 
     def build_requirements(self):
         if self.settings.arch == "x86_64" and self.options.nvcodec:
-            self.build_requires("cuda/[~10.1]")
+            self.build_requires("cuda/[>=11.2]")
             self.build_requires("orc/[^0.4.31]")
 
     def requirements(self):
@@ -87,18 +85,20 @@ class GstPluginsBadRecipe(GstRecipe):
             self.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
 
         elif "1.18" in self.settings.gstreamer:
-            git = tools.Git(folder=f"{self.name}-{self.version}.src")
+            git = tools.Git(folder=self.src)
             git.clone("https://gitlab.freedesktop.org/GStreamer/gst-plugins-bad.git", "master")
-            
+
             # Pick a random cutoff date close to HEAD on origin/master and try to build
             git.run("checkout 316ddddc160de4f1e5546ef1d70d21bce5459fea")
 
             # Build it for 1.18 by undoing some 1.19 specifics:
             # 9b082e7 undoes the requirement on gst 1.19
-            # 6adf7df Fails to build - webp: allow per feature registration 
-            # 4f16edf Fails to build - srtp: allow per feature registration 
-            # a216a1f Fails to build - dtls: allow per feature registration 
-            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" revert 9b082e7467797a6e1c5626a67f7ffc5d0248eccd 4f16edf0d07e5fd42221d5e3727c6d5aa548cdb7 6adf7dff71b2808e8b5fbef7bf45f1ae50ae1b34 a216a1f2cf84b66601524be347ac4b45a995b044 --no-edit ')
+            # 6adf7df Fails to build - webp: allow per feature registration
+            # 4f16edf Fails to build - srtp: allow per feature registration
+            # a216a1f Fails to build - dtls: allow per feature registration
+            git.run(
+                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" revert 9b082e7467797a6e1c5626a67f7ffc5d0248eccd 4f16edf0d07e5fd42221d5e3727c6d5aa548cdb7 6adf7dff71b2808e8b5fbef7bf45f1ae50ae1b34 a216a1f2cf84b66601524be347ac4b45a995b044 --no-edit '
+            )
 
         elif "1.20" in self.settings.gstreamer:
             self.get(f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz")
@@ -124,6 +124,5 @@ class GstPluginsBadRecipe(GstRecipe):
         if self.settings.arch == "x86_64":
             opts["msdk"] = self.options.msdk
             opts["nvcodec"] = self.options.nvcodec
-
 
         self.meson(opts)
