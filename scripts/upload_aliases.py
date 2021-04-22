@@ -1,8 +1,14 @@
 import util
 import os
+import subprocess
+if os.environ["GITREF"]:
+    branch = os.environ["GITREF"]
+    process = subprocess.Popen(["git", "show-ref", branch, "--heads", "--tag", "-s"], stdout=subprocess.PIPE)
+    commit = process.communicate()[0].strip()
+else:
+    commit = os.environ["GITHUB_SHA"]
+    branch = os.environ["GITHUB_REF"].split("/")[2]
 
-commit = os.environ["GITHUB_SHA"]
-branch = os.environ["GITHUB_REF"].split("/")[2]
 print(f"Branch: {branch}")
 old_branch = "master"
 fetch_repo = os.environ["CONAN_REPO_ALL"]
