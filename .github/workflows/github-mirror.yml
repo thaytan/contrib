@@ -1,0 +1,17 @@
+name: Github mirror
+on:
+  push: ~
+jobs:
+  push:
+    name: "${{ github.ref }}:(${{ github.sha }})"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          fetch-depth: 0
+      - name: Push to Gitlab
+        run: |
+          git remote rename origin upstream
+          git remote add origin https://gitlab-ci-token:${{ secrets.GITLAB_PUSH_TOKEN }}@gitlab.com/aivero/contrib.git
+          git push origin master
