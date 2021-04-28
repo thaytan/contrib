@@ -11,9 +11,9 @@ jobs:
       - 
         uses: actions/checkout@v2
         with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
           ref: ${{ github.event.client_payload.commit }}
           submodules: recursive
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
       - 
         name: Runner
         uses: aivero/actions/runner@master
@@ -50,6 +50,7 @@ jobs:
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeError.log
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
             ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
+            ${{ env.CONAN_PKG_PATH }}/output/**/depth-codec-benchmark.txt
       - name: Replace string
         id: slash-to-dash-component
         uses: frabert/replace-string-action@v1.2

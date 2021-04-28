@@ -1,7 +1,12 @@
 name: Alias creator
 on:
   create: ~
-  workflow_dispatch: ~
+  workflow_dispatch: 
+    inputs:
+      gitref:
+        description: "The git ref, branch or tag you want the runner to check out and build against"
+        required: false
+        default: ""
 jobs:
   creator:
     name: '${{ github.event.ref_type }}: ${{ github.event.ref }}'
@@ -11,16 +16,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: ${{ github.sha }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        submodules: true
+        ref: ${{ github.event.inputs.gitref }}
     - name: Create and upload aliases
       uses: aivero/actions/runner@master
       with:
         cmds: '["python3 scripts/upload_aliases.py"]'
       env:
+        GITREF: ${{github.event.inputs.gitref }}
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
         CONAN_LOGIN_PASSWORD: ${{ secrets.CONAN_LOGIN_PASSWORD }}
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
         CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
         CONAN_REPO_ALL: ${{ secrets.CONAN_REPO_ALL }}
         CONAN_REPO_UPLOAD: ${{ secrets.CONAN_REPO_PUBLIC }}
+

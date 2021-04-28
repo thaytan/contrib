@@ -11,8 +11,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: ${{ github.sha }}
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        submodules: true
     - uses: aivero/actions/runner@master
       with:
         cmds: '["python3 scripts/remove_aliases.py"]'
