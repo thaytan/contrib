@@ -15,7 +15,7 @@ jobs:
         submodules: true
     - uses: aivero/actions/runner@master
       with:
-        cmds: '["python3 scripts/remove_aliases.py"]'
+        cmds: '["python3 contrib/scripts/remove_aliases.py"]'
       env:
         GIT_REF: ${{ github.event.ref }}
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
@@ -23,4 +23,4 @@ jobs:
         CONAN_CONFIG_URL: ${{ secrets.CONAN_CONFIG_URL }}
         CONAN_CONFIG_DIR: ${{ secrets.CONAN_CONFIG_DIR }}
         CONAN_REPO_ALL: ${{ secrets.CONAN_REPO_ALL }}
-        CONAN_REPO_REMOVE: ${{ secrets.CONAN_REPO_PUBLIC }}
+        CONAN_REPO_REMOVE: ${{ secrets.CONAN_REPO_INTERNAL }}

@@ -22,7 +22,7 @@ jobs:
     - name: Create and upload aliases
       uses: aivero/actions/runner@master
       with:
-        cmds: '["python3 scripts/upload_aliases.py"]'
+        cmds: '["python3 contrib/scripts/upload_aliases.py"]'
       env:
         GITREF: ${{github.event.inputs.gitref }}
         CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
