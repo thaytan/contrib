@@ -79,11 +79,6 @@ impl Capture {
     }
 
     /// This function is NOT implemented!
-    pub fn new() {
-        unimplemented!()
-    }
-
-    /// This function is NOT implemented!
     pub fn set_color_image() {
         unimplemented!()
     }

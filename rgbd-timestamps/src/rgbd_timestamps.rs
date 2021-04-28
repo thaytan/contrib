@@ -55,10 +55,7 @@ pub trait RgbdTimestamps: BaseSrcImpl {
             .timestamp_mode = timestamp_mode;
 
         // Enables `do-timestamp` if TimestampMode::ClockMain is selected, else disable.
-        base_src.set_do_timestamp(match timestamp_mode {
-            TimestampMode::ClockMain => true,
-            _ => false,
-        });
+        base_src.set_do_timestamp(matches!(timestamp_mode, TimestampMode::ClockMain));
     }
 
     /// Set the buffer duration that `RgbdTimestamps` trait should apply to each buffer based on the negotiated framerate.

@@ -34,7 +34,7 @@ impl Playback {
     /// # Returns
     /// * `Ok(Playback)` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn open(file_path: &String) -> Result<Playback> {
+    pub fn open(file_path: &str) -> Result<Playback> {
         let mut playback = Playback {
             handle: std::ptr::null_mut(),
         };
@@ -134,7 +134,7 @@ impl Playback {
     /// # Returns
     /// * `Ok(String)` containing the tag value on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn get_tag(&self, name: &String) -> Result<String> {
+    pub fn get_tag(&self, name: &str) -> Result<String> {
         let mut tag_length: u64 = 0;
         match unsafe {
             k4a_playback_get_tag(

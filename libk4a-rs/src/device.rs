@@ -119,11 +119,10 @@ impl Device {
             let mut device = Device {
                 handle: std::ptr::null_mut(),
             };
-            match unsafe { k4a_device_open(index, &mut device.handle) } {
-                k4a_result_t::K4A_RESULT_SUCCEEDED => {
-                    serial_numbers.push(device.get_serial_number()?)
-                }
-                _ => {}
+            if let k4a_result_t::K4A_RESULT_SUCCEEDED =
+                unsafe { k4a_device_open(index, &mut device.handle) }
+            {
+                serial_numbers.push(device.get_serial_number()?)
             }
         }
         Ok(serial_numbers)
@@ -137,10 +136,10 @@ impl Device {
     /// # Returns
     /// * `Ok(Device)` on success.
     /// * `Err(K4aError::Failure)` on failure.
-    pub fn open_with_serial(serial: &String) -> Result<Device> {
+    pub fn open_with_serial(serial: &str) -> Result<Device> {
         for index in 0..Self::get_number_of_connected_devices()? {
             if let Ok(device) = Device::open(index) {
-                if &device.get_serial_number()? == serial {
+                if device.get_serial_number()? == serial {
                     return Ok(device);
                 }
             }
