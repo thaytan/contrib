@@ -1,4 +1,4 @@
-name: Github mirror
+name: Gitlab mirror
 on:
   push: ~
 jobs:
@@ -14,4 +14,4 @@ jobs:
         run: |
           git remote rename origin upstream
           git remote add origin https://gitlab-ci-token:${{ secrets.GITLAB_PUSH_TOKEN }}@gitlab.com/aivero/contrib.git
-          git push origin master
+          git push --tags origin master
