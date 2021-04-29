@@ -14,14 +14,20 @@ make sure to use multiple terminals (or terminal tabs).
 
 == Installation
 
-You have two options for installation; tarball and conan. In most cases the
+You have 4 options for installation; 
+- tarball
+- conan
+- docker (using conan)
+- cargo (individual packages only)
+
+In most cases the
 tarball installation will suffice, but special cases (such as developing on sub elements) will require a conan installation.
 
 === Install from tarball
 
 Download the latest release from:
 
-https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/releases
+https://gitlab.com/aivero/contrib/-/releases
 
 .Install aivero-rgbd-toolkit from tarball.
 [source,bash]
@@ -31,17 +37,17 @@ sudo mkdir -p /opt/aivero
 sudo chown $USER:$USER /opt/aivero
 
 # And extract the files into that directory
-tar -C / -xvf aivero_rgbd_toolkit_master.tar.bz2
+tar -C / -xvf aivero-rgbd-toolkit_master.tar.bz2
 source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 ----
 
 === Build and install from conan
 
-Alternatively, you can use Aivero's artifactory instance at https://conan.aa.aivero.dev/artifactory/webapp/#/artifacts/browse/tree/General/aivero-all[https://conan.aa.aivero.dev] to install the newest release straight from our CICD.
+Alternatively, you can use Aivero's artifactory instance at https://aivero.jfrog.io/ui/repos/tree/General/aivero-all[https://aivero.jfrog.io] to install the newest release straight from our CICD.
 
 First you need to install and setup conan, as we use that to handle our dependencies. Before you start, please make sure
 that your default python version is 3.X and that pip installs packages for python 3.
-We build on conan with a non-standard profile, which you can keep updated using our https://gitlab.com/aivero/public/conan/conan-config[conan config]
+We build on conan with a non-standard profile, which you can keep updated using our https://github.com/aivero/conan-config.git[conan config]
 
 Please install conan by running:
 
@@ -51,11 +57,12 @@ Please install conan by running:
 pip install conan --user
 # You may need to source ~/.profile here, please see https://docs.conan.io/en/latest/installation.html#known-installation-issues-with-pip
 # Install the conan repositories, as well as conan profiles
-conan config install https://gitlab.com/aivero/public/conan/conan-config.git
+conan config install https://github.com/aivero/conan-config.git
 
 # Select one of the provided conan profiles as default:
-conan config set general.default_profile=linux_x86_64_release
-# conan config set general.default_profile=linux_armv8_release
+conan config set general.default_profile=linux-x86_64
+# When running on i.e. a NVIDIA TX2 or Xavier use:
+# conan config set general.default_profile=linux-armv8-l4t-t186
 
 
 # And to ensure that the remote is configured properly:
@@ -65,32 +72,22 @@ conan search -r aivero-all gst-realsense
 
 Now you can locally build and install the toolkit:
 
-.Build and install aivero-rgbd-toolkit using conan
+.Install aivero-rgbd-toolkit using conan
 [source,bash]
 ----
-sudo mkdir -p /opt/aivero/rgbd_toolkit
-sudo chown -R $USER:$USER /opt/aivero/rgbd_toolkit
-git clone https://gitlab.com/aivero/public/aivero-rgbd-toolkit.git
-cd aivero-rgbd-toolkit
-conan create . aivero/stable -s build_type=Release
-# note the version. Yours will be `master` in this case:
-conan install aivero_rgbd_toolkit/master@aivero/stable -if /opt/aivero/rgbd_toolkit
+git clone https://gitlab.com/aivero/contrib.git
+conan create aivero-rgbd-toolkit
+# This will assemble the toolkit based on our pre-build elements on the conan server.
+# It will create a conan package name based on the current git sha ref, i.e. `aivero-rgbd-toolkit/5e686b7103ac12b9a9e6c690edb0503b86005531` 
+# In addition it will create a conan alias of your current branch to the git sha based git packge
+# `aivero-rgbd-toolkit/master`
+conan install aivero-rgbd-toolkit/master@ -if rgbd_toolkit
+# This will deploy the toolkit into `./rgbd_toolkit` and configure the `aivero_environment.sh` with an absolute path. 
 ----
 
 NOTE: When installing for a second time, please clear /opt/aivero/rgbd_toolkit first.
 
-NOTE: You might want to disable the zipping of the library by commenting out the last 4 lines in `conanfile.py`:
-
-.Disable the tarball'ing build step
-[source,python]
-----
-# comment the following out
-with tools.chdir(install_path):
-    tarball_filename = "aivero_rgbd_toolkit_%s.tar.bz2" % self.version
-    self.run("tar cvfj %s/%s %s" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
-    self.run("mv %s/%s %s/" % (os.path.dirname(os.path.realpath(__file__)), tarball_filename, install_path))
-----
-
+NOTE: If you want to move the deployment folder, please reflect the new location in the PREFIX variable inside the `aivero_environment.sh`.
 
 === Install as docker
 
@@ -111,7 +108,7 @@ docker build --build-arg=OS_VERSION=bionic --build-arg=RGBD_TOOLKIT_VERSION=1.5.
 
 # Enter the container and run:
 
-docker run --rm -ti -v /home/aivero/aivero-rgbd-toolkit/docker/data:/root/data --privileged -v /dev:/dev aivero-rgbd-toolkit:latest /bin/bash
+docker run --rm -ti --privileged -v /dev:/dev aivero-rgbd-toolkit:latest /bin/bash
 source aivero_environment.sh
 
 # Test it, by inspecting the realsensesrc
@@ -138,6 +135,28 @@ source aivero_environment.sh
 # Test it, by inspecting the realsensesrc
 gst-inspect-1.0 realsensesrc
 ----
+
+---
+
+=== Cargo, CMAKE
+
+You can build the rust based gstreamer elements (`realsensesrc`, `k4asrc`, `rgbdmux` and `rgbddemux` using cargo and the `colorizer` using cmake:
+[source,bash]
+----
+git clone https://gitlab.com/aivero/contrib.git
+cd gst-realsense
+cargo build --release
+cd ../gst-k4a
+cargo build --release
+cd ../gst-rgbd
+carbo build --release
+cd ../gst-colorizer
+mkdir build && cd build
+cmake .. && make -j8
+----
+
+Now just make sure they are within your `GST_PLUGIN_PATH` by appending to it, or copying the files, respectively.
+
 
 ---
 
@@ -276,10 +295,8 @@ Little Endian gray-scale video.
 
 Check out the issues for
 
-* https://gitlab.com/aivero/public/aivero-rgbd-toolkit/-/issues[aivero-rgbd-toolkit]
-* https://gitlab.com/aivero/public/gstreamer/gst-realsense/-/issues[gst-realsense]
-* https://gitlab.com/aivero/public/gstreamer/gst-k4a/-/issues[gst-k4a]
-* https://gitlab.com/aivero/public/gstreamer/gst-rgbd/-/issues[gst-rgbd]
+* https://gitlab.com/aivero/public/contrib/-/issues[Aivero Contrib issue tracker for gst-realsense, gst-k4a, gst-rgbd]
+
 
 
 == Pipeline displays only a single image and freezes

@@ -24,7 +24,7 @@ that your default python version is 3.X and that pip installs packages for pytho
 ```bash
 pip install conan --user
 # You may need to source ~/.profile here, please see https://docs.conan.io/en/latest/installation.html#known-installation-issues-with-pip
-conan remote add aivero https://conan.aa.aivero.dev/artifactory/api/conan/aivero-public
+conan config install https://github.com/aivero/conan-config.git
 # And to ensure that the remote is configured properly:
 conan search -r aivero librealsense
 # You should now see a list of all the releases of librealsense

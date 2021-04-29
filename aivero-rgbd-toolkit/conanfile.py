@@ -1,6 +1,5 @@
 from build import *
 
-
 class AiveroRgbDToolkit(GstProject):
     description = "Package containing all open source RGB-D elements"
     license = "LGPL"
@@ -44,8 +43,6 @@ class AiveroRgbDToolkit(GstProject):
 
         # Environment script
         with open(os.path.join(install_path, "aivero_environment.sh"), "w+") as env_file:
-            license_folder = os.path.join(install_path, "licenses")
-            os.mkdir(license_folder)
 
             env_file.write("export PREFIX=" + install_path)
             env_file.write("\nexport PATH=" + os.path.join("$PREFIX", "bin") + ":$PATH")

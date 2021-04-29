@@ -6,7 +6,7 @@ services:
       context: .
       args:
         - OS_VERSION=bionic
-        - RGBD_TOOLKIT_VERSION=1.5.1
+        - RGBD_TOOLKIT_VERSION=master
     restart: "never"
     volumes:
       - "$PWD./data:/root/data:rw"
