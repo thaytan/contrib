@@ -1,4 +1,17 @@
-# How to Contribute
+# Aivero Contrib
+
+These are the open source componets developed and maintained by Aivero.
+
+- The `aivero-rgbd-toolkit` is the GStreamer based toolkit for interfacing with RGB-D cameras such as the Intel RealSense and Microsoft Azure Kinect cameras. We very much welcome MR/PRs for additional camera support.
+- Every `gst-` prefixed subfolder contains a GStreamer element.
+- The `recipes` subfolder contains `conanfile.py`-only conan.io packages of external software.
+
+
+----
+
+
+## How to Contribute
+
 
 This project welcomes third-party code via merge requests.
 
