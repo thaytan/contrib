@@ -6,7 +6,7 @@ class GoRecipe(Recipe):
     license = "BSD"
 
     def source(self):
-        arch = {"x86_64": "amd64", "armv8": "arm64"}[str(self.settings.arch_build)]
+        arch = {"x86_64": "amd64", "armv8": "arm64"}[str(self.settings.arch)]
         filename = f"go{self.version}.linux-{arch}.tar.gz"
         tools.download(f"https://dl.google.com/go/{filename}", filename)
         # Workaround: Python3 in Ubuntu 18.04 does not support ascii encoded tarballs
