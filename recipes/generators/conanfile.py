@@ -194,3 +194,4 @@ class pkgconf(Generator):
 class GeneratorsPackage(Recipe):
     description = "Conan generators"
     license = "MIT"
+    requires = ()
