@@ -10,4 +10,4 @@ class GperfRecipe(Recipe):
     )
 
     def source(self):
-        self.get("https://gitlab.com/aivero/public/gperf/-/archive/meson/gperf-meson.tar.gz")
+        self.get("https://gitlab.com/aivero/legacy/public/gperf/-/archive/meson/gperf-meson.tar.gz")
