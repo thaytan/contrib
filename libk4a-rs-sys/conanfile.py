@@ -8,5 +8,5 @@ class Libk4aSys(GstRustProject):
     )
     requires = (
         f"gst-depth-meta/{branch()}",
-        "k4a/[^1.4.1]",
+        "libk4a/[^1.4.1]",
     )

@@ -7,5 +7,5 @@ class Libk4aSys(GstRustProject):
         "rust/[^1.0.0]",
     )
     requires = (
-        "k4a/[^1.4.1]",
+        "libk4a/[^1.4.1]",
     )
