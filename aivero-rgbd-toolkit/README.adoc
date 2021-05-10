@@ -37,7 +37,7 @@ sudo mkdir -p /opt/aivero
 sudo chown $USER:$USER /opt/aivero
 
 # And extract the files into that directory
-tar -C / -xvf aivero-rgbd-toolkit_master.tar.bz2
+tar -C /opt/aivero -xvf aivero-rgbd-toolkit_master.tar.bz2
 source /opt/aivero/rgbd_toolkit/aivero_environment.sh
 ----
 
