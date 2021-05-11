@@ -778,7 +778,7 @@ impl RgbdMux {
                     let duration_sec = match den as f32 / num as f32 {
                         x if x.is_normal() => x,
                         _ => 1f32 / DEFAULT_FRAMERATE as f32,
-                    };                    
+                    };
 
                     clock_internals.update_durations(duration_sec, settings.deadline_multiplier)
                 }

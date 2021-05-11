@@ -58,10 +58,9 @@ impl ClockInternals {
     /// # Arguments
     /// * `duration_sec` - The duration in seconds to be used to update clock internals.
     /// * `deadline_multiplier` - Multiplier to use when calculating the deadline duration for a frame.
-    pub fn update_durations(&mut self, duration_sec : f32, deadline_multiplier : f32){
+    pub fn update_durations(&mut self, duration_sec: f32, deadline_multiplier: f32) {
         let duration = std::time::Duration::from_secs_f32(duration_sec);
         self.frameset_duration = duration.into();
         self.deadline_duration = duration.mul_f32(deadline_multiplier).into();
-
     }
 }
