@@ -3,7 +3,7 @@ from build import *
 class LibRealsenseRecipe(PythonRecipe):
     description = "Intel RealSense SDK"
     license = "Apache"
-    settings = PythonRecipe.settings + ("hardware",)
+    settings = PythonRecipe.settings
     exports = "libusb-fix.patch", "pkgconfig-fix.patch", "cuda-clang-support.patch"
     options = {"cuda": [True, False], "python": [True, False], "libuvc": [True, False]}
     default_options = ("cuda=False", "python=False", "libuvc=False")

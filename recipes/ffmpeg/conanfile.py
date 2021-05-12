@@ -4,8 +4,9 @@ from build import *
 class FFMpegRecipe(Recipe):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "LGPL"
-    settings = Recipe.settings + ("hardware",)
-
+    settings = Recipe.settings
+    options = {"nonfree": [True, False], "v4l2_m2m": [True, False]}
+    default_options = ("nonfree=False", "v4l2_m2m=True")
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
@@ -24,8 +25,12 @@ class FFMpegRecipe(Recipe):
         ]
 
         # additional args for rpi.4 64-bit
-        if self.settings.hardware == "rpi":
-            if self.settings.arch == "armv8":
-                args += ["--enable-nonfree", "--arch=aarch64"]
+        if self.options.nonfree:
+            args += ["--enable-nonfree"]
+        if self.options.v4l2_m2m:
+            args += ["--enable-v4l2_m2m"]
+
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
+        args += [f"--arch={arch}"]
 
         self.autotools(args)
