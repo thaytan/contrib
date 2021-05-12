@@ -5,8 +5,8 @@ class FFMpegRecipe(Recipe):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "LGPL"
     settings = Recipe.settings
-    options = {"nonfree": [True, False], "v4l2_m2m": [True, False]}
-    default_options = ("nonfree=False", "v4l2_m2m=True")
+    options = {"nonfree": [True, False], "v4l2_m2m": [True, False], "shared": [True, False]}
+    default_options = ("nonfree=False", "v4l2_m2m=True", "shared=True")
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
