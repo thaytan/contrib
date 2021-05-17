@@ -328,7 +328,6 @@ impl PushSrcImpl for RealsenseSrc {
             if let Some(align_processing_block) =
                 self.align_processing_block.lock().unwrap().as_ref()
             {
-                gst_trace!(CAT, obj: push_src, "Aligning frames");
                 frameset = align_processing_block
                     .process_frame(&frameset)
                     .map_err(RealsenseError::from)?;
@@ -526,9 +525,30 @@ impl RealsenseSrc {
 
         // Create align processing block if enabled
         if let Some(align_to) = settings.align_to {
-            *self.align_processing_block.lock().unwrap() = Some(ProcessingBlock::create_align(
-                Into::<RsStreamDescriptor>::into(align_to).rs2_stream,
-            )?);
+            if !settings.streams.enabled_streams.depth {
+                return Err(RealsenseError(
+                    "Can not perform alignment if depth stream is not enabled.".to_string(),
+                ));
+            }
+            if !settings.streams.enabled_streams.color && settings.align_to == Some(StreamId::Color)
+            {
+                return Err(RealsenseError(
+                    "Can not align depth to color if color stream is not enabled.".to_string(),
+                ));
+            }
+            // librealsense segfaults if we try to align zero streams to depth.
+            // We prefer it warns and then operates as if no alignment was requested.
+            let enabled_streams: Streams = (&settings.streams.enabled_streams).into();
+            if enabled_streams.len() > 1 {
+                *self.align_processing_block.lock().unwrap() = Some(ProcessingBlock::create_align(
+                    Into::<RsStreamDescriptor>::into(align_to).rs2_stream,
+                )?);
+            } else {
+                gst_info!(
+                    CAT,
+                    "Alignment requested but only depth is enabled. Nothing to do."
+                );
+            }
         }
 
         Ok(())
