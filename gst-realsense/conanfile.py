@@ -6,8 +6,7 @@ class GstRealsense(GstRustProject):
     license = "LGPL"
     build_requires = ("rust/[^1.0.0]",)
     requires = (
-        "librealsense/[^2.39.0]",
-        f"rgbd-timestamps/{branch()}",
+        "librealsense/[^2.39.0]"
     )
 
     def build(self):
