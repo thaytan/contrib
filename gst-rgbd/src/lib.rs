@@ -28,8 +28,8 @@ mod rgbddemux;
 mod rgbdmux;
 
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    rgbdmux::register(plugin)?;
     rgbddemux::register(plugin)?;
+    rgbdmux::register(plugin)?;
     Ok(())
 }
 

@@ -34,12 +34,7 @@ pub fn get_property_and_debug<'a, T>(
 where
     T: std::fmt::Display + glib::value::FromValue<'a>,
 {
-    let t = value.get_some::<T>().unwrap_or_else(|err| {
-        panic!(
-            "Failed to set property `{}` due to incorrect type: {:?}",
-            property_name, err
-        )
-    });
+    let t = value.get_some::<T>().unwrap();
     gst_info!(
         cat,
         "Changing property `{}` from {} to {}",
@@ -52,7 +47,7 @@ where
 
 /// Get the priority of the stream. This priority is used to determin which
 /// stream should be the main stream in rgbd.
-pub(crate) fn get_stream_priority(stream_name: &str) -> usize {
+pub fn get_stream_priority(stream_name: &str) -> usize {
     match stream_name {
         "idmap" => 0,
         "layer" => 1,

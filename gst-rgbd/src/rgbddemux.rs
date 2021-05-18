@@ -15,29 +15,94 @@
 // Boston, MA 02110-1301, USA.
 
 use glib::subclass;
+use glib::{subclass::Property, ParamFlags, ParamSpec};
 use gst::prelude::*;
 use gst::subclass::prelude::*;
 use gst_depth_meta::{rgbd, BufferMeta};
 use std::collections::HashMap;
 use std::sync::{Mutex, RwLock};
 
-use super::demux_pad::*;
-use super::error::*;
-use super::properties::*;
-use super::stream_identifier::*;
 use crate::common::*;
 
 lazy_static! {
     /// Debug category for 'rgbddemux' element.
-    pub(crate) static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
+    static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
         "rgbddemux",
         gst::DebugColorFlags::empty(),
         Some("RGB-D Demuxer"),
     );
 }
 
-/// Hashmap of source pads of the demuxer, where key is the name of the stream flowing through that pad.
-pub type SrcPads = HashMap<String, DemuxPad>;
+/// Default value for to `distribute-timestamps` property
+const DEFAULT_DISTRIBUTE_TIMESTAMPS: bool = false;
+
+static PROPERTIES: [Property; 1] = [Property("distribute-timestamps", |name| {
+    ParamSpec::boolean(
+            name,
+            "Distribute Timestamps",
+            "If enabled, timestamps of the main buffers will be distributed to the auxiliary buffers embedded within the `video/rbgd` stream.",
+            DEFAULT_DISTRIBUTE_TIMESTAMPS,
+            ParamFlags::READWRITE,
+        )
+})];
+
+/// A struct that identifies a stream.
+struct StreamIdentifier {
+    /// The id of the stream.
+    stream_id: String,
+    /// The group id of the stream.
+    group_id: gst::GroupId,
+}
+
+impl StreamIdentifier {
+    fn build_stream_start_event(&self, stream_name: &str) -> gst::Event {
+        gst::event::StreamStart::builder(&format!("{}/{}", self.stream_id, stream_name))
+            .group_id(self.group_id)
+            .build()
+    }
+}
+
+/// A handle on the pad, which contains information related to the pad.
+struct DemuxPad {
+    /// The actual pad.
+    pad: gst::Pad,
+    /// A flag to indicate whether or not we have sent the "stream-start" event on the pad.
+    pushed_stream_start: bool,
+}
+
+impl DemuxPad {
+    /// Creates a new DemuxPad for the given `pad`.
+    /// # Arguments
+    /// * `pad` - The pad to create a handle for.
+    /// # Returns
+    /// A new instance of [DemuxPad](struct.DemuxPad.html) for the pad.
+    pub fn new(pad: gst::Pad) -> Self {
+        Self {
+            pad,
+            pushed_stream_start: false,
+        }
+    }
+
+    /// Deactive and remove `self` (pad) from `element`.
+    /// # Arguments
+    /// * `element` - The element that represents `rgbddemux` in GStreamer.
+    /// # Panics
+    /// * If one of the unneeded pads cannot be deactivated or removed from the element.
+    pub fn deactivate_and_remove_from_element(&self, element: &gst::Element) {
+        self.pad.set_active(false).unwrap();
+        element.remove_pad(&self.pad).unwrap();
+    }
+}
+
+/// Hashmap of source pads of the demuxer, where key is the name of the stream flowing through
+/// that pad.
+type SrcPads = HashMap<String, DemuxPad>;
+
+/// A struct containing properties of `rgbddemux` element
+struct Settings {
+    /// Analogous to `distribute-timestamps` property
+    distribute_timestamps: bool,
+}
 
 /// A struct representation of the `rgbddemux` element.
 struct RgbdDemux {
@@ -61,7 +126,9 @@ impl ObjectSubclass for RgbdDemux {
 
     fn new() -> Self {
         Self {
-            settings: RwLock::new(Settings::default()),
+            settings: RwLock::new(Settings {
+                distribute_timestamps: DEFAULT_DISTRIBUTE_TIMESTAMPS,
+            }),
             src_pads: RwLock::new(HashMap::new()),
             flow_combiner: Mutex::new(gst_base::UniqueFlowCombiner::new()),
             stream_identifier: Mutex::new(None),
@@ -129,8 +196,8 @@ impl ElementImpl for RgbdDemux {
 }
 
 impl RgbdDemux {
-    /// Called whenever an event is received at the sink pad. CAPS and stream start events will be
-    /// handled locally, all other events are send further downstream.
+    /// Called whenever an event is received at the sink pad. CAPS and stream start events will
+    /// be handled locally, all other events are send further downstream.
     /// # Arguments
     /// * `element` - The element that represents the `rgbddemux` in GStreamer.
     /// * `event` - The event that should be handled.
@@ -185,7 +252,7 @@ impl RgbdDemux {
         &self,
         element: &gst::Element,
         rgbd_caps: &gst::CapsRef,
-    ) -> Result<(), RgbdDemuxError> {
+    ) -> Result<(), gst::ErrorMessage> {
         gst_debug!(
             CAT,
             "Creating new src pads based on the negotiated upstream CAPS"
@@ -193,8 +260,9 @@ impl RgbdDemux {
 
         // Extract the `video/rgbd` caps fields from gst::CapsRef
         let rgbd_caps = rgbd_caps.iter().next().ok_or_else(|| {
-            RgbdDemuxError(
-                "Invalid `video/rgbd` caps for creation of additional src pads".to_string(),
+            gst_error_msg!(
+                gst::CoreError::Tag,
+                ["Invalid `video/rgbd` caps for creation of additional src pads",]
             )
         })?;
 
@@ -202,16 +270,20 @@ impl RgbdDemux {
         let streams = rgbd_caps
             .get::<String>("streams")
             .map_err(|err| {
-                RgbdDemuxError(format!(
-                    "No `streams` field detected in `video/rgbd` caps: {:?}",
-                    err
-                ))
+                gst_error_msg!(
+                    gst::CoreError::Tag,
+                    [
+                        "No `streams` field detected in `video/rgbd` caps: {:?}",
+                        err
+                    ]
+                )
             })?
             .unwrap_or_default();
         let streams = streams.split(',').collect::<Vec<&str>>();
         if streams.is_empty() {
-            return Err(RgbdDemuxError(
-                "Cannot detect any streams in `video/rgbd` caps under field `streams`".to_string(),
+            return Err(gst_error_msg!(
+                gst::CoreError::Tag,
+                ["Cannot detect any streams in `video/rgbd` caps under field `streams`",]
             ));
         }
 
@@ -219,10 +291,13 @@ impl RgbdDemux {
         let common_framerate = rgbd_caps
             .get_some::<gst::Fraction>("framerate")
             .map_err(|err| {
-                RgbdDemuxError(format!(
-                    "Cannot detect any `framerate` in `video/rgbd` caps: {:?}",
-                    err
-                ))
+                gst_error_msg!(
+                    gst::CoreError::Tag,
+                    [
+                        "Cannot detect any `framerate` in `video/rgbd` caps: {:?}",
+                        err
+                    ]
+                )
             })?;
 
         let mut src_pads = self.src_pads.write().unwrap();
@@ -258,7 +333,7 @@ impl RgbdDemux {
         stream_name: &str,
         rgbd_caps: &gst::StructureRef,
         common_framerate: gst::Fraction,
-    ) -> Result<gst::Caps, RgbdDemuxError> {
+    ) -> Result<gst::Caps, gst::ErrorMessage> {
         // Return "meta/x-klv" if we are dealing with metadata stream
         if stream_name.contains("meta") {
             return Ok(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
@@ -268,10 +343,14 @@ impl RgbdDemux {
         let stream_format = rgbd_caps
             .get::<String>(&format!("{}_format", stream_name))
             .map_err(|err| {
-                RgbdDemuxError(format!(
-                    "Cannot detect any `format` in `video/rgbd` caps for `{}` stream: {:?}",
-                    stream_name, err
-                ))
+                gst_error_msg!(
+                    gst::CoreError::Tag,
+                    [
+                        "Cannot detect any `format` in `video/rgbd` caps for `{}` stream: {:?}",
+                        stream_name,
+                        err
+                    ]
+                )
             })?
             .unwrap_or_default();
 
@@ -284,20 +363,28 @@ impl RgbdDemux {
         let stream_width = rgbd_caps
             .get_some::<i32>(&format!("{}_width", stream_name))
             .map_err(|err| {
-                RgbdDemuxError(format!(
-                    "Cannot detect any `width` in `video/rgbd` caps for `{}` stream: {:?}",
-                    stream_name, err
-                ))
+                gst_error_msg!(
+                    gst::CoreError::Tag,
+                    [
+                        "Cannot detect any `width` in `video/rgbd` caps for `{}` stream: {:?}",
+                        stream_name,
+                        err
+                    ]
+                )
             })?;
 
         // Get the height of a stream
         let stream_height = rgbd_caps
             .get_some::<i32>(&format!("{}_height", stream_name))
             .map_err(|err| {
-                RgbdDemuxError(format!(
-                    "Cannot detect any `height` in `video/rgbd` caps for `{}` stream: {:?}",
-                    stream_name, err
-                ))
+                gst_error_msg!(
+                    gst::CoreError::Tag,
+                    [
+                        "Cannot detect any `height` in `video/rgbd` caps for `{}` stream: {:?}",
+                        stream_name,
+                        err
+                    ]
+                )
             })?;
 
         // Create caps for the new "video/x-raw" src pad
@@ -489,26 +576,19 @@ impl RgbdDemux {
         let src_pads = self.src_pads.read().unwrap();
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
         for aux_buffer in rgbd::get_aux_buffers(&main_buffer) {
-            let flow_combiner_result = flow_combiner.update_flow(
-                self.push_buffer_to_corresponding_pad(element, &src_pads, aux_buffer)
-                    .map_err(|e| {
-                        gst_warning!(CAT, obj: element, "Failed to push auxiliary buffers: {}", e);
-                        gst::FlowError::Error
-                    }),
-            );
+            let flow_combiner_result = flow_combiner
+                .update_flow(self.push_buffer_to_corresponding_pad(element, &src_pads, aux_buffer));
             if flow_combiner_result.is_err() {
                 return flow_combiner_result;
             }
         }
 
         // Push the main buffer to the corresponding src pad
-        flow_combiner.update_flow(
-            self.push_buffer_to_corresponding_pad(element, &src_pads, main_buffer)
-                .map_err(|e| {
-                    gst_warning!(CAT, obj: element, "Failed to push main buffer: {}", e);
-                    gst::FlowError::Error
-                }),
-        )
+        flow_combiner.update_flow(self.push_buffer_to_corresponding_pad(
+            element,
+            &src_pads,
+            main_buffer,
+        ))
     }
 
     /// Push the given buffer to the src pad that was allocated for it.
@@ -521,9 +601,12 @@ impl RgbdDemux {
         element: &gst::Element,
         src_pads: &HashMap<String, DemuxPad>,
         buffer: gst::Buffer,
-    ) -> Result<gst::FlowSuccess, RgbdDemuxError> {
+    ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Extract tag title from the buffer
-        let tag_title = rgbd::get_tag(&buffer)?;
+        let tag_title = rgbd::get_tag(&buffer).map_err(|e| {
+            gst_warning!(CAT, obj: element, "Failed to get buffer tag: {}", e);
+            gst::FlowError::Error
+        })?;
 
         // Match the tag title with a corresponding src pad
         if let Some(src_pad) = src_pads.get(&tag_title) {
@@ -545,9 +628,7 @@ impl RgbdDemux {
                 "Pushing buffer for stream {} to the corresponding pad",
                 tag_title
             );
-            src_pad.pad.push(buffer).map_err(|_| {
-                RgbdDemuxError("Failed to push buffer onto its corresponding pad".to_string())
-            })
+            src_pad.pad.push(buffer)
         } else {
             // We cannot push the buffer if we do not know its destination.
             // Instead of throwing an exception, provide a warning and process all other buffers.
