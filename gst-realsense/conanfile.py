@@ -7,7 +7,7 @@ class GstRealsense(GstRustProject):
     build_requires = ("rust/[^1.0.0]", "capnproto/[^0.8]")
     requires = (
         "librealsense/[^2.39.0]",
-        f"gst-depth-meta/{branch()}",
+        f"rgbd-timestamps/{branch()}",
     )
 
     def build(self):
