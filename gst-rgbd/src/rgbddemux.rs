@@ -16,8 +16,8 @@
 
 use glib::subclass;
 use glib::{subclass::Property, ParamFlags, ParamSpec};
-use gst::prelude::*;
 use gst::subclass::prelude::*;
+use gst::{prelude::*, TagList};
 use gst_depth_meta::{rgbd, BufferMeta};
 use std::collections::HashMap;
 use std::sync::{Mutex, RwLock};
@@ -114,6 +114,8 @@ struct RgbdDemux {
     flow_combiner: Mutex<gst_base::UniqueFlowCombiner>,
     /// Utility struct that contains stream and group id, used when pushing stream-start events.
     stream_identifier: Mutex<Option<StreamIdentifier>>,
+    /// Utility struct that groups received Tags
+    tags_not_sent: Mutex<TagList>,
 }
 
 impl ObjectSubclass for RgbdDemux {
@@ -132,6 +134,7 @@ impl ObjectSubclass for RgbdDemux {
             src_pads: RwLock::new(HashMap::new()),
             flow_combiner: Mutex::new(gst_base::UniqueFlowCombiner::new()),
             stream_identifier: Mutex::new(None),
+            tags_not_sent: Mutex::new(TagList::new()),
         }
     }
 
@@ -236,6 +239,24 @@ impl RgbdDemux {
                 // Accept any StreamStart event
                 true
             }
+            EventView::Tag(tags) => {
+                let src_pads = self.src_pads.read().unwrap();
+                if let Some((stream_name, pad)) = src_pads.iter().next() {
+                    let tag_event = gst::event::Tag::new(tags.get_tag_owned());
+                    if !pad.pad.push_event(tag_event) {
+                        gst_warning!(CAT, "Could not send Tag event for stream {}", stream_name);
+                    }
+                } else {
+                    // If we don't have any pads to push the tags to, the we will store them
+                    // and send them later once pads become available.
+                    let mut tags_not_sent = self.tags_not_sent.lock().unwrap();
+                    let tags_not_sent = tags_not_sent.make_mut();
+                    tags_not_sent.insert(tags.get_tag(), gst::TagMergeMode::Append);
+                }
+
+                true
+            }
+
             _ => {
                 gst_debug!(CAT, obj: element, "Got a new event: {:?}", event);
                 let sink_pad = element.get_static_pad("sink").unwrap();
@@ -476,10 +497,7 @@ impl RgbdDemux {
             if let Some(current_caps) = &existing_pad.pad.get_current_caps() {
                 if current_caps != new_pad_caps {
                     // Deactivate and mark the pad for reconfiguration
-                    existing_pad
-                        .pad
-                        .set_active(false)
-                        .expect("rgbdmux: Could not deactivate new src pad");
+                    existing_pad.pad.set_active(false).unwrap();
                     existing_pad.pad.mark_reconfigure();
 
                     // Prepare the pad for streaming again, i.e. send events and activate it
@@ -491,16 +509,22 @@ impl RgbdDemux {
 
         // Create the src pad based on template
         let pad = gst::Pad::from_template(
-            &element
-                .get_pad_template("src_%s")
-                .expect("rgbdmux: No 'src_%s' pad template registered"),
+            &element.get_pad_template("src_%s").unwrap(),
             Some(new_src_pad_name),
         );
 
         // Add the pad to the element
-        element
-            .add_pad(&pad)
-            .expect("rgbdmux: Could not add src pad to the element");
+        element.add_pad(&pad).unwrap();
+
+        let is_first_pad = src_pads.len() == 0;
+        if is_first_pad {
+            // Push tags that were received before we had any pads.
+            let tags_not_sent = self.tags_not_sent.lock().unwrap();
+            let tag_event = gst::event::Tag::new(tags_not_sent.clone());
+            if !pad.push_event(tag_event) {
+                gst_warning!(CAT, "Could not push tags to {}", stream_name);
+            }
+        }
 
         // Create a DemuxPad from it
         let mut pad_handle = DemuxPad::new(pad);
@@ -658,16 +682,12 @@ impl RgbdDemux {
             return;
         }
 
-        if src_pad
-            .pad
-            .push_event(stream_identifier.build_stream_start_event(stream_name))
-        {
-            src_pad.pushed_stream_start = true;
-            gst_debug!(CAT, "Stream start event pushed for stream {}", stream_name);
-        } else {
+        let stream_start_event = stream_identifier.build_stream_start_event(stream_name);
+        src_pad.pushed_stream_start = src_pad.pad.push_event(stream_start_event);
+        if !src_pad.pushed_stream_start {
             gst_warning!(
                 CAT,
-                "Count not send stream start event for stream {}",
+                "Could not send stream start event for stream {}",
                 stream_name
             );
         }

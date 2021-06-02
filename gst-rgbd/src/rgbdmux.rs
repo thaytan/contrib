@@ -16,11 +16,12 @@
 
 use glib::subclass;
 use glib::{subclass::Property, ParamFlags, ParamSpec};
-use gst::subclass::prelude::*;
+use gst::{subclass::prelude::*, Event};
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::rgbd;
+use gstreamer_base::{Aggregator, AggregatorPad};
 use std::collections::HashMap;
 use std::sync::{Mutex, RwLock};
 
@@ -222,6 +223,28 @@ impl ObjectSubclass for RgbdMux {
 }
 
 impl AggregatorImpl for RgbdMux {
+    /// Called whenever a event is received at one of the sink pads.
+    /// # Arguments
+    /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
+    /// * `aggregator_pad` - The pad that received the event.
+    /// * `event` - The event that should be handled.
+    fn sink_event(
+        &self,
+        aggregator: &Aggregator,
+        aggregator_pad: &AggregatorPad,
+        event: Event,
+    ) -> bool {
+        if let gst::EventView::Tag(_) = event.view() {
+            let src_pad = aggregator.get_static_pad("src").unwrap();
+            if !src_pad.push_event(event) {
+                gst_warning!(CAT, "Could not send tag event");
+            }
+            return true;
+        }
+
+        aggregator_pad.event_default(Some(aggregator), event)
+    }
+
     /// Called when buffers are queued on all sinkpads. Classes should iterate the GstElement->sinkpads and peek or steal
     /// buffers from the GstAggregatorPad.
     /// # Arguments
