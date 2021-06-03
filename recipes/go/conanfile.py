@@ -16,6 +16,8 @@ class GoRecipe(Recipe):
         self.copy("*", src="go/bin", dst="bin")
         self.copy("*", src="go/src", dst="src")
         self.copy("*", src="go/pkg", dst="pkg")
+        self.copy("*", src="go/lib", dst="lib")
+        self.copy("*", src="go/src", dst="src")
 
     def package_info(self):
         self.env_info.GOROOT = self.package_folder
