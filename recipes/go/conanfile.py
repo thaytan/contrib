@@ -20,4 +20,4 @@ class GoRecipe(Recipe):
         os.symlink("../go/bin/gofmt", os.path.join(bin_path, "gofmt"))
 
     def package_info(self):
-        self.env_info.GOROOT = self.package_folder
+        self.env_info.GOROOT = self.path.join(self.package_folder, "go")
