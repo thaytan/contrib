@@ -14,6 +14,8 @@ class DirenvRecipe(Recipe):
         self.get(f"https://github.com/direnv/direnv/archive/v{self.version}.tar.gz")
 
     def build(self):
-        os.environ["GOFLAGS"] = "-buildmode=pie -trimpath -mod=vendor -modcacherw"
-        os.environ["DESTDIR"] = self.package_folder
-        self.make()
+        args = [
+            f"PREFIX={self.package_folder}",
+            "GOFLAGS=-buildmode=pie -trimpath -modcacherw"
+        ]
+        self.make(args)
