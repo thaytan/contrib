@@ -1,6 +1,8 @@
 name: Gitlab mirror
 on:
-  push: ~
+  push:
+    branches:
+    - master
 jobs:
   push:
     name: "${{ github.ref }}:(${{ github.sha }})"
