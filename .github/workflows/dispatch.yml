@@ -31,3 +31,4 @@ jobs:
           component: ${{ github.event.inputs.component }}
           mode: ${{ github.event.inputs.mode }}
           arguments: ${{ github.event.inputs.arguments }}
+          lastRev: ${{ github.event.before }}
