@@ -13,7 +13,7 @@ fn main() {
             .iter()
             .map(|x| ["-I", x.to_str().unwrap()].concat())
             .collect(),
-        Err(err) => std::panic!(err),
+        Err(err) => std::panic!("{}", err),
     };
     //pkg_config::Config::new()
     //    .atleast_version("1.0.22")

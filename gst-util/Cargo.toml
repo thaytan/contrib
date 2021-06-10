@@ -1,0 +1,27 @@
+[package]
+name = "gst-util"
+version = "0.0.0" # Overwritten during conan create.
+authors = ["Jimmi Holst Christensen <jimmi.christensen@aivero.com>"]
+license = "LGPL"
+description = "Utility library for making it a bit easier to work with gstreamer from rust"
+keywords = ["GStreamer", "Rust"]
+repository = "https://github.com/aivero/contrib"
+edition = "2018"
+readme = "README.md"
+
+[dependencies]
+glib = "0.10.3"
+gst = { package = "gstreamer", version = "0.16" }
+
+[build-dependencies]
+gst-plugin-version-helper = "0.2.0"
+
+# Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
+[dev-dependencies.cargo-husky]
+version = "1.5.0"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
+
+[lib]
+crate-type = ["rlib"]
+path = "src/lib.rs"
