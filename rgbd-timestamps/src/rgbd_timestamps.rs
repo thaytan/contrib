@@ -264,8 +264,10 @@ pub trait RgbdTimestamps: BaseSrcImpl {
                         timestamp_internals.is_camera_ahead_of_gstreamer = false;
                     }
                 } else {
-                    // For non-line mode, get the offset of the first frame based only on the camera timestamp, so that the first buffer has timestamp of 0
+                    // For non-live mode, get the offset of the first frame based only on the
+                    // camera timestamp, so that the first buffer has timestamp of 0
                     timestamp_internals.stream_start_offset = camera_timestamp;
+                    timestamp_internals.is_camera_ahead_of_gstreamer = true;
                 }
                 // Set the timestamp of the first frameset to 0
                 timestamp_internals.frameset_common_timestamp = gst::ClockTime::from_nseconds(0);
