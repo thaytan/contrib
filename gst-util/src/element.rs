@@ -14,10 +14,12 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::error::*;
 use crate::orelse;
+use glib::translate::*;
+use glib::value::*;
 use glib::*;
 use gst::*;
+use gst_sdp::*;
 
 pub trait ElementExtension {
     /// Creates a ghost pad with the same name and direction as the pad named `pad_name` in
@@ -46,7 +48,7 @@ where
         let direction = pad.get_direction();
         gst::GhostPad::builder(Some(pad_name), direction)
             .build_with_target(&pad)
-            .map_err(|e| e.to_err_msg(CoreError::Pad))
+            .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))
     }
 
     fn link_iter<Elems, ElemRef>(elements: Elems) -> Result<(), ErrorMessage>
@@ -59,9 +61,43 @@ where
         for elem in iter {
             prev.as_ref()
                 .link(elem.as_ref())
-                .map_err(|e| e.to_err_msg(CoreError::Pad))?;
+                .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
             prev = elem;
         }
         Ok(())
+    }
+}
+
+pub trait ElementSignalExtension {
+    /// Connect to `update-sdp` signal of `element`, which will call `callback`
+    /// when this signal is emited. This function exists, as a wrapper over some
+    /// ugly code to aquire the sdp message as a mutable borrow.
+    fn connect_update_sdp<F>(&self, f: F) -> Result<SignalHandlerId, BoolError>
+    where
+        F: Fn(&Self, &mut SDPMessageRef) + Send + Sync + 'static;
+}
+
+impl<T> ElementSignalExtension for T
+where
+    T: IsA<gst::Element> + for<'a> FromValueOptional<'a>,
+{
+    fn connect_update_sdp<F>(&self, f: F) -> Result<SignalHandlerId, BoolError>
+    where
+        F: Fn(&Self, &mut SDPMessageRef) + Send + Sync + 'static,
+    {
+        self.connect("update-sdp", false, move |values| {
+            let element = values[0].get::<T>().unwrap().unwrap();
+
+            // Obtain a mutable reference to the SDPMessage.
+            // See https://github.com/aivero-support/centricular-consulting/issues/9#issuecomment-755298751
+            let sdp_msg = unsafe {
+                let ptr = gobject_sys::g_value_get_boxed(values[1].to_glib_none().0);
+                assert!(!ptr.is_null());
+                &mut *(ptr as *mut SDPMessageRef)
+            };
+
+            f(&element, sdp_msg);
+            None
+        })
     }
 }

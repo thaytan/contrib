@@ -15,7 +15,6 @@
 // Boston, MA 02110-1301, USA.
 
 use crate::element::*;
-use crate::error::*;
 use crate::orelse;
 use glib::*;
 use gst::*;
@@ -74,6 +73,33 @@ impl Add {
     }
 }
 
+/// Options for the `remove_iter` function which extends what the function does.
+pub struct Remove {
+    /// Set the state of every element removed to `gst::State::Null`
+    pub null: bool,
+}
+
+impl Default for Remove {
+    fn default() -> Self {
+        Self { null: false }
+    }
+}
+
+impl Remove {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn null() -> Self {
+        Self::new().and_null()
+    }
+
+    pub fn and_null(mut self) -> Self {
+        self.null = true;
+        self
+    }
+}
+
 pub trait BinExtension {
     /// Adds all `elements` to `bin`. Unlike `Bin::add_many`, this function accepts an
     /// `IntoIterator` of elements instead of a slice, which can allow one to avoid creating a
@@ -82,6 +108,17 @@ pub trait BinExtension {
     /// On failure, this function might leave `bin` with some of, but not all, the elements
     /// added.
     fn add_iter<Elems, ElemRef>(&self, opt: Add, elements: Elems) -> Result<(), ErrorMessage>
+    where
+        Elems: IntoIterator<Item = ElemRef>,
+        ElemRef: AsRef<Element>;
+
+    /// Removes specified `elements` from `bin`. Unlike `Bin::remove_many`, this function accepts an
+    /// `IntoIterator` of elements instead of a slice, which can allow one to avoid creating a
+    /// slice when not necessary. This function also takes an `opt` parameter, where one can
+    /// turn on more things this function should do while adding elements to the bin.
+    /// On failure, this function might leave `bin` with some of, but not all, the elements
+    /// removed.
+    fn remove_iter<Elems, ElemRef>(&self, opt: Remove, elements: Elems) -> Result<(), ErrorMessage>
     where
         Elems: IntoIterator<Item = ElemRef>,
         ElemRef: AsRef<Element>;
@@ -100,31 +137,31 @@ where
         let mut prev = orelse!(iter.next(), return Ok(()));
 
         self.add(prev.as_ref())
-            .map_err(|e| e.to_err_msg(ResourceError::NoSpaceLeft))?;
+            .map_err(|e| gst_error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
         if opt.ghost {
             let pad = prev.as_ref().ghost_static_pad("sink")?;
             self.add_pad(&pad)
-                .map_err(|e| e.to_err_msg(CoreError::Pad))?;
+                .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
         }
         if opt.sync {
             prev.as_ref()
                 .sync_state_with_parent()
-                .map_err(|e| e.to_err_msg(CoreError::StateChange))?;
+                .map_err(|e| gst_error_msg!(CoreError::StateChange, ["{}", e]))?;
         }
 
         for elem in iter {
             self.add(elem.as_ref())
-                .map_err(|e| e.to_err_msg(ResourceError::NoSpaceLeft))?;
+                .map_err(|e| gst_error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
 
             if opt.link {
                 prev.as_ref()
                     .link(elem.as_ref())
-                    .map_err(|e| e.to_err_msg(CoreError::Pad))?;
+                    .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
             }
             if opt.sync {
                 elem.as_ref()
                     .sync_state_with_parent()
-                    .map_err(|e| e.to_err_msg(CoreError::StateChange))?;
+                    .map_err(|e| gst_error_msg!(CoreError::StateChange, ["{}", e]))?;
             }
             prev = elem;
         }
@@ -132,7 +169,26 @@ where
         if opt.ghost {
             let pad = prev.as_ref().ghost_static_pad("src")?;
             self.add_pad(&pad)
-                .map_err(|e| e.to_err_msg(CoreError::Pad))?;
+                .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
+        }
+        Ok(())
+    }
+
+    fn remove_iter<Elems, ElemRef>(&self, opt: Remove, elements: Elems) -> Result<(), ErrorMessage>
+    where
+        Elems: IntoIterator<Item = ElemRef>,
+        ElemRef: AsRef<Element>,
+    {
+        for elem in elements.into_iter() {
+            let elem = elem.as_ref();
+            self.remove(elem)
+                .map_err(|e| gst_error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
+
+            if opt.null {
+                let _ = elem
+                    .set_state(gst::State::Null)
+                    .map_err(|e| gst_error_msg!(CoreError::StateChange, ["{}", e]))?;
+            }
         }
         Ok(())
     }

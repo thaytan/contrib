@@ -12,6 +12,7 @@ readme = "README.md"
 [dependencies]
 glib = "0.10.3"
 gst = { package = "gstreamer", version = "0.16" }
+gst_sdp = { package = "gstreamer-sdp", version = "0.16" }
 
 [build-dependencies]
 gst-plugin-version-helper = "0.2.0"
