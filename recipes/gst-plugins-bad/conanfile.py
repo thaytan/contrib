@@ -110,6 +110,8 @@ class GstPluginsBadRecipe(GstRecipe):
                 'a216a1f2cf84b66601524be347ac4b45a995b044 ' +
                 '42a87029190d8b13c8e2040e8b73147765bfd7a1 ')
 
+            self.patch('74e04bc8d7f95f4636ac617f26e1b205040f9915.patch')
+
         elif "1.20" in self.settings.gstreamer:
             self.get(
                 f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz"
