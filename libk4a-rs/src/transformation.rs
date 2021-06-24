@@ -41,7 +41,7 @@ impl Transformation {
     /// * `Err(K4aError::Failure)` on failure.
     pub fn new(calibration: &Calibration) -> Result<Transformation> {
         let transformation_handle = unsafe { k4a_transformation_create(&calibration.handle) };
-        if transformation_handle == std::ptr::null_mut() {
+        if transformation_handle.is_null() {
             return Err(K4aError::Failure(
                 "`Transformation` could not be created due to invalid `Calibration`",
             ));

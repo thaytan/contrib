@@ -90,10 +90,10 @@ impl CameraMeta {
     pub fn get_extrinsics(&self, source: String, target: String) -> Option<Transformation> {
         if let Some(transformation) = self.extrinsics.get(&(source.clone(), target.clone())) {
             Some(transformation.clone())
-        } else if let Some(transformation) = self.extrinsics.get(&(target, source)) {
-            Some(transformation.inverse())
         } else {
-            None
+            self.extrinsics
+                .get(&(target, source))
+                .map(|transformation| transformation.inverse())
         }
     }
 

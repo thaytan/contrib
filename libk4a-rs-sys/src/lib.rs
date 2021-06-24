@@ -1,3 +1,4 @@
+#[allow(clippy::redundant_static_lifetimes)]
 mod generated_bindings;
 pub use generated_bindings::*;
 

@@ -804,9 +804,8 @@ impl RgbdMux {
                 )
             })
             // Get buffers if they are queued on the pads
-            .filter_map(|(sink_pad_name, sink_pad)| match sink_pad.peek_buffer() {
-                Some(buffer) => Some((sink_pad_name, buffer)),
-                _ => None,
+            .filter_map(|(sink_pad_name, sink_pad)| {
+                sink_pad.peek_buffer().map(|buffer| (sink_pad_name, buffer))
             })
             // Get pts timestamps for all buffers and collect into vector
             .map(|(sink_pad_name, buffer)| (sink_pad_name.to_string(), buffer.get_pts()))

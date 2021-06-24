@@ -3,6 +3,7 @@ use crate::generated_bindings::*;
 pub type DeviceConfiguration = k4a_device_configuration_t;
 
 impl DeviceConfiguration {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         color_format: k4a_image_format_t,
         color_resolution: k4a_color_resolution_t,

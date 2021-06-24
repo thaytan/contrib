@@ -8,6 +8,7 @@
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 impl rs2_error {
+    #![allow(clippy::all)]
     pub fn new() -> rs2_error {
         rs2_error { _unused: [0; 0] }
     }

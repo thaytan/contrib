@@ -87,9 +87,9 @@ impl TryFrom<String> for StreamId {
     }
 }
 
-impl Into<RsStreamDescriptor> for StreamId {
-    fn into(self) -> RsStreamDescriptor {
-        match self {
+impl From<StreamId> for RsStreamDescriptor {
+    fn from(id: StreamId) -> RsStreamDescriptor {
+        match id {
             StreamId::Depth => RsStreamDescriptor::new(
                 rs2::rs2_stream::RS2_STREAM_DEPTH,
                 rs2::rs2_format::RS2_FORMAT_Z16,
@@ -135,9 +135,9 @@ impl From<RsStreamDescriptor> for StreamId {
     }
 }
 
-impl Into<gst_video::VideoFormat> for StreamId {
-    fn into(self) -> gst_video::VideoFormat {
-        match self {
+impl From<StreamId> for gst_video::VideoFormat {
+    fn from(id: StreamId) -> gst_video::VideoFormat {
+        match id {
             StreamId::Depth => gst_video::VideoFormat::Gray16Le,
             StreamId::Infra1 | StreamId::Infra2 => gst_video::VideoFormat::Gray8,
             StreamId::Color => gst_video::VideoFormat::Rgb,
@@ -145,9 +145,9 @@ impl Into<gst_video::VideoFormat> for StreamId {
     }
 }
 
-impl Into<StreamDescriptor> for StreamId {
-    fn into(self) -> StreamDescriptor {
-        StreamDescriptor::new(self.into(), self.into())
+impl From<StreamId> for StreamDescriptor {
+    fn from(id: StreamId) -> StreamDescriptor {
+        StreamDescriptor::new(id.into(), id.into())
     }
 }
 
