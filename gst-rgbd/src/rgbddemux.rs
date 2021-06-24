@@ -116,6 +116,7 @@ struct RgbdDemux {
     stream_identifier: Mutex<Option<StreamIdentifier>>,
     /// Utility struct that groups received Tags
     tags_not_sent: Mutex<TagList>,
+    pad_to_send_tags_on: Mutex<Option<gst::Pad>>,
 }
 
 impl ObjectSubclass for RgbdDemux {
@@ -135,6 +136,7 @@ impl ObjectSubclass for RgbdDemux {
             flow_combiner: Mutex::new(gst_base::UniqueFlowCombiner::new()),
             stream_identifier: Mutex::new(None),
             tags_not_sent: Mutex::new(TagList::new()),
+            pad_to_send_tags_on: Mutex::new(None),
         }
     }
 
@@ -240,11 +242,10 @@ impl RgbdDemux {
                 true
             }
             EventView::Tag(tags) => {
-                let src_pads = self.src_pads.read().unwrap();
-                if let Some((stream_name, pad)) = src_pads.iter().next() {
+                if let Some(pad) = &*self.pad_to_send_tags_on.lock().unwrap() {
                     let tag_event = gst::event::Tag::new(tags.get_tag_owned());
-                    if !pad.pad.push_event(tag_event) {
-                        gst_warning!(CAT, "Could not send Tag event for stream {}", stream_name);
+                    if !pad.push_event(tag_event) {
+                        gst_warning!(CAT, "Could not send Tag event for stream");
                     }
                 } else {
                     // If we don't have any pads to push the tags to, the we will store them
@@ -516,14 +517,15 @@ impl RgbdDemux {
         // Add the pad to the element
         element.add_pad(&pad).unwrap();
 
-        let is_first_pad = src_pads.len() == 0;
-        if is_first_pad {
+        let mut send_pad = self.pad_to_send_tags_on.lock().unwrap();
+        if stream_name != "dddqmeta" && send_pad.is_none() {
             // Push tags that were received before we had any pads.
             let tags_not_sent = self.tags_not_sent.lock().unwrap();
             let tag_event = gst::event::Tag::new(tags_not_sent.clone());
             if !pad.push_event(tag_event) {
                 gst_warning!(CAT, "Could not push tags to {}", stream_name);
             }
+            *send_pad = Some(pad.clone());
         }
 
         // Create a DemuxPad from it
