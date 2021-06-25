@@ -20,17 +20,25 @@ extern crate gstreamer as gst;
 extern crate gstreamer_base as gst_base;
 extern crate gstreamer_depth_meta as gst_depth_meta;
 extern crate gstreamer_video as gst_video;
-extern crate librealsense2 as rs2;
 #[macro_use]
 extern crate lazy_static;
 
+#[cfg(feature = "librealsense2")]
+extern crate librealsense2 as rs2;
+
+#[cfg(feature = "libk4a")]
 mod k4a;
+#[cfg(feature = "librealsense2")]
 mod realsense;
 mod timestamps;
 
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    realsense::realsensesrc::register(plugin)?;
+    #[cfg(feature = "libk4a")]
     k4a::k4asrc::register(plugin)?;
+    #[cfg(feature = "librealsense2")]
+    realsense::realsensesrc::register(plugin)?;
+
+    let _ = plugin;
     Ok(())
 }
 
