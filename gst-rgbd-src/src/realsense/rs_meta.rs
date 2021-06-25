@@ -21,7 +21,7 @@ pub mod rs_meta_capnp {
 }
 
 pub mod rs_meta_serialization {
-    use crate::rs_meta::rs_meta_capnp::rs_metadata;
+    use super::rs_meta_capnp::rs_metadata;
     use capnp::message::Builder;
     use capnp::serialize_packed;
     use std::io::Error;

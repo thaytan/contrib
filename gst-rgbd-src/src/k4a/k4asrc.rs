@@ -14,15 +14,15 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::*;
-use crate::error::*;
-use crate::properties::*;
-use crate::settings::*;
-use crate::stream_properties::*;
-use crate::streams::*;
-use crate::timestamp_source::*;
-use crate::utilities::*;
-use ::rgbd_timestamps::*;
+use super::enums::*;
+use super::error::*;
+use super::properties::*;
+use super::settings::*;
+use super::stream_properties::*;
+use super::streams::*;
+use super::timestamp_source::*;
+use super::utilities::*;
+use crate::timestamps::*;
 use camera_meta::Distortion;
 use glib::subclass;
 use gst::subclass::prelude::*;

@@ -17,8 +17,8 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use crate::realsensesrc::CAT;
-use crate::settings::StreamsSettings;
+use super::realsensesrc::CAT;
+use super::settings::StreamsSettings;
 
 #[derive(Clone, Debug)]
 pub(crate) struct RealsenseError(pub(crate) String);

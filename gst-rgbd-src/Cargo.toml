@@ -1,32 +1,37 @@
 [package]
-name = "gst-k4a"
-version = "0.0.0" # Overwritten during conan create.
-authors = ["Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>"]
+name = "gst-rgbd-src"
+version = "0.0.0"
+authors = ["Niclas Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>", "Jimmi Holst Christensen <jimmi.christensen@aivero.com>"]
 license = "LGPL"
-description = "GStreamer plugin containing `video/rgbd` source for an Azure Kinect DK (K4A) device"
+description = "GStreamer plugin containing `video/rgbd` sources for RealSense and Azure Kinect DK (K4A) devices"
 keywords = [
     "Azure Kinect",
-    "K4A",
-    "Source",
     "GStreamer",
+    "K4A",
+    "Realsense",
     "Rust",
+    "Source",
 ]
 repository = "https://github.com/aivero/contrib"
 edition = "2018"
 readme = "README.md"
+build = "build.rs"
 
 [dependencies]
+capnp = "0.14.0"
 glib = "0.10.3"
 gobject-sys = "0.10"
 gstreamer = "0.16.5"
 gstreamer-base = "0.16.5"
 gstreamer-video = "0.16.6"
 lazy_static = "1.4.0"
-gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
-rgbd-timestamps = { path = "../rgbd-timestamps" }
+
 libk4a = { path = "../libk4a-rs" }
+gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
+librealsense2 = { path = "../librealsense-rs" }
 
 [build-dependencies]
+capnpc = "0.14.2"
 gst-plugin-version-helper = "0.2.0"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
@@ -36,6 +41,6 @@ default-features = false # Disable features which are enabled by default
 features = ["precommit-hook", "run-cargo-fmt", "run-cargo-clippy"]
 
 [lib]
-name = "gstk4asrc"
-crate-type = ["cdylib", "rlib"]
+name = "gstrgbdsrc"
+crate-type = ["cdylib"]
 path = "src/lib.rs"

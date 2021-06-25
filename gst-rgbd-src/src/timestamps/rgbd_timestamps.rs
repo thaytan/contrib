@@ -13,8 +13,8 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::timestamp_internals::TimestampInternals;
-use crate::timestamp_mode::TimestampMode;
+use super::timestamp_internals::TimestampInternals;
+use super::timestamp_mode::TimestampMode;
 use gst::*;
 use gst_base::{subclass::prelude::*, *};
 use std::sync::{Arc, Mutex};

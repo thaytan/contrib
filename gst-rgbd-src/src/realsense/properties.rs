@@ -13,10 +13,11 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use crate::timestamps::timestamp_mode::TimestampMode;
 use glib::subclass;
-use rgbd_timestamps::timestamp_mode::TimestampMode;
 
-use crate::settings::*;
+use super::d400_limits::*;
+use super::settings::*;
 
 lazy_static! {
 pub(crate) static ref PROPERTIES: [subclass::Property<'static>; 19] = [

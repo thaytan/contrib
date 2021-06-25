@@ -14,7 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::error::K4aSrcError;
+use super::error::K4aSrcError;
 use glib::{StaticType, Type};
 use libk4a::{DepthMode, ImageFormat};
 use std::convert::TryFrom;

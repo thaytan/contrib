@@ -17,8 +17,7 @@ use std::fmt::{Display, Formatter};
 
 pub(crate) use rs2::stream_profile::StreamResolution;
 
-pub(crate) use crate::d400_limits::*;
-pub(crate) use crate::streams::StreamId;
+pub(crate) use super::streams::StreamId;
 
 // Default behaviour of playing from rosbag recording specified by `rosbag-location` property.
 pub(crate) const DEFAULT_LOOP_ROSBAG: bool = false;

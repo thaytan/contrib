@@ -14,9 +14,9 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::*;
-use crate::error::*;
-use crate::streams::*;
+use super::enums::*;
+use super::error::*;
+use super::streams::*;
 use libk4a::{ColorResolution, DepthMode, DeviceConfiguration, ImageFormat};
 use std::convert::{From, TryFrom};
 

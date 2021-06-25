@@ -14,11 +14,11 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use crate::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate};
-use crate::settings::*;
+use super::enums::{K4aColorFormat, K4aColorResolution, K4aDepthMode, K4aFramerate};
+use super::settings::*;
+use crate::timestamps::timestamp_mode::TimestampMode;
 use glib::subclass;
 use glib::StaticType;
-use rgbd_timestamps::timestamp_mode::TimestampMode;
 
 lazy_static! {
 /// All properties that `k4asrc` element supports.

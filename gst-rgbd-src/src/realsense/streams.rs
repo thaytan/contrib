@@ -16,8 +16,8 @@
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 
-use crate::errors::ConfigError;
-use crate::settings::EnabledStreams;
+use super::errors::ConfigError;
+use super::settings::EnabledStreams;
 
 /// ID/tag of the depth stream.
 const STREAM_ID_DEPTH: &str = "depth";
