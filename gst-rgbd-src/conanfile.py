@@ -1,8 +1,8 @@
 from build import *
 
 
-class GstRealsense(GstRustProject):
-    description = "GStreamer plugin containing `video/rgbd` source for a RealSense device"
+class GstRgbdSrc(GstRustProject):
+    description = "GStreamer plugin containing `video/rgbd` sources for RealSense and Azure Kinect DK (K4A) devices"
     license = "LGPL"
     build_requires = ("rust/[^1.0.0]", "capnproto/[^0.8]")
     requires = (
