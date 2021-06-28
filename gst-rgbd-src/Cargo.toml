@@ -28,10 +28,13 @@ gstreamer = "0.16.5"
 gstreamer-base = "0.16.5"
 gstreamer-video = "0.16.6"
 lazy_static = "1.4.0"
+serde = "1.0.125"
+serde_json = "1.0.64"
 
 libk4a = { path = "../libk4a-rs", optional = true }
 gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
 librealsense2 = { path = "../librealsense-rs", optional = true }
+gst-util = { path = "../gst-util" }
 
 [build-dependencies]
 capnpc = "0.14.2"

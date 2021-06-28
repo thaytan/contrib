@@ -13,19 +13,22 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use crate::camera_meta_capnp::{intrinsics::*, *};
+pub use crate::hash_map_serialize;
+pub use crate::intrinsics::*;
+pub use crate::transformation::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
-use crate::camera_meta_capnp::{intrinsics::*, *};
-pub use crate::intrinsics::*;
-pub use crate::transformation::*;
-
 /// List of all intrinsics and extrinsics for a calibrated camera setup.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct CameraMeta {
     /// List of intrinsics for each camera.
+    #[serde(with = "hash_map_serialize")]
     pub intrinsics: HashMap<String, Intrinsics>,
     /// List of extrinsics between cameras for a calibrated camera setup. Key indicated coordinate frames in form of `(source, target)`.
+    #[serde(with = "hash_map_serialize")]
     pub extrinsics: HashMap<(String, String), Transformation>,
     /// Scaling factor of the depth map, in metres.
     pub depth_scale: f32,
@@ -53,6 +56,22 @@ impl Display for CameraMeta {
             intrinsics, extrinsics, self.depth_scale
         )
     }
+}
+
+/// Struct that holds a custom tag
+pub struct CameraMetaTag {}
+// Implement Tag trait for CameraMetaTag
+impl<'a> gst::tags::Tag<'a> for CameraMetaTag {
+    type TagType = &'a str;
+    fn tag_name<'b>() -> &'b str {
+        "camera_meta_tag"
+    }
+}
+// Implement CustomTag for 3DQConfigTag
+impl gst::tags::CustomTag<'_> for CameraMetaTag {
+    const FLAG: gst::TagFlag = gst::TagFlag::Decoded;
+    const NICK: &'static str = "camera_meta_tag";
+    const DESCRIPTION: &'static str = "Camera Metadata";
 }
 
 impl CameraMeta {

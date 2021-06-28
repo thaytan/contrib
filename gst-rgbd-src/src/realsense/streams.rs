@@ -16,7 +16,6 @@
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 
-use super::errors::ConfigError;
 use super::settings::EnabledStreams;
 
 /// ID/tag of the depth stream.
@@ -64,7 +63,7 @@ impl Display for StreamId {
 }
 
 impl TryFrom<&str> for StreamId {
-    type Error = ConfigError;
+    type Error = gst::ErrorMessage;
 
     fn try_from(stream: &str) -> Result<Self, Self::Error> {
         match stream {
@@ -72,16 +71,17 @@ impl TryFrom<&str> for StreamId {
             "color" => Ok(Self::Color),
             "infra1" => Ok(Self::Infra1),
             "infra2" => Ok(Self::Infra2),
-            _ => Err(ConfigError::Other(format!(
-                "{} is not a valid stream",
-                stream
-            ))),
+            _ => Err(gst_error_msg!(
+                gst::StreamError::Failed,
+                ["{} is not a valid stream", stream]
+            )),
         }
     }
 }
 
 impl TryFrom<String> for StreamId {
-    type Error = ConfigError;
+    type Error = gst::ErrorMessage;
+
     fn try_from(stream: String) -> Result<Self, Self::Error> {
         StreamId::try_from(stream.as_str())
     }

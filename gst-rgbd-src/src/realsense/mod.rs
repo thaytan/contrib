@@ -14,7 +14,6 @@
 // Boston, MA 02110-1301, USA.
 
 mod d400_limits;
-mod errors;
 mod properties;
 pub mod realsensesrc;
 mod rs_meta;

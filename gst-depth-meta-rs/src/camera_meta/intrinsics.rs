@@ -13,12 +13,12 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use crate::camera_meta_capnp::intrinsics::*;
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
-use crate::camera_meta_capnp::intrinsics::*;
-
 /// Intrinsic parameters of a specific camera.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Intrinsics {
     /// Focal length of the image plane, as a multiple of pixel width.
     pub fx: f32,
@@ -65,7 +65,7 @@ impl Display for Intrinsics {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Distortion {
     /// Unknown or unsupported distortion model.
     Unknown,
@@ -117,7 +117,7 @@ impl Display for Distortion {
 }
 
 /// RealSense distortion coefficients. The use of these coefficients depend on the utilised distrortion model.
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct RsCoefficients {
     /// 1st distortion coefficient.
     pub a1: f32,
@@ -175,7 +175,7 @@ impl From<[f32; 5]> for RsCoefficients {
 }
 
 /// K4A distortion coefficients.
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct K4aCoefficients {
     /// 1st radial distortion coefficient.
     pub k1: f32,

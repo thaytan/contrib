@@ -22,6 +22,7 @@ extern crate gstreamer_depth_meta as gst_depth_meta;
 extern crate gstreamer_video as gst_video;
 #[macro_use]
 extern crate lazy_static;
+use std::sync::Once;
 
 #[cfg(feature = "librealsense2")]
 extern crate librealsense2 as rs2;
@@ -32,11 +33,16 @@ mod k4a;
 mod realsense;
 mod timestamps;
 
+static TAGS: Once = Once::new();
+
 fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     #[cfg(feature = "libk4a")]
     k4a::k4asrc::register(plugin)?;
     #[cfg(feature = "librealsense2")]
     realsense::realsensesrc::register(plugin)?;
+    TAGS.call_once(|| {
+        gst::tags::register::<gst_depth_meta::camera_meta::CameraMetaTag>();
+    });
 
     let _ = plugin;
     Ok(())

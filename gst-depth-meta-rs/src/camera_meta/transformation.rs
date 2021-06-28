@@ -13,10 +13,10 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-
 /// Transformation in 3D.
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Transformation {
     /// Translation.
     pub translation: Translation,
@@ -77,7 +77,7 @@ impl Transformation {
 }
 
 /// Translation vector, in metres.
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Translation {
     /// Displacement along x axis.
     pub x: f32,
@@ -114,7 +114,7 @@ impl From<[f32; 3]> for Translation {
 }
 
 /// Rotation matrix.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct RotationMatrix {
     ///  Entry of row 1 and column 1.
     pub r11: f32,
