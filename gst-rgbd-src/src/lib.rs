@@ -23,6 +23,7 @@ extern crate gstreamer_video as gst_video;
 #[macro_use]
 extern crate lazy_static;
 use std::sync::Once;
+use crate::gst::Tag;
 
 #[cfg(feature = "librealsense2")]
 extern crate librealsense2 as rs2;
@@ -40,8 +41,12 @@ fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     k4a::k4asrc::register(plugin)?;
     #[cfg(feature = "librealsense2")]
     realsense::realsensesrc::register(plugin)?;
+
+    //TODO: Remove duplicate registering of tags
     TAGS.call_once(|| {
-        gst::tags::register::<gst_depth_meta::camera_meta::CameraMetaTag>();
+        if !gstreamer::tag_exists(gst_depth_meta::camera_meta::CameraMetaTag::tag_name()) {
+            gst::tags::register::<gst_depth_meta::camera_meta::CameraMetaTag>();
+        }
     });
 
     let _ = plugin;
