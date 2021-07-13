@@ -79,6 +79,7 @@ class GstPluginsGoodRecipe(GstRecipe):
                 )
 
             self.patch('gst-tags-in-mkv.patch')
+            self.patch('always-write-tags-to-seekhead.patch')
 
             # Apply: vpxenc: add configure_encoder virtual method
             # Not required from 1.20 onward

@@ -1,0 +1,32 @@
+From 2ccc6ac91ca92c6d95cfe3ebc05f2ceccc37043c Mon Sep 17 00:00:00 2001
+From: Jan Schmidt <jan@centricular.com>
+Date: Fri, 2 Jul 2021 01:41:05 +1000
+Subject: [PATCH] matroskamux: Always write a tags element into seekhead
+
+If there are only stream tags, we still want to write the
+tags entry into the seekhead, so that tags can be found
+quickly in the player.
+
+Fixes https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/issues/905
+
+Part-of: <https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/merge_requests/1020>
+---
+ gst/matroska/matroska-mux.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gst/matroska/matroska-mux.c b/gst/matroska/matroska-mux.c
+index f4d7e8974..4d99ddefa 100644
+--- a/gst/matroska/matroska-mux.c
++++ b/gst/matroska/matroska-mux.c
+@@ -3614,7 +3614,7 @@ gst_matroska_mux_finish (GstMatroskaMux * mux)
+     gst_ebml_write_seek (ebml, my_pos);
+   }
+ 
+-  if (tags != NULL || toc_has_tags) {
++  if (mux->tags_pos != 0 || toc_has_tags) {
+     gst_ebml_replace_uint (ebml, mux->seekhead_pos + 144,
+         mux->tags_pos - mux->segment_master);
+   } else {
+-- 
+2.32.0
+
