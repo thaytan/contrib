@@ -4,7 +4,7 @@ from build import *
 class LlvmRecipe(Recipe):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
-    exports = ("disable-system-libs.patch",)
+    exports = ("disable-system-libs.patch", )
     build_requires = (
         "cmake-bootstrap/[^3.18.4]",
         "ninja-bootstrap/[^1.10.0]",
@@ -13,12 +13,21 @@ class LlvmRecipe(Recipe):
     requires = "file/[^5.39]"
 
     def source(self):
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/clang-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "clang"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/lld-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "lld"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/compiler-rt-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "compiler-rt"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxx-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "libcxx"))
-        self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/libcxxabi-{self.version}.src.tar.xz", os.path.join(self.src, "projects", "libcxxabi"))
+        prefix = "https://github.com/llvm/llvm-project/releases/download/llvmorg-"
+        self.get(f"{prefix}{self.version}/llvm-{self.version}.src.tar.xz")
+        self.get(f"{prefix}{self.version}/clang-{self.version}.src.tar.xz",
+                 os.path.join(self.src, "projects", "clang"))
+        self.get(f"{prefix}{self.version}/lld-{self.version}.src.tar.xz",
+                 os.path.join(self.src, "projects", "lld"))
+        self.get(
+            f"{prefix}{self.version}/compiler-rt-{self.version}.src.tar.xz",
+            os.path.join(self.src, "projects", "compiler-rt"))
+        self.get(f"{prefix}{self.version}/libcxx-{self.version}.src.tar.xz",
+                 os.path.join(self.src, "projects", "libcxx"))
+        self.get(f"{prefix}{self.version}/libcxxabi-{self.version}.src.tar.xz",
+                 os.path.join(self.src, "projects", "libcxxabi"))
+        self.get(f"{prefix}{self.version}/libunwind-{self.version}.src.tar.xz",
+                 os.path.join(self.src, "projects", "libunwind"))
         self.patch("disable-system-libs.patch")
 
     def build(self):
@@ -89,13 +98,14 @@ class LlvmRecipe(Recipe):
         # libcxxabi options
         defs["LIBCXXABI_ENABLE_SHARED"] = False
         defs["LIBCXXABI_USE_COMPILER_RT"] = True
-        
+
         ###########
         # Stage 0 #
         ###########
 
         # Install stage 0 to build directory
-        stage0_folder = os.path.join(self.build_folder, f"stage0-{self.version}-install")
+        stage0_folder = os.path.join(self.build_folder,
+                                     f"stage0-{self.version}-install")
         defs["CMAKE_INSTALL_PREFIX"] = stage0_folder
 
         # Reduce memory footprint of linking with gold linker
@@ -105,6 +115,7 @@ class LlvmRecipe(Recipe):
         targets = [
             "install-cxx",
             "install-compiler-rt",
+            "install-libunwind",
             "install-clang",
             "install-clang-cpp",
             "install-clang-resource-headers",
@@ -127,10 +138,12 @@ class LlvmRecipe(Recipe):
         # Use stage 0 lld, clang, ar and ranlib
         defs["LLVM_USE_LINKER"] = os.path.join(stage0_folder, "bin", "ld.lld")
         defs["CMAKE_C_COMPILER"] = os.path.join(stage0_folder, "bin", "clang")
-        defs["CMAKE_CXX_COMPILER"] = os.path.join(stage0_folder, "bin", "clang++")
+        defs["CMAKE_CXX_COMPILER"] = os.path.join(stage0_folder, "bin",
+                                                  "clang++")
         defs["CMAKE_AR"] = os.path.join(stage0_folder, "bin", "ar")
         defs["CMAKE_RANLIB"] = os.path.join(stage0_folder, "bin", "ranlib")
-        defs["LLVM_TABLEGEN"] = os.path.join(stage0_folder, "bin", "llvm-tblgen")
+        defs["LLVM_TABLEGEN"] = os.path.join(stage0_folder, "bin",
+                                             "llvm-tblgen")
 
         # Stage 0 clang can actually create useful LTO libraries
         defs["LLVM_ENABLE_LTO"] = "Thin"
@@ -142,7 +155,8 @@ class LlvmRecipe(Recipe):
         # Only needed for building libcxx
         cflags = ""
         # Install stage 1 to build directory
-        stage1_folder = os.path.join(self.build_folder, f"stage1-{self.version}-install")
+        stage1_folder = os.path.join(self.build_folder,
+                                     f"stage1-{self.version}-install")
         defs["CMAKE_INSTALL_PREFIX"] = stage1_folder
 
         # Statically link everything with musl
@@ -156,7 +170,12 @@ class LlvmRecipe(Recipe):
         os.environ["LDFLAGS"] = cflags
 
         # Stage 1 build (cxx, cxxabi)
-        self.cmake(defs, targets=["install-cxx", "install-compiler-rt",], build_folder=f"stage1-{self.version}")
+        self.cmake(defs,
+                   targets=[
+                       "install-cxx",
+                       "install-compiler-rt",
+                   ],
+                   build_folder=f"stage1-{self.version}")
 
         ###########
         # Stage 2 #
@@ -172,11 +191,15 @@ class LlvmRecipe(Recipe):
             ldflags = "-Wl,-mllvm,-gvn-max-recurse-depth=250"
         libcxx_inc = os.path.join(stage1_folder, "include", "c++", "v1")
         libcxx_lib = os.path.join(stage1_folder, "lib")
-        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
-        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
+        clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version,
+                                 "include")
+        clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version,
+                                 "lib", "linux")
         libc_inc = self.env["LIBC_INCLUDE_PATH"]
-        os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
-        os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
+        os.environ[
+            "CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
+        os.environ[
+            "LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
         os.environ["LIBRARY_PATH"] = libcxx_lib
 
         targets = [
@@ -184,6 +207,7 @@ class LlvmRecipe(Recipe):
             "install-compiler-rt",
             "install-cxx",
             "install-compiler-rt",
+            "install-libunwind",
             "install-libclang",
             "install-clang",
             "install-clang-cpp",
@@ -214,8 +238,9 @@ class LlvmRecipe(Recipe):
         )
 
         # Create linker script that point libstdc++ to libc++
-        with open(os.path.join(self.package_folder, "lib", "libstdc++.so"), "w") as lib:
-            lib.write("GROUP ( -lc++ )") 
+        with open(os.path.join(self.package_folder, "lib", "libstdc++.so"),
+                  "w") as lib:
+            lib.write("GROUP ( -lc++ )")
 
         # Make lld, clang, clang++, clang-cpp default
         with tools.chdir(os.path.join(self.package_folder, "bin")):
@@ -233,10 +258,13 @@ class LlvmRecipe(Recipe):
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "clang")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "clang++")
-        self.env_info.CPP = os.path.join(self.package_folder, "bin", "clang-cpp")
+        self.env_info.CPP = os.path.join(self.package_folder, "bin",
+                                         "clang-cpp")
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.AS = os.path.join(self.package_folder, "bin", "llvm-as")
-        self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
+        self.env_info.RANLIB = os.path.join(self.package_folder, "bin",
+                                            "ranlib")
         self.env_info.LD = os.path.join(self.package_folder, "bin", "ld")
         self.env_info.STRIP = os.path.join(self.package_folder, "bin", "strip")
-        self.env_info.OBJCOPY = os.path.join(self.package_folder, "bin", "objcopy")
+        self.env_info.OBJCOPY = os.path.join(self.package_folder, "bin",
+                                             "objcopy")
