@@ -115,7 +115,7 @@ class LlvmRecipe(Recipe):
         targets = [
             "install-cxx",
             "install-compiler-rt",
-            "install-libunwind",
+            "install-unwind",
             "install-clang",
             "install-clang-cpp",
             "install-clang-resource-headers",
@@ -207,7 +207,7 @@ class LlvmRecipe(Recipe):
             "install-compiler-rt",
             "install-cxx",
             "install-compiler-rt",
-            "install-libunwind",
+            "install-unwind",
             "install-libclang",
             "install-clang",
             "install-clang-cpp",
