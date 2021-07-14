@@ -1,0 +1,6 @@
+- 
+  profiles:
+    - linux-x86_64
+  mode: docker
+  dockerfile: antora.Dockerfile
+  
