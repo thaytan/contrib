@@ -2,7 +2,7 @@ diff --git a/projects/clang/lib/Driver/ToolChains/Gnu.cpp b/projects/clang/lib/D
 index c8a7fce..d03f297 100644
 --- a/projects/clang/lib/Driver/ToolChains/Gnu.cpp
 +++ b/projects/clang/lib/Driver/ToolChains/Gnu.cpp
-@@ -2860,6 +2860,11 @@ void Generic_GCC::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
+@@ -2913,6 +2913,11 @@ void Generic_GCC::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
        DriverArgs.hasArg(options::OPT_nostdincxx))
      return;
  

@@ -2,7 +2,7 @@ diff --git a/projects/clang/lib/Driver/ToolChains/Linux.cpp b/projects/clang/lib
 index 1803504..d87e3c8 100644
 --- a/projects/clang/lib/Driver/ToolChains/Linux.cpp
 +++ b/projects/clang/lib/Driver/ToolChains/Linux.cpp
-@@ -210,6 +210,11 @@ static StringRef getOSLibDir(const llvm::Triple &Triple, const ArgList &Args) {
+@@ -214,6 +214,11 @@ static StringRef getOSLibDir(const llvm::Triple &Triple, const ArgList &Args) {
  
  Linux::Linux(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
      : Generic_ELF(D, Triple, Args) {
