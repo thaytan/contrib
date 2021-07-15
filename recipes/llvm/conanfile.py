@@ -14,24 +14,27 @@ class LlvmRecipe(Recipe):
 
     def source(self):
         prefix = "https://github.com/llvm/llvm-project/releases/download/llvmorg-"
-        self.get(f"{prefix}{self.version}/llvm-{self.version}.src.tar.xz")
+        self.get(f"{prefix}{self.version}/llvm-{self.version}.src.tar.xz",
+                 os.path.join(self.src, "llvm"))
         self.get(f"{prefix}{self.version}/clang-{self.version}.src.tar.xz",
-                 os.path.join(self.src, "projects", "clang"))
+                 os.path.join(self.src, "clang"))
         self.get(f"{prefix}{self.version}/lld-{self.version}.src.tar.xz",
-                 os.path.join(self.src, "projects", "lld"))
+                 os.path.join(self.src, "lld"))
         self.get(
             f"{prefix}{self.version}/compiler-rt-{self.version}.src.tar.xz",
-            os.path.join(self.src, "projects", "compiler-rt"))
+            os.path.join(self.src, "compiler-rt"))
         self.get(f"{prefix}{self.version}/libcxx-{self.version}.src.tar.xz",
-                 os.path.join(self.src, "projects", "libcxx"))
+                 os.path.join(self.src, "libcxx"))
         self.get(f"{prefix}{self.version}/libcxxabi-{self.version}.src.tar.xz",
-                 os.path.join(self.src, "projects", "libcxxabi"))
+                 os.path.join(self.src, "libcxxabi"))
         self.get(f"{prefix}{self.version}/libunwind-{self.version}.src.tar.xz",
-                 os.path.join(self.src, "projects", "libunwind"))
+                 os.path.join(self.src, "libunwind"))
         self.patch("disable-system-libs.patch")
 
     def build(self):
+        source_folder = os.path.join(self.src, "llvm")
         defs = {}
+
         # LLVM build options
         if self.settings.arch == "x86_64":
             defs["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly;AArch64;NVPTX"
@@ -43,6 +46,20 @@ class LlvmRecipe(Recipe):
             abi = "musl"
         else:
             abi = "gnu"
+
+        defs["LLVM_EXTERNAL_CLANG_SOURCE_DIR"] = os.path.join(
+            self.build_folder, self.src, "clang")
+        defs["LLVM_EXTERNAL_LLD_SOURCE_DIR"] = os.path.join(
+            self.build_folder, self.src, "lld")
+        defs["LLVM_EXTERNAL_COMPILER_RT_SOURCE_DIR"] = os.path.join(
+            self.build_folder, self.src, "compiler-rt")
+        defs["LLVM_EXTERNAL_LIBCXX_SOURCE_DIR"] = os.path.join(
+            self.build_folder, self.src, "libcxx")
+        defs["LLVM_EXTERNAL_LIBCXXABI_SOURCE_DIR"] = os.path.join(
+            self.build_folder, self.src, "libcxxabi")
+        defs["LLVM_EXTERNAL_LIBUNWIND_SOURCE_DIR"] = os.path.join(
+            self.build_folder, self.src, "libunwind")
+
         defs["LLVM_HOST_TRIPLE"] = f"{arch}-unknown-linux-{abi}"
 
         defs["LLVM_ENABLE_PIC"] = True
@@ -99,6 +116,8 @@ class LlvmRecipe(Recipe):
         defs["LIBCXXABI_ENABLE_SHARED"] = False
         defs["LIBCXXABI_USE_COMPILER_RT"] = True
 
+        defs["LIBUNWIND_ENABLE_SHARED"] = False
+
         ###########
         # Stage 0 #
         ###########
@@ -115,7 +134,6 @@ class LlvmRecipe(Recipe):
         targets = [
             "install-cxx",
             "install-compiler-rt",
-            "install-unwind",
             "install-clang",
             "install-clang-cpp",
             "install-clang-resource-headers",
@@ -123,12 +141,14 @@ class LlvmRecipe(Recipe):
             "install-ar",
             "install-ranlib",
             "install-strip",
+            "install-unwind",
             "install-lld",
             "install-llvm-tblgen",
         ]
         self.cmake(
             defs,
             targets=targets,
+            source_folder=source_folder,
             build_folder=f"stage0-{self.version}",
         )
 
@@ -175,6 +195,7 @@ class LlvmRecipe(Recipe):
                        "install-cxx",
                        "install-compiler-rt",
                    ],
+                   source_folder=source_folder,
                    build_folder=f"stage1-{self.version}")
 
         ###########
@@ -207,7 +228,6 @@ class LlvmRecipe(Recipe):
             "install-compiler-rt",
             "install-cxx",
             "install-compiler-rt",
-            "install-unwind",
             "install-libclang",
             "install-clang",
             "install-clang-cpp",
@@ -221,6 +241,7 @@ class LlvmRecipe(Recipe):
             "install-objcopy",
             "install-objdump",
             "install-nm",
+            "install-unwind",
             "install-lld",
             "install-llvm-as",
             "install-llvm-config",
@@ -234,6 +255,7 @@ class LlvmRecipe(Recipe):
         self.cmake(
             defs,
             targets=targets,
+            source_folder=source_folder,
             build_folder=f"stage2-{self.version}",
         )
 
