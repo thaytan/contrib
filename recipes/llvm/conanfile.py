@@ -141,7 +141,6 @@ class LlvmRecipe(Recipe):
             "install-ar",
             "install-ranlib",
             "install-strip",
-            "install-unwind",
             "install-lld",
             "install-llvm-tblgen",
         ]
@@ -241,7 +240,6 @@ class LlvmRecipe(Recipe):
             "install-objcopy",
             "install-objdump",
             "install-nm",
-            "install-unwind",
             "install-lld",
             "install-llvm-as",
             "install-llvm-config",
