@@ -6,7 +6,7 @@ class HarfbuzzRecipe(Recipe):
     license = "MIT"
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
+        "meson/[>=0.55.3]",
         "gobject-introspection/[^1.66.1]",
     )
     requires = (

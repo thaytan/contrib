@@ -6,7 +6,7 @@ class SharedMimeInfoRecipe(Recipe):
     license = "GPL"
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
+        "meson/[>=0.55.3]",
         "itstool/[^2.0.6]",
         "xz/[^5.2.4]",
         "gettext/[^0.21]",

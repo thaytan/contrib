@@ -20,11 +20,16 @@ class RustcRecipe(Recipe):
     )
 
     def source(self):
-        self.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
+        self.get(
+            f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz"
+        )
 
     def build(self):
         os.environ["RUSTFLAGS"] = "-g -Clinker-plugin-lto -Copt-level=2"
-        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
+        arch = {
+            "x86_64": "x86_64",
+            "armv8": "aarch64"
+        }[str(self.settings.arch)]
         triple = f"{arch}-unknown-linux-gnu"
         args = [
             f"--host={triple}",

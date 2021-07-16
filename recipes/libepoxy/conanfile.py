@@ -10,7 +10,7 @@ class LibepoxyRecipe(Recipe):
     default_options = ("x11=True",)
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
+        "meson/[>=0.55.3]",
     )
     requires = ("mesa/[>=20.2.1]",)
 

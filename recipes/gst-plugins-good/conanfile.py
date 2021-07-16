@@ -47,7 +47,7 @@ class GstPluginsGoodRecipe(GstRecipe):
 
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
+        "meson/[>=0.55.3]",
         "git/[^2.30.0]",
     )
     requires = ("gst-plugins-base/[^1.18]", )

@@ -6,7 +6,7 @@ class OrcRecipe(Recipe):
     license = "LGPL"
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.55.3]",
+        "meson/[>=0.55.3]",
     )
 
     def source(self):
