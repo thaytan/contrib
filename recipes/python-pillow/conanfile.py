@@ -14,7 +14,7 @@ class PythonPillowRecipe(Recipe):
     )
 
     def requirements(self):
-        self.requires(f"python/[~{self.settings.python}]")
+        self.requires(f"python/[^3]")
 
     def source(self):
         self.get(f"https://github.com/python-pillow/Pillow/archive/{self.version}.tar.gz")

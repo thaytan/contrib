@@ -12,7 +12,7 @@ class PythonCythonRecipe(Recipe):
     )
 
     def requirements(self):
-        self.requires(f"python/[~{self.settings.python}]")
+        self.requires(f"python/[^3]")
 
     def source(self):
         self.get(f"https://github.com/cython/cython/archive/{self.version}.tar.gz")

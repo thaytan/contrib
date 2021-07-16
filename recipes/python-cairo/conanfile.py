@@ -9,7 +9,7 @@ class PythonCairoRecipe(Recipe):
     requires = ("cairo/[^1.16.0]",)
 
     def requirements(self):
-        self.requires(f"python/[~{self.settings.python}]")
+        self.requires(f"python/[^3]")
 
     def source(self):
         self.get(f"https://github.com/pygobject/pycairo/releases/download/v{self.version}/pycairo-{self.version}.tar.gz")

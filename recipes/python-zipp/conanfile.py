@@ -8,7 +8,7 @@ class PythonZippRecipe(Recipe):
     build_requires = ("python-setuptools/[>=41.2.0]",)
 
     def requirements(self):
-        self.requires(f"python/[~{self.settings.python}]")
+        self.requires(f"python/[^3]")
 
     def source(self):
         self.get(f"https://github.com/jaraco/zipp/archive/v{self.version}.tar.gz")

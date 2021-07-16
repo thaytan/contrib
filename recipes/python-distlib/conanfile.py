@@ -6,7 +6,9 @@ class PythonDistlibRecipe(Recipe):
     license = "PSF"
 
     def requirements(self):
-        self.requires(f"python/[~{self.settings.python}]")
+        self.requires(f"python/[^3]")
 
     def source(self):
-        self.get(f"https://files.pythonhosted.org/packages/source/d/distlib/distlib-{self.version}.zip")
+        self.get(
+            f"https://files.pythonhosted.org/packages/source/d/distlib/distlib-{self.version}.zip"
+        )

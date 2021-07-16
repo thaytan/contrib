@@ -11,7 +11,7 @@ class GdbRecipe(Recipe):
     )
 
     def requirements(self):
-        self.requires(f"python/[~{self.settings.python}]")
+        self.requires(f"python/[^3]")
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/gdb/gdb-{self.version}.tar.gz")
