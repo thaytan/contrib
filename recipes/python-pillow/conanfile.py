@@ -4,7 +4,7 @@ from build import *
 class PythonPillowRecipe(Recipe):
     description = "Python Image Library"
     license = "BSD"
-    settings = "build_type", "compiler", "arch_build", "os_build", "libc_build", "python"
+    settings = "build_type", "compiler",    "python"
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
