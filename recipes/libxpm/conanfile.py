@@ -10,10 +10,11 @@ class LibxpmRecipe(Recipe):
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "base/[^1.0.0]",
         "libx11/[^1.6.8]",
         "libxext/[^1.3.4]",
     )
 
     def source(self):
-        self.get(f"https://xorg.freedesktop.org/releases/individual/lib/libXpm-{self.version}.tar.gz")
+        self.get(
+            f"https://xorg.freedesktop.org/releases/individual/lib/libXpm-{self.version}.tar.gz"
+        )
