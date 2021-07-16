@@ -6,7 +6,7 @@ class PythonRequestsRecipe(Recipe):
     license = "Apache"
     build_requires = (
         "pkgconf/[^1.6.3]",
-        "python-setuptools/[^41.2.0]",
+        "python-setuptools/[>=41.2.0]",
     )
 
     def requirements(self):

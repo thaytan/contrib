@@ -5,7 +5,7 @@ class PythonZippRecipe(Recipe):
     description = "Pathlib-compatible object wrapper for zip files"
     license = "MIT"
     settings = "build_type", "compiler",    "python"
-    build_requires = ("python-setuptools/[^41.2.0]",)
+    build_requires = ("python-setuptools/[>=41.2.0]",)
 
     def requirements(self):
         self.requires(f"python/[~{self.settings.python}]")

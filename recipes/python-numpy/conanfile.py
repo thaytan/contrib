@@ -8,7 +8,7 @@ class PythonNumpyRecipe(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
-        "python-setuptools/[^41.2.0]",
+        "python-setuptools/[>=41.2.0]",
         "cython/[^0.29.19]",
     )
 
