@@ -248,6 +248,7 @@ class LlvmRecipe(Recipe):
             "install-FileCheck",
             "install-llvm-libraries",
             "install-llvm-headers",
+            "install-llvm-dwp",
         ]
         # Stage 2 build (lld, clang, libcxx, libcxxabi)
         self.cmake(
