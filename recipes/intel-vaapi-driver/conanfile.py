@@ -10,12 +10,12 @@ class IntelVaapiDriver(Recipe):
         "cc/[^1.0.0]",
         "meson/[>=0.51.2]",
     )
-    requires = (
-        "libva/[^2.3.0]",
-    )
+    requires = ("libva/[^2.10.0]", )
 
     def source(self):
-        self.get(f"https://github.com/intel/intel-vaapi-driver/archive/{self.version}.tar.gz")
+        self.get(
+            f"https://github.com/intel/intel-vaapi-driver/archive/{self.version}.tar.gz"
+        )
 
     def build(self):
         opts = {}
@@ -25,4 +25,5 @@ class IntelVaapiDriver(Recipe):
         self.meson(opts)
 
     def package_info(self):
-        self.env_info.LIBVA_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))
+        self.env_info.LIBVA_DRIVERS_PATH.append(
+            os.path.join(self.package_folder, "lib", "dri"))

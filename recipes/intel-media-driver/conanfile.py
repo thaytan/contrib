@@ -7,16 +7,18 @@ class IntelMediaDriverRecipe(Recipe):
     build_requires = ("cc/[^1.0.0]", "cmake/[^3.18.4]")
     requires = (
         "intel-gmmlib/[^20.3.2]",
-        "libva/[^2.9.0]",
+        "libva/[^2.10.0]",
         "libpciaccess/[^0.16]",
     )
 
     def source(self):
-        self.get(f"https://github.com/intel/media-driver/archive/intel-media-{self.version}.tar.gz")
+        self.get(
+            f"https://github.com/intel/media-driver/archive/intel-media-{self.version}.tar.gz"
+        )
 
     def build(self):
-        os.environ["CPATH"] += ":" + ":".join(self.deps_cpp_info["libx11"].include_paths + self.deps_cpp_info["xorgproto"].include_paths)
-        defs = {
-            "BYPASS_MEDIA_ULT": "yes"
-        }
+        os.environ["CPATH"] += ":" + ":".join(
+            self.deps_cpp_info["libx11"].include_paths +
+            self.deps_cpp_info["xorgproto"].include_paths)
+        defs = {"BYPASS_MEDIA_ULT": "yes"}
         self.cmake(defs)
