@@ -25,7 +25,7 @@ class MesaRecipe(Recipe):
         "libglvnd/[^1.3.2]",
         "zlib/[^1.2.11]",
         "expat/[^2.2.7]",
-        "libdrm/[^2.4.99]",
+        "libdrm/[>=2.4.99]",
     )
 
     def requirements(self):
@@ -36,7 +36,8 @@ class MesaRecipe(Recipe):
             self.requires("libxxf86vm/[^1.1.4]")
 
     def source(self):
-        self.get(f"https://mesa.freedesktop.org/archive/mesa-{self.version}.tar.xz")
+        self.get(
+            f"https://mesa.freedesktop.org/archive/mesa-{self.version}.tar.xz")
 
     def build(self):
         opts = {
@@ -57,4 +58,5 @@ class MesaRecipe(Recipe):
         self.meson(opts)
 
     def package_info(self):
-        self.env_info.LIBGL_DRIVERS_PATH.append(os.path.join(self.package_folder, "lib", "dri"))
+        self.env_info.LIBGL_DRIVERS_PATH.append(
+            os.path.join(self.package_folder, "lib", "dri"))
