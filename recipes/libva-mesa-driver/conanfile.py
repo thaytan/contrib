@@ -7,7 +7,7 @@ class LibvaMesaDriverRecipe(Recipe):
     build_requires = ("cc/[^1.0.0]", "meson/[^0.51.2]")
     requires = (
         "libdrm/[>=2.4.96]",
-        "libva/[^2.3.0]",
+        "libva/[>=2.3.0]",
     )
 
     def source(self):
