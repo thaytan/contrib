@@ -21,7 +21,7 @@ class MesaRecipe(Recipe):
         "python-mako/[^1.1.0]",
     )
     requires = (
-        ("llvm/[^11.0.0]", "private"),
+        ("llvm/[^12.0.0]", "private"),
         "libglvnd/[^1.3.2]",
         "zlib/[^1.2.11]",
         "expat/[^2.2.7]",
