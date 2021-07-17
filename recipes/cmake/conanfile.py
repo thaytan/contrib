@@ -16,7 +16,7 @@ class CMakeRecipe(Recipe):
             self.requires("cc/[^1.0.0]")
             self.requires("ninja/[^1.10.0]")
             self.requires("pkgconf/[^1.7.3]")
-            self.requires("openssl1/[^1.1.1h]")
+            self.requires("openssl1/[>=1.1.1h]")
 
     def source(self):
         self.get(f"https://github.com/Kitware/CMake/releases/download/v{self.version}/cmake-{self.version}.tar.gz")

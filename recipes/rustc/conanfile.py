@@ -15,7 +15,7 @@ class RustcRecipe(Recipe):
         "cc/[^1.0.0]",
         "zlib/[^1.2.11]",
         # Remove when openssl 3.0 is supported
-        "openssl1/[^1.1.1h]",
+        "openssl1/[>=1.1.1h]",
         "libssl/[^1.0.0]",
     )
 

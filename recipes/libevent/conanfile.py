@@ -10,7 +10,7 @@ class LibeventRecipe(Recipe):
         "cmake/[>=3.15.3]",
     )
     requires = (
-        "openssl1/[^1.1.1h]",
+        "openssl1/[>=1.1.1h]",
         "zlib/[^1.2.11]",
     )
 

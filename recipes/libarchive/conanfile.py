@@ -13,7 +13,7 @@ class LibarchiveRecipe(Recipe):
         "bzip2/[^1.0.8]",
         "xz/[^5.2.5]",
         "expat/[^2.2.7]",
-        "openssl1/[^1.1.1h]",
+        "openssl1/[>=1.1.1h]",
     )
 
     def source(self):

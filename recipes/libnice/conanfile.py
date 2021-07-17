@@ -9,7 +9,7 @@ class LibNiceRecipe(GstRecipe):
         "meson/[>=0.55.3]",
     )
     requires = (
-        "openssl1/[^1.1.1h]",
+        "openssl1/[>=1.1.1h]",
         "gst-plugins-base/[^1.18]",
     )
     exports_sources = "nice.pc"

@@ -10,7 +10,7 @@ class NodejsRecipe(Recipe):
         "python/[^3]",
     )
     requires = (
-        "openssl1/[^1.1.1h]",
+        "openssl1/[>=1.1.1h]",
         "zlib/[^1.2.11]",
     )
 
