@@ -7,8 +7,10 @@ class LibvncserverRecipe(Recipe):
     build_requires = ("cc/[^1.0.0]", "cmake/[^3.18.4]")
     requires = (
         "libpng/[^1.6.37]",
-        "openssl1/[^1.1.1b]",
+        "openssl1/[^1.1.1h]",
     )
 
     def source(self):
-        self.get(f"https://github.com/LibVNC/libvncserver/archive/LibVNCServer-{self.version}.tar.gz")
+        self.get(
+            f"https://github.com/LibVNC/libvncserver/archive/LibVNCServer-{self.version}.tar.gz"
+        )
