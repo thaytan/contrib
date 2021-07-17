@@ -9,15 +9,18 @@ class CaCertificatesRecipe(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "make/[^4.3]",
-        "openssl/[^3.0.0-alpha6]",
+        "openssl/[^3.0.0-alpha7]",
     )
 
     def source(self):
-        self.get(f"https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{self.version}/ca-certificates-{self.version}.tar.bz2")
+        self.get(
+            f"https://gitlab.alpinelinux.org/alpine/ca-certificates/-/archive/{self.version}/ca-certificates-{self.version}.tar.bz2"
+        )
 
     def build(self):
         os.environ["DESTDIR"] = self.package_folder
-        os.environ["CFLAGS"] += f" -ldl -lpthread -I{self.deps_cpp_info['openssl'].rootpath}/include"
+        os.environ[
+            "CFLAGS"] += f" -ldl -lpthread -I{self.deps_cpp_info['openssl'].rootpath}/include"
         self.make(target="all")
 
         # NetLock Arany contains invalid utf-8 characters, which is not supported in Python 3.6
