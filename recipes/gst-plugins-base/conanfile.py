@@ -18,7 +18,7 @@ class GstPluginsBaseRecipe(GstRecipe):
     )
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.55.2]",
+        "meson/[>=0.55.2]",
     )
     requires = (
         "gst/[^1.18]",
