@@ -18,7 +18,7 @@ class GstPluginsBaseRecipe(GstRecipe):
     )
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[>=0.55.2]",
+        "meson/[>=0.55.3]",
     )
     requires = (
         "gst/[^1.18]",
@@ -33,7 +33,9 @@ class GstPluginsBaseRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gst-plugins-base/archive/{self.version}.tar.gz")
+        self.get(
+            f"https://github.com/GStreamer/gst-plugins-base/archive/{self.version}.tar.gz"
+        )
 
     def build(self):
         opts = {
