@@ -5,7 +5,7 @@ class SccacheRecipe(RustRecipe):
     description = "Development and debugging tools for GStreamer"
     license = "Apache"
     build_requires = ("pkgconf/[^1.7.3]", )
-    requires = ("openssl1/[>=1.1.1h]", "libssl/[^1.0.0]")
+    requires = ()
 
     def requirements(self):
         # Rust is not compatible between major or minor releases
