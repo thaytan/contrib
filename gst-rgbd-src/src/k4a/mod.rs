@@ -17,7 +17,6 @@
 mod enums;
 mod error;
 pub mod k4asrc;
-mod properties;
 mod settings;
 mod stream_properties;
 mod streams;

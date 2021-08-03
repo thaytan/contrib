@@ -71,7 +71,7 @@ impl TryFrom<&str> for StreamId {
             "color" => Ok(Self::Color),
             "infra1" => Ok(Self::Infra1),
             "infra2" => Ok(Self::Infra2),
-            _ => Err(gst_error_msg!(
+            _ => Err(gst::error_msg!(
                 gst::StreamError::Failed,
                 ["{} is not a valid stream", stream]
             )),

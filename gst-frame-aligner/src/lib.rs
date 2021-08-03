@@ -16,7 +16,6 @@
  * from Aivero AS.
  */
 
-#[macro_use]
 extern crate glib;
 #[macro_use]
 extern crate gstreamer as gst;
@@ -36,7 +35,7 @@ fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     Ok(())
 }
 
-gst_plugin_define!(
+plugin_define!(
     framealigner,
     env!("CARGO_PKG_DESCRIPTION"),
     plugin_init,

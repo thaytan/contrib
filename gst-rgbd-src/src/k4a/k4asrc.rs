@@ -16,7 +16,6 @@
 
 use super::enums::*;
 use super::error::*;
-use super::properties::*;
 use super::settings::*;
 use super::stream_properties::*;
 use super::streams::*;
@@ -24,7 +23,7 @@ use super::timestamp_source::*;
 use super::utilities::*;
 use crate::timestamps::*;
 use camera_meta::Distortion;
-use glib::subclass;
+
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
@@ -39,11 +38,12 @@ use libk4a::playback::Playback;
 use libk4a::transformation::Transformation;
 use libk4a::CalibrationType::*;
 use libk4a::*;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, RwLock};
 
 /// A struct representation of the `k4asrc` element.
-struct K4aSrc {
+pub struct K4aSrc {
     /// Reconfigurable properties.
     settings: RwLock<Settings>,
     /// Internals of `k4asrc` element that are locked under mutex.
@@ -97,57 +97,16 @@ struct CameraInternals {
     camera_meta_serialised: Vec<u8>,
 }
 
+glib::wrapper! {
+    pub struct K4aSrcObject(ObjectSubclass<K4aSrc>)
+        @extends gst_base::PushSrc, gst_base::BaseSrc, gst::Element, gst::Object;
+}
+
+#[glib::object_subclass]
 impl ObjectSubclass for K4aSrc {
     const NAME: &'static str = "k4asrc";
+    type Type = K4aSrcObject;
     type ParentType = gst_base::PushSrc;
-    type Instance = gst::subclass::ElementInstanceStruct<Self>;
-    type Class = subclass::simple::ClassStruct<Self>;
-
-    glib_object_subclass!();
-
-    fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
-        klass.set_metadata(
-            "K4A Source",
-            "Source/RGB-D/K4A",
-            "Stream `video/rgbd` from an Azure Kinect DK (K4A) device",
-            "Andrej Orsula <andrej.orsula@aivero.com>",
-        );
-
-        // Install properties for streaming from K4A
-        klass.install_properties(PROPERTIES.as_ref());
-
-        let allowed_framerates = K4aFramerate::allowed_framerates();
-
-        // Create src pad template with `video/rgbd` caps
-        let src_caps = gst::Caps::new_simple(
-            "video/rgbd",
-            &[
-                // A list of the available K4A streams, indicating their respective priority
-                (
-                    "streams",
-                    &format! {"{},{},{},{},{}", STREAM_ID_DEPTH, STREAM_ID_IR, STREAM_ID_COLOR, STREAM_ID_IMU, STREAM_ID_CAMERAMETA},
-                ),
-                (
-                    // Framerates at which K4A is capable of providing stream
-                    "framerate",
-                    &gst::List::new(&[
-                        &gst::Fraction::new(allowed_framerates[0], 1),
-                        &gst::Fraction::new(allowed_framerates[1], 1),
-                        &gst::Fraction::new(allowed_framerates[2], 1),
-                    ]),
-                ),
-            ],
-        );
-        klass.add_pad_template(
-            gst::PadTemplate::new(
-                "src",
-                gst::PadDirection::Src,
-                gst::PadPresence::Always,
-                &src_caps,
-            )
-            .expect("k4asrc: Cannot add template for src pad"),
-        );
-    }
 
     fn new() -> Self {
         Self {
@@ -159,7 +118,7 @@ impl ObjectSubclass for K4aSrc {
 }
 
 impl BaseSrcImpl for K4aSrc {
-    fn start(&self, _base_src: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
+    fn start(&self, _base_src: &Self::Type) -> Result<(), gst::ErrorMessage> {
         // Lock the internals
         let internals = &mut *self
             .internals
@@ -177,12 +136,12 @@ impl BaseSrcImpl for K4aSrc {
         Ok(())
     }
 
-    fn stop(&self, base_src: &gst_base::BaseSrc) -> Result<(), gst::ErrorMessage> {
+    fn stop(&self, base_src: &Self::Type) -> Result<(), gst::ErrorMessage> {
         self.stop_k4a_and_reset()?;
         self.parent_stop(base_src)
     }
 
-    fn fixate(&self, base_src: &gst_base::BaseSrc, mut caps: gst::Caps) -> gst::Caps {
+    fn fixate(&self, base_src: &Self::Type, mut caps: gst::Caps) -> gst::Caps {
         // Lock the internals
         let internals = &mut self
             .internals
@@ -199,7 +158,7 @@ impl BaseSrcImpl for K4aSrc {
             // Map caps to mutable structure
             let caps = caps
                 .make_mut()
-                .get_mut_structure(0)
+                .structure_mut(0)
                 .expect("k4asrc: Failed to map caps to mutable structure");
             // Fixate based on stream source
             let stream_properties = Self::get_stream_properties(
@@ -300,14 +259,14 @@ impl BaseSrcImpl for K4aSrc {
         self.parent_fixate(base_src, caps)
     }
 
-    fn is_seekable(&self, _base_src: &gst_base::BaseSrc) -> bool {
+    fn is_seekable(&self, _base_src: &Self::Type) -> bool {
         // TODO: If desired, enable and implement seeking for streaming from `Playback`
         false
     }
 }
 
 impl PushSrcImpl for K4aSrc {
-    fn create(&self, push_src: &gst_base::PushSrc) -> Result<gst::Buffer, gst::FlowError> {
+    fn create(&self, push_src: &Self::Type) -> Result<gst::Buffer, gst::FlowError> {
         // Lock the internals
         let internals = &mut self
             .internals
@@ -331,11 +290,15 @@ impl PushSrcImpl for K4aSrc {
             match stream.id {
                 StreamId::Imu => {
                     let imu_samples = Self::get_available_imu_samples(internals)?;
-                    self.attach_imu_samples(push_src, &mut output_buffer, imu_samples)?;
+                    self.attach_imu_samples(
+                        push_src.upcast_ref(),
+                        &mut output_buffer,
+                        imu_samples,
+                    )?;
                 }
                 _ => {
                     let res = self.attach_frame_to_buffer(
-                        push_src,
+                        push_src.upcast_ref(),
                         internals,
                         settings,
                         &mut output_buffer,
@@ -358,7 +321,7 @@ impl PushSrcImpl for K4aSrc {
         if settings.attach_camera_meta {
             // An explicit clone of the serialised buffer is used so that CameraMeta does not need to be serialised every time.
             let camera_meta = internals.camera.camera_meta_serialised.clone();
-            self.attach_camera_meta(push_src, &mut output_buffer, camera_meta)?;
+            self.attach_camera_meta(push_src.upcast_ref(), &mut output_buffer, camera_meta)?;
         }
 
         Ok(output_buffer)
@@ -745,7 +708,7 @@ impl K4aSrc {
             rgbd::fill_main_buffer_and_tag(output_buffer, buffer, stream.id.get_string())?;
         } else {
             // Attach the secondary buffer and tag it adequately
-            rgbd::attach_aux_buffer_and_tag(output_buffer.get_mut().ok_or(gst_error_msg!(
+            rgbd::attach_aux_buffer_and_tag(output_buffer.get_mut().ok_or(gst::error_msg!(
                 gst::ResourceError::Failed,
                 [
                     "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
@@ -788,7 +751,7 @@ impl K4aSrc {
         // Form a gst buffer out of the IMU samples
         let mut buffer = Self::gst_buffer_from_imu_samples(imu_samples)?;
         // Get mutable reference to the buffer
-        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
+        let buffer_mut_ref = buffer.get_mut().ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             [
                 "k4asrc: Cannot get mutable reference to {} buffer",
@@ -806,7 +769,7 @@ impl K4aSrc {
 
         // Attach the IMU buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
-            output_buffer.get_mut().ok_or(gst_error_msg!(
+            output_buffer.get_mut().ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
                 [
                     "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
@@ -856,7 +819,7 @@ impl K4aSrc {
         // Form a gst buffer out of mutable slice
         let mut buffer = gst::buffer::Buffer::from_mut_slice(camera_meta);
         // Get mutable reference to the buffer
-        let buffer_mut_ref = buffer.get_mut().ok_or(gst_error_msg!(
+        let buffer_mut_ref = buffer.get_mut().ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             [
                 "k4asrc: Cannot get mutable reference to {} buffer",
@@ -869,12 +832,12 @@ impl K4aSrc {
             push_src.upcast_ref(),
             buffer_mut_ref,
             false,
-            gst::CLOCK_TIME_NONE,
+            gst::ClockTime::ZERO,
         );
 
         // Attach the camera_meta buffer and tag it adequately
         rgbd::attach_aux_buffer_and_tag(
-            output_buffer.get_mut().ok_or(gst_error_msg!(
+            output_buffer.get_mut().ok_or(gst::error_msg!(
                 gst::ResourceError::Failed,
                 [
                     "k4asrc: Cannot get mutable reference to the main buffer while attaching {} stream",
@@ -1130,138 +1093,305 @@ impl RgbdTimestamps for K4aSrc {
     }
 }
 
-impl ElementImpl for K4aSrc {}
+impl ElementImpl for K4aSrc {
+    fn metadata() -> Option<&'static gst::subclass::ElementMetadata> {
+        static ELEMENT_METADATA: Lazy<gst::subclass::ElementMetadata> = Lazy::new(|| {
+            gst::subclass::ElementMetadata::new(
+                "K4A Source",
+                "Source/RGB-D/K4A",
+                "Stream `video/rgbd` from an Azure Kinect DK (K4A) device",
+                "Andrej Orsula <andrej.orsula@aivero.com>",
+            )
+        });
+
+        Some(&*ELEMENT_METADATA)
+    }
+
+    fn pad_templates() -> &'static [gst::PadTemplate] {
+        static PAD_TEMPLATES: Lazy<[gst::PadTemplate; 1]> = Lazy::new(|| {
+            let allowed_framerates = K4aFramerate::ALLOWED_FRAMERATES;
+
+            // Create src pad template with `video/rgbd` caps
+            let src_caps = gst::Caps::new_simple(
+                "video/rgbd",
+                &[
+                    // A list of the available K4A streams, indicating their respective priority
+                    (
+                        "streams",
+                        &format! {"{},{},{},{},{}", STREAM_ID_DEPTH, STREAM_ID_IR, STREAM_ID_COLOR, STREAM_ID_IMU, STREAM_ID_CAMERAMETA},
+                    ),
+                    (
+                        // Framerates at which K4A is capable of providing stream
+                        "framerate",
+                        &gst::List::new(&[
+                            &gst::Fraction::new(allowed_framerates[0], 1),
+                            &gst::Fraction::new(allowed_framerates[1], 1),
+                            &gst::Fraction::new(allowed_framerates[2], 1),
+                        ]),
+                    ),
+                ],
+            );
+            [gst::PadTemplate::new(
+                "src",
+                gst::PadDirection::Src,
+                gst::PadPresence::Always,
+                &src_caps,
+            )
+            .unwrap()]
+        });
+
+        PAD_TEMPLATES.as_ref()
+    }
+}
 
 impl ObjectImpl for K4aSrc {
-    glib_object_impl!();
-
-    fn constructed(&self, obj: &glib::Object) {
+    fn constructed(&self, obj: &Self::Type) {
         // Chain up parent implementation
         self.parent_constructed(obj);
 
-        // Make the source live with time-based format
-        let element = obj
-            .downcast_ref::<gst_base::BaseSrc>()
-            .expect("k4asrc: Cannot cast to BaseSrc");
-
         // Set format to time
-        element.set_format(gst::Format::Time);
+        obj.set_format(gst::Format::Time);
 
-        // The element is live by default, but can be changed to false once `recording-location`
+        // The obj is live by default, but can be changed to false once `recording-location`
         // is defined and `real-time-playback=false`
-        element.set_live(true);
+        obj.set_live(true);
     }
 
-    fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
+    fn properties() -> &'static [glib::ParamSpec] {
+        static PROPERTIES: Lazy<[glib::ParamSpec; 16]> = Lazy::new(|| {
+            [
+                glib::ParamSpec::new_string(
+                    "serial",
+                    "Serial Number",
+                    "Serial number of a K4A device. If unchanged or empty, `recording-location`
+                     is used to locate a file to play from. If both `serial` and
+                     `recording-location` are unchanged or empty, first detected device will be
+                     used for streaming.",
+                    None,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_string(
+                    "recording-location",
+                    "Recording File Location",
+                    "Location of a recording file to play from. If unchanged or empty, physical
+                     device specified by `serial` is used. If both `serial` and
+                     `recording-location` are unchanged or empty, first detected device will be
+                     used.",
+                    None,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "enable-depth",
+                    "Enable Depth",
+                    "Enables depth stream.",
+                    DEFAULT_ENABLE_DEPTH,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "enable-ir",
+                    "Enable IR",
+                    "Enables IR stream. If enabled and `enable-depth` is set to false, the IR
+                     resolution is set to 1024x1024 px, otherwise the resolution is determined
+                     by `depth-mode` property.",
+                    DEFAULT_ENABLE_IR,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "enable-color",
+                    "Enable Color",
+                    "Enables color stream.",
+                    DEFAULT_ENABLE_COLOR,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "enable-imu",
+                    "Enable IMU",
+                    "Enables IMU stream.",
+                    DEFAULT_ENABLE_IMU,
+                    glib::ParamFlags::READWRITE,
+                ),
+                // Note: It is possible to convert the color format also when streaming from Playback
+                // by the use of `k4a_playback_set_color_conversion()` (not tested). However, the decision
+                // is to use GStreamer conversion for such purposes instead.
+                glib::ParamSpec::new_enum(
+                    "color-format",
+                    "Color Format",
+                    "Format of the color stream, applicable only when streaming from device",
+                    K4aColorFormat::static_type(),
+                    DEFAULT_COLOR_FORMAT as i32,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_enum(
+                    "color-resolution",
+                    "Color Resolution",
+                    "Resolution of the color stream, applicable only when streaming from device",
+                    K4aColorResolution::static_type(),
+                    DEFAULT_COLOR_RESOLUTION as i32,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_enum(
+                    "depth-mode",
+                    "Depth Mode",
+                    "Depth capture mode configuration, applicable only when streaming from
+                     device",
+                    K4aDepthMode::static_type(),
+                    DEFAULT_DEPTH_MODE as i32,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_enum(
+                    "framerate",
+                    "Framerate",
+                    "Common framerate of the selected video streams, applicable only when
+                     streaming from device.",
+                    K4aFramerate::static_type(),
+                    DEFAULT_FRAMERATE as i32,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_int(
+                    "get-capture-timeout",
+                    "Get Capture Timeout",
+                    "Timeout used while waiting for capture from a K4A device in milliseconds.
+                     Applicable only when streaming from device",
+                    1,
+                    std::i32::MAX,
+                    DEFAULT_GET_CAPTURE_TIMEOUT,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "loop-recording",
+                    "Loop recording",
+                    "Enables looping of playing from recording recording specified by
+                     `recording-location` property. This property applies only when streaming
+                     from Playback. This property cannot be enabled if
+                     `timestamp-mode=camera_common` or `timestamp-mode=camera_individual`.",
+                    DEFAULT_LOOP_RECORDING,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "real-time-playback",
+                    "Real Time Playback",
+                    "Determines whether to stream from a recording at the same rate as it was
+                     recorded, i.e. pseudo-live source. If set to false, streaming rate will be
+                     determined based on the recording rate (and hence the negotiated framerate).
+                     If set to false and downstream sink element(s) are set to `async=true`, the
+                     streaming rate will be as fast as possible. This property is applicable
+                     only when streaming from Playback.",
+                    DEFAULT_REAL_TIME_PLAYBACK,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "rectify-depth",
+                    "Rectify Depth",
+                    "Enables rectification of the depth frames. This produces a depth image where
+                     each pixel matches the corresponding pixel coordinate of the color frame,
+                     which also means that the resulting depth stream will have resolution equal
+                     to the color stream. Note that color stream must be enabled when streaming
+                     from a physical device, or recorded as a part of recording that is played
+                     back.",
+                    DEFAULT_RECTIFY_DEPTH,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_boolean(
+                    "attach-camera-meta",
+                    "Attach Camera Meta",
+                    "If enabled, `video/rgbd` will also contain the meta associated with K4A
+                     camera, such as intrinsics and extrinsics.",
+                    DEFAULT_ATTACH_CAMERA_META,
+                    glib::ParamFlags::READWRITE,
+                ),
+                TimestampMode::get_property_type(),
+            ]
+        });
+
+        PROPERTIES.as_ref()
+    }
+
+    fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
         let settings = &self
             .settings
             .read()
-            .expect("k4asrc: Cannot read settings in `get_property()`");
+            .expect("k4asrc: Cannot read settings in .property()`");
 
-        let prop = &PROPERTIES[id];
-        match *prop {
-            subclass::Property("serial", ..) => Ok(settings.device_settings.serial.to_value()),
-            subclass::Property("recording-location", ..) => {
-                Ok(settings.playback_settings.recording_location.to_value())
-            }
-            subclass::Property("enable-depth", ..) => Ok(settings.desired_streams.depth.to_value()),
-            subclass::Property("enable-ir", ..) => Ok(settings.desired_streams.ir.to_value()),
-            subclass::Property("enable-color", ..) => Ok(settings.desired_streams.color.to_value()),
-            subclass::Property("enable-imu", ..) => Ok(settings.desired_streams.imu.to_value()),
-            subclass::Property("color-format", ..) => {
-                Ok(settings.device_settings.color_format.to_value())
-            }
-            subclass::Property("color-resolution", ..) => {
-                Ok(settings.device_settings.color_resolution.to_value())
-            }
-            subclass::Property("depth-mode", ..) => {
-                Ok(settings.device_settings.depth_mode.to_value())
-            }
-            subclass::Property("framerate", ..) => {
-                Ok(settings.device_settings.framerate.to_value())
-            }
-            subclass::Property("get-capture-timeout", ..) => {
-                Ok(settings.device_settings.get_capture_timeout.to_value())
-            }
-            subclass::Property("loop-recording", ..) => {
-                Ok(settings.playback_settings.loop_recording.to_value())
-            }
-            subclass::Property("real-time-playback", ..) => {
-                Ok(settings.playback_settings.loop_recording.to_value())
-            }
-            subclass::Property("rectify-depth", ..) => Ok(settings.rectify_depth.to_value()),
-            subclass::Property("attach-camera-meta", ..) => {
-                Ok(settings.attach_camera_meta.to_value())
-            }
-            subclass::Property("timestamp-mode", ..) => Ok(self
+        match pspec.name() {
+            "serial" => settings.device_settings.serial.to_value(),
+            "recording-location" => settings.playback_settings.recording_location.to_value(),
+            "enable-depth" => settings.desired_streams.depth.to_value(),
+            "enable-ir" => settings.desired_streams.ir.to_value(),
+            "enable-color" => settings.desired_streams.color.to_value(),
+            "enable-imu" => settings.desired_streams.imu.to_value(),
+            "color-format" => settings.device_settings.color_format.to_value(),
+            "color-resolution" => settings.device_settings.color_resolution.to_value(),
+            "depth-mode" => settings.device_settings.depth_mode.to_value(),
+            "framerate" => settings.device_settings.framerate.to_value(),
+            "get-capture-timeout" => settings.device_settings.get_capture_timeout.to_value(),
+            "loop-recording" => settings.playback_settings.loop_recording.to_value(),
+            "real-time-playback" => settings.playback_settings.loop_recording.to_value(),
+            "rectify-depth" => settings.rectify_depth.to_value(),
+            "attach-camera-meta" => settings.attach_camera_meta.to_value(),
+            "timestamp-mode" => self
                 .get_timestamp_internals()
                 .lock()
                 .unwrap()
                 .timestamp_mode
-                .to_value()),
+                .to_value(),
             _ => unimplemented!("k4asrc: Property is not implemented"),
         }
     }
 
-    fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
-        let element = obj
-            .downcast_ref::<gst_base::BaseSrc>()
-            .expect("k4asrc: Could not cast k4asrc to BaseSrc");
+    fn set_property(
+        &self,
+        obj: &Self::Type,
+        _id: usize,
+        value: &glib::Value,
+        pspec: &glib::ParamSpec,
+    ) {
         let settings = &mut self
             .settings
             .write()
             .expect("k4asrc: Cannot lock settings in `set_property()`");
 
-        let property = &PROPERTIES[id];
-        match *property {
-            subclass::Property("serial", ..) => {
-                let serial = value
-                    .get()
-                    .unwrap_or_else(|err| {
-                        panic!(
-                            "k4asrc: Failed to set property `serial` due to incorrect type: {:?}",
-                            err
-                        )
-                    })
-                    .unwrap_or_default();
+        match pspec.name() {
+            "serial" => {
+                let serial: String = value.get().unwrap_or_else(|err| {
+                    panic!(
+                        "k4asrc: Failed to set property `serial` due to incorrect type: {:?}",
+                        err
+                    )
+                });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `serial` from {:?} to {:?}",
                     settings.device_settings.serial,
                     serial
                 );
                 settings.device_settings.serial = serial;
                 // Streaming from Device makes this source always live
-                obj.downcast_ref::<gst_base::BaseSrc>()
-                    .unwrap()
-                    .set_live(true);
+                obj.set_live(true);
             }
-            subclass::Property("recording-location", ..) => {
+            "recording-location" => {
                 let mut recording_location = value
                     .get()
                     .unwrap_or_else(|err| {
                         panic!("k4asrc: Failed to set property `recording-location` due to incorrect type: {:?}", err)
                     })
-                    .unwrap_or_default();
+                    ;
                 expand_tilde_as_home_dir(&mut recording_location);
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `recording-location` from {:?} to {:?}",
                     settings.playback_settings.recording_location,
                     recording_location
                 );
                 settings.playback_settings.recording_location = recording_location;
-                // Liveliness of the element, when streaming from Playback, depends also on `real-time-playback` property
+                // Liveliness of the obj, when streaming from Playback, depends also on `real-time-playback` property
                 if !settings.playback_settings.recording_location.is_empty() {
-                    obj.downcast_ref::<gst_base::BaseSrc>()
-                        .unwrap()
-                        .set_live(settings.playback_settings.real_time_playback);
+                    obj.set_live(settings.playback_settings.real_time_playback);
                 }
             }
-            subclass::Property("enable-depth", ..) => {
-                let enable_depth = value.get_some().unwrap_or_else(|err| {
+            "enable-depth" => {
+                let enable_depth = value.get().unwrap_or_else(|err| {
                     panic!(
                         "k4asrc: Failed to set property `enable-depth` due to incorrect type: {:?}",
                         err
@@ -1269,15 +1399,15 @@ impl ObjectImpl for K4aSrc {
                 });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `enable-depth` from {} to {}",
                     settings.desired_streams.depth,
                     enable_depth
                 );
                 settings.desired_streams.depth = enable_depth;
             }
-            subclass::Property("enable-ir", ..) => {
-                let enable_ir = value.get_some().unwrap_or_else(|err| {
+            "enable-ir" => {
+                let enable_ir = value.get().unwrap_or_else(|err| {
                     panic!(
                         "k4asrc: Failed to set property `enable-ir` due to incorrect type: {:?}",
                         err
@@ -1285,15 +1415,15 @@ impl ObjectImpl for K4aSrc {
                 });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `enable-ir` from {} to {}",
                     settings.desired_streams.ir,
                     enable_ir
                 );
                 settings.desired_streams.ir = enable_ir;
             }
-            subclass::Property("enable-color", ..) => {
-                let enable_color = value.get_some().unwrap_or_else(|err| {
+            "enable-color" => {
+                let enable_color = value.get().unwrap_or_else(|err| {
                     panic!(
                         "k4asrc: Failed to set property `enable-color` due to incorrect type: {:?}",
                         err
@@ -1301,15 +1431,15 @@ impl ObjectImpl for K4aSrc {
                 });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `enable-color` from {} to {}",
                     settings.desired_streams.color,
                     enable_color
                 );
                 settings.desired_streams.color = enable_color;
             }
-            subclass::Property("enable-imu", ..) => {
-                let enable_imu = value.get_some().unwrap_or_else(|err| {
+            "enable-imu" => {
+                let enable_imu = value.get().unwrap_or_else(|err| {
                     panic!(
                         "k4asrc: Failed to set property `enable-imu` due to incorrect type: {:?}",
                         err
@@ -1317,15 +1447,15 @@ impl ObjectImpl for K4aSrc {
                 });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `enable-imu` from {} to {}",
                     settings.desired_streams.imu,
                     enable_imu
                 );
                 settings.desired_streams.imu = enable_imu;
             }
-            subclass::Property("color-format", ..) => {
-                let color_format = value.get_some().unwrap_or_else(|err| {
+            "color-format" => {
+                let color_format = value.get().unwrap_or_else(|err| {
                     panic!(
                         "k4asrc: Failed to set property `color-format` due to incorrect type: {:?}",
                         err
@@ -1333,26 +1463,26 @@ impl ObjectImpl for K4aSrc {
                 });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `color-format` from {:?} to {:?}",
                     settings.device_settings.color_format,
                     color_format
                 );
                 settings.device_settings.color_format = color_format;
             }
-            subclass::Property("color-resolution", ..) => {
-                let color_resolution = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `color-resolution` due to incorrect type: {:?}", err));
+            "color-resolution" => {
+                let color_resolution = value.get().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `color-resolution` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `color-resolution` from {:?} to {:?}",
                     settings.device_settings.color_resolution,
                     color_resolution
                 );
                 settings.device_settings.color_resolution = color_resolution;
             }
-            subclass::Property("depth-mode", ..) => {
-                let depth_mode = value.get_some().unwrap_or_else(|err| {
+            "depth-mode" => {
+                let depth_mode = value.get().unwrap_or_else(|err| {
                     panic!(
                         "k4asrc: Failed to set property `depth-mode` due to incorrect type: {:?}",
                         err
@@ -1360,15 +1490,15 @@ impl ObjectImpl for K4aSrc {
                 });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `depth-mode` from {:?} to {:?}",
                     settings.device_settings.depth_mode,
                     depth_mode
                 );
                 settings.device_settings.depth_mode = depth_mode;
             }
-            subclass::Property("framerate", ..) => {
-                let framerate = value.get_some().unwrap_or_else(|err| {
+            "framerate" => {
+                let framerate = value.get().unwrap_or_else(|err| {
                     panic!(
                         "k4asrc: Failed to set property `framerate` due to incorrect type: {:?}",
                         err
@@ -1376,84 +1506,82 @@ impl ObjectImpl for K4aSrc {
                 });
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `framerate` from {:?} to {:?}",
                     settings.device_settings.framerate,
                     framerate
                 );
                 settings.device_settings.framerate = framerate;
             }
-            subclass::Property("get-capture-timeout", ..) => {
-                let get_capture_timeout = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `get-capture-timeout` due to incorrect type: {:?}", err));
+            "get-capture-timeout" => {
+                let get_capture_timeout = value.get().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `get-capture-timeout` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `get-capture-timeout` from {} to {}",
                     settings.device_settings.get_capture_timeout,
                     get_capture_timeout
                 );
                 settings.device_settings.get_capture_timeout = get_capture_timeout;
             }
-            subclass::Property("loop-recording", ..) => {
-                let loop_recording = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `loop-recording` due to incorrect type: {:?}", err));
+            "loop-recording" => {
+                let loop_recording = value.get().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `loop-recording` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `loop-recording` from {} to {}",
                     settings.playback_settings.loop_recording,
                     loop_recording
                 );
                 settings.playback_settings.loop_recording = loop_recording;
             }
-            subclass::Property("real-time-playback", ..) => {
-                let real_time_playback = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `real-time-playback` due to incorrect type: {:?}", err));
+            "real-time-playback" => {
+                let real_time_playback = value.get().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `real-time-playback` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `real-time-playback` from {} to {}",
                     settings.playback_settings.real_time_playback,
                     real_time_playback
                 );
                 settings.playback_settings.real_time_playback = real_time_playback;
-                // Make sure that streaming from playback is enabled before changing the liveliness of the element
+                // Make sure that streaming from playback is enabled before changing the liveliness of the obj
                 if !settings.playback_settings.recording_location.is_empty() {
-                    obj.downcast_ref::<gst_base::BaseSrc>()
-                        .unwrap()
-                        .set_live(settings.playback_settings.real_time_playback);
+                    obj.set_live(settings.playback_settings.real_time_playback);
                 }
             }
-            subclass::Property("rectify-depth", ..) => {
-                let rectify_depth = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `rectify-depth` due to incorrect type: {:?}", err));
+            "rectify-depth" => {
+                let rectify_depth = value.get().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `rectify-depth` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `rectify-depth` from {} to {}",
                     settings.desired_streams.depth,
                     rectify_depth
                 );
                 settings.rectify_depth = rectify_depth;
             }
-            subclass::Property("attach-camera-meta", ..) => {
-                let attach_camera_meta = value.get_some().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `attach-camera-meta` due to incorrect type: {:?}", err));
+            "attach-camera-meta" => {
+                let attach_camera_meta = value.get().unwrap_or_else(|err| panic!("k4asrc: Failed to set property `attach-camera-meta` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `attach-camera-meta` from {} to {}",
                     settings.attach_camera_meta,
                     attach_camera_meta
                 );
                 settings.attach_camera_meta = attach_camera_meta;
             }
-            subclass::Property("timestamp-mode", ..) => {
-                let timestamp_mode = value.get_some()
+            "timestamp-mode" => {
+                let timestamp_mode = value.get()
                     .unwrap_or_else(|err| panic!("k4asrc: Failed to set property `timestamp-mode` due to incorrect type: {:?}", err));
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `timestamp-mode`  to {:?}",
                     timestamp_mode
                 );
-                self.set_timestamp_mode(element, timestamp_mode);
+                self.set_timestamp_mode(obj.upcast_ref(), timestamp_mode);
             }
             _ => unimplemented!("k4asrc: Property is not implemented"),
         };
@@ -1471,5 +1599,5 @@ fn expand_tilde_as_home_dir(path: &mut String) {
 }
 
 pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    gst::Element::register(Some(plugin), "k4asrc", gst::Rank::None, K4aSrc::get_type())
+    gst::Element::register(Some(plugin), "k4asrc", gst::Rank::None, K4aSrc::type_())
 }

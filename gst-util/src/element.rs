@@ -18,6 +18,7 @@ use crate::orelse;
 use glib::translate::*;
 use glib::value::*;
 use glib::*;
+use gst::prelude::*;
 use gst::*;
 use gst_sdp::*;
 
@@ -41,14 +42,14 @@ where
     T: IsA<gst::Element>,
 {
     fn ghost_static_pad(&self, pad_name: &str) -> Result<GhostPad, ErrorMessage> {
-        let pad = self.get_static_pad(pad_name).ok_or_else(|| {
-            gst_error_msg!(CoreError::Pad, ["Element did not have pad '{}'", pad_name])
+        let pad = self.static_pad(pad_name).ok_or_else(|| {
+            gst::error_msg!(CoreError::Pad, ["Element did not have pad '{}'", pad_name])
         })?;
 
-        let direction = pad.get_direction();
+        let direction = pad.direction();
         gst::GhostPad::builder(Some(pad_name), direction)
             .build_with_target(&pad)
-            .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))
+            .map_err(|e| gst::error_msg!(CoreError::Pad, ["{}", e]))
     }
 
     fn link_iter<Elems, ElemRef>(elements: Elems) -> Result<(), ErrorMessage>
@@ -61,7 +62,7 @@ where
         for elem in iter {
             prev.as_ref()
                 .link(elem.as_ref())
-                .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
+                .map_err(|e| gst::error_msg!(CoreError::Pad, ["{}", e]))?;
             prev = elem;
         }
         Ok(())
@@ -79,19 +80,20 @@ pub trait ElementSignalExtension {
 
 impl<T> ElementSignalExtension for T
 where
-    T: IsA<gst::Element> + for<'a> FromValueOptional<'a>,
+    T: IsA<gst::Element>,
+    Option<T>: for<'a> FromValue<'a>,
 {
     fn connect_update_sdp<F>(&self, f: F) -> Result<SignalHandlerId, BoolError>
     where
         F: Fn(&Self, &mut SDPMessageRef) + Send + Sync + 'static,
     {
         self.connect("update-sdp", false, move |values| {
-            let element = values[0].get::<T>().unwrap().unwrap();
+            let element = values[0].get::<Option<T>>().unwrap().unwrap();
 
             // Obtain a mutable reference to the SDPMessage.
             // See https://github.com/aivero-support/centricular-consulting/issues/9#issuecomment-755298751
             let sdp_msg = unsafe {
-                let ptr = gobject_sys::g_value_get_boxed(values[1].to_glib_none().0);
+                let ptr = gobject_ffi::g_value_get_boxed(values[1].to_glib_none().0);
                 assert!(!ptr.is_null());
                 &mut *(ptr as *mut SDPMessageRef)
             };

@@ -69,7 +69,7 @@ impl TagsMeta {
 unsafe impl MetaAPI for TagsMeta {
     type GstType = TagsMeta;
 
-    fn get_meta_api() -> glib::Type {
+    fn meta_api() -> glib::Type {
         unsafe { from_glib(sys::tags_meta_api_get_type()) }
     }
 }

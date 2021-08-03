@@ -7,7 +7,7 @@ license = "Apache 2.0"
 edition = "2018"
 
 [dependencies]
-glib = "0.10.3"
+glib = "0.14.2"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]

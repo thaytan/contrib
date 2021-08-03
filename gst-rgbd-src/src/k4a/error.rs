@@ -53,7 +53,7 @@ impl From<K4aError> for K4aSrcError {
 /// virtual methods for the ? operator.
 impl From<K4aSrcError> for gst::ErrorMessage {
     fn from(error: K4aSrcError) -> gst::ErrorMessage {
-        gst_error_msg!(gst::ResourceError::Failed, ["{}", error])
+        gst::error_msg!(gst::ResourceError::Failed, ["{}", error])
     }
 }
 

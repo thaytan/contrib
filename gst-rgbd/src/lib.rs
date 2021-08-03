@@ -14,7 +14,6 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-#[macro_use]
 extern crate glib;
 #[macro_use]
 extern crate gstreamer as gst;
@@ -33,7 +32,7 @@ fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
     Ok(())
 }
 
-gst_plugin_define!(
+plugin_define!(
     rgbd,
     env!("CARGO_PKG_DESCRIPTION"),
     plugin_init,

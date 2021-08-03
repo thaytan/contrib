@@ -70,7 +70,7 @@ impl From<serde_yaml::Error> for GstFrameAlignerError {
 }
 impl From<GstFrameAlignerError> for gst::LoggableError {
     fn from(e: GstFrameAlignerError) -> Self {
-        gst_loggable_error!(e.1.unwrap_or(*CAT), "Frame Aligner error: {:?}", e)
+        gst::loggable_error!(e.1.unwrap_or(*CAT), "Frame Aligner error: {:?}", e)
     }
 }
 

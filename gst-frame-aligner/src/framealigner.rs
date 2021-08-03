@@ -17,12 +17,13 @@
  */
 
 use crate::common::*;
-use glib::subclass;
+
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
 use gstreamer_depth_meta::rgbd;
 use na::*;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -41,30 +42,6 @@ lazy_static! {
 /// e.g. if a camera is using mm units, this should be 1000. If it is using half-mm
 /// units this should be 2000.
 const DEFAULT_DEPTH_FACTOR: f32 = 1000.0;
-
-/// Properties for the `framealigner` element
-static PROPERTIES: [subclass::Property; 2] = [
-    subclass::Property("depth_factor", |name| {
-        glib::ParamSpec::float(
-            name,
-            "depth_factor",
-            "The `depth_factor` to apply to the depth maps",
-            1.0,
-            30000.0,
-            DEFAULT_DEPTH_FACTOR,
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-    subclass::Property("calib_file", |name| {
-        glib::ParamSpec::string(
-            name,
-            "calib_file",
-            "Calibration file from where to read the camera parameters",
-            Some("calib.txt"),
-            glib::ParamFlags::READWRITE,
-        )
-    }),
-];
 
 /// This structure holds the `framealigner` state
 #[derive(Debug)]
@@ -90,7 +67,7 @@ struct FrameAlignerState {
 /// loosely based on https://www.codefull.org/2016/03/align-depth-and-color-frames-depth-and-rgb-registration/.
 /// # What is this?
 /// The `framealigner` aligns depth frames in a RGBD stream to the color space as indicated by the camera parameters.
-struct FrameAligner {
+pub struct FrameAligner {
     /// * `state` - Holds element's state.
     state: Mutex<FrameAlignerState>,
 }
@@ -242,7 +219,7 @@ impl ElementImpl for FrameAligner {
     /// * `transition` - Object that holds a state transition.
     fn change_state(
         &self,
-        element: &gst::Element,
+        element: &Self::Type,
         transition: gst::StateChange,
     ) -> Result<gst::StateChangeSuccess, gst::StateChangeError> {
         use gst::StateChange;
@@ -270,57 +247,57 @@ impl ElementImpl for FrameAligner {
         }
         self.parent_change_state(element, transition)
     }
+
+    fn metadata() -> Option<&'static gst::subclass::ElementMetadata> {
+        static ELEMENT_METADATA: Lazy<gst::subclass::ElementMetadata> = Lazy::new(|| {
+            gst::subclass::ElementMetadata::new(
+                "Frame Aligner",
+                "(In-place transform/RGB-D",
+                "Align depth and color streas from video/rgbd stream",
+                "Joao Alves <joao.alves@aivero.com>",
+            )
+        });
+
+        Some(&*ELEMENT_METADATA)
+    }
+
+    fn pad_templates() -> &'static [gst::PadTemplate] {
+        static PAD_TEMPLATES: Lazy<[gst::PadTemplate; 2]> = Lazy::new(|| {
+            let src_caps = gst::Caps::new_simple("video/rgbd", &[]);
+            let sink_caps = gst::Caps::new_simple("video/rgbd", &[]);
+            [
+                gst::PadTemplate::new(
+                    "sink",
+                    gst::PadDirection::Sink,
+                    gst::PadPresence::Always,
+                    &sink_caps,
+                )
+                .unwrap(),
+                gst::PadTemplate::new(
+                    "src",
+                    gst::PadDirection::Src,
+                    gst::PadPresence::Always,
+                    &src_caps,
+                )
+                .unwrap(),
+            ]
+        });
+
+        PAD_TEMPLATES.as_ref()
+    }
 }
 
+glib::wrapper! {
+    pub struct FrameAlignerObject(ObjectSubclass<FrameAligner>)
+        @extends gst_base::BaseTransform, gst::Element, gst::Object;
+}
+
+#[glib::object_subclass]
 impl ObjectSubclass for FrameAligner {
     const NAME: &'static str = "framealigner";
+    type Type = FrameAlignerObject;
     type ParentType = gst_base::BaseTransform;
-    type Instance = gst::subclass::ElementInstanceStruct<Self>;
-    type Class = subclass::simple::ClassStruct<Self>;
-    glib_object_subclass!();
-    // Class init for FrameAligner
-    fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
-        gst_debug!(CAT, "class_init");
-        klass.set_metadata(
-            "Frame Aligner",
-            "(In-place transform/RGB-D",
-            "Align depth and color streas from video/rgbd stream",
-            "Joao Alves <joao.alves@aivero.com>",
-        );
-        klass.install_properties(&PROPERTIES);
 
-        // Create src pad template with `video/rgbd` caps
-        let src_caps = gst::Caps::new_simple("video/rgbd", &[]);
-        // Create sink pad template with `video/rgbd` caps
-        let sink_caps = gst::Caps::new_simple("video/rgbd", &[]);
-
-        // Add sink pad template
-        klass.add_pad_template(
-            gst::PadTemplate::new(
-                "sink",
-                gst::PadDirection::Sink,
-                gst::PadPresence::Always,
-                &sink_caps,
-            )
-            .expect("Could not add sink pad template in framealigner"),
-        );
-        // Add src pad template
-        klass.add_pad_template(
-            gst::PadTemplate::new(
-                "src",
-                gst::PadDirection::Src,
-                gst::PadPresence::Always,
-                &src_caps,
-            )
-            .expect("Could not add src pad template in framealigner"),
-        );
-
-        klass.configure(
-            gst_base::subclass::BaseTransformMode::AlwaysInPlace,
-            false,
-            false,
-        );
-    }
     //Initialize state
     fn new() -> Self {
         Self {
@@ -339,46 +316,70 @@ impl ObjectSubclass for FrameAligner {
 }
 
 impl ObjectImpl for FrameAligner {
-    glib_object_impl!();
+    fn properties() -> &'static [glib::ParamSpec] {
+        static PROPERTIES: Lazy<[glib::ParamSpec; 2]> = Lazy::new(|| {
+            [
+                glib::ParamSpec::new_float(
+                    "depth-factor",
+                    "depth-factor",
+                    "The `depth_factor` to apply to the depth maps",
+                    1.0,
+                    30000.0,
+                    DEFAULT_DEPTH_FACTOR,
+                    glib::ParamFlags::READWRITE,
+                ),
+                glib::ParamSpec::new_string(
+                    "calib-file",
+                    "calib-file",
+                    "Calibration file from where to read the camera parameters",
+                    Some("calib.txt"),
+                    glib::ParamFlags::READWRITE,
+                ),
+            ]
+        });
+
+        PROPERTIES.as_ref()
+    }
+
     /// Set properties of given object
     /// # Arguments
     /// * `obj` - Object on which to set the properties.
     /// * `id` - Object properties index in PROPERTIES struct
     /// * `value` - Properties for the given object.
-    fn set_property(&self, obj: &glib::Object, id: usize, value: &glib::Value) {
+    fn set_property(
+        &self,
+        obj: &Self::Type,
+        _id: usize,
+        value: &glib::Value,
+        pspec: &glib::ParamSpec,
+    ) {
         let mut state = self
             .state
             .lock()
             .expect("Failed to lock state in FrameAligner");
 
-        let element = obj
-            .downcast_ref::<gst_base::BaseTransform>()
-            .expect("Failed to cast framealigner `obj` to `gst_base::BaseTransform`.");
-
-        let property = &PROPERTIES[id];
-        match *property {
-            subclass::Property("depth_factor", ..) => {
+        match pspec.name() {
+            "depth-factor" => {
                 let depth_factor = value
-                    .get_some()
+                    .get()
                     .expect("Failed to set property `depth_factor` on framealigner.");
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `depth_factor` to {}",
                     depth_factor
                 );
                 state.depth_factor = depth_factor;
             }
-            subclass::Property("calib_file", ..) => {
+            "calib-file" => {
                 let calib_file = value
-                .get()
+                .get::<String>()
                 .unwrap_or_else(|err| {
                     panic!("framealigner: Failed to set property `calib_file` due to incorrect type: {:?}", err)
-                })
-                .unwrap_or_else(|| "calib.txt".to_string());
+                })                ;
                 gst_info!(
                     CAT,
-                    obj: element,
+                    obj: obj,
                     "Changing property `calib_file` to {}",
                     calib_file
                 );
@@ -394,34 +395,37 @@ impl ObjectImpl for FrameAligner {
     /// * `id` - Object properties index in PROPERTIES struct
     /// # Returns
     /// *`Value` - Properties of given object.
-    fn get_property(&self, _obj: &glib::Object, id: usize) -> Result<glib::Value, ()> {
+    fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
         let state = &self.state.lock().unwrap();
-
-        let prop = &PROPERTIES[id];
-        match *prop {
-            subclass::Property("depth_factor", ..) => Ok(state.depth_factor.to_value()),
-            subclass::Property("calib_file", ..) => Ok(state.calib_file.to_value()),
-            _ => Err(()),
+        match pspec.name() {
+            "depth-factor" => state.depth_factor.to_value(),
+            "calib-file" => state.calib_file.to_value(),
+            _ => unimplemented!("Property is not implemented"),
         }
     }
 }
 
 impl BaseTransformImpl for FrameAligner {
+    const MODE: gst_base::subclass::BaseTransformMode =
+        gst_base::subclass::BaseTransformMode::AlwaysInPlace;
+    const PASSTHROUGH_ON_SAME_CAPS: bool = false;
+    const TRANSFORM_IP_ON_PASSTHROUGH: bool = false;
+
     fn set_caps(
         &self,
-        _element: &gst_base::BaseTransform,
+        _element: &Self::Type,
         sink_caps: &gst::Caps,
         _src_caps: &gst::Caps,
     ) -> Result<(), gst::LoggableError> {
         gst_debug!(CAT, "set_caps - sink_caps: {:?}", sink_caps);
         // Get sink and src caps
-        let sink_caps = sink_caps
-            .get_structure(0)
-            .expect("No CAPS yet on framealigner");
+        let sink_caps = sink_caps.structure(0).expect("No CAPS yet on framealigner");
 
         // Create video info from sink caps
-        let depth_video_info = rgbd::get_video_info(sink_caps, "depth")?;
-        let color_video_info = rgbd::get_video_info(sink_caps, "depth")?;
+        let depth_video_info = rgbd::get_video_info(sink_caps, "depth")
+            .map_err(|e| gst::loggable_error!(CAT, "{}", e))?;
+        let color_video_info = rgbd::get_video_info(sink_caps, "depth")
+            .map_err(|e| gst::loggable_error!(CAT, "{}", e))?;
         // Lock the state
         let state = &mut *self
             .state
@@ -444,7 +448,7 @@ impl BaseTransformImpl for FrameAligner {
 
     fn transform_size(
         &self,
-        element: &gst_base::BaseTransform,
+        element: &Self::Type,
         direction: gst::PadDirection,
         _caps: &gst::Caps,
         _size: usize,
@@ -464,7 +468,7 @@ impl BaseTransformImpl for FrameAligner {
                 _ => Some(vi.src_blocksize),
             },
             None => {
-                gst_element_error!(
+                gst::element_error!(
                     element,
                     gst::CoreError::Negotiation,
                     ["Have no video_info yet"]
@@ -476,7 +480,7 @@ impl BaseTransformImpl for FrameAligner {
 
     fn transform_ip(
         &self,
-        _element: &gst_base::BaseTransform,
+        _element: &Self::Type,
         buffer_ref: &mut gst::BufferRef,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Lock the state
@@ -516,6 +520,6 @@ pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
         Some(plugin),
         "framealigner",
         gst::Rank::None,
-        FrameAligner::get_type(),
+        FrameAligner::type_(),
     )
 }

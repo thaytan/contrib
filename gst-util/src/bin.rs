@@ -17,6 +17,7 @@
 use crate::element::*;
 use crate::orelse;
 use glib::*;
+use gst::prelude::*;
 use gst::*;
 
 /// Options for the `add_iter` function which extends what the function does.
@@ -137,31 +138,31 @@ where
         let mut prev = orelse!(iter.next(), return Ok(()));
 
         self.add(prev.as_ref())
-            .map_err(|e| gst_error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
+            .map_err(|e| gst::error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
         if opt.ghost {
             let pad = prev.as_ref().ghost_static_pad("sink")?;
             self.add_pad(&pad)
-                .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
+                .map_err(|e| gst::error_msg!(CoreError::Pad, ["{}", e]))?;
         }
         if opt.sync {
             prev.as_ref()
                 .sync_state_with_parent()
-                .map_err(|e| gst_error_msg!(CoreError::StateChange, ["{}", e]))?;
+                .map_err(|e| gst::error_msg!(CoreError::StateChange, ["{}", e]))?;
         }
 
         for elem in iter {
             self.add(elem.as_ref())
-                .map_err(|e| gst_error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
+                .map_err(|e| gst::error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
 
             if opt.link {
                 prev.as_ref()
                     .link(elem.as_ref())
-                    .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
+                    .map_err(|e| gst::error_msg!(CoreError::Pad, ["{}", e]))?;
             }
             if opt.sync {
                 elem.as_ref()
                     .sync_state_with_parent()
-                    .map_err(|e| gst_error_msg!(CoreError::StateChange, ["{}", e]))?;
+                    .map_err(|e| gst::error_msg!(CoreError::StateChange, ["{}", e]))?;
             }
             prev = elem;
         }
@@ -169,7 +170,7 @@ where
         if opt.ghost {
             let pad = prev.as_ref().ghost_static_pad("src")?;
             self.add_pad(&pad)
-                .map_err(|e| gst_error_msg!(CoreError::Pad, ["{}", e]))?;
+                .map_err(|e| gst::error_msg!(CoreError::Pad, ["{}", e]))?;
         }
         Ok(())
     }
@@ -182,12 +183,12 @@ where
         for elem in elements.into_iter() {
             let elem = elem.as_ref();
             self.remove(elem)
-                .map_err(|e| gst_error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
+                .map_err(|e| gst::error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
 
             if opt.null {
                 let _ = elem
                     .set_state(gst::State::Null)
-                    .map_err(|e| gst_error_msg!(CoreError::StateChange, ["{}", e]))?;
+                    .map_err(|e| gst::error_msg!(CoreError::StateChange, ["{}", e]))?;
             }
         }
         Ok(())

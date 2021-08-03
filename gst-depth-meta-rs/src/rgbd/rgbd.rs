@@ -1,7 +1,7 @@
 use crate::buffer::BufferMeta;
 use crate::tags::TagsMeta;
 use crate::RgbdError;
-use glib::value::FromValueOptional;
+use gst::CoreError;
 
 /// Fill the `main_buffer` with `buffer` and mark it appropriately with `tag`.
 ///
@@ -23,7 +23,7 @@ pub fn fill_main_buffer_and_tag(
 
     // Tag the buffer appropriately
     tag_buffer(
-        main_buffer.get_mut().ok_or(gst_error_msg!(
+        main_buffer.get_mut().ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             [
                 "Cannot get mutable reference to the buffer for {} stream",
@@ -54,7 +54,7 @@ pub fn attach_aux_buffer_and_tag(
 ) -> Result<(), gst::ErrorMessage> {
     // Tag the buffer appropriately
     tag_buffer(
-        buffer.get_mut().ok_or(gst_error_msg!(
+        buffer.get_mut().ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             [
                 "Cannot get mutable reference to the buffer for {} stream",
@@ -98,7 +98,7 @@ pub fn tag_buffer(buffer: &mut gst::BufferRef, tag: &str) -> Result<(), gst::Err
     // Create an appropriate tag
     let mut tags = gst::tags::TagList::new();
     tags.get_mut()
-        .ok_or(gst_error_msg!(
+        .ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             ["Cannot get mutable reference to {} tag", tag]
         ))?
@@ -122,25 +122,21 @@ pub fn tag_buffer(buffer: &mut gst::BufferRef, tag: &str) -> Result<(), gst::Err
 pub fn get_tag(buffer: &gst::BufferRef) -> Result<String, gst::ErrorMessage> {
     // Get TagList from GstBuffer
     let tag_list = buffer
-        .get_meta::<TagsMeta>()
-        .ok_or(gst_error_msg!(
+        .meta::<TagsMeta>()
+        .ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             ["Buffer {:?} has no tags", buffer]
         ))?
         .get_tag_list();
 
     // Get the title tag from TagList
-    let tag = tag_list.get::<gst::tags::Title>().ok_or(gst_error_msg!(
+    let tag = tag_list.get::<gst::tags::Title>().ok_or(gst::error_msg!(
         gst::ResourceError::Failed,
         ["Buffer {:?} has no title tag", buffer]
     ))?;
-    let tag = tag.get().ok_or(gst_error_msg!(
-        gst::ResourceError::Failed,
-        ["Buffer {:?} has invalid title tag", buffer]
-    ))?;
 
     // Return it as string slice
-    Ok(String::from(tag))
+    Ok(String::from(tag.get()))
 }
 
 /// Remove all tags of a `buffer`.
@@ -214,30 +210,6 @@ pub fn remove_aux_buffers_with_tags(
     Ok(())
 }
 
-/// Gets the field with the given `name` of type `T` in the given CAPS `structure`.
-/// # Arguments
-/// * `structure` - The structure to read the field from.
-/// * `name` - The name of the field to get.
-/// * `type_` - The name of `T` in string format. Solely used for error formatting.
-/// # Returns
-/// * `Ok(T)` - If the field exists and is of type `T`.
-/// * `Err(RgbdError::MissingCapsField)` - If `structure` does not have a field called `name`.
-/// * `Err(RgbdError::WrongCapsFormat)` - If the field is not of type `T`.
-pub fn get_field<'structure, T: FromValueOptional<'structure>>(
-    structure: &'structure gst::StructureRef,
-    name: &str,
-    type_: &'static str,
-) -> Result<T, RgbdError> {
-    let value = structure
-        .get::<T>(name)
-        .map_err(|_| RgbdError::WrongCapsFormat {
-            name: name.to_string(),
-            type_,
-        })?
-        .ok_or_else(|| RgbdError::MissingCapsField(name.to_string()))?;
-    Ok(value)
-}
-
 /// Converts the given `caps` and `framerate` into a `gst::VideoInfo` for the stream with the given
 /// name.
 /// # Arguments
@@ -251,20 +223,30 @@ pub fn get_field<'structure, T: FromValueOptional<'structure>>(
 pub fn get_video_info(
     caps: &gst::StructureRef,
     stream_name: &str,
-) -> Result<gstreamer_video::VideoInfo, RgbdError> {
-    let framerate = get_field::<gst::Fraction>(caps, "framerate", "Fraction")?;
-    let stream_width = get_field::<i32>(caps, &format!("{}_width", stream_name), "i32")?;
-    let stream_height = get_field::<i32>(caps, &format!("{}_height", stream_name), "i32")?;
-    let stream_format = get_field::<&str>(caps, &format!("{}_format", stream_name), "str")?;
+) -> Result<gstreamer_video::VideoInfo, gst::ErrorMessage> {
+    let framerate = caps
+        .get::<gst::Fraction>("framerate")
+        .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?;
+    let stream_width = caps
+        .get::<i32>(&format!("{}_width", stream_name))
+        .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?;
+    let stream_height = caps
+        .get::<i32>(&format!("{}_height", stream_name))
+        .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?;
+    let stream_format = caps
+        .get::<&str>(&format!("{}_format", stream_name))
+        .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?;
 
     gstreamer_video::VideoInfo::builder(
-        stream_format.parse().map_err(|_| RgbdError::NoVideoInfo)?,
+        stream_format
+            .parse()
+            .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?,
         stream_width as u32,
         stream_height as u32,
     )
     .fps(framerate)
     .build()
-    .map_err(|_| RgbdError::NoVideoInfo)
+    .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))
 }
 
 /// Aligns `buffer` to u16, such that it can be used to store depth video.

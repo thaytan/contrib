@@ -82,7 +82,7 @@ impl BufferMeta {
 unsafe impl MetaAPI for BufferMeta {
     type GstType = BufferMeta;
 
-    fn get_meta_api() -> glib::Type {
+    fn meta_api() -> glib::Type {
         unsafe { from_glib(sys::buffer_meta_api_get_type()) }
     }
 }

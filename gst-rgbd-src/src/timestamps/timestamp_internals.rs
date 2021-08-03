@@ -40,9 +40,9 @@ pub struct TimestampInternals {
 impl Default for TimestampInternals {
     fn default() -> Self {
         Self {
-            buffer_duration: gst::CLOCK_TIME_NONE,
-            frameset_common_timestamp: gst::CLOCK_TIME_NONE,
-            stream_start_offset: gst::CLOCK_TIME_NONE,
+            buffer_duration: gst::ClockTime::ZERO,
+            frameset_common_timestamp: gst::ClockTime::ZERO,
+            stream_start_offset: gst::ClockTime::ZERO,
             timestamp_mode: TimestampMode::default(),
             is_camera_ahead_of_gstreamer: bool::default(),
             sequence_number: 0,

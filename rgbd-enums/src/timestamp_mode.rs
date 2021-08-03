@@ -64,17 +64,15 @@ impl Default for TimestampMode {
 
 impl TimestampMode {
     /// Return `timestamp-mode` property definition that can be utilised by elements that use `TimestampMode` struct.
-    /// Element utilising this property also needs to implement the corresponding variants for `get_property()` and `set_property()`
-    pub fn get_property_type() -> subclass::Property<'static> {
-        subclass::Property("timestamp-mode", |name| {
-            glib::ParamSpec::enum_(
-                name,
-                "Timestamp Mode",
-                "This property determines what timestamp mode to use for the outgoing `video/rgbd` stream. If implemented, please ignore `do-timestamp` property.",
-                TimestampMode::static_type(),
-                TimestampMode::default() as i32,
-                glib::ParamFlags::READWRITE,
-            )
-        })
+    /// Element utilising this property also needs to implement the corresponding variants for .property()` and `set_property()`
+    pub fn get_property_type() -> glib::ParamSpec {
+        glib::ParamSpec::new_enum(
+            "timestamp-mode",
+            "Timestamp Mode",
+            "This property determines what timestamp mode to use for the outgoing `video/rgbd` stream. If implemented, please ignore `do-timestamp` property.",
+            TimestampMode::static_type(),
+            TimestampMode::default() as i32,
+            glib::ParamFlags::READWRITE,
+        )
     }
 }

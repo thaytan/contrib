@@ -34,7 +34,7 @@ pub fn get_property_and_debug<'a, T>(
 where
     T: std::fmt::Display + glib::value::FromValue<'a>,
 {
-    let t = value.get_some::<T>().unwrap();
+    let t = value.get::<T>().unwrap();
     gst_info!(
         cat,
         "Changing property `{}` from {} to {}",
