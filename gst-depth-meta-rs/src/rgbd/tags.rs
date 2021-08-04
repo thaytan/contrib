@@ -112,7 +112,7 @@ mod tests {
 
         // Get the tag title from GstTagList
         let gst_tag_title = &tag_list.get::<gst::tags::Title>().unwrap();
-        let title = gst_tag_title.get().unwrap();
+        let title = gst_tag_title.get();
 
         assert_eq!(input_title, title);
     }
