@@ -31,9 +31,9 @@ if [ -n "$alpine" ]; then
   fi
   source /tmp/$pkg.PKG
 else
-  wget https://git.archlinux.org/svntogit/packages.git/plain/trunk/PKGBUILD?h=packages/$pkg -qO /tmp/$pkg.PKG
+  wget https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/$pkg/trunk/PKGBUILD -qO /tmp/$pkg.PKG
   if [[ $? -ne 0 ]]; then
-    wget https://git.archlinux.org/svntogit/community.git/plain/trunk/PKGBUILD?h=packages/$pkg -qO /tmp/$pkg.PKG
+    wget https://raw.githubusercontent.com/archlinux/svntogit-community/packages/$pkg/trunk/PKGBUILD -qO /tmp/$pkg.PKG
   fi
   if [[ $? -ne 0 ]]; then
     wget https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$pkg -qO /tmp/$pkg.PKG
@@ -125,9 +125,9 @@ if [[ ${#depends[@]} -ne 0 ]]; then
   else
     for dep in "${makedepends[@]}"
     do
-      wget https://git.archlinux.org/svntogit/packages.git/plain/trunk/PKGBUILD?h=packages/$dep -qO /tmp/$dep.PKG
+      wget https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/$dep/trunk/PKGBUILD -qO /tmp/$dep.PKG
       if [[ $? -ne 0 ]]; then
-        wget https://git.archlinux.org/svntogit/community.git/plain/trunk/PKGBUILD?h=packages/$dep -qO /tmp/$dep.PKG
+        wget https://raw.githubusercontent.com/archlinux/svntogit-community/packages/$dep/trunk/PKGBUILD -qO /tmp/$dep.PKG
       fi
       depver=$(grep pkgver= /tmp/$dep.PKG | cut -b 8-)
     	echo -e "        \"$dep/[^$depver]\","
@@ -154,9 +154,9 @@ if [ -n "$alpine" ]; then
 else
   for dep in "${depends[@]}"
   do
-    wget https://git.archlinux.org/svntogit/packages.git/plain/trunk/PKGBUILD?h=packages/$dep -qO /tmp/$dep.PKG
+    wget https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/$dep/trunk/PKGBUILD -qO /tmp/$dep.PKG
     if [[ $? -ne 0 ]]; then
-      wget https://git.archlinux.org/svntogit/community.git/plain/trunk/PKGBUILD?h=packages/$dep -qO /tmp/$dep.PKG
+      wget https://raw.githubusercontent.com/archlinux/svntogit-community/packages/$dep/trunk/PKGBUILD -qO /tmp/$dep.PKG
     fi
     depver=$(grep pkgver= /tmp/$dep.PKG | cut -b 8-)
   	echo -e "        \"$dep/[^$depver]\","
