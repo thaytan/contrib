@@ -1,4 +1,4 @@
-From dd6447f61f03907fe6f2689d6499f96d8a9cc5d7 Mon Sep 17 00:00:00 2001
+From 55c33ebb0fd3a27f44ed3ee11c2f6db75e34eb4f Mon Sep 17 00:00:00 2001
 From: Komari Spaghetti <3759175+Hejsil@users.noreply.github.com>
 Date: Tue, 13 Jul 2021 11:28:24 +0000
 Subject: [PATCH] Add the ability to have any tag in matroska
@@ -6,8 +6,8 @@ Subject: [PATCH] Add the ability to have any tag in matroska
 ---
  gst/matroska/matroska-ids.h         |  2 +
  gst/matroska/matroska-mux.c         | 72 ++++++++++++++++-------------
- gst/matroska/matroska-read-common.c | 26 ++++++++++-
- 3 files changed, 65 insertions(+), 35 deletions(-)
+ gst/matroska/matroska-read-common.c | 30 +++++++++++-
+ 3 files changed, 70 insertions(+), 34 deletions(-)
 
 diff --git a/gst/matroska/matroska-ids.h b/gst/matroska/matroska-ids.h
 index 85ed45e82..b2cd6e901 100644
@@ -123,7 +123,7 @@ index 50adc5758..f4d7e8974 100644
  
  static void
 diff --git a/gst/matroska/matroska-read-common.c b/gst/matroska/matroska-read-common.c
-index 90d6e38e1..c03483f71 100644
+index 90d6e38e1..261588932 100644
 --- a/gst/matroska/matroska-read-common.c
 +++ b/gst/matroska/matroska-read-common.c
 @@ -2300,7 +2300,6 @@ gst_matroska_read_common_parse_metadata_id_simple_tag (GstMatroskaReadCommon *
@@ -134,16 +134,18 @@ index 90d6e38e1..c03483f71 100644
        const gchar *tagname_mkv = tag_conv[i].matroska_tagname;
  
        if (strcmp (tagname_mkv, tag) == 0) {
-@@ -2332,7 +2331,30 @@ gst_matroska_read_common_parse_metadata_id_simple_tag (GstMatroskaReadCommon *
+@@ -2332,6 +2331,35 @@ gst_matroska_read_common_parse_metadata_id_simple_tag (GstMatroskaReadCommon *
          matched = TRUE;
        }
      }
--    if (!matched) {
++
 +    if (!matched && strcmp (GST_MATROSKA_TAG_ID_GST_TAG, tag) == 0 ) {
 +      gchar **tokenized = g_strsplit(value, "@", 2);
 +      gchar *tagname_gst, *value_gst;
 +
-+      if ((tagname_gst = tokenized[0]) && (value_gst = tokenized[1])) {
++      if ((tagname_gst = tokenized[0]) && (value_gst = tokenized[1]) &&
++          gst_tag_exists(tagname_gst))
++      {
 +        GValue dest = { 0, };
 +        GType dest_type = gst_tag_get_type (tagname_gst);
 +        g_value_init (&dest, dest_type);
@@ -151,6 +153,7 @@ index 90d6e38e1..c03483f71 100644
 +        if (gst_value_deserialize (&dest, value_gst)) {
 +          gst_tag_list_add_values (*p_taglist, GST_TAG_MERGE_APPEND,
 +              tagname_gst, &dest, NULL);
++          matched = TRUE;
 +        } else {
 +          GST_WARNING_OBJECT (common->sinkpad, "Can't transform tag '%s' with "
 +              "value '%s' to target type '%s'", tagname_gst, value_gst,
@@ -162,10 +165,11 @@ index 90d6e38e1..c03483f71 100644
 +      }
 +
 +      g_strfreev(tokenized);
-+    } else if (!matched) {
++    }
++
+     if (!matched) {
        gchar *key_val;
        /* TODO: read LANGUAGE sub-tag, and use "key[lc]=val" form */
-       key_val = g_strdup_printf ("%s=%s", tag, value);
 -- 
 2.32.0
 

@@ -1,4 +1,4 @@
-From 2ccc6ac91ca92c6d95cfe3ebc05f2ceccc37043c Mon Sep 17 00:00:00 2001
+From 34ddcb4c529408d9d6d70038dfb7916b7b7509f1 Mon Sep 17 00:00:00 2001
 From: Jan Schmidt <jan@centricular.com>
 Date: Fri, 2 Jul 2021 01:41:05 +1000
 Subject: [PATCH] matroskamux: Always write a tags element into seekhead
