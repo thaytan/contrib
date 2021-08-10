@@ -13,9 +13,11 @@ class NodejsRecipe(Recipe):
         "openssl1/[>=1.1.1h]",
         "zlib/[^1.2.11]",
     )
+    exports = "fix-args-too-long.patch"
 
     def source(self):
         self.get(f"https://github.com/nodejs/node/archive/v{self.version}.tar.gz")
+        self.patch("fix-args-too-long.patch")
 
     def build(self):
         args = [
