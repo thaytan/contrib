@@ -4,7 +4,7 @@ from build import *
 class NpmRecipe(Recipe):
     description = "A package manager for javascript"
     license = "MIT"
-    requires = ("nodejs/[^15.1.0]",)
+    requires = ("nodejs/[^16.6.1]",)
 
     def source(self):
         self.get(f"https://github.com/npm/cli/archive/v{self.version}.tar.gz")
