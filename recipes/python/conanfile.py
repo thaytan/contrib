@@ -1,7 +1,7 @@
 from build import *
 
 
-class PythonRecipe(PythonRecipe):
+class PythonRecipe(Recipe):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
     build_requires = (
@@ -40,7 +40,8 @@ class PythonRecipe(PythonRecipe):
 
         self.autotools(args)
 
-        os.symlink(f"python{self.settings.python}", os.path.join(self.package_folder, "bin", "python"))
+        version = ".".join(self.version.split(".")[:2])
+        os.symlink(f"python{version}", os.path.join(self.package_folder, "bin", "python"))
 
     def package_info(self):
         self.env_info.PYTHON = os.path.join(self.package_folder, "bin", "python")
