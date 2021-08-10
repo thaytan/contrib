@@ -12,6 +12,7 @@ class NodejsRecipe(Recipe):
     requires = (
         "openssl1/[>=1.1.1h]",
         "zlib/[^1.2.11]",
+        "libatomic/[^8.4.0]"
     )
     exports = "fix-args-too-long.patch"
 
