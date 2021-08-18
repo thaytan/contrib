@@ -2,7 +2,11 @@
 // Copyright(c) 2019 Aivero. All Rights Reserved.
 
 use crate::error::Error;
+use crate::low_level_utils::cstring_to_string;
 use crate::stream_profile::StreamProfile;
+use rs2::rs2_camera_info;
+use rs2::rs2_option;
+use rs2::rs2_options;
 
 /// Struct representation of [`Sensor`](../sensor/struct.Sensor.html) that wraps around
 /// `rs2_sensor` handle.
@@ -61,6 +65,104 @@ impl Sensor {
             Err(error)
         } else {
             Ok(depth_scale)
+        }
+    }
+
+    pub fn get_info(&self, info: rs2_camera_info) -> Result<String, Error> {
+        let mut error = Error::default();
+        let value = unsafe { rs2::rs2_get_sensor_info(self.handle, info, error.inner()) };
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(cstring_to_string(value))
+        }
+    }
+
+    pub fn supports_option(&self, option: rs2_option) -> Result<bool, Error> {
+        let mut error = Error::default();
+        let is_supported = unsafe {
+            rs2::rs2_supports_option(self.handle.cast::<rs2_options>(), option, error.inner())
+        };
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(is_supported != 0)
+        }
+    }
+
+    pub fn is_option_read_only(&self, option: rs2_option) -> Result<bool, Error> {
+        let mut error = Error::default();
+        let is_read_only = unsafe {
+            rs2::rs2_is_option_read_only(self.handle.cast::<rs2_options>(), option, error.inner())
+        };
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(is_read_only != 0)
+        }
+    }
+
+    pub fn get_option(&self, option: rs2_option) -> Result<f32, Error> {
+        if !self.supports_option(option)? {
+            return Err(Error::new(
+                &format!(
+                    "Cannot get RealSense option \"{:#?}\" because Sensor does not support it.",
+                    option
+                ),
+                "Sensor::get_option()",
+                "option",
+                0,
+            ));
+        }
+
+        let mut error = Error::default();
+        let ret = unsafe {
+            rs2::rs2_get_option(self.handle.cast::<rs2_options>(), option, error.inner())
+        };
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(ret)
+        }
+    }
+
+    pub fn set_option(&mut self, option: rs2_option, value: f32) -> Result<(), Error> {
+        if !self.supports_option(option)? {
+            return Err(Error::new(
+                &format!(
+                    "Cannot set RealSense option \"{:#?}\" because Sensor does not support it.",
+                    option
+                ),
+                "Sensor::set_option()",
+                "option",
+                0,
+            ));
+        }
+        if self.is_option_read_only(option)? {
+            return Err(Error::new(
+                &format!(
+                    "Cannot set RealSense option \"{:#?}\" because it is read-only.",
+                    option
+                ),
+                "Sensor::set_option()",
+                "option",
+                0,
+            ));
+        }
+
+        let mut error = Error::default();
+        unsafe {
+            rs2::rs2_set_option(
+                self.handle.cast::<rs2_options>(),
+                rs2_option::RS2_OPTION_VISUAL_PRESET,
+                value as f32,
+                error.inner(),
+            );
+        }
+        if error.check() {
+            Err(error)
+        } else {
+            Ok(())
         }
     }
 

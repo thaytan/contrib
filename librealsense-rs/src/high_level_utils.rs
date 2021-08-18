@@ -5,8 +5,14 @@ use crate::context::Context;
 use crate::error::Error;
 use crate::pipeline::Pipeline;
 use crate::pipeline_profile::PipelineProfile;
+use crate::sensor::Sensor;
 use crate::stream_profile::{StreamData, StreamResolution};
 use rs2::rs2_camera_info::*;
+
+use rs2::rs2_l500_visual_preset::*;
+use rs2::rs2_option::*;
+use rs2::rs2_rs400_visual_preset::*;
+use rs2::rs2_sr300_visual_preset::*;
 
 /// Print to STDOUT what RealSense [`Device`](../device/struct.Device.html)s are connected.
 ///
@@ -97,4 +103,33 @@ pub fn get_info_all_streams(pipeline_profile: &PipelineProfile) -> Result<Vec<St
     }
 
     Ok(info_all_streams)
+}
+
+/// Sets default visual preset on all depth sensors of each camera.
+///
+/// # Arguments
+/// * pipeline_profile - The [`PipelineProfile`](../pipeline_profile/struct.PipelineProfile.html)
+/// to extract the information from.
+///
+/// # Returns
+/// * `Ok(Vec<StreamInfo>)` on success.
+/// * `Err(Error)` on failure.
+pub fn set_default_visual_preset(sensor: &mut Sensor) -> Result<(), Error> {
+    let default_preset_id = match sensor.get_info(RS2_CAMERA_INFO_PRODUCT_LINE)?.as_str() {
+        "SR300" => RS2_SR300_VISUAL_PRESET_DEFAULT as u32,
+        "D400" => RS2_RS400_VISUAL_PRESET_DEFAULT as u32,
+        "L500" => RS2_L500_VISUAL_PRESET_DEFAULT as u32,
+        product_line @ _ => {
+            return Err(Error::new(
+                &format!(
+                    "Product line \"{}\" is unknown.",
+                    product_line
+                ),
+                "Sensor::set_default_visual_preset()",
+                "",
+                0,
+            ));
+        }
+    };
+    sensor.set_option(RS2_OPTION_VISUAL_PRESET, default_preset_id as f32)
 }

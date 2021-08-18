@@ -29,7 +29,9 @@ use crate::timestamps::*;
 use camera_meta::Distortion;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
 use gstreamer::{ErrorMessage, LibraryError};
-use rs2::{frame::Frame, high_level_utils::StreamInfo, processing::ProcessingBlock};
+use rs2::{
+    device::Device, frame::Frame, high_level_utils::StreamInfo, processing::ProcessingBlock,
+};
 
 use super::d400_limits::*;
 use super::rs_meta::rs_meta_serialization::*;
@@ -67,6 +69,8 @@ struct RealsenseSrcInternals {
     state: State,
     /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`, otherwise empty.
     camera_meta_serialised: Vec<u8>,
+    /// Handle to the device. Valid only if `serial` is specified.
+    device: Option<Device>,
 }
 
 impl Default for RealsenseSrcInternals {
@@ -74,6 +78,7 @@ impl Default for RealsenseSrcInternals {
         Self {
             state: State::Stopped,
             camera_meta_serialised: Vec::default(),
+            device: None,
         }
     }
 }
@@ -436,16 +441,35 @@ impl RealsenseSrc {
     ) -> Result<(), ErrorMessage> {
         let mut settings = self.settings.write().unwrap();
 
-        // Get context and a list of connected devices
+        // Get realsense context
         let context = rs2::context::Context::new()
             .map_err(|e| gst::error_msg!(gst::StreamError::Failed, ["{}", e]))?;
-        let devices = context
-            .query_devices()
-            .map_err(|e| gst::error_msg!(gst::StreamError::Failed, ["{}", e]))?;
 
-        // Load JSON if `json-location` is defined
-        if let (Some(json_location), Some(serial)) = (&settings.json_location, &settings.serial) {
-            Self::load_json(&devices, &serial, &json_location)?;
+        if let Some(serial) = &settings.serial {
+            let devices = context
+                .query_devices()
+                .map_err(|e| gst::error_msg!(gst::StreamError::Failed, ["{}", e]))?;
+
+            // Make sure a device with the selected serial is connected
+            // Find the device with the given serial, ignoring all errors
+            let device = devices
+                .into_iter()
+                .find(
+                    |d| match d.get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER) {
+                        Ok(device_serial) => *serial == device_serial,
+                        _ => false,
+                    },
+                )
+                .ok_or_else(|| gst::error_msg!(gst::StreamError::Failed, [""]))?;
+
+            // Load JSON if `json-location` is defined
+            if let Some(json_location) = &settings.json_location {
+                Self::load_json(&device, &json_location)?;
+            }
+
+            // Store in internals, so that the device can be hardware reset after stream is over
+            let mut internals = self.internals.lock().unwrap();
+            internals.device = Some(device);
         }
 
         // Crate new RealSense pipeline
@@ -568,11 +592,9 @@ impl RealsenseSrc {
         Ok(())
     }
 
-    /// Configure the device with the given `serial` with the JSON file specified on the given
-    /// `json_location`.
+    /// Configure the device with the JSON file specified on the given `json_location`.
     /// # Arguments
-    /// * `devices` - A list of all available devices.
-    /// * `serial` - The serial number of the device to configure.
+    /// * `device` - Device to configure.
     /// * `json_location` - The absolute path to the file containing the JSON configuration.
     /// # Returns
     /// * `Ok()` on success.
@@ -580,23 +602,7 @@ impl RealsenseSrc {
     ///     * Invalid `serial` is passed
     ///     * Json file cannot be read
     ///     * Json config is invalid
-    fn load_json(
-        devices: &[rs2::device::Device],
-        serial: &str,
-        json_location: &str,
-    ) -> Result<(), ErrorMessage> {
-        // Make sure a device with the selected serial is connected
-        // Find the device with the given serial, ignoring all errors
-        let device = devices
-            .iter()
-            .find(
-                |d| match d.get_info(rs2::rs2_camera_info::RS2_CAMERA_INFO_SERIAL_NUMBER) {
-                    Ok(device_serial) => *serial == device_serial,
-                    _ => false,
-                },
-            )
-            .ok_or_else(|| gst::error_msg!(gst::StreamError::Failed, [""]))?;
-
+    fn load_json(device: &rs2::device::Device, json_location: &str) -> Result<(), ErrorMessage> {
         if !device
             .is_advanced_mode_enabled()
             .map_err(|e| gst::error_msg!(gst::StreamError::Failed, ["{}", e]))?
@@ -1409,6 +1415,13 @@ impl RealsenseSrc {
             State::Stopped => {
                 unreachable!("Stop is requested even though the element has not yet started");
             }
+        }
+
+        // Hardware reset the device if it was used during streaming
+        if let Some(device) = &internals.device {
+            device
+                .hardware_reset()
+                .map_err(|e| gst::error_msg!(LibraryError::Settings, ["{}", e]))?;
         }
 
         *internals = RealsenseSrcInternals::default();

@@ -28,6 +28,10 @@ fn main() {
         .rustified_enum("rs2_format")
         .rustified_enum("rs2_stream")
         .rustified_enum("rs2_distortion")
+        .rustified_enum("rs2_option")
+        .rustified_enum("rs2_sr300_visual_preset")
+        .rustified_enum("rs2_rs400_visual_preset")
+        .rustified_enum("rs2_l500_visual_preset")
         .clang_args(path_args)
         .generate()
         .expect("Unable to generate bindings");

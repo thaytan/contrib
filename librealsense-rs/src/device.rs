@@ -34,6 +34,9 @@ impl Drop for Device {
     }
 }
 
+unsafe impl Send for Device {}
+unsafe impl Sync for Device {}
+
 impl Device {
     /// Create a static snapshot of all connected
     /// [`Sensor`](../sensor/struct.Sensor.html)s within a specific
