@@ -31,7 +31,7 @@ macro_rules! orelse {
             None => $other,
         }
     };
-    ($expr:expr, $err:ident $other:expr) => {
+    ($expr:expr, $err:ident, $other:expr) => {
         match ($expr) {
             Ok(val) => val,
             Err($err) => $other,
