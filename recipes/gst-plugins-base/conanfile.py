@@ -33,9 +33,7 @@ class GstPluginsBaseRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        self.get(
-            f"https://github.com/GStreamer/gst-plugins-base/archive/{self.version}.tar.gz"
-        )
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-plugins-base/-/archive/{self.version}/gst-plugins-base-{self.version}.tar.gz")
 
     def build(self):
         opts = {

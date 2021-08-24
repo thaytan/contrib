@@ -27,7 +27,7 @@ class GstDevtoolsRecipe(GstRecipe):
     )
 
     def source(self):
-        if "1.18" in self.settings.gstreamer:
+        if int(str(self.settings.gstreamer).split(".")[1]) >= 18:
             self.get(
                 f"https://gitlab.freedesktop.org/gstreamer/gst-devtools/-/archive/{self.version}/gst-devtools-{self.version}.tar.bz2"
             )

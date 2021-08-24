@@ -4,7 +4,7 @@ from build import *
 class GstPluginsGoodRecipe(GstRecipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
-    settings = GstRecipe.settings + ("hardware", )
+    settings = GstRecipe.settings + ("hardware",)
     exports = "*.patch"
     options = {
         "aivero_rvl_matroska": [True, False],
@@ -50,7 +50,7 @@ class GstPluginsGoodRecipe(GstRecipe):
         "meson/[>=0.57.2]",
         "git/[^2.30.0]",
     )
-    requires = ("gst-plugins-base/[^1.18]", )
+    requires = ("gst-plugins-base/[^1.18]",)
 
     def configure(self):
         if self.settings.hardware == "rpi":
@@ -70,49 +70,38 @@ class GstPluginsGoodRecipe(GstRecipe):
     def source(self):
         if "1.18" in self.settings.gstreamer:
             git = tools.Git(folder=f"{self.name}-{self.version}.src")
-            git.clone(
-                "https://gitlab.freedesktop.org/GStreamer/gst-plugins-good.git",
-                self.version)
-            if self.options.aivero_rvl_matroska:
-                git.run(
-                    '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch'
-                )
-
-            self.patch('gst-tags-in-mkv.patch')
-            self.patch('always-write-tags-to-seekhead.patch')
+            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-plugins-good.git", self.version)
 
             # Apply: vpxenc: add configure_encoder virtual method
             # Not required from 1.20 onward
             # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/c58436d97bb74d45338d237376312778b20751e8
-            git.run(
-                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../c58436d97bb74d45338d237376312778b20751e8.patch'
-            )
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../c58436d97bb74d45338d237376312778b20751e8.patch')
 
             # Apply: vp9enc: expose tile-columns and tile-rows properties
             # Not required from 1.20 onward
             # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/75259ea6c0ad70cf7ff569bf3856255fadfaed2b
-            git.run(
-                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../75259ea6c0ad70cf7ff569bf3856255fadfaed2b.patch'
-            )
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../75259ea6c0ad70cf7ff569bf3856255fadfaed2b.patch')
 
             # Apply: vpxenc: change default for deadline to good quality
             # Not required from 1.20 onward
             # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/d3b70c1aab80fbaa4967121b04a179f1d7f9222f
-            git.run(
-                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../d3b70c1aab80fbaa4967121b04a179f1d7f9222f.patch'
-            )
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../d3b70c1aab80fbaa4967121b04a179f1d7f9222f.patch')
 
             # Apply: vp9enc: expose row-mt property
             # Not required from 1.20 onward
             # https://gitlab.freedesktop.org/meh/gst-plugins-good/-/commit/db6b580a23b72813caf4bfdc87f660bb36fbad3a
-            git.run(
-                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../db6b580a23b72813caf4bfdc87f660bb36fbad3a.patch'
-            )
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../db6b580a23b72813caf4bfdc87f660bb36fbad3a.patch')
 
+        elif int(str(self.settings.gstreamer).split(".")[1]) >= 18:
+            self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/archive/{self.version}/gst-plugins-good-{self.version}.tar.gz")
         else:
-            self.get(
-                f"https://github.com/GStreamer/gst-plugins-good/archive/{self.version}.tar.gz"
-            )
+            raise (f"GStreamer version {self.settings.gstreamer} not supported")
+
+        # Add our own custom changes
+        if self.options.aivero_rvl_matroska:
+            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch')
+        self.patch("gst-tags-in-mkv.patch")
+        self.patch("always-write-tags-to-seekhead.patch")
 
     def build(self):
         opts = {

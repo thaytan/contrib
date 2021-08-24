@@ -81,12 +81,7 @@ class GstPluginsBadRecipe(GstRecipe):
 
     def source(self):
         git = tools.Git(folder="gst-plugins-bad")
-        if "1.16" in self.settings.gstreamer:
-            self.get(
-                f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz"
-            )
-
-        elif "1.18" in self.settings.gstreamer:
+        if "1.18" in self.settings.gstreamer:
             git = tools.Git(folder=self.src)
             git.clone(
                 "https://gitlab.freedesktop.org/GStreamer/gst-plugins-bad.git",
@@ -112,9 +107,9 @@ class GstPluginsBadRecipe(GstRecipe):
 
             self.patch('74e04bc8d7f95f4636ac617f26e1b205040f9915.patch')
 
-        elif "1.20" in self.settings.gstreamer:
+        elif int(str(self.settings.gstreamer).split(".")[1]) >= 18:
             self.get(
-                f"https://github.com/GStreamer/gst-plugins-bad/archive/{self.version}.tar.gz"
+                f"https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/archive/{self.version}/gst-plugins-bad-{self.version}.tar.gz"
             )
 
     def build(self):

@@ -44,7 +44,8 @@ class GstEditingServicesRecipe(GstRecipe):
 
     def source(self):
         git = tools.Git(folder="gst-editing-services")
-        if "1.18" in self.settings.gstreamer:
+        if int(str(self.settings.gstreamer).split(".")[1]) == 18:
+            print(f"settings.GStreamer: {self.settings.gstreamer}")
             git = tools.Git(folder=self.src)
             git.clone("https://gitlab.freedesktop.org/gstreamer/gst-editing-services.git", "master")
 
@@ -53,7 +54,7 @@ class GstEditingServicesRecipe(GstRecipe):
             git.run("checkout 0ec4893c8e06e80a5cc3b8f71e781de71e527163")
 
             # # Build it for 1.18 by undoing some 1.19 specifics:
-            # 16ef2917e24af5248dd16e96c4513d1766a1fa17 - 01 Jun, 2021 - 
+            # 16ef2917e24af5248dd16e96c4513d1766a1fa17 - 01 Jun, 2021 -
             # 986d0737e4d81ffe00244092b11ce0d4a744b186 - 31 May, 2021 -
             # ec5b267249af8bbe33de1af51863b0285a9831f3 - 05 May, 2021 - undoes using gst_element_request_pad_simple
             # 7499d412135bdadeaf1cadadf180e6cc9a46e442 - Jan 15, 2021 - undoes using gst_structure_serialize,  ges: Add keyframe support to the command line formatter
@@ -74,8 +75,10 @@ class GstEditingServicesRecipe(GstRecipe):
 
             self.patch("ges_launch_custom_config.patch")
 
-        elif "1.20" in self.settings.gstreamer:
+        elif int(str(self.settings.gstreamer).split(".")[1]) >= 18:
             self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-editing-services/-/archive/{self.version}/gst-editing-services-{self.version}.tar.gz")
+        else:
+            raise (f"GStreamer version {self.settings.gstreamer} not supported")
 
     def build(self):
         opts = {
