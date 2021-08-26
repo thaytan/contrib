@@ -84,7 +84,6 @@ deps = [
   ['gstreamer-net-1.0', 'gstreamer', 'gst_net_dep', 'gst_net'],
   ['gstreamer-rtp-1.0', 'gst-plugins-base', 'rtp_dep', 'gst_rtp'],
   ['gstreamer-video-1.0', 'gst-plugins-base', 'video_dep', 'gstvideo'],
-  ['gst-depth-meta', 'gst-depth-meta', 'gst_depth_meta_dep', 'depth-meta'],
 ]
 
 foreach d: deps
