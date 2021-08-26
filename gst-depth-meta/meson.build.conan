@@ -1,0 +1,2 @@
+project('gst-depth-meta', 'c')
+subdir('src')

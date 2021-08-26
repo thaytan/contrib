@@ -1,4 +1,4 @@
-project('aivero',
+project('contrib',
         'rust',
         'c',
         version: '0.13.0',
@@ -36,6 +36,7 @@ plugins_rep = {
 }
 
 include = ['./gst-depth-meta']
+subdir('gst-depth-meta')
 extra_env = {}
 
 

@@ -18,7 +18,7 @@ class GstDepthMeta(GstProject):
     def source(self):
         self.run("mkdir gst-depth-meta")
         self.run("mv src gst-depth-meta/")
-        self.run("mv meson.build gst-depth-meta/")
+        self.run("mv meson.build.conan gst-depth-meta/meson.build")
 
     def build(self):
         self.meson(source_folder="gst-depth-meta")
