@@ -962,7 +962,7 @@ impl RgbdMux {
         if let Some(requested_caps) = request_downstream_caps_query.result() {
             // We can only handle fixed CAPS here
             if !requested_caps.is_fixed() {
-                gst_warning!(
+                gst_debug!(
                     CAT,
                     obj: aggregator,
                     "Downstream element queried CAPS that are NOT fixed. Only fixed `video/rgbd` CAPS can be handled properly.",
