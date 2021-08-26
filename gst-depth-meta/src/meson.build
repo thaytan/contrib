@@ -18,6 +18,6 @@ endforeach
 
 headers = ['buffer-meta.h', 'tags-meta.h']
 gst_depth_meta_lib = shared_library('depth-meta', 'buffer-meta.c', 'tags-meta.c', dependencies: depends, install:true)
-gst_depth_meta_dep = declare_dependency(gst_depth_meta_lib )
+gst_depth_meta_dep = declare_dependency(link_with: gst_depth_meta_lib)
 
 pkg.generate(gst_depth_meta_lib, version:'8.0.0')
