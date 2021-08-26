@@ -16,17 +16,8 @@ foreach d: deps
     fallback : [d[1], d[2]])
 endforeach
 
-
 headers = ['buffer-meta.h', 'tags-meta.h']
-depth_meta_lib = shared_library('depth-meta', 'buffer-meta.c', 'tags-meta.c', dependencies: depends, install:true)
-# - done - target_link_libraries(['depth-meta', gstreamer_ldflags, gstreamer_plugins_base_ldflags])
-# - done - include_directories(['depth-meta', gstreamer_include_dirs, gstreamer_plugins_base_include_dirs])
-# dest_dir = '${CMAKE_INSTALL_PREFIX}'
-# git_pkg_version = '$ENV{CONAN_BRANCH}'
+gst_depth_meta_lib = shared_library('depth-meta', 'buffer-meta.c', 'tags-meta.c', dependencies: depends, install:true)
+gst_depth_meta_dep = declare_dependency(gst_depth_meta_lib )
 
-pkg.generate(depth_meta_lib, version:'8.0.0')
-
-# configure_file(['depth-meta.pc.in', 'depth-meta.pc', '@ONLY'])
-# install(['TARGETS', 'depth-meta', 'LIBRARY', 'DESTINATION', 'lib', 'ARCHIVE', 'DESTINATION', 'lib', 'RUNTIME', 'DESTINATION', 'bin'])
-# install(['FILES', headers, 'DESTINATION', 'include'])
-# install(['FILES', '${CMAKE_CURRENT_BINARY_DIR}/depth-meta.pc', 'DESTINATION', 'lib/pkgconfig'])
+pkg.generate(gst_depth_meta_lib, version:'8.0.0')
