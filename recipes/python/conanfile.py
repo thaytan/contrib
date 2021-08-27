@@ -43,6 +43,23 @@ class PythonRecipe(Recipe):
         version = ".".join(self.version.split(".")[:2])
         os.symlink(f"python{version}", os.path.join(self.package_folder, "bin", "python"))
 
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
+        with open(os.path.join(self.package_folder, "lib", f"python-{self.version[:3]}", f"_sysconfigdata__linux_{arch}-linux-gnu.py"),
+                  "w") as py:
+            py.write("""build_time_vars = {
+  "AR": "ar",
+  "CC": "clang",
+  "CPP": "clang-cpp",
+  "AS": "llvm-as",
+  "RANLIB": "ranlib",
+  "LD": "ld",
+  "STRIP": "strip",
+  "OBJCOPY": "objcopy",
+}
+            """)
+
+
+
     def package_info(self):
         self.env_info.PYTHON = os.path.join(self.package_folder, "bin", "python")
         self.env_info.PYTHONHOME = self.package_folder
