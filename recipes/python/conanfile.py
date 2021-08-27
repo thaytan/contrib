@@ -46,7 +46,7 @@ class PythonRecipe(Recipe):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         with open(os.path.join(self.package_folder, "lib", f"python{self.version[:3]}", f"_sysconfigdata__linux_{arch}-linux-gnu.py"),
                   "w") as py:
-            py.write("""build_time_vars = {
+            py.write('''build_time_vars = {
   "AR": "ar",
   "CC": "clang",
   "CXX": "clang++",
@@ -56,9 +56,10 @@ class PythonRecipe(Recipe):
   "LD": "ld",
   "STRIP": "strip",
   "OBJCOPY": "objcopy",
-  "srcdir": "python.src"
+  "srcdir": "python.{}.src",
+  "EXT_SUFFIX": ".cpython-{}{}-{}-linux-gnu.so",
 }
-            """)
+'''.format(self.version, self.version[0], self.version[2], arch))
 
 
 
