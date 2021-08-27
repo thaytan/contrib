@@ -56,6 +56,7 @@ class PythonRecipe(Recipe):
   "LD": "ld",
   "STRIP": "strip",
   "OBJCOPY": "objcopy",
+  "srcdir": "python.src"
 }
             """)
 
