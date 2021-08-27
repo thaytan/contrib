@@ -49,6 +49,7 @@ class PythonRecipe(Recipe):
             py.write("""build_time_vars = {
   "AR": "ar",
   "CC": "clang",
+  "CXX": "clang++",
   "CPP": "clang-cpp",
   "AS": "llvm-as",
   "RANLIB": "ranlib",
