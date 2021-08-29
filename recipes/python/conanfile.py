@@ -48,6 +48,7 @@ class PythonRecipe(Recipe):
                   "w") as py:
             py.write('''build_time_vars = {{
   "AR": "ar",
+  "ARFLAGS": "",
   "CC": "clang",
   "CXX": "clang++",
   "CPP": "clang-cpp",
