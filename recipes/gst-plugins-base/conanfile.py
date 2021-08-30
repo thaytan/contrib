@@ -33,7 +33,9 @@ class GstPluginsBaseRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-plugins-base/-/archive/{self.version}/gst-plugins-base-{self.version}.tar.gz")
+        self.get(
+            f"https://gitlab.freedesktop.org/gstreamer/gst-plugins-base/-/archive/{self.version}/gst-plugins-base-{self.version}.tar.gz"
+        )
 
     def build(self):
         opts = {
@@ -53,5 +55,6 @@ class GstPluginsBaseRecipe(GstRecipe):
             "pango": True,
             "videoscale": True,
             "audioconvert": True,
+            "compositor": True,
         }
         self.meson(opts)
