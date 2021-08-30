@@ -1,7 +1,7 @@
 from build import *
 
 
-class PythonGobjectRecipe(Recipe):
+class PythonGobjectRecipe(PythonRecipe):
     description = "Python GObject bindings"
     license = "LGPL"
     build_requires = (
