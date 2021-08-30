@@ -15,3 +15,9 @@ class PythonGobjectRecipe(PythonRecipe):
 
     def source(self):
         self.get(f"https://gitlab.gnome.org/GNOME/pygobject/-/archive/{self.version}/pygobject-{self.version}.tar.gz")
+
+    def build(self):
+        opts = {
+            "pycairo": True,
+        }
+        self.meson(opts)
