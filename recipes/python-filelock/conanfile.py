@@ -1,14 +1,10 @@
 from build import *
 
 
-class PythonFilelockRecipe(Recipe):
+class PythonFilelockRecipe(PythonRecipe):
     description = "A platform independent file lock"
     license = "custom"
-    settings = "build_type", "compiler", "python"
-    build_requires = ("python-setuptools/[>=41.2.0]", )
-
-    def requirements(self):
-        self.requires(f"python/[^3]")
+    requires = ("python-setuptools/[>=41.2.0]", )
 
     def source(self):
         self.get(
