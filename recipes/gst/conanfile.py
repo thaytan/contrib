@@ -22,7 +22,7 @@ class GstRecipe(GstRecipe):
 
     def build_requirements(self):
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.66.1]",)
+            self.build_requires("gobject-introspection/[^1.69.0]",)
 
     def source(self):
         self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
