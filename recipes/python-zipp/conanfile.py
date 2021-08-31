@@ -1,14 +1,9 @@
 from build import *
 
 
-class PythonZippRecipe(Recipe):
+class PythonZippRecipe(PythonRecipe):
     description = "Pathlib-compatible object wrapper for zip files"
     license = "MIT"
-    settings = "build_type", "compiler",    "python"
-    build_requires = ("python-setuptools/[>=41.2.0]",)
-
-    def requirements(self):
-        self.requires(f"python/[^3]")
 
     def source(self):
         self.get(f"https://github.com/jaraco/zipp/archive/v{self.version}.tar.gz")

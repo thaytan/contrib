@@ -4,7 +4,9 @@ from build import *
 class PythonSetuptoolsRecipe(PythonRecipe):
     description = "Easily download, build, install, upgrade, and uninstall Python packages"
     license = "Apache"
-    requires = ("python/[^3.8.5]",)
+
+    def requirements(self):
+        self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(f"https://github.com/pypa/setuptools/archive/v{self.version}.tar.gz")

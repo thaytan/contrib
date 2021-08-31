@@ -1,12 +1,12 @@
 from build import *
 
 
-class PythonDistlibRecipe(Recipe):
+class PythonDistlibRecipe(PythonRecipe):
     description = "Low-level components of distutils2/packaging"
     license = "PSF"
 
     def requirements(self):
-        self.requires(f"python/[^3]")
+        self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(

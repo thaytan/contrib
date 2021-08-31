@@ -9,9 +9,11 @@ class GObjectIntrospectionRecipe(PythonRecipe):
         "meson/[>=0.55.3]",
         "bison/[^3.7.2]",
         "flex/[^2.6.4]",
-        "python/[^3.8.5]",
     )
     requires = ("glib/[^2.66.1]",)
+
+    def requirements(self):
+        self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(f"https://github.com/GNOME/gobject-introspection/archive/{self.version}.tar.gz")
