@@ -16,7 +16,7 @@ class LibNiceRecipe(GstRecipe):
 
     def source(self):
         self.get(
-            f"https://github.com/libnice/libnice/archive/{self.version}.tar.gz"
+            f"https://gitlab.freedesktop.org/libnice/libnice/-/archive/{self.version}/libnice-{self.version}.tar.gz"
         )
 
     def package(self):
