@@ -46,19 +46,23 @@ class PythonRecipe(Recipe):
         arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         with open(os.path.join(self.package_folder, "lib", f"python{self.version[:3]}", f"_sysconfigdata__linux_{arch}-linux-gnu.py"),
                   "w") as py:
-            py.write('''build_time_vars = {{
-  "AR": "ar",
+            py.write('''import os
+build_time_vars = {{
+  "AR": os.environ.get("AR", ""),
   "ARFLAGS": "",
-  "CC": "clang",
-  "CXX": "clang++",
-  "CPP": "clang-cpp",
-  "AS": "llvm-as",
-  "RANLIB": "ranlib",
-  "LD": "ld",
-  "STRIP": "strip",
-  "OBJCOPY": "objcopy",
+  "CC": os.environ.get("CC", ""),
+  "CXX": os.environ.get("CXX", ""),
+  "CPP": os.environ.get("CPP", ""),
+  "AS": os.environ.get("AS", ""),
+  "RANLIB": os.environ.get("RANLIB", ""),
+  "LD": os.environ.get("LD", ""),
+  "STRIP": os.environ.get("STRIP", ""),
+  "OBJCOPY": os.environ.get("OBJCOPY", ""),
   "srcdir": "python.{}.src",
   "EXT_SUFFIX": ".cpython-{}{}-{}-linux-gnu.so",
+  "CFLAGS": "",
+  "CCSHARED": "",
+  "LDSHARED": "",
 }}
 '''.format(self.version, self.version[0], self.version[2], arch))
 
@@ -66,6 +70,7 @@ class PythonRecipe(Recipe):
 
     def package_info(self):
         self.env_info.PYTHON = os.path.join(self.package_folder, "bin", "python")
+        self.env_info.VIRTUALENV_PYTHON = os.path.join(self.package_folder, "bin", "python")
         self.env_info.PYTHONHOME = self.package_folder
         if "CC" in os.environ:
             ldshared = os.environ["CC"] + " -pthread -shared "
