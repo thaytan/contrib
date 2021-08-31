@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## unreleased - 2021-08-31
 - Bump gobject-introspection to 1.69.0
 - Build gst for 1.19.1, requires gobject-introspection of ^1.69.0
+- Build gst-plugins-base for 1.19.1
+- Build gst-plugins-base with compositor
 
 ----
 
