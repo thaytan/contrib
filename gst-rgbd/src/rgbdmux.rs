@@ -121,7 +121,7 @@ pub struct RgbdMux {
 
 glib::wrapper! {
     pub struct RgbdMuxObject(ObjectSubclass<RgbdMux>)
-        @extends gst::Element, gst::Object;
+        @extends gst_base::Aggregator, gst::Element, gst::Object;
 }
 
 #[glib::object_subclass]
@@ -164,7 +164,7 @@ impl AggregatorImpl for RgbdMux {
             return true;
         }
 
-        aggregator_pad.event_default(Some(aggregator), event)
+        self.parent_sink_event(aggregator, aggregator_pad, event)
     }
 
     /// Called when buffers are queued on all sinkpads. Classes should iterate the GstElement->sinkpads and peek or steal
