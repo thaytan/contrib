@@ -232,7 +232,7 @@ class LlvmRecipe(Recipe):
             "install-clang-cpp",
             "install-clang-resource-headers",
             "install-clang-headers",
-            "install-cmake-exports"
+            "install-cmake-exports",
             "install-ar",
             "install-ranlib",
             "install-strip",
