@@ -11,7 +11,6 @@ class GstPerfRecipe(GstRecipe):
         "automake/[^1.16.1]",
         "autoconf/[^2.69]",
     )
-    requires = ("gst/[>=1.18]",)
 
     def requirements(self):
         self.requires(f"gst/[~{self.settings.gstreamer}]")
