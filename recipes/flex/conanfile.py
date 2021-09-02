@@ -14,8 +14,9 @@ class FlexRecipe(Recipe):
         self.get(f"https://github.com/westes/flex/releases/download/v{self.version}/flex-{self.version}.tar.gz")
 
     def build(self):
-        args = [
-            "--disable-nls",
-            "ac_cv_func_reallocarray=no",
-        ]
-        self.autotools(args)
+        # args = [
+        #     "--disable-nls",
+        #     "ac_cv_func_reallocarray=no",
+        # ]
+        # self.autotools(args)
+        self.autotools()
