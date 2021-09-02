@@ -18,7 +18,7 @@ class LibRealsenseRecipe(PythonRecipe):
         if self.options.cuda:
             self.requires("cuda/[^11.2.1]")
         if self.options.python:
-            self.requires(f"python/[^3.8]")
+            self.requires(f"python/[~{self.settings.python}]")
 
     def configure(self):
         if self.settings.arch == "armv8":

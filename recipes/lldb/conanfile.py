@@ -15,9 +15,11 @@ class Lldb(PythonRecipe):
     requires = (
         "llvm/[^11.0.1]",
         "libedit/20190324-3.1",
-        "python/[^3.8.5]",
         "python-six/[^1.15.0]",
     )
+
+    def requirements(self):
+        self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{self.version}/llvm-{self.version}.src.tar.xz")

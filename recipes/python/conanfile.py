@@ -1,7 +1,8 @@
+from conans.errors import ConanInvalidConfiguration
 from build import *
 
 
-class PythonRecipe(Recipe):
+class PythonRecipe(PythonRecipe):
     description = "Next generation of the python high-level scripting language"
     license = "MIT"
     build_requires = (
@@ -15,6 +16,10 @@ class PythonRecipe(Recipe):
         "bzip2/[^1.0.8]",
         "sqlite/[^3.30.1]",
     )
+
+    def validate(self):
+        if str(self.settings.python) not in str(self.version):
+            raise ConanInvalidConfiguration(f"Python version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.python}")
 
     def source(self):
         self.get(f"https://www.python.org/ftp/python/{self.version}/Python-{self.version}.tar.xz")

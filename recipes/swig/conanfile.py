@@ -11,7 +11,7 @@ class SwigRecipe(PythonRecipe):
     )
 
     def build_requirements(self):
-        self.build_requires(f"python/[^3.6]")
+        self.build_requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(f"https://downloads.sourceforge.net/swig/swig-{self.version}.tar.gz")
