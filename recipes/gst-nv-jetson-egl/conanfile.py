@@ -10,12 +10,10 @@ class GstNvJetsonEgl(Recipe):
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
     )
-    requires = (
-        "mesa/[^19.2.0]",
-        "gst-plugins-base/[^1.18]",
-    )
+    requires = ("mesa/[^19.2.0]",)
 
     def requirements(self):
+        self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
         self.requires(f"nv-jetson-drivers/[^{self.version}]")
         self.requires(f"nv-jetson-v4l2/[^{self.version}]")
 
