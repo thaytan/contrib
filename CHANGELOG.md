@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## unreleased - 2021-08-31
 - Bump gobject-introspection to 1.69.0
 - Build gst for 1.19.1, requires gobject-introspection of ^1.69.0
-- Build gst-plugins-base for 1.19.1
+- Build gst-plugins-base for 1.19.1, apply patches required to run ges on h265
 - Build gst-plugins-base with compositor
 - libnice uses gitlab source
 - Bump glib to 2.68.4
 - Conan build of gst errors if self.settings.gstreamer is not compatible with self.version
+- Build gst-plugins-good for 1.19.1, apply patches required to run ges on h265
 
 ----
 
