@@ -3,6 +3,10 @@
   profiles:
     - linux-x86_64_python_3.8
 - version: 1.19.1
+  profiles:
+    - linux-armv8_gst_1.19.1
+    - linux-x86_64_gst_1.19.1
 - version: 1.19.1
   profiles:
     - linux-x86_64_python_3.8
+    
