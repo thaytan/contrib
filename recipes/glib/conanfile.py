@@ -11,7 +11,7 @@ class GLibRecipe(Recipe):
     )
 
     def source(self):
-        self.get(f"https://github.com/GNOME/glib/archive/{self.version}.tar.gz")
+        self.get(f"https://gitlab.gnome.org/GNOME/glib/-/archive/{self.version}/glib-{self.version}.tar.gz")
 
     def build(self):
         opts = {
