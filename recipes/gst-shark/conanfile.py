@@ -1,17 +1,17 @@
 from build import *
 
 
-class GstSharkRecipe(Recipe):
+class GstSharkRecipe(GstRecipe):
     description = "GstShark is a front-end for GStreamer traces "
     license = "LGPL"
     build_requires = (
-        "cc/[^1.0.0]", 
+        "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
     )
-    requires = (
-        "gstreamer/[^1.18]",
-        "graphviz/[^2.42.1]",
-    )
+    requires = ("graphviz/[^2.42.1]",)
+
+    def requirements(self):
+        self.requires(f"gst/[~{self.settings.gstreamer}]")
 
     def source(self):
         self.get(f"https://github.com/RidgeRun/gst-shark/archive/v{self.version}.tar.gz")

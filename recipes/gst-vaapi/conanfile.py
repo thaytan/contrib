@@ -29,10 +29,12 @@ class GstVaapiRecipe(GstRecipe):
         "meson/[>=0.55.3]",
     )
     requires = (
-        "gst-plugins-bad/[^1.18]",
         "intel-vaapi-driver/[^2.4.1]",
         "eudev/[^3.2.9]",
     )
+
+    def requirements(self):
+        self.requires(f"gst-plugins-bad/[~{self.settings.gstreamer}]")
 
     def source(self):
         self.get(f"https://github.com/GStreamer/gstreamer-vaapi/archive/{self.version}.tar.gz")

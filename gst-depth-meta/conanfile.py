@@ -1,19 +1,14 @@
 from build import *
 
+
 class GstDepthMeta(GstProject):
     license = "Apache"
     description = "Library to stream depth video"
-    exports_sources = (
-        "meson.build", 
-        "src/*"
-    )
-    build_requires = (
-        "cc/[^1.0.0]",
-        "meson/[>=0.57.2]"
-    )
-    requires = (
-        "gst-plugins-base/[^1.18]"
-    )
+    exports_sources = ("meson.build", "src/*")
+    build_requires = ("cc/[^1.0.0]", "meson/[>=0.57.2]")
+
+    def requirements(self):
+        self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
         self.run("mkdir gst-depth-meta")
@@ -22,4 +17,3 @@ class GstDepthMeta(GstProject):
 
     def build(self):
         self.meson(source_folder="gst-depth-meta")
-

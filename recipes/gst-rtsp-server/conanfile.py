@@ -24,16 +24,16 @@ class GstRtspServerRecipe(GstRecipe):
         "flex/[^2.6.4]",
         "gobject-introspection/[^1.59.3]",
     )
-    requires = (
-        "gst-plugins-base/[^1.18]",
-    )
+
+    def requirements(self):
+        self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
         if "1.18" in self.settings.gstreamer:
             git = tools.Git(folder=f"{self.name}-{self.version}.src")
             git.clone("https://gitlab.freedesktop.org/GStreamer/gst-rtsp-server.git", self.version)
 
-            # Apply:  rtspclientsink: Add "update-sdp" signal that allows updating the SDP before... 
+            # Apply:  rtspclientsink: Add "update-sdp" signal that allows updating the SDP before...
             # Not required from 1.20 onward
             # https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/commit/ac5213dcdf09f95c71329005a865a39867c3e7c1
             git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../ac5213dcdf09f95c71329005a865a39867c3e7c1.patch')

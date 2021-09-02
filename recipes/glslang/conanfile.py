@@ -8,7 +8,8 @@ class Glslang(Recipe):
         "cc/[^1.0.0]",
         "cmake/[^3.18.1]",
     )
-    requires = ("python/[^3.8.3]",)
+    def requirements(self):
+        self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(f"https://github.com/KhronosGroup/glslang/archive/{self.version}.tar.gz")

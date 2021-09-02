@@ -9,9 +9,10 @@ class GstSvtHevcRecipe(Recipe):
         "meson/[^0.51.2]",
     )
     requires = (
-        "gstreamer-plugins-base/[^1.16.2]",
         "svt-hevc/[^1.4.3]",
     )
 
+    def requirements(self):
+        self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
     def source(self):
         self.get(f"https://github.com/OpenVisualCloud/SVT-HEVC/archive/v{self.version}.tar.gz")
