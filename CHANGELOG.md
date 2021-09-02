@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build gst-plugins-base for 1.19.1
 - Build gst-plugins-base with compositor
 - libnice uses gitlab source
+- Bump glib to 2.68.4
+- Conan build of gst errors if self.settings.gstreamer is not compatible with self.version
 
 ----
 

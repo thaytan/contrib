@@ -1,8 +1,12 @@
 from build import *
+from conans.errors import ConanInvalidConfiguration
 
 
 class GstRecipe(GstRecipe):
     description = "A framework for streaming media"
+    # If set to true, select version highest semver matching version from devops.yml
+    gst_match_version = True
+
     license = "LGPL"
     options = {
         "shared": [True, False],
@@ -20,9 +24,15 @@ class GstRecipe(GstRecipe):
     )
     requires = ("glib/[^2.66.1]",)
 
+    def validate(self):
+        if str(self.settings.gstreamer) not in str(self.version):
+            raise ConanInvalidConfiguration(f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}")
+
     def build_requirements(self):
         if self.options.introspection:
-            self.build_requires("gobject-introspection/[^1.69.0]",)
+            self.build_requires(
+                "gobject-introspection/[^1.69.0]",
+            )
 
     def source(self):
         self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
