@@ -5,8 +5,8 @@ class GstPythonRecipe(GstRecipe):
     description = "Gstreamer Python bindings"
     license = "LGPL"
     requires = (
-        "gobject-introspection/^1.66.1",
-        "python-gobject/^3.33.1",
+        "gobject-introspection/[^1.66.1]",
+        "python-gobject/[^3.33.1]",
     )
     def requirements(self):
         self.requires(f"gstreamer/[~{self.settings.gstreamer}]")
