@@ -1,2 +1,4 @@
-# x86 dev deployment
 - version: 2.39.0
+- version: 2.39.0
+  profiles:
+    - linux-x86_64_python_3.8

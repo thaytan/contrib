@@ -1,1 +1,4 @@
 - version: '50.3.2'
+- version: '50.3.2'
+  profiles:
+    - linux-x86_64_python_3.8
