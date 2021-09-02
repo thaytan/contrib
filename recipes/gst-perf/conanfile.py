@@ -1,3 +1,4 @@
+from conans.model.requires import Requirement
 from build import *
 
 
@@ -11,6 +12,9 @@ class GstPerfRecipe(GstRecipe):
         "autoconf/[^2.69]",
     )
     requires = ("gst/[>=1.18]",)
+
+    def requirements(self):
+        self.requires(f"gst/[~{self.settings.gstreamer}]")
 
     def source(self):
         self.get(f"https://github.com/RidgeRun/gst-perf/archive/v{self.version}.tar.gz")
