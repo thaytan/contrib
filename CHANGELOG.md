@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump glib to 2.68.4
 - Conan build of gst errors if self.settings.gstreamer is not compatible with self.version
 - Build gst-plugins-good for 1.19.1, apply patches required to run ges on h265
+- Build gst-editing-services on 1.19.1
 
 ----
 
