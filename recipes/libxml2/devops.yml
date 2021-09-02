@@ -1,4 +1,4 @@
-- version: '2.9.10'
+- version: '2.9.12'
   recipes:
     - linux-armv8
     - linux-armv8_gst_1.19.1
