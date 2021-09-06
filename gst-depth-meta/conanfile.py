@@ -4,7 +4,7 @@ from build import *
 class GstDepthMeta(GstProject):
     license = "Apache"
     description = "Library to stream depth video"
-    exports_sources = ("meson.build", "src/*")
+    exports_sources = ("meson.build", "meson.build.conan", "src/*")
     build_requires = ("cc/[^1.0.0]", "meson/[>=0.57.2]")
 
     def requirements(self):
