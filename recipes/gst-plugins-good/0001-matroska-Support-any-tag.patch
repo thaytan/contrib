@@ -1,33 +1,31 @@
-From f5014b6d6fb89c646a958c507bd57c4cfd0383f2 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Raphael=20D=C3=BCrscheid?=
- <compiaffe@users.noreply.github.com>
-Date: Wed, 1 Sep 2021 06:00:19 +0100
-Subject: [PATCH] matroska: Support any tag
+From 7e32c86b039ffcf3b5ee8a03644912c44be40563 Mon Sep 17 00:00:00 2001
+From: Komari Spaghetti <3759175+Hejsil@users.noreply.github.com>
+Date: Tue, 13 Jul 2021 11:28:24 +0000
+Subject: [PATCH] Add the ability to have any tag in matroska
 
 ---
- gst/matroska/matroska-ids.h         |  2 +
- gst/matroska/matroska-mux.c         | 67 ++++++++++++++++-------------
- gst/matroska/matroska-read-common.c | 29 ++++++++++++-
- 3 files changed, 66 insertions(+), 32 deletions(-)
+ gst/matroska/matroska-ids.h         |  1 +
+ gst/matroska/matroska-mux.c         | 74 ++++++++++++++++-------------
+ gst/matroska/matroska-read-common.c | 29 ++++++++++-
+ 3 files changed, 69 insertions(+), 35 deletions(-)
 
 diff --git a/gst/matroska/matroska-ids.h b/gst/matroska/matroska-ids.h
-index ba44f104b..5ff776bf9 100644
+index 8d4a685a9..cac097c9e 100644
 --- a/gst/matroska/matroska-ids.h
 +++ b/gst/matroska/matroska-ids.h
-@@ -466,6 +466,8 @@
+@@ -465,6 +465,7 @@
  #define GST_MATROSKA_TAG_ID_RECORDING_LOCATION "RECORDING_LOCATION"
  #define GST_MATROSKA_TAG_ID_PRODUCTION_COPYRIGHT "PRODUCTION_COPYRIGHT"
  #define GST_MATROSKA_TAG_ID_LICENSE "LICENSE"
-+#define GST_MATROSKA_TAG_ID_GST_TAG    "GSTREAMER_TAG"
-+
++#define GST_MATROSKA_TAG_ID_GST_TAG "GSTREAMER_TAG"
  
  /*
   * TODO: add this tag & mappings
 diff --git a/gst/matroska/matroska-mux.c b/gst/matroska/matroska-mux.c
-index 28970a6f1..5e161d795 100644
+index 3cb9bae68..1a32d348d 100644
 --- a/gst/matroska/matroska-mux.c
 +++ b/gst/matroska/matroska-mux.c
-@@ -3395,23 +3395,16 @@ gst_matroska_mux_tag_list_is_empty (const GstTagList * list)
+@@ -3303,23 +3303,17 @@ gst_matroska_mux_tag_list_is_empty (const GstTagList * list)
    int i;
    for (i = 0; i < gst_tag_list_n_tags (list); i++) {
      const gchar *tag = gst_tag_list_nth_tag_name (list, i);
@@ -43,9 +41,6 @@ index 28970a6f1..5e161d795 100644
 -        dest = gst_value_serialize (&src);
 +    GValue src = { 0, };
 +    gchar *dest;
-+    if (!gst_tag_list_copy_value (&src, list, tag))
-+      break;
-+    dest = gst_value_serialize (&src);
  
 -        g_value_unset (&src);
 -        if (dest) {
@@ -53,6 +48,10 @@ index 28970a6f1..5e161d795 100644
 -          return FALSE;
 -        }
 -      }
++    if (!gst_tag_list_copy_value (&src, list, tag))
++      break;
++    dest = gst_value_serialize (&src);
++
 +    g_value_unset (&src);
 +    if (dest) {
 +      g_free (dest);
@@ -60,14 +59,14 @@ index 28970a6f1..5e161d795 100644
      }
    }
    return TRUE;
-@@ -3424,7 +3417,17 @@ gst_matroska_mux_write_simple_tag (const GstTagList * list, const gchar * tag,
+@@ -3332,32 +3326,44 @@ gst_matroska_mux_write_simple_tag (const GstTagList * list, const gchar * tag,
    GstEbmlWrite *ebml = (GstEbmlWrite *) data;
    guint i;
    guint64 simpletag_master;
 +  GValue src = { 0, };
 +  gchar *dest, *formatted;
 +
- 
++
 +  if (!gst_tag_list_copy_value (&src, list, tag))
 +   return;
 +  if (!(dest = gst_value_serialize (&src))) {
@@ -75,13 +74,14 @@ index 28970a6f1..5e161d795 100644
 +    g_value_unset (&src);
 +    return;
 +  }
+ 
    for (i = 0; i < G_N_ELEMENTS (gst_matroska_tag_conv); i++) {
      const gchar *tagname_gst = gst_matroska_tag_conv[i].gstreamer_tagname;
      const gchar *tagname_mkv = gst_matroska_tag_conv[i].matroska_tagname;
-@@ -3432,24 +3435,26 @@ gst_matroska_mux_write_simple_tag (const GstTagList * list, const gchar * tag,
+ 
      if (strcmp (tagname_gst, tag) == 0) {
-       GValue src = { 0, };
-       gchar *dest;
+-      GValue src = { 0, };
+-      gchar *dest;
 -
 -      if (!gst_tag_list_copy_value (&src, list, tag))
 -        break;
@@ -107,6 +107,7 @@ index 28970a6f1..5e161d795 100644
 +      return;
      }
    }
++
 +  formatted = g_strdup_printf("%s@%s", tag, dest);
 +  simpletag_master = gst_ebml_write_master_start (ebml,
 +      GST_MATROSKA_ID_SIMPLETAG);
@@ -120,8 +121,17 @@ index 28970a6f1..5e161d795 100644
  }
  
  static void
+@@ -3589,7 +3595,7 @@ gst_matroska_mux_finish (GstMatroskaMux * mux)
+     gst_ebml_write_seek (ebml, my_pos);
+   }
+ 
+-  if (tags != NULL || toc_has_tags) {
++  if (mux->tags_pos != 0 || toc_has_tags) {
+     gst_ebml_replace_uint (ebml, mux->seekhead_pos + 144,
+         mux->tags_pos - mux->segment_master);
+   } else {
 diff --git a/gst/matroska/matroska-read-common.c b/gst/matroska/matroska-read-common.c
-index 062044f64..0c403c5e9 100644
+index 90d6e38e1..3e8b8cc35 100644
 --- a/gst/matroska/matroska-read-common.c
 +++ b/gst/matroska/matroska-read-common.c
 @@ -2300,7 +2300,6 @@ gst_matroska_read_common_parse_metadata_id_simple_tag (GstMatroskaReadCommon *
@@ -136,13 +146,13 @@ index 062044f64..0c403c5e9 100644
          matched = TRUE;
        }
      }
++
 +    if (!matched && strcmp (GST_MATROSKA_TAG_ID_GST_TAG, tag) == 0 ) {
 +      gchar **tokenized = g_strsplit(value, "@", 2);
 +      gchar *tagname_gst, *value_gst;
 +
 +      if ((tagname_gst = tokenized[0]) && (value_gst = tokenized[1]) &&
-+          gst_tag_exists(tagname_gst))
-+      {
++          gst_tag_exists (tagname_gst)) {
 +        GValue dest = { 0, };
 +        GType dest_type = gst_tag_get_type (tagname_gst);
 +        g_value_init (&dest, dest_type);
@@ -168,5 +178,5 @@ index 062044f64..0c403c5e9 100644
        gchar *key_val;
        /* TODO: read LANGUAGE sub-tag, and use "key[lc]=val" form */
 -- 
-2.25.1
+2.33.0
 
