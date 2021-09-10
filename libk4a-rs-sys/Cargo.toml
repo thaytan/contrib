@@ -12,5 +12,5 @@ build = "build.rs"
 
 
 [build-dependencies]
-bindgen = "0.57.0"
+bindgen = "0.59.1"
 pkg-config = "0.3.19"
