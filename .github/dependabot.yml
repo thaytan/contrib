@@ -36,21 +36,15 @@ updates:
     pull-request-branch-name:
       separator: "-"
   - package-ecosystem: "cargo"
-    directory: "/gst-k4a"
-    # Check for updates once a week
-    schedule:
-      interval: "weekly"
-    pull-request-branch-name:
-      separator: "-"
-  - package-ecosystem: "cargo"
-    directory: "/gst-realsense"
-    # Check for updates once a week
-    schedule:
-      interval: "weekly"
-    pull-request-branch-name:
-      separator: "-"
   - package-ecosystem: "cargo"
     directory: "/gst-rgbd"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+    pull-request-branch-name:
+      separator: "-"
+  - package-ecosystem: "cargo"
+    directory: "/gst-rgbd-src"
     # Check for updates once a week
     schedule:
       interval: "weekly"
@@ -72,13 +66,6 @@ updates:
       separator: "-"
   - package-ecosystem: "cargo"
     directory: "/rgbd-enums"
-    # Check for updates once a week
-    schedule:
-      interval: "weekly"
-    pull-request-branch-name:
-      separator: "-"
-  - package-ecosystem: "cargo"
-    directory: "/rgbd-timestamps"
     # Check for updates once a week
     schedule:
       interval: "weekly"

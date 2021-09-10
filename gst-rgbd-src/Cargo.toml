@@ -39,7 +39,7 @@ gst-util = { path = "../gst-util" }
 
 [build-dependencies]
 capnpc = "0.14.2"
-gst-plugin-version-helper = "0.2.0"
+gst-plugin-version-helper = "0.7.1"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]

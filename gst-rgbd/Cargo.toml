@@ -21,7 +21,7 @@ gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
 gst-util = { path = "../gst-util" }
 
 [build-dependencies]
-gst-plugin-version-helper = "0.2.0"
+gst-plugin-version-helper = "0.7.1"
 
 # Run `cargo fmt -- --check` and `cargo clippy -- -D warnings` before commits
 [dev-dependencies.cargo-husky]
