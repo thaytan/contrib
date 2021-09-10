@@ -158,6 +158,7 @@ class GstPluginsGoodRecipe(GstRecipe):
             "vpx": True,
             "ximagesrc-xdamage": True,
             "ximagesrc": True,
+            "debugutils": True,
         }
         opts["v4l2"] = self.options.v4l2
         self.meson(opts)
