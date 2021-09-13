@@ -68,6 +68,7 @@ build_time_vars = {{
   "CFLAGS": "",
   "CCSHARED": "",
   "LDSHARED": "",
+  "LDFLAGS": "",
 }}
 '''.format(self.version, self.version[0], self.version[2], arch))
 
