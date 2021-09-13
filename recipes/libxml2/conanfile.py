@@ -11,7 +11,7 @@ class Libxml2Recipe(PythonRecipe):
     )
 
     def build_requirements(self):
-        self.build_requires(f"python/[^3]")
+        self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
         self.get(f"https://gitlab.gnome.org/GNOME/libxml2/-/archive/v{self.version}/libxml2-v{self.version}.tar.bz2")
