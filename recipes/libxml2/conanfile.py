@@ -1,15 +1,13 @@
 from build import *
 
 
-class Libxml2Recipe(Recipe):
+class Libxml2Recipe(PythonRecipe):
     description = "XML parsing library, version 2"
     license = "MIT"
-    settings = Recipe.settings + ("python",)
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",
         "zlib/[^1.2.11]",
-
     )
 
     def build_requirements(self):
