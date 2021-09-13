@@ -9,6 +9,7 @@ class GstNnstreamer(GstRecipe):
         "meson/[>=0.57.2]",
         "git/[^2.30.0]",
         "flex/[^2.6.4]",
+        "bison/[^3.7.2]",
     )
 
     def requirements(self):
