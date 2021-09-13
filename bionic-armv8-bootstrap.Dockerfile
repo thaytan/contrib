@@ -2,7 +2,7 @@
 FROM arm64v8/ubuntu:bionic AS builder
 RUN apt update && \
     apt install --no-install-recommends -y python3-pip python3-setuptools gcc libpython3.6-dev
-RUN CC=/usr/bin/gcc pip3 install --upgrade conan
+RUN CC=/usr/bin/gcc pip3 install --upgrade conan MarkupSafe==1.1.1
 
 FROM arm64v8/ubuntu:bionic
 COPY --from=builder /usr/local/bin/conan /usr/local/bin/conan
