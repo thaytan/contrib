@@ -35,6 +35,7 @@ class GstEditingServicesRecipe(GstRecipe):
         "cc/[^1.0.0]",
         "meson/[>=0.55.3]",
         "flex/[^2.6.4]",
+        "m4/[^1.4.18]",
     )
 
     def requirements(self):
