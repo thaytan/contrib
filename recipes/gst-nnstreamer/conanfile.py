@@ -14,6 +14,7 @@ class GstNnstreamer(GstRecipe):
 
     def requirements(self):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
+        self.requires(f"tensorflow-lite/[^1.14.0]")
 
     def source(self):
         self.get(f"https://github.com/nnstreamer/nnstreamer/archive/refs/tags/v{self.version}.tar.gz")
@@ -21,5 +22,6 @@ class GstNnstreamer(GstRecipe):
     def build(self):
         opts = {
             "werror": False,
+            "tflite2-support": True,
         }
         self.meson(opts)
