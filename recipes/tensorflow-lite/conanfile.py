@@ -12,7 +12,7 @@ class TensorflowLite(Recipe):
     exports = "tensorflow-lite.pc"
     scm = dict(type="git",
                url="https://github.com/tensorflow/tensorflow.git",
-               revision=f"4c0b84bf2a714bcdd18da1f1f94d533d72399d52")
+               revision=f"919f693420e35d00c8d0a42100837ae3718f7927")
 
     build_requires = (
         "autotools/[^1.0.0]",
@@ -29,7 +29,7 @@ class TensorflowLite(Recipe):
 
     def build(self):
         with tools.chdir(self.source_folder):
-            self.run("cmake tensorflow/lite -DCMAKE_BUILD_TYPE=Debug")
+            self.run("cmake tensorflow/lite -DCMAKE_BUILD_TYPE=Debug -DTFLITE_ENABLE_RUY=OFF")
             self.run("cmake --build . -j")
         
     def package(self):
@@ -41,4 +41,5 @@ class TensorflowLite(Recipe):
         self.copy(pattern="*.pc", dst="lib/pkgconfig")
         self.copy(pattern="flathash*", dst="bin", src="bin")
         self.copy(pattern="flatc*", dst="bin", src="bin")
+        self.copy(pattern="*lib*.*", dst="lib", symlinks=True)
         

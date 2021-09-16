@@ -10,12 +10,12 @@ class GstNnstreamer(GstRecipe):
         "git/[^2.30.0]",
         "flex/[^2.6.4]",
         "bison/[^3.7.2]",
-        "tensorflow-lite/[^1.13.1]",
+        "tensorflow-lite/[^2.6.0]",
     )
 
     def requirements(self):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
-        self.requires(f"tensorflow-lite/[^1.13.1]")
+        self.requires(f"tensorflow-lite/[^2.6.0]")
 
     def source(self):
         self.get(f"https://github.com/nnstreamer/nnstreamer/archive/refs/tags/v{self.version}.tar.gz")
