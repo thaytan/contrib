@@ -18,3 +18,6 @@ class GstDepthMeta(GstProject):
 
     def build(self):
         self.meson(source_folder="gst-depth-meta")
+
+    def package(self):
+        self.copy("*.h", dst="include", keep_path=False)
