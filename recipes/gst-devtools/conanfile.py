@@ -22,9 +22,11 @@ class GstDevtoolsRecipe(GstRecipe):
         "pkgconf/[^1.7.3]",
     )
     requires = (
-        "gst-plugins-base/[>=1.18]",
         "json-glib/[>=1.6.2]",
     )
+
+    def requirements(self):
+        self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
         if int(str(self.settings.gstreamer).split(".")[1]) >= 18:
