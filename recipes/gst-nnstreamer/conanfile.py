@@ -1,3 +1,4 @@
+from os import symlink
 from build import *
 
 
@@ -10,12 +11,11 @@ class GstNnstreamer(GstRecipe):
         "git/[^2.30.0]",
         "flex/[^2.6.4]",
         "bison/[^3.7.2]",
-        "tensorflow-lite/[^2.6.0]",
     )
 
     def requirements(self):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
-        self.requires(f"tensorflow-lite/[^2.6.0]")
+        self.requires(f"tensorflow2-lite/[^2.4.3]")
 
     def source(self):
         self.get(f"https://github.com/nnstreamer/nnstreamer/archive/refs/tags/v{self.version}.tar.gz")
@@ -23,7 +23,7 @@ class GstNnstreamer(GstRecipe):
     def build(self):
         opts = {
             "werror": False,
-            "tflite-support": True,
+            "tflite2-support": True,
         }
         self.meson(opts)
     

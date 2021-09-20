@@ -2,9 +2,9 @@ prefix=/fix_me_conan
 includedir=${prefix}/include
 libdir=${prefix}/lib
 
-Name: tensorflow-lite
+Name: tensorflow2-lite
 Description: https://www.tensorflow.org
-Version: 2.6.0
+Version: 2.4.3
 
 Libs: -L${libdir} -ltensorflow-lite
 Cflags: -I${includedir}
