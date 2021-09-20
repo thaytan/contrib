@@ -23,7 +23,7 @@ class GstEditingServicesRecipe(GstRecipe):
         "examples=False",
         "introspection=True",
         "tests=False",
-        "tools=False",
+        "tools=True",
         "bash_completion=False",
         "pygi_overrides_dir=False",
         "xptv=False",
