@@ -146,7 +146,6 @@ class GstPluginsBadRecipe(GstRecipe):
             "webp": self.options.webp,
             "webrtc": self.options.webrtc,
             "x265": self.options.x265,
-            "soundtouch": True,
         }
         if self.settings.arch == "x86_64":
             opts["msdk"] = self.options.msdk
