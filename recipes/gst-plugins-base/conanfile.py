@@ -79,5 +79,6 @@ class GstPluginsBaseRecipe(GstRecipe):
             "compositor": True,
             "encoding": True,
             "audiomixer": True,
+            "videorate": True,
         }
         self.meson(opts)
