@@ -27,3 +27,6 @@ class GstNnstreamer(GstRecipe):
             "tflite2-support": True,
         }
         self.meson(opts)
+
+    def package(self):
+        self.copy(pattern="nnstreamer.ini", dst="config")

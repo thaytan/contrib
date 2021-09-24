@@ -1,16 +1,25 @@
-From 1c9301d8be14f364f3debe85bb2f5d47c82e4722 Mon Sep 17 00:00:00 2001
+From 0b125f435160dddfdaf77699c59ae8c408b630b9 Mon Sep 17 00:00:00 2001
 From: Komari Spaghetti <3759175+Hejsil@users.noreply.github.com>
 Date: Thu, 23 Sep 2021 13:24:23 +0200
 Subject: [PATCH] Force libtensorflow-lite to be shared
 
 ---
- tensorflow/lite/CMakeLists.txt | 1 +
- 1 file changed, 1 insertion(+)
+ tensorflow/lite/CMakeLists.txt | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/tensorflow/lite/CMakeLists.txt b/tensorflow/lite/CMakeLists.txt
-index ae956a747dd..12a9ec86d35 100644
+index ae956a747dd..4d2a7825d9d 100644
 --- a/tensorflow/lite/CMakeLists.txt
 +++ b/tensorflow/lite/CMakeLists.txt
+@@ -298,7 +298,7 @@ if(TFLITE_ENABLE_RUY)
+ endif()
+ populate_tflite_source_vars("kernels"
+   TFLITE_KERNEL_SRCS
+-  FILTER ".*(_test_util_internal|test_main)\\.(cc|h)"
++  FILTER ".*(_test_util_internal|test_delegate_providers|test_main)\\.(cc|h)"
+ )
+ populate_tflite_source_vars("kernels/internal" TFLITE_KERNEL_INTERNAL_SRCS)
+ populate_tflite_source_vars("kernels/internal/optimized"
 @@ -338,6 +338,7 @@ include_directories(
  
  # TFLite library

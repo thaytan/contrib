@@ -32,6 +32,13 @@ class Tensorflow2Lite(Recipe):
             # Set cmake to build static libraries so that tensorflow-lite is statically linked
             # with all the dependecies downloaded by cmake.
             "BUILD_SHARED_LIBS": False,
+            "TFLITE_ENABLE_RUY": False,
+            "TFLITE_ENABLE_RESOURCE": True,
+            "TFLITE_ENABLE_NNAPI": False,
+            "TFLITE_ENABLE_MMAP": False,
+            "TFLITE_ENABLE_GPU": False,
+            "TFLITE_ENABLE_FLEX": False,
+            "TFLITE_ENABLE_XNNPACK": True,
         }
         self.cmake(defs, source_folder=os.path.join(self.src, "tensorflow/lite"))
 
