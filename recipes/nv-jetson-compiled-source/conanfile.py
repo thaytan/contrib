@@ -33,9 +33,11 @@ class NvJetsonCompiledSource(GstProject):
     exports = ["*.patch"]
 
     build_requires = ("autotools/[^1.0.0]", "pkgconf/[^1.7.3]", "cc/[^1.0.0]")
-    requires = ("gst-plugins-base/[^1.18]",)
 
     def requirements(self):
+        self.requires(
+            f"gst-plugins-base/[~{self.settings.gstreamer}]",
+        )
         self.requires(f"nv-jetson-drivers/{self.settings.hardware.version}")
 
     def source(self):

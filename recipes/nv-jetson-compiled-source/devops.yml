@@ -2,3 +2,6 @@
   profiles:
     - linux-armv8-l4t-t186
     - linux-armv8-l4t-t210
+- version: 32.4.3
+  profiles:
+    - linux-armv8-l4t-t186_gst_1.19.1

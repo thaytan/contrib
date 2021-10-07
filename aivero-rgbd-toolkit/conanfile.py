@@ -9,11 +9,15 @@ class AiveroRgbDToolkit(GstProject):
         f"gst-rgbd/{branch()}",
         f"gst-rgbd-src/{branch()}",
         f"gst-colorizer/{branch()}",
-        "gst-plugins-good/[~1.18]",
-        "gst-plugins-bad/[~1.18]",
         ## `libglvnd` is currently removed because it causes problems for `glimagesink`
         # self.requires("libglvnd/[>=1.2.0]@%s/stable" % self.user)
     )
+
+    def requirements(self):
+        self.requires(f"gst-plugins-good/[~{self.settings.gstreamer}]")
+        self.requires(
+            f"gst-plugins-bad/[~{self.settings.gstreamer}]",
+        )
 
     def build(self):
         # Don't build anything
@@ -35,32 +39,30 @@ class AiveroRgbDToolkit(GstProject):
         # Pkg-config files
         self.copy_deps("*.pc", dst="lib/pkgconfig", keep_path=False)
         for pc_file in os.listdir("lib/pkgconfig"):
-            tools.replace_prefix_in_pc_file(
-                os.path.join("lib", "pkgconfig", pc_file), install_path)
+            tools.replace_prefix_in_pc_file(os.path.join("lib", "pkgconfig", pc_file), install_path)
 
         # Libraries
         self.copy_deps("*.so*", excludes="*python*")
         self.copy_deps("*.h*")
 
         # Environment script
-        with open(os.path.join(install_path, "aivero_environment.sh"),
-                  "w+") as env_file:
+        with open(os.path.join(install_path, "aivero_environment.sh"), "w+") as env_file:
 
             env_file.write("export PREFIX=" + install_path)
-            env_file.write("\nexport PATH=" + os.path.join("$PREFIX", "bin") +
-                           ":$PATH")
-            env_file.write("\nexport LD_LIBRARY_PATH=" +
-                           os.path.join("$PREFIX", "lib") +
-                           ":$LD_LIBRARY_PATH")
-            env_file.write("\nexport PKG_CONFIG_PATH=" +
-                           os.path.join("$PREFIX", "lib", "pkgconfig"))
-            env_file.write("\nexport GST_PLUGIN_PATH=" +
-                           os.path.join("$PREFIX", "lib", "gstreamer-1.0"))
+            env_file.write("\nexport PATH=" + os.path.join("$PREFIX", "bin") + ":$PATH")
             env_file.write(
-                "\nexport GST_PLUGIN_SCANNER=" +
-                os.path.join("$PREFIX", "bin", "gst-plugin-scanner"))
+                "\nexport LD_LIBRARY_PATH=" + os.path.join("$PREFIX", "lib") + ":$LD_LIBRARY_PATH"
+            )
+            env_file.write(
+                "\nexport PKG_CONFIG_PATH=" + os.path.join("$PREFIX", "lib", "pkgconfig")
+            )
+            env_file.write(
+                "\nexport GST_PLUGIN_PATH=" + os.path.join("$PREFIX", "lib", "gstreamer-1.0")
+            )
+            env_file.write(
+                "\nexport GST_PLUGIN_SCANNER="
+                + os.path.join("$PREFIX", "bin", "gst-plugin-scanner")
+            )
 
-            env_file.write("\nexport PYTHONPATH=$PYTHONPATH:" +
-                           os.path.join("$PREFIX", "lib"))
-            env_file.write("\nexport LIBVA_DRIVERS_PATH=" +
-                           os.path.join("$PREFIX", "lib", "dri"))
+            env_file.write("\nexport PYTHONPATH=$PYTHONPATH:" + os.path.join("$PREFIX", "lib"))
+            env_file.write("\nexport LIBVA_DRIVERS_PATH=" + os.path.join("$PREFIX", "lib", "dri"))
