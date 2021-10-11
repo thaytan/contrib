@@ -29,17 +29,10 @@ class GstRtspServerRecipe(GstRecipe):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
-        if "1.18" in self.settings.gstreamer:
+        if "1.19" in self.version:
             git = tools.Git(folder=f"{self.name}-{self.version}.src")
-            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-rtsp-server.git", self.version)
-
-            # Apply:  rtspclientsink: Add "update-sdp" signal that allows updating the SDP before...
-            # Not required from 1.20 onward
-            # https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/commit/ac5213dcdf09f95c71329005a865a39867c3e7c1
-            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../ac5213dcdf09f95c71329005a865a39867c3e7c1.patch')
-
-        else:
-            self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-rtsp-server/-/archive/{self.version}/gst-rtsp-server-{self.version}.tar.gz")
+            git.clone("https://gitlab.freedesktop.org/gstreamer/gstreamer.git", "main")
+            git.run("checkout 14d636b224f3f00779ccb165750c29f8b69eb34d")
 
     def build(self):
         opts = {}
@@ -47,4 +40,6 @@ class GstRtspServerRecipe(GstRecipe):
         opts["tests"] = self.options.tests
         opts["introspection"] = self.options.introspection
         opts["rtspclientsink"] = self.options.rtspclientsink
-        self.meson(opts)
+        self.meson(
+            opts=opts, source_folder=os.path.join(self.src, "subprojects", "gst-rtsp-server")
+        )

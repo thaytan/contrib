@@ -1,4 +1,3 @@
-- version: 1.18.4
 - version: 1.19.1
   profiles:
     - linux-armv8_gst_1.19.1
