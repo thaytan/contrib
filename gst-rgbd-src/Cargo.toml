@@ -1,7 +1,7 @@
 [package]
 name = "gst-rgbd-src"
 version = "0.0.0"
-authors = ["Niclas Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>", "Jimmi Holst Christensen <jimmi.christensen@aivero.com>"]
+authors = ["Niclas Overby <niclas.overby@aivero.com>", "Andrej Orsula <andrej.orsula@aivero.com>", "Tobias Morell <tobias.morell@aivero.com>", "Jimmi Christensen <jimmi.christensen@aivero.com>"]
 license = "LGPL"
 description = "GStreamer plugin containing `video/rgbd` sources for RealSense and Azure Kinect DK (K4A) devices"
 keywords = [

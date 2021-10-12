@@ -1,7 +1,7 @@
 [package]
 name = "gst-util"
 version = "0.0.0" # Overwritten during conan create.
-authors = ["Jimmi Holst Christensen <jimmi.christensen@aivero.com>"]
+authors = ["Jimmi Christensen <jimmi.christensen@aivero.com>"]
 license = "LGPL"
 description = "Utility library for making it a bit easier to work with gstreamer from rust"
 keywords = ["GStreamer", "Rust"]
