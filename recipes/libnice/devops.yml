@@ -2,5 +2,3 @@
   profiles:
    - linux-x86_64
    - linux-armv8
-   - linux-x86_64_gst_1.19.1
-   - linux-armv8_gst_1.19.1
