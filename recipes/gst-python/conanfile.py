@@ -4,6 +4,10 @@ from build import *
 class GstPythonRecipe(GstRecipe):
     description = "Gstreamer Python bindings"
     license = "LGPL"
+    build_requires = (
+        "cc/[^1.0.0]",
+        "meson/[>=0.55.3]",
+    )
     requires = ("python-gobject/[^3.33.1]",)
 
     def requirements(self):
