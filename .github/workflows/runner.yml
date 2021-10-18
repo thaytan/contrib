@@ -51,6 +51,7 @@ jobs:
             ${{ env.CONAN_PKG_PATH }}/build/**/CMakeOutput.log
             ${{ env.CONAN_PKG_PATH }}/build/**/cmake_bootstrap.log
             ${{ env.CONAN_PKG_PATH }}/output/**/depth-codec-benchmark.txt
+            ${{ env.CONAN_PKG_PATH }}/out/**/3dq_logs*.log
       - name: Replace string
         id: slash-to-dash-component
         uses: frabert/replace-string-action@v1.2
