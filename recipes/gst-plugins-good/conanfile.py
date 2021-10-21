@@ -45,7 +45,7 @@ class GstPluginsGoodRecipe(GstRecipe):
         "ximagesrc_xdamage=False",
         "ximagesrc_xshm=True",
         "ximagesrc=True",
-        "v4l2=False",
+        "v4l2=True",
     )
 
     build_requires = (
@@ -69,6 +69,8 @@ class GstPluginsGoodRecipe(GstRecipe):
         # That way we can still build for a lower gst minor release (i.e. 1.18), despite a newer one being in your conan (i.e. 1.19)
         # [^1.18] will match any `1.` version - not what we need
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
+
+        self.requires(f"libgudev/[^2.3.7]")
 
         # gst-plugins-bad -> pango -> freetype -> png
         # if self.options.png:
@@ -160,6 +162,7 @@ class GstPluginsGoodRecipe(GstRecipe):
             "ximagesrc": True,
             "debugutils": True,
             "audiofx": True,
+            "v4l2": self.options.v4l2,
+            "v4l2-gudev": self.options.v4l2,
         }
-        opts["v4l2"] = self.options.v4l2
         self.meson(opts)
