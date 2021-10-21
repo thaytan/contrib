@@ -28,6 +28,11 @@ impl Default for Error {
     }
 }
 
+/// Once returned from librealsense, `Error` is an immutable api. It should therefor be completely
+/// safe to share this struct between threads.
+unsafe impl Sync for Error {}
+unsafe impl Send for Error {}
+
 /// Define the source of [`Error`](../error/struct.Error.html).
 impl error::Error for Error {}
 
