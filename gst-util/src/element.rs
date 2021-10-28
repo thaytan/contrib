@@ -103,3 +103,17 @@ where
         })
     }
 }
+
+pub trait ElementFactoryExtension {
+    /// Creates an element with the properties in the `props` arguments set. This is
+    /// the same as calling `make + elem.set_properties`
+    fn make_with(elem: &str, props: &[(&str, &dyn ToValue)]) -> Result<Element, BoolError>;
+}
+
+impl ElementFactoryExtension for ElementFactory {
+    fn make_with(elem: &str, props: &[(&str, &dyn ToValue)]) -> Result<Element, BoolError> {
+        let res = ElementFactory::make(elem, None)?;
+        res.set_properties(props)?;
+        Ok(res)
+    }
+}
