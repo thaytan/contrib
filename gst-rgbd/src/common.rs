@@ -45,13 +45,3 @@ where
     t
 }
 
-/// Get the priority of the stream. This priority is used to determin which
-/// stream should be the main stream in rgbd.
-pub fn get_stream_priority(stream_name: &str) -> usize {
-    match stream_name {
-        "idmap" => 0,
-        "layer" => 1,
-        "color" => 2,
-        _ => std::usize::MAX,
-    }
-}

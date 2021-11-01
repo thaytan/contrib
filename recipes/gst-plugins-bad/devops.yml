@@ -4,3 +4,7 @@
   options:
     x265: True
   profiles: ["linux-x86_64"]
+- version: 1.19.1
+  options:
+    nvcodec: True
+  profiles: ["linux-x86_64"]

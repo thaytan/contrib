@@ -22,7 +22,7 @@ pub fn fill_main_buffer_and_tag(
     *main_buffer = buffer;
 
     // Tag the buffer appropriately
-    tag_buffer(
+    tag_buffer_with_title(
         main_buffer.get_mut().ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             [
@@ -53,7 +53,7 @@ pub fn attach_aux_buffer_and_tag(
     tag: &str,
 ) -> Result<(), gst::ErrorMessage> {
     // Tag the buffer appropriately
-    tag_buffer(
+    tag_buffer_with_title(
         buffer.get_mut().ok_or(gst::error_msg!(
             gst::ResourceError::Failed,
             [
@@ -71,18 +71,33 @@ pub fn attach_aux_buffer_and_tag(
     Ok(())
 }
 
-/// Get all auxiliary buffers attached to the `main_buffer`.
+/// Given a main buffer, returns all auxiliary buffers attached to the `main_buffer`.
 ///
 /// # Arguments
-/// * `main_buffer` - The main buffer to remove auxiliary buffers from.
+/// * `main_buffer` - The main buffer that contains aux buffers
 ///
 /// # Returns
-/// * Vec<gst::Buffer> containing the immutable auxiliary buffers.
-pub fn get_aux_buffers(main_buffer: &gst::Buffer) -> Vec<gst::Buffer> {
+/// * Vec<gst::Buffer> containing the auxiliary buffers.
+pub fn get_all_aux_buffers(main_buffer: &gst::BufferRef) -> Vec<gst::Buffer> {
     main_buffer
         .iter_meta::<BufferMeta>()
         .map(|meta| meta.buffer_owned())
         .collect()
+}
+/// Get the main buffer, plus all auxiliary buffers attached to the `main_buffer`.
+///
+/// # Arguments
+/// * `main_buffer` - The main buffer that contains aux buffers
+///
+/// # Returns
+/// * Vec<gst::Buffer> containing the main buffer at [0], followed by the auxiliary buffers.
+pub fn get_all_buffers(main_buffer: gst::Buffer) -> Vec<gst::Buffer> {
+    let mut vec_buf = main_buffer
+        .iter_meta::<BufferMeta>()
+        .map(|meta| meta.buffer_owned())
+        .collect::<Vec<gst::Buffer>>();
+    vec_buf.insert(0, main_buffer);
+    vec_buf
 }
 
 /// Tag a `buffer` with `tag`.
@@ -94,7 +109,10 @@ pub fn get_aux_buffers(main_buffer: &gst::Buffer) -> Vec<gst::Buffer> {
 /// # Returns
 /// * `Ok()` on success.
 /// * `Err(gst::ErrorMessage)` on failure, occurs only if mutable references to tags cannot be obtained.
-pub fn tag_buffer(buffer: &mut gst::BufferRef, tag: &str) -> Result<(), gst::ErrorMessage> {
+pub fn tag_buffer_with_title(
+    buffer: &mut gst::BufferRef,
+    tag: &str,
+) -> Result<(), gst::ErrorMessage> {
     // Create an appropriate tag
     let mut tags = gst::tags::TagList::new();
     tags.get_mut()
@@ -167,7 +185,7 @@ pub fn replace_tag(buffer: &mut gst::BufferRef, tag: &str) -> Result<(), gst::Er
     clear_tags(buffer);
 
     // Retag the buffer appropriately
-    tag_buffer(buffer, tag)?;
+    tag_buffer_with_title(buffer, tag)?;
 
     // Return Ok() if everything went fine
     Ok(())
@@ -294,7 +312,7 @@ mod tests {
         let original_tag = "depth";
 
         // Create main buffer with a tag
-        tag_buffer(buffer.get_mut().unwrap(), original_tag).unwrap();
+        tag_buffer_with_title(buffer.get_mut().unwrap(), original_tag).unwrap();
 
         // Extract the tag from the buffer
         let tag = get_tag(&buffer).unwrap();
@@ -326,38 +344,45 @@ mod tests {
         gst::init().unwrap();
 
         let mut main_buffer = Buffer::new();
-        let mut buffer_depth = Buffer::new();
-        let mut buffer_color = Buffer::new();
-        let original_tag_depth = "depth";
-        let original_tag_color = "color";
+        let mut buffer_aux0 = Buffer::new();
+        let mut buffer_aux1 = Buffer::new();
+        let original_tag_main = "main";
+        let original_tag_aux0 = "aux0";
+        let original_tag_aux1 = "aux1";
+
+        // Tag the main buffer
+        tag_buffer_with_title(main_buffer.make_mut(), original_tag_main).unwrap();
 
         // Attach buffers to the main buffer
         attach_aux_buffer_and_tag(
             main_buffer.get_mut().unwrap(),
-            &mut buffer_depth,
-            original_tag_depth,
+            &mut buffer_aux0,
+            original_tag_aux0,
         )
         .unwrap();
         attach_aux_buffer_and_tag(
             main_buffer.get_mut().unwrap(),
-            &mut buffer_color,
-            original_tag_color,
+            &mut buffer_aux1,
+            original_tag_aux1,
         )
         .unwrap();
 
-        // Get the auxiliary buffers
-        let aux_buffers = get_aux_buffers(&main_buffer);
+        // Get all buffers buffers
+        let all_buffers = get_all_buffers(main_buffer);
 
         // Make sure the length is correct
-        assert_eq!(aux_buffers.len(), 2);
+        assert_eq!(all_buffers.len(), 3);
 
         // Extract the tag from the buffer
-        let tag_depth = get_tag(&aux_buffers[0]).unwrap();
-        let tag_color = get_tag(&aux_buffers[1]).unwrap();
+        // todo: the ordering here should only be
+        let tag_main = get_tag(&all_buffers[0]).unwrap();
+        let tag_aux0 = get_tag(&all_buffers[1]).unwrap();
+        let tag_aux1 = get_tag(&all_buffers[2]).unwrap();
 
         // Make sure the tags stayed the same
-        assert_eq!(tag_depth, original_tag_depth);
-        assert_eq!(tag_color, original_tag_color);
+        assert_eq!(tag_main, original_tag_main);
+        assert_eq!(tag_aux0, original_tag_aux0);
+        assert_eq!(tag_aux1, original_tag_aux1);
     }
 
     #[test]
@@ -368,7 +393,7 @@ mod tests {
         let original_tag = "depth";
 
         // Create main buffer with a tag
-        tag_buffer(buffer.get_mut().unwrap(), original_tag).unwrap();
+        tag_buffer_with_title(buffer.get_mut().unwrap(), original_tag).unwrap();
 
         // Extract the tag from the buffer
         let tag = get_tag(&buffer).unwrap();
@@ -391,7 +416,7 @@ mod tests {
         let new_tag = "color";
 
         // Create main buffer with a tag
-        tag_buffer(buffer.get_mut().unwrap(), original_tag).unwrap();
+        tag_buffer_with_title(buffer.get_mut().unwrap(), original_tag).unwrap();
 
         // Extract the tag from the buffer
         let tag = get_tag(&buffer).unwrap();
@@ -415,10 +440,12 @@ mod tests {
         let mut main_buffer = Buffer::new();
         let mut buffer_depth = Buffer::new();
         let mut buffer_color = Buffer::new();
-        let mut buffer_infra = Buffer::new();
+        let original_tag_main = "infra";
         let original_tag_depth = "depth";
         let original_tag_color = "color";
-        let original_tag_infra = "infra";
+
+        // Create main buffer with a tag
+        tag_buffer_with_title(main_buffer.get_mut().unwrap(), original_tag_main).unwrap();
 
         // Attach buffers to the main buffer
         attach_aux_buffer_and_tag(
@@ -433,29 +460,22 @@ mod tests {
             original_tag_color,
         )
         .unwrap();
-        attach_aux_buffer_and_tag(
-            main_buffer.get_mut().unwrap(),
-            &mut buffer_infra,
-            original_tag_infra,
-        )
-        .unwrap();
 
         // Get the auxiliary buffers
-        let aux_buffers = get_aux_buffers(&main_buffer);
+        let all_buffers = get_all_aux_buffers(&main_buffer);
 
         // Make sure the length is correct
-        assert_eq!(aux_buffers.len(), 3);
+        assert_eq!(all_buffers.len(), 2);
 
         // Extract the tag from the buffer
-        let tag_depth = get_tag(&aux_buffers[0]).unwrap();
-        let tag_color = get_tag(&aux_buffers[1]).unwrap();
-        let tag_infra = get_tag(&aux_buffers[2]).unwrap();
+        let tag_depth = get_tag(&all_buffers[0]).unwrap();
+        let tag_color = get_tag(&all_buffers[1]).unwrap();
 
         // Make sure the tags stayed the same
         assert_eq!(tag_depth, original_tag_depth);
         assert_eq!(tag_color, original_tag_color);
-        assert_eq!(tag_infra, original_tag_infra);
 
+        // let mut main_buffer = all_buffers[0];
         // Remove depth and color
         remove_aux_buffers_with_tags(
             main_buffer.get_mut().unwrap(),
@@ -464,13 +484,13 @@ mod tests {
         .unwrap();
 
         // Get the auxiliary buffers
-        let aux_buffers = get_aux_buffers(&main_buffer);
+        let all_buffers = get_all_buffers(main_buffer);
 
         // Make sure the length is correct
-        assert_eq!(aux_buffers.len(), 1);
+        assert_eq!(all_buffers.len(), 1);
 
         // Make sure the correct buffer remains (infra)
-        let tag_infra = get_tag(&aux_buffers[0]).unwrap();
-        assert_eq!(tag_infra, original_tag_infra);
+        let tag_main = get_tag(&all_buffers[0]).unwrap();
+        assert_eq!(tag_main, original_tag_main);
     }
 }

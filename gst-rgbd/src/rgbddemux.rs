@@ -586,24 +586,15 @@ impl RgbdDemux {
             "Pushing buffers to their corresponding pads",
         );
 
-        // Go through all auxiliary buffers attached to the main buffer in order to extract them and
+        // Go through all buffers, including the main buffern and all buffers  attached to it in order to extract them and
         // push to the corresponding src pads
         let src_pads = self.src_pads.read().unwrap();
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
-        for aux_buffer in rgbd::get_aux_buffers(&main_buffer) {
-            let flow_combiner_result = flow_combiner
-                .update_flow(self.push_buffer_to_corresponding_pad(element, &src_pads, aux_buffer));
-            if flow_combiner_result.is_err() {
-                return flow_combiner_result;
-            }
+        for buffer in rgbd::get_all_buffers(main_buffer) {
+            flow_combiner
+                .update_flow(self.push_buffer_to_corresponding_pad(element, &src_pads, buffer))?;
         }
-
-        // Push the main buffer to the corresponding src pad
-        flow_combiner.update_flow(self.push_buffer_to_corresponding_pad(
-            element,
-            &src_pads,
-            main_buffer,
-        ))
+        Ok(gst::FlowSuccess::Ok)
     }
 
     /// Push the given buffer to the src pad that was allocated for it.

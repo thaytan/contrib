@@ -36,7 +36,7 @@ class GstPluginsBadRecipe(GstRecipe):
         "mpegtsdemux=True",
         "mpegtsmux=True",
         "msdk=False",
-        "nvcodec=True",
+        "nvcodec=False",
         "opencv=False",
         "pnm=True",
         "rtmp2=True",
