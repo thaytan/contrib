@@ -26,9 +26,10 @@ pub struct Add {
     pub link: bool,
     /// Will also sync the elements state with the bin they where added to.
     pub sync: bool,
-    /// Will take the first and last element and ghost their src/sink pads to the bins src/sink
-    /// pad.
-    pub ghost: bool,
+    /// Will take the first and ghost its sink pads to the bins sink pad.
+    pub ghost_sink: bool,
+    /// Will take the last and ghost its src pads to the bins src pad.
+    pub ghost_src: bool,
 }
 
 impl Default for Add {
@@ -36,7 +37,8 @@ impl Default for Add {
         Self {
             link: false,
             sync: false,
-            ghost: false,
+            ghost_sink: false,
+            ghost_src: false,
         }
     }
 }
@@ -58,6 +60,14 @@ impl Add {
         Self::new().and_ghost()
     }
 
+    pub fn ghost_src() -> Self {
+        Self::new().and_ghost_src()
+    }
+
+    pub fn ghost_sink() -> Self {
+        Self::new().and_ghost_sink()
+    }
+
     pub fn and_link(mut self) -> Self {
         self.link = true;
         self
@@ -68,8 +78,17 @@ impl Add {
         self
     }
 
-    pub fn and_ghost(mut self) -> Self {
-        self.ghost = true;
+    pub fn and_ghost(self) -> Self {
+        self.and_ghost_sink().and_ghost_src()
+    }
+
+    pub fn and_ghost_sink(mut self) -> Self {
+        self.ghost_sink = true;
+        self
+    }
+
+    pub fn and_ghost_src(mut self) -> Self {
+        self.ghost_src = true;
         self
     }
 }
@@ -139,7 +158,7 @@ where
 
         self.add(prev.as_ref())
             .map_err(|e| gst::error_msg!(ResourceError::NoSpaceLeft, ["{}", e]))?;
-        if opt.ghost {
+        if opt.ghost_sink {
             let pad = prev.as_ref().ghost_static_pad("sink")?;
             self.add_pad(&pad)
                 .map_err(|e| gst::error_msg!(CoreError::Pad, ["{}", e]))?;
@@ -167,7 +186,7 @@ where
             prev = elem;
         }
 
-        if opt.ghost {
+        if opt.ghost_src {
             let pad = prev.as_ref().ghost_static_pad("src")?;
             self.add_pad(&pad)
                 .map_err(|e| gst::error_msg!(CoreError::Pad, ["{}", e]))?;
