@@ -46,6 +46,7 @@ pub mod hash_map_serialize {
         V: Deserialize<'de>,
     {
         let container: Vec<_> = serde::Deserialize::deserialize(des)?;
+        #[allow(clippy::from_iter_instead_of_collect)]
         Ok(T::from_iter(container.into_iter()))
     }
 }

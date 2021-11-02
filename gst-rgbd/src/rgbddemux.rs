@@ -586,8 +586,7 @@ impl RgbdDemux {
             "Pushing buffers to their corresponding pads",
         );
 
-        // Go through all buffers, including the main buffern and all buffers  attached to it in order to extract them and
-        // push to the corresponding src pads
+        // Go through all buffers in order to extract them and push to the corresponding src pads
         let src_pads = self.src_pads.read().unwrap();
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
         for buffer in rgbd::get_all_buffers(main_buffer) {
