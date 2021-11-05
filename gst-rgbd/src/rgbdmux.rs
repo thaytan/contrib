@@ -14,6 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
+use glib::SendValue;
 use gst::{subclass::prelude::*, Event};
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
@@ -73,6 +74,23 @@ impl AggregatorImpl for RgbdMux {
 
         self.parent_sink_event(aggregator, aggregator_pad, event)
     }
+    /// The default implementation parses `sink_%d` no matter what specified in the template.
+    /// We request pads with `sink_%s` such as sink_depth. The default impl produces a `sink_0` pad from that.
+    fn create_new_pad(
+        &self,
+        _aggregator: &Self::Type,
+        templ: &gst::PadTemplate,
+        req_name: Option<&str>,
+        _caps: Option<&gst::Caps>,
+    ) -> Option<AggregatorPad> {
+        if let Some((true, req_name)) = req_name.map(|p| (p.starts_with("sink_"), p)) {
+            gst::Pad::from_template(templ, Some(req_name))
+                .downcast()
+                .ok()
+        } else {
+            None
+        }
+    }
 
     /// Called when buffers are queued on all sinkpads. Classes should iterate the GstElement->sinkpads and peek or steal
     /// buffers from the GstAggregatorPad.
@@ -84,29 +102,24 @@ impl AggregatorImpl for RgbdMux {
         aggregator: &RgbdMuxObject,
         timeout: bool,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
-        // todo::removeme
-        gst_error!(
-            CAT,
-            "aggregator.sink_pads in order: {:?}",
-            aggregator
-                .sink_pads()
-                .iter()
-                .map(|pad| pad.name().to_string())
-                .collect::<Vec<String>>()
-        );
         // Get the current deadline time or desired output time
         let src_pads = aggregator.src_pads();
         let agg_pad = src_pads[0]
             .downcast_ref::<gst_base::AggregatorPad>()
             .unwrap();
+
         let segment: gst::FormattedSegment<gst::ClockTime> = agg_pad.segment().downcast().unwrap();
-        let position_running_time = segment
-            .to_running_time(
-                segment
-                    .position()
-                    .unwrap_or_else(|| segment.start().unwrap()),
-            )
-            .unwrap();
+        let segment_start = segment.position().or_else(|| segment.start());
+
+        gst_debug!(
+            CAT,
+            "segment position: {:?}, start: {:?}, end: {:?}",
+            segment.position(),
+            segment.start(),
+            segment.stop()
+        );
+
+        let position_running_time = segment.to_running_time(segment_start).unwrap();
         let duration = RgbdMux::get_duration_from_fps(
             &RgbdMux::get_framerate_from_caps(&agg_pad.caps().unwrap()).unwrap(),
         )
@@ -115,41 +128,46 @@ impl AggregatorImpl for RgbdMux {
         // Analyse all sinkpads for buffers, eos.
         // Notice if all pads have received an EOS message.
         // Drop buffers if their timestamps are out of range.
-        let mut all_pads_eos = true;
+        let mut any_pads_eos = false;
         let mut all_buffers_in_range = true;
         for sink_pad in aggregator
             .sink_pads()
             .iter()
             .filter_map(|sp| sp.downcast_ref::<gst_base::AggregatorPad>())
         {
+            self.drop_out_of_range_buffers_on_pad(&position_running_time, &duration, &sink_pad)?;
             if sink_pad.is_eos() {
                 // Nothing for us to do if we have eos on the pad.
                 gst_info!(CAT, "Pad {} has EOS", sink_pad.name().to_string());
-                continue;
-            } else {
-                all_pads_eos = false;
+                any_pads_eos = true;
+                break;
             }
 
-            self.pop_out_of_range_buffers_on_pad(&position_running_time, &duration, &sink_pad)?;
             if !sink_pad.has_buffer() {
                 // This pad has no buffer, nothing to do for us.
                 // Therefore, not all buffer are in range.
                 all_buffers_in_range = false;
-                continue;
             }
         }
 
         // Return EOS if all upstream pads are marked as EOS
-        if all_pads_eos {
+        if any_pads_eos {
+            gst_debug!(CAT, "EOS everywhere");
+
             Err(gst::FlowError::Eos)
         }
         // No buffers yet, nothing to do but wait for more data
         else if !timeout && !all_buffers_in_range {
+            gst_debug!(
+                CAT,
+                "No timeout, not all buffers are in range. Need More Data"
+            );
+
             Err(gst_base::AGGREGATOR_FLOW_NEED_DATA)
         }
         // We are fully queued, let's push
         else if all_buffers_in_range {
-            gst_error!(CAT, "all buffers in range, muxing");
+            gst_debug!(CAT, "all buffers in range, muxing");
             // https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html?gi-language=c#gst_aggregator_selected_samples
             aggregator.selected_samples(
                 position_running_time,
@@ -157,25 +175,37 @@ impl AggregatorImpl for RgbdMux {
                 duration,
                 None,
             );
-            if let Ok(outbuf) = self.mux_buffers(aggregator) {
+            if let Ok(outbuf) = self.mux_buffers_set_ts(aggregator, segment_start, Some(duration)) {
+                gst_debug!(CAT, "Muxed buffers, finishing");
+
                 self.finish_buffer(aggregator, outbuf)?;
                 self.advance_segment_position(aggregator);
 
                 Ok(gst::FlowSuccess::Ok)
             } else {
+                gst_debug!(CAT, "Failed to mux buffers, treating as timeout");
+
                 // Failed to mux
-                self.send_gap_event(aggregator)
-                    .map_err(|_| gst::FlowError::Error)?;
+                self.send_gap_event(aggregator).map_err(|_| {
+                    self.advance_segment_position(aggregator);
+                    gst::FlowError::Error
+                })?;
                 self.advance_segment_position(aggregator);
-                Err(gst_base::AGGREGATOR_FLOW_NEED_DATA)
+
+                Ok(gst::FlowSuccess::Ok)
             }
         }
         // timeout, but we are not fully queued. Sending a GAP event
         else if timeout && !all_buffers_in_range {
-            self.send_gap_event(aggregator)
-                .map_err(|_| gst::FlowError::Error)?;
+            gst_debug!(CAT, "timeout and not fully queued. Sending Gap event");
+
+            self.send_gap_event(aggregator).map_err(|_| {
+                self.advance_segment_position(aggregator);
+                gst::FlowError::Error
+            })?;
             self.advance_segment_position(aggregator);
-            Err(gst_base::AGGREGATOR_FLOW_NEED_DATA)
+
+            Ok(gst::FlowSuccess::Ok)
         } else {
             panic!("We should never get here")
         }
@@ -210,11 +240,7 @@ impl AggregatorImpl for RgbdMux {
     /// * `aggregator` - A reference to the element that represents `rgbdmux` in GStreamer.
     fn next_time(&self, aggregator: &RgbdMuxObject) -> Option<gst::ClockTime> {
         let nt = aggregator.simple_get_next_time();
-        gst_error!(
-            CAT,
-            "Returning next time as {}",
-            nt.unwrap_or(gst::ClockTime::ZERO).seconds()
-        );
+        gst_debug!(CAT, "Aggregator next_time: {:?}", nt);
         nt
     }
 
@@ -233,7 +259,7 @@ impl AggregatorImpl for RgbdMux {
         #[allow(clippy::single_match)]
         match query.view_mut() {
             gst::QueryView::Caps(mut caps_query) => {
-                gst_error!(CAT, "Got caps query on sink pad. Caps: {:?}", caps_query);
+                gst_debug!(CAT, "Caps query on sink pad. Caps: {:?}", caps_query);
                 if let Some(filter) = caps_query.filter() {
                     let mut result = filter.copy();
                     let stream_name = aggregator_pad.name().to_string();
@@ -274,8 +300,9 @@ impl AggregatorImpl for RgbdMux {
     ) -> Result<(), gst::LoggableError> {
         let framerate = RgbdMux::get_framerate_from_caps(caps).unwrap();
         let duration = RgbdMux::get_duration_from_fps(&framerate).unwrap();
-        gst_error!(CAT, "Setting latency to {}", duration.seconds());
+        gst_debug!(CAT, "Setting latency to {}ms", duration.mseconds());
         aggregator.set_latency(duration, duration);
+        gst_debug!(CAT, "Negotiated src caps are: {}", caps);
         self.parent_negotiated_src_caps(aggregator, caps)
     }
 
@@ -385,8 +412,8 @@ impl RgbdMux {
         //todo: Consider bubbling up some error if we fail to get the framerate
         let framerate = RgbdMux::get_framerate_from_caps(&agg_pad.caps().unwrap()).unwrap();
         let duration = RgbdMux::get_duration_from_fps(&framerate);
-        let new_position = pts + duration.unwrap_or(gst::ClockTime::ZERO);
-        gst_error!(CAT, "Advancing Segment to {}", new_position);
+        let new_position = pts + duration.unwrap();
+        gst_debug!(CAT, "Advancing Segment to {}", new_position.display());
         segment.set_position(new_position);
 
         // https://gstreamer.freedesktop.org/documentation/base/gstaggregator.html?gi-language=c#gst_aggregator_update_segment
@@ -422,7 +449,7 @@ impl RgbdMux {
     /// * duration - The inverse of the negotiated framerate for the aggregator's src caps
     /// * sink_pad - The pad on which to check and pop buffers
 
-    fn pop_out_of_range_buffers_on_pad(
+    fn drop_out_of_range_buffers_on_pad(
         &self,
         position_running_time: &gst::ClockTime,
         duration: &gst::ClockTime,
@@ -448,9 +475,9 @@ impl RgbdMux {
                 || buffer_running_time >= (position_running_time + duration)
             {
                 sink_pad.drop_buffer();
-                gst_error!(CAT, "Buffer out of time, dropping it");
+                gst_debug!(CAT, "Buffer out of range, dropping it");
             } else {
-                gst_error!(CAT, "Buffer in range");
+                gst_debug!(CAT, "Buffer in range");
                 // This buffer is in range, lets return;
                 break;
             }
@@ -463,7 +490,12 @@ impl RgbdMux {
     /// # Returns:
     /// * OK(buf) - The main buffer, containing aux buffers as BufferMeta
     /// * Err
-    fn mux_buffers(&self, aggregator: &RgbdMuxObject) -> Result<gst::Buffer, gst::ErrorMessage> {
+    fn mux_buffers_set_ts(
+        &self,
+        aggregator: &RgbdMuxObject,
+        ts: Option<gst::ClockTime>,
+        duration: Option<gst::ClockTime>,
+    ) -> Result<gst::Buffer, gst::ErrorMessage> {
         let sink_pads = aggregator.sink_pads();
         let mut sink_pads = sink_pads
             .iter()
@@ -476,8 +508,12 @@ impl RgbdMux {
         let mut main_buffer = match first_pad.pop_buffer() {
             // We have a buffer, let's tag it
             Some(mut buf) => {
+                let bref = buf.make_mut();
+                bref.set_dts(ts);
+                bref.set_pts(ts);
+                bref.set_duration(duration);
                 let stream_name = first_pad_name.trim_start_matches("sink_");
-                rgbd::tag_buffer_with_title(buf.make_mut(), stream_name)?;
+                rgbd::tag_buffer_with_title(bref, stream_name)?;
                 buf
             }
             // There is no buffer, let's send a gap event
@@ -490,7 +526,7 @@ impl RgbdMux {
         // For each pad, get a tagged buffer and attach it to the main buffer
         // If a sink pad has no buffer queued, create an empty GAP buffer and attach it to the main buffer as well
         for agg_pad in sink_pads {
-            self.attach_aux_buffers(agg_pad, main_buffer.make_mut())?;
+            self.attach_aux_buffers(agg_pad, main_buffer.make_mut(), ts, duration)?;
         }
 
         gst_debug!(CAT, obj: aggregator, "A frameset was muxed.");
@@ -507,12 +543,18 @@ impl RgbdMux {
         &self,
         sink_pad: &AggregatorPad,
         main_buffer: &mut gst::BufferRef,
+        ts: Option<gst::ClockTime>,
+        duration: Option<gst::ClockTime>,
     ) -> Result<(), gst::ErrorMessage> {
         let stream_name = sink_pad.name();
         let stream_name = stream_name.as_str().trim_start_matches("sink_");
         match sink_pad.pop_buffer() {
             Some(mut buffer) => {
-                rgbd::tag_buffer_with_title(buffer.make_mut(), stream_name)?;
+                let bufref = buffer.make_mut();
+                bufref.set_dts(ts);
+                bufref.set_pts(ts);
+                bufref.set_duration(duration);
+                rgbd::tag_buffer_with_title(bufref, stream_name)?;
                 BufferMeta::add(main_buffer, &mut buffer);
                 Ok(())
             }
@@ -529,7 +571,7 @@ impl RgbdMux {
     /// # Arguments
     /// * `aggregator` - The aggregator to drop all queued buffers for.
     fn send_gap_event(&self, aggregator: &RgbdMuxObject) -> Result<(), gst::ErrorMessage> {
-        gst_error!(CAT, "sending gap event");
+        gst_debug!(CAT, "Sending gap event");
         // Get the current position aka deadline as
         let src_pads = aggregator.src_pads();
         let agg_pad: &gst_base::AggregatorPad = src_pads[0].downcast_ref().unwrap();
@@ -620,11 +662,10 @@ impl RgbdMux {
             .clone()
             .map(|pad| pad.name().to_string())
             .collect();
-        let streams = sink_pad_names
+        let streams: Vec<SendValue> = sink_pad_names
             .iter()
-            .map(|s| s.as_str().trim_start_matches("sink_"))
-            .collect::<Vec<&str>>()
-            .join(",");
+            .map(|s| s.trim_start_matches("sink_").to_send_value())
+            .collect();
 
         // Find the lowest framerate defined across all the caps of our sinkpads
         // The framerate is the lowest framerate found across all sinkpads,
@@ -644,10 +685,11 @@ impl RgbdMux {
             );
             return Err(gst_base::AGGREGATOR_FLOW_NEED_DATA);
         }
+
         let mut downstream_caps = gst::Caps::new_simple(
             "video/rgbd",
             &[
-                ("streams", &streams),
+                ("streams", &gst::Array::from_owned(streams)),
                 ("framerate", &min_framerate.unwrap()),
             ],
         );
@@ -668,6 +710,12 @@ impl RgbdMux {
                 }
             })
         {
+            gst_info!(
+                CAT,
+                obj: aggregator,
+                "mut_caps were found to be: {:?}.",
+                mut_caps
+            );
             // Add the elementary caps to the main caps
             self.compose_elementary_caps_to_rgbd_caps(&caps, &pad_name, mut_caps)
         }

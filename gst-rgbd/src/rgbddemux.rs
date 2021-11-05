@@ -284,7 +284,7 @@ impl RgbdDemux {
         })?;
 
         // Determine what streams are contained within the caps
-        let streams = rgbd_caps.get::<String>("streams").map_err(|err| {
+        let streams = rgbd_caps.get::<gst::Array>("streams").map_err(|err| {
             gst::error_msg!(
                 gst::CoreError::Tag,
                 [
@@ -293,7 +293,13 @@ impl RgbdDemux {
                 ]
             )
         })?;
-        let streams = streams.split(',').collect::<Vec<&str>>();
+
+        let streams: Vec<&str> = streams
+            .as_slice()
+            .iter()
+            .map(|s| s.get::<&str>().unwrap())
+            .collect();
+
         if streams.is_empty() {
             return Err(gst::error_msg!(
                 gst::CoreError::Tag,
@@ -315,7 +321,7 @@ impl RgbdDemux {
         let mut src_pads = self.src_pads.write().unwrap();
 
         // Remove pads that are no longer needed for the new CAPS
-        Self::remove_unneeded_pads(element, &mut src_pads, &streams);
+        Self::remove_unneeded_pads(element, &mut src_pads, streams.as_slice());
 
         // Iterate over all streams, find their caps and push a CAPS negotiation event
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
@@ -350,7 +356,7 @@ impl RgbdDemux {
         if stream_name.contains("meta") {
             return Ok(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
         };
-
+        gst_error!(CAT, "demux sink_caps: {}", rgbd_caps);
         // Get the format of a stream
         let stream_format = rgbd_caps
             .get::<String>(&format!("{}_format", stream_name))

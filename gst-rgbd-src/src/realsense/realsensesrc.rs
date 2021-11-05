@@ -163,15 +163,15 @@ impl BaseSrcImpl for RealsenseSrc {
 
             // Create string containing selected streams with priority `depth` > `infra1` > `infra2` > `color`
             // The first stream in this string is contained in the main buffer
-            let mut selected_streams = String::new();
+            let mut selected_streams = Vec::<String>::new();
             let settings = self.settings.read().unwrap();
 
             // Iterate over all enabled streams and create corresponding video/rgbd CAPS.
             let streams: Streams = (&settings.streams.enabled_streams).into();
             for (stream_id, stream_descriptor) in streams.iter() {
-                selected_streams.push_str(&format!("{},", stream_id));
+                selected_streams.push(stream_id.to_string());
                 if settings.include_per_frame_metadata {
-                    selected_streams.push_str(&format!("{}meta,", stream_id));
+                    selected_streams.push(format!("{}meta", stream_id));
                 }
 
                 // Add the corresponding video format
@@ -199,14 +199,13 @@ impl BaseSrcImpl for RealsenseSrc {
 
             // Add `camerameta` into `streams`, if enabled
             if settings.attach_camera_meta {
-                selected_streams.push_str("camerameta,");
+                selected_streams.push("camerameta".to_string());
             }
-
-            // Pop the last ',' contained in streams (not really necessary, but nice)
-            selected_streams.pop();
+            let selected_streams: Vec<glib::SendValue> =
+                selected_streams.iter().map(|s| s.to_send_value()).collect();
 
             // Finally add the streams to the caps
-            s.set("streams", &selected_streams.as_str());
+            s.set("streams", &gst::Array::from_owned(selected_streams));
 
             // Fixate the framerate
             s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
@@ -1058,7 +1057,7 @@ impl RealsenseSrc {
                     "The following stream(s) `{:?}` are not available in the rosbag recording.",
                     conflicting_streams,
                 ]
-            ))?;
+            ));
         }
 
         Ok(())

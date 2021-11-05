@@ -1,0 +1,53 @@
+@startuml k4asrc
+Actor user
+entity "GstPipeline" as gst_pipe
+entity "k4asrc" as src
+entity "k4a" as k4a
+entity "GStreamer" as gst
+
+user -> gst_pipe: Launch pipeline
+
+==Transition to GST_STATE_READY==
+
+gst_pipe -> src **: create()
+src -> k4a : Device::open()
+k4a --> src : device
+|||
+
+user --> src : Properties
+src -> k4a : DeviceConfiguration::try_from(Properties)
+k4a --> src : device_configuration
+|||
+
+src -> k4a : Device::start_cameras(device_configuration)
+
+==K4A device is ready==
+
+gst -> src: fixate()
+user --> src : Properties
+src --> gst: Fixated CAPS
+note right
+video/rgbd
+ streams = "%s"
+ %s_format = "..."
+ %s_width = ...
+ %s_height = ...
+ framerate = ...
+end note
+|||
+
+==Transition to GST_STATE_PLAYING==
+
+loop
+  src -> k4a: device.get_capture()
+  return Capture
+  |||
+  src -> src: Attach auxiliary buffers to main buffer
+  |||
+  src --> gst: Push packed buffer downstream
+end
+
+==Shutdown==
+src -> k4a: device.stop_cameras()
+
+@enduml

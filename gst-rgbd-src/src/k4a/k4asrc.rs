@@ -172,11 +172,11 @@ impl BaseSrcImpl for K4aSrc {
 
             // Create string containing selected streams with priority `depth`>`ir`>`color`>`IMU`
             // The first stream in this string is contained in the main buffer
-            let mut selected_streams = String::new();
+            let mut selected_streams = Vec::<String>::new();
 
             // Add depth stream with its format, width and height into the caps, if enabled
             if desired_streams.depth {
-                selected_streams.push_str(&format!("{},", STREAM_ID_DEPTH));
+                selected_streams.push(format!("{},", STREAM_ID_DEPTH));
                 caps.set(
                     &format!("{}_format", STREAM_ID_DEPTH),
                     &k4a_image_format_to_gst_video_format(DEPTH_FORMAT).unwrap(),
@@ -204,7 +204,7 @@ impl BaseSrcImpl for K4aSrc {
             }
             // Add ir stream with its format, width and height into the caps, if enabled
             if desired_streams.ir {
-                selected_streams.push_str(&format!("{},", STREAM_ID_IR));
+                selected_streams.push(String::from(STREAM_ID_IR));
                 caps.set(
                     &format!("{}_format", STREAM_ID_IR),
                     &k4a_image_format_to_gst_video_format(IR_FORMAT).unwrap(),
@@ -220,7 +220,7 @@ impl BaseSrcImpl for K4aSrc {
             }
             // Add color stream with its format, width and height into the caps, if enabled
             if desired_streams.color {
-                selected_streams.push_str(&format!("{},", STREAM_ID_COLOR));
+                selected_streams.push(String::from(STREAM_ID_COLOR));
                 caps.set(
                     &format!("{}_format", STREAM_ID_COLOR),
                     &stream_properties.color_format,
@@ -236,23 +236,22 @@ impl BaseSrcImpl for K4aSrc {
             }
             // Add IMU stream, if enabled
             if desired_streams.imu {
-                selected_streams.push_str(&format!("{},", STREAM_ID_IMU));
+                selected_streams.push(String::from(STREAM_ID_IMU));
                 caps.fixate_field_nearest_fraction("imu_sampling_rate", IMU_SAMPLING_RATE_HZ);
             }
 
             // Add camerameta stream, if enabled
             if settings.attach_camera_meta {
-                selected_streams.push_str(&format!("{},", STREAM_ID_CAMERAMETA));
+                selected_streams.push(String::from(STREAM_ID_CAMERAMETA));
             }
-
-            // Pop the last ',' contained in streams (not really necessary, but nice)
-            selected_streams.pop();
 
             // Fixate the framerate
             caps.fixate_field_nearest_fraction("framerate", stream_properties.framerate);
 
             // Finally add the streams to the caps
-            caps.set("streams", &selected_streams.as_str());
+            let selected_streams: Vec<glib::SendValue> =
+                selected_streams.iter().map(|s| s.to_send_value()).collect();
+            caps.set("streams", &gst::Array::from_owned(selected_streams));
         }
 
         // Chain up parent implementation with modified caps
