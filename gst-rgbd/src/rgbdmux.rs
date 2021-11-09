@@ -22,7 +22,6 @@ use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::rgbd;
 use gstreamer_base::AggregatorPad;
 use once_cell::sync::Lazy;
-use std::collections::HashMap;
 
 lazy_static! {
     /// Debug category for 'rgbdmux' element.
@@ -259,29 +258,63 @@ impl AggregatorImpl for RgbdMux {
         #[allow(clippy::single_match)]
         match query.view_mut() {
             gst::QueryView::Caps(mut caps_query) => {
-                gst_debug!(CAT, "Caps query on sink pad. Caps: {:?}", caps_query);
-                if let Some(filter) = caps_query.filter() {
-                    let mut result = filter.copy();
-                    let stream_name = aggregator_pad.name().to_string();
-                    let stream_name = stream_name.trim_start_matches("sink_");
+                gst_debug!(
+                    CAT,
+                    "Caps query on sink pad: {}. Caps: {:?}",
+                    aggregator_pad.name().to_string(),
+                    caps_query
+                );
+                let stream_name = aggregator_pad.name();
+                let stream_name = stream_name.trim_start_matches("sink_");
 
-                    // Get the requested stream formats of downstream element for each stream from video/rgbd CAPS,
-                    // translate the format into elementary steam and forward it upstream
-                    if let Some(downstream_format) = self
-                        .query_downstream_video_formats(aggregator)
-                        .get(stream_name)
+                let src_pads = aggregator.src_pads();
+                let agg_pad = src_pads[0]
+                    .downcast_ref::<gst_base::AggregatorPad>()
+                    .unwrap();
+
+                let mut src_caps_candidate = gst::Caps::new_simple("video/x-raw", &[]);
+                let src_caps_candidate = src_caps_candidate.make_mut();
+                let src_caps_candidate_structure = src_caps_candidate.structure_mut(0).unwrap();
+
+                if let Some(allowed_src_caps) = agg_pad.allowed_caps() {
+                    gst_debug!(CAT, "Allowed src caps are:\n\n{}\n", allowed_src_caps);
+                    let allowed_src_caps_structure = allowed_src_caps.structure(0).unwrap();
+
+                    if let Ok(stream_format_list_src) =
+                        allowed_src_caps_structure.value(&format!("{}_format", stream_name))
                     {
-                        // Overwrite format, if downstream element requested it
-                        for filter_caps in result.get_mut().unwrap().iter_mut() {
-                            filter_caps.set::<String>("format", downstream_format.clone());
-                        }
-                    }
+                        src_caps_candidate_structure
+                            .set_value("format", stream_format_list_src.clone());
+                    };
+                    if let Ok(stream_format_list_src) =
+                        allowed_src_caps_structure.value(&format!("{}_height", stream_name))
+                    {
+                        src_caps_candidate_structure
+                            .set_value("height", stream_format_list_src.clone());
+                    };
+                    if let Ok(stream_format_list_src) =
+                        allowed_src_caps_structure.value(&format!("{}_width", stream_name))
+                    {
+                        src_caps_candidate_structure
+                            .set_value("width", stream_format_list_src.clone());
+                    };
+                }
 
-                    caps_query.set_result(&result);
+                if let Some(filter) = caps_query.filter() {
+                    let out_caps = src_caps_candidate.intersect(&filter);
+                    gst_debug!(
+                                CAT,
+                                "constructed sink caps are:\n\n{}\n\nfilter is:\n\n{}\n\nIntersected caps are:\n\n{}\n",
+                                src_caps_candidate,
+                                filter,
+                                out_caps
+                            );
+                    caps_query.set_result(&out_caps);
                     true
                 } else {
-                    // Let parent handle it if there is no filter
-                    self.parent_sink_query(aggregator, aggregator_pad, query)
+                    gst_debug!(CAT, "No filter, answer is:\n{:?}", src_caps_candidate);
+                    caps_query.set_result(&src_caps_candidate.copy());
+                    false
                 }
             }
             _ => {
@@ -580,13 +613,14 @@ impl RgbdMux {
         let pts: gst::ClockTime = segment
             .position()
             .unwrap_or_else(|| segment.start().unwrap());
+        //todo: Unclear if we have to use the running_time to create the gap event
         let running_time = segment.to_running_time(pts).unwrap();
 
         let framerate = RgbdMux::get_framerate_from_caps(&agg_pad.caps().unwrap())?;
         let duration = RgbdMux::get_duration_from_fps(&framerate);
 
         // Create a GAP event with duration
-        let gap_event = gst::event::Gap::new(running_time, duration);
+        let gap_event = gst::event::Gap::new(pts, duration);
 
         // And send it downstream
         if aggregator.send_event(gap_event) {
@@ -703,11 +737,9 @@ impl RgbdMux {
         for (caps, pad_name) in sink_pads
             // Only handle pads with caps
             .filter_map(|agg_pad| {
-                if agg_pad.current_caps().is_some() {
-                    Some((agg_pad.current_caps().unwrap(), agg_pad.name().to_string()))
-                } else {
-                    None
-                }
+                agg_pad
+                    .current_caps()
+                    .map(|c| (c, agg_pad.name().to_string()))
             })
         {
             gst_info!(
@@ -727,80 +759,6 @@ impl RgbdMux {
         );
 
         Ok(downstream_caps.to_owned())
-    }
-
-    /// Query downstream element of `aggregator` for CAPS and extracts format fields for each stream.
-    /// # Arguments
-    /// * `aggregator` - The aggregator that represents `rgbdmux`.
-    /// # Returns
-    /// * `HashMap<String, String>` - Hashmap containing <stream, format>.
-    fn query_downstream_video_formats(
-        &self,
-        aggregator: &RgbdMuxObject,
-    ) -> HashMap<String, String> {
-        let src_pad = aggregator
-            .static_pad("src")
-            .expect("rgbdmux: Element must have a src pad to receive a src_query");
-        let src_pad_template_caps = aggregator
-            .pad_template("src")
-            .expect("rgbdmux: Could not find src-pad template")
-            .caps();
-
-        // Create CAPS query with filter based on template CAPS
-        let mut request_downstream_caps_query = gst::query::Caps::new(Some(&src_pad_template_caps));
-
-        // Send the query and receive sink CAPS of the downstream element
-        if !src_pad.peer_query(&mut request_downstream_caps_query) {
-            gst_debug!(
-                CAT,
-                obj: aggregator,
-                "Cannot send CAPS query downstream. The src pad of this element is probably not yet linked.",
-            );
-            return HashMap::new();
-        }
-
-        if let Some(requested_caps) = request_downstream_caps_query.result() {
-            // We can only handle fixed CAPS here
-            if !requested_caps.is_fixed() {
-                gst_debug!(
-                    CAT,
-                    obj: aggregator,
-                    "Downstream element queried CAPS that are NOT fixed. Only fixed `video/rgbd` CAPS can be handled properly.",
-                );
-                return HashMap::new();
-            }
-
-            // Extract formats from these caps for use when creating new CAPS
-            self.extract_formats_from_rgbd_caps(requested_caps)
-        } else {
-            gst_warning!(
-                CAT,
-                obj: aggregator,
-                "Downstream element did not return a valid result for CAPS query.",
-            );
-            HashMap::new()
-        }
-    }
-
-    /// Extracts format field for each stream in `video/rgbd` CAPS.
-    /// # Arguments
-    /// * `caps` - Formats are extracted from these `video/rgbd` CAPS.
-    /// # Returns
-    /// * `HashMap<String, String>` - Hashmap containing <stream, format>.
-    fn extract_formats_from_rgbd_caps(&self, caps: &gst::CapsRef) -> HashMap<String, String> {
-        // Iterate over all fields in the input CAPS and retain only the format field
-        caps.iter()
-            .next()
-            .expect("rgbdmux: Downstream element has not CAPS")
-            .iter()
-            .filter_map(|(field, value)| {
-                if !field.contains("_format") {
-                    None
-                } else {
-                    Some((field.replace("_format", ""), value.get::<String>().unwrap()))
-                }
-            })
-            .collect::<HashMap<String, String>>()
     }
 }
 

@@ -78,11 +78,10 @@ pub fn attach_aux_buffer_and_tag(
 ///
 /// # Returns
 /// * Vec<gst::Buffer> containing the auxiliary buffers.
-pub fn get_all_aux_buffers(main_buffer: &gst::BufferRef) -> Vec<gst::Buffer> {
+pub fn get_all_aux_buffers(main_buffer: &gst::BufferRef) -> impl Iterator<Item = gst::Buffer> + '_ {
     main_buffer
         .iter_meta::<BufferMeta>()
         .map(|meta| meta.buffer_owned())
-        .collect()
 }
 /// Get the main buffer, plus all auxiliary buffers attached to the `main_buffer`.
 ///

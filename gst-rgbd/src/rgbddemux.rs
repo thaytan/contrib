@@ -25,7 +25,7 @@ use std::sync::{Mutex, RwLock};
 use crate::common::*;
 
 lazy_static! {
-    /// Debug category for 'rgbddemux' element.
+    /// The debug category for 'rgbddemux' element.
     static ref CAT: gst::DebugCategory = gst::DebugCategory::new(
         "rgbddemux",
         gst::DebugColorFlags::empty(),
@@ -53,9 +53,11 @@ impl StreamIdentifier {
 }
 
 /// A handle on the pad, which contains information related to the pad.
+#[derive(Debug)]
 struct DemuxPad {
     /// The actual pad.
     pad: gst::Pad,
+    // todo: Remove this flag - the stream-start event is sticky, therefore we can get this state from the pad itself
     /// A flag to indicate whether or not we have sent the "stream-start" event on the pad.
     pushed_stream_start: bool,
 }
@@ -107,6 +109,7 @@ pub struct RgbdDemux {
     /// Utility struct that groups received Tags
     tags_not_sent: Mutex<TagList>,
     pad_to_send_tags_on: Mutex<Option<gst::Pad>>,
+    sink_pad: gst::Pad,
 }
 
 glib::wrapper! {
@@ -119,8 +122,33 @@ impl ObjectSubclass for RgbdDemux {
     const NAME: &'static str = "rgbddemux";
     type Type = RgbdDemuxObject;
     type ParentType = gst::Element;
+    fn with_class(klass: &Self::Class) -> Self {
+        let templ = klass.pad_template("sink").unwrap();
+        let sink_pad = gst::Pad::builder_with_template(&templ, Some("sink"))
+            .chain_function(|pad, parent, buffer| {
+                Self::catch_panic_pad_function(
+                    parent,
+                    || Err(gst::FlowError::Error),
+                    |this, element| this.sink_chain(pad, element, buffer),
+                )
+            })
+            .event_function(|pad, parent, event| {
+                Self::catch_panic_pad_function(
+                    parent,
+                    || false,
+                    |this, element| this.sink_event(pad, element, event),
+                )
+            })
+            .query_function(|pad, parent, query| {
+                Self::catch_panic_pad_function(
+                    parent,
+                    || false,
+                    |this, element| this.sink_query(pad, element, query),
+                )
+            })
+            .flags(gst::PadFlags::PROXY_CAPS)
+            .build();
 
-    fn new() -> Self {
         Self {
             settings: RwLock::new(Settings {
                 distribute_timestamps: DEFAULT_DISTRIBUTE_TIMESTAMPS,
@@ -130,6 +158,7 @@ impl ObjectSubclass for RgbdDemux {
             stream_identifier: Mutex::new(None),
             tags_not_sent: Mutex::new(TagList::new()),
             pad_to_send_tags_on: Mutex::new(None),
+            sink_pad,
         }
     }
 }
@@ -198,12 +227,115 @@ impl ElementImpl for RgbdDemux {
 }
 
 impl RgbdDemux {
+    fn sink_query(
+        &self,
+        pad: &gst::Pad,
+        element: &RgbdDemuxObject,
+        query: &mut gst::QueryRef,
+    ) -> bool {
+        gst_log!(CAT, obj: pad, "Handling query {:?}", query);
+        match query.view_mut() {
+            gst::QueryView::Caps(ref mut caps_query) => {
+                let src_pads = element.src_pads();
+                let src_pads = src_pads.iter();
+
+                let streams_n_caps = src_pads
+                    .clone()
+                    .map(|pad| (pad.name().to_string(), pad.allowed_caps()))
+                    .map(|(s, c)| (s.trim_start_matches("src_").to_string(), c));
+
+                // Build a caps with
+                // - streams: from src_pads
+                // - framerate: ?? intersection from src_caps?!
+                // - {}_format:
+                // - {}_width:
+                // - {}_height:
+
+                let mut sink_caps_candidate = gst::Caps::new_simple("video/rgbd", &[]);
+                let sink_caps_candidate_s =
+                    sink_caps_candidate.make_mut().structure_mut(0).unwrap();
+
+                for (pad_name, pad_caps) in streams_n_caps.clone() {
+                    if let Some(mut caps) = pad_caps {
+                        // Get the superset of all caps' structures
+                        caps.simplify();
+                        // On new caps set stream specific fields, e.g. depth_format=GRAY16_LE
+                        if let Some(structure) = caps.structure(0) {
+                            if let Ok(format) = structure.value("format") {
+                                sink_caps_candidate_s
+                                    .set_value(&format!("{}_format", pad_name), format.clone());
+                            }
+                            if let Ok(height) = structure.value("height") {
+                                sink_caps_candidate_s
+                                    .set_value(&format!("{}_height", pad_name), height.clone());
+                            }
+                            if let Ok(width) = structure.value("width") {
+                                sink_caps_candidate_s
+                                    .set_value(&format!("{}_width", pad_name), width.clone());
+                            }
+                        }
+                    }
+                }
+                gst_debug!(CAT, "Answering Caps Query with: {:?}", sink_caps_candidate);
+                caps_query.set_result(&sink_caps_candidate);
+                true
+            }
+            gst::QueryView::AcceptCaps(ref mut caps_query) => {
+                let src_pads = element.src_pads();
+                let src_pads = src_pads.iter();
+
+                let streams_n_caps = src_pads
+                    .clone()
+                    .map(|pad| (pad.name().to_string(), pad.allowed_caps()))
+                    .map(|(s, c)| (s.trim_start_matches("src_").to_string(), c));
+
+                // Build a caps with
+                // - streams: from src_pads
+                // - framerate: ?? intersection from src_caps?!
+                // - {}_format:
+                // - {}_width:
+                // - {}_height:
+
+                let mut sink_caps_candidate = gst::Caps::new_simple("video/rgbd", &[]);
+                let sink_caps_candidate_s =
+                    sink_caps_candidate.make_mut().structure_mut(0).unwrap();
+
+                for (pad_name, pad_caps) in streams_n_caps.clone() {
+                    if let Some(mut caps) = pad_caps {
+                        // Get the superset of all caps' structures
+                        caps.simplify();
+                        // On new caps set stream specific fields, e.g. depth_format=GRAY16_LE
+                        if let Some(structure) = caps.structure(0) {
+                            if let Ok(format) = structure.value("format") {
+                                sink_caps_candidate_s
+                                    .set_value(&format!("{}_format", pad_name), format.clone());
+                            }
+                            if let Ok(height) = structure.value("height") {
+                                sink_caps_candidate_s
+                                    .set_value(&format!("{}_height", pad_name), height.clone());
+                            }
+                            if let Ok(width) = structure.value("width") {
+                                sink_caps_candidate_s
+                                    .set_value(&format!("{}_width", pad_name), width.clone());
+                            }
+                        }
+                    }
+                }
+                let caps = caps_query.caps().copy();
+                caps_query.set_result(caps.can_intersect(&sink_caps_candidate));
+                true
+            }
+
+            _ => pad.query_default(Some(element), query),
+        }
+    }
+
     /// Called whenever an event is received at the sink pad. CAPS and stream start events will
     /// be handled locally, all other events are send further downstream.
     /// # Arguments
     /// * `element` - The element that represents the `rgbddemux` in GStreamer.
     /// * `event` - The event that should be handled.
-    fn sink_event(&self, element: &RgbdDemuxObject, event: gst::Event) -> bool {
+    fn sink_event(&self, _pad: &gst::Pad, element: &RgbdDemuxObject, event: gst::Event) -> bool {
         use gst::EventView;
         match event.view() {
             EventView::Caps(caps) => {
@@ -272,11 +404,12 @@ impl RgbdDemux {
     ) -> Result<(), gst::ErrorMessage> {
         gst_debug!(
             CAT,
-            "Creating new src pads based on the negotiated upstream CAPS"
+            "Creating new src pads based on the negotiated upstream CAPS:\n{:?}\n\n",
+            rgbd_caps
         );
 
         // Extract the `video/rgbd` caps fields from gst::CapsRef
-        let rgbd_caps = rgbd_caps.iter().next().ok_or_else(|| {
+        let rgbd_caps = rgbd_caps.structure(0).ok_or_else(|| {
             gst::error_msg!(
                 gst::CoreError::Tag,
                 ["Invalid `video/rgbd` caps for creation of additional src pads",]
@@ -356,7 +489,6 @@ impl RgbdDemux {
         if stream_name.contains("meta") {
             return Ok(gst::Caps::new_simple("meta/x-klv", &[("parsed", &true)]));
         };
-        gst_error!(CAT, "demux sink_caps: {}", rgbd_caps);
         // Get the format of a stream
         let stream_format = rgbd_caps
             .get::<String>(&format!("{}_format", stream_name))
@@ -578,6 +710,7 @@ impl RgbdDemux {
     /// * `main_buffer` - The buffer that was received on the sink pad.
     fn sink_chain(
         &self,
+        pad: &gst::Pad,
         element: &RgbdDemuxObject,
         mut main_buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
@@ -591,9 +724,15 @@ impl RgbdDemux {
             obj: element,
             "Pushing buffers to their corresponding pads",
         );
+        let elem_src_pads = element.src_pads();
+        let elem_src_pads: Vec<String> = elem_src_pads
+            .iter()
+            .map(|pad| pad.name().to_string())
+            .collect();
 
         // Go through all buffers in order to extract them and push to the corresponding src pads
         let src_pads = self.src_pads.read().unwrap();
+
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
         for buffer in rgbd::get_all_buffers(main_buffer) {
             flow_combiner
@@ -715,34 +854,6 @@ impl RgbdDemux {
         }
     }
 
-    /// Create a new sink pad for rgbddemux and register event and chain funtions for it.
-    /// # Arguments
-    /// * `element` - The element that represents the `rgbddemux` in GStreamer.
-    /// # Returns
-    /// * A new sink pad.
-    fn create_sink_pad(element: &RgbdDemuxObject) -> gst::Pad {
-        let templ = element
-            .pad_template("sink")
-            .expect("rgbdmux: Failed to get 'sink' pad template");
-
-        gst::Pad::builder_with_template(&templ, Some("sink"))
-            .event_function(|_, parent, event| {
-                Self::catch_panic_pad_function(
-                    parent,
-                    || false,
-                    |rgbd_demux, element| rgbd_demux.sink_event(element, event),
-                )
-            })
-            .chain_function(|_, parent, buffer| {
-                Self::catch_panic_pad_function(
-                    parent,
-                    || Err(gst::FlowError::Error),
-                    |rgbd_demux, element| rgbd_demux.sink_chain(element, buffer),
-                )
-            })
-            .build()
-    }
-
     /// Reset the internals of `rgbddemux`, so that they can be used again after re-negotiation.
     fn reset(&self) {
         // Reset internals (except for settings)
@@ -774,12 +885,8 @@ impl ObjectImpl for RgbdDemux {
     fn constructed(&self, element: &Self::Type) {
         self.parent_constructed(element);
 
-        // Create sink pad from the template that is registered with the class and set all sink pad functions
-        let sink_pad = Self::create_sink_pad(element);
-
-        // Add the sink pad to the element
         element
-            .add_pad(&sink_pad)
+            .add_pad(&self.sink_pad)
             .expect("rgbddemux: Failed to add sink pad to the element");
     }
 

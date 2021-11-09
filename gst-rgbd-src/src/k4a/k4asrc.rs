@@ -176,7 +176,7 @@ impl BaseSrcImpl for K4aSrc {
 
             // Add depth stream with its format, width and height into the caps, if enabled
             if desired_streams.depth {
-                selected_streams.push(format!("{},", STREAM_ID_DEPTH));
+                selected_streams.push(STREAM_ID_DEPTH.to_string());
                 caps.set(
                     &format!("{}_format", STREAM_ID_DEPTH),
                     &k4a_image_format_to_gst_video_format(DEPTH_FORMAT).unwrap(),
@@ -204,7 +204,7 @@ impl BaseSrcImpl for K4aSrc {
             }
             // Add ir stream with its format, width and height into the caps, if enabled
             if desired_streams.ir {
-                selected_streams.push(String::from(STREAM_ID_IR));
+                selected_streams.push(STREAM_ID_IR.to_string());
                 caps.set(
                     &format!("{}_format", STREAM_ID_IR),
                     &k4a_image_format_to_gst_video_format(IR_FORMAT).unwrap(),
@@ -220,7 +220,7 @@ impl BaseSrcImpl for K4aSrc {
             }
             // Add color stream with its format, width and height into the caps, if enabled
             if desired_streams.color {
-                selected_streams.push(String::from(STREAM_ID_COLOR));
+                selected_streams.push(STREAM_ID_COLOR.to_string());
                 caps.set(
                     &format!("{}_format", STREAM_ID_COLOR),
                     &stream_properties.color_format,
@@ -236,13 +236,13 @@ impl BaseSrcImpl for K4aSrc {
             }
             // Add IMU stream, if enabled
             if desired_streams.imu {
-                selected_streams.push(String::from(STREAM_ID_IMU));
+                selected_streams.push(STREAM_ID_IMU.to_string());
                 caps.fixate_field_nearest_fraction("imu_sampling_rate", IMU_SAMPLING_RATE_HZ);
             }
 
             // Add camerameta stream, if enabled
             if settings.attach_camera_meta {
-                selected_streams.push(String::from(STREAM_ID_CAMERAMETA));
+                selected_streams.push(STREAM_ID_CAMERAMETA.to_string());
             }
 
             // Fixate the framerate
