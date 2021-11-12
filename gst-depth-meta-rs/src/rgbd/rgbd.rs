@@ -461,7 +461,7 @@ mod tests {
         .unwrap();
 
         // Get the auxiliary buffers
-        let all_buffers = get_all_aux_buffers(&main_buffer);
+        let all_buffers: Vec<gst::Buffer> = get_all_aux_buffers(&main_buffer).collect();
 
         // Make sure the length is correct
         assert_eq!(all_buffers.len(), 2);

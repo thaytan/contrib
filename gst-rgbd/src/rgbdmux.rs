@@ -614,7 +614,7 @@ impl RgbdMux {
             .position()
             .unwrap_or_else(|| segment.start().unwrap());
         //todo: Unclear if we have to use the running_time to create the gap event
-        let running_time = segment.to_running_time(pts).unwrap();
+        // let running_time = segment.to_running_time(pts).unwrap();
 
         let framerate = RgbdMux::get_framerate_from_caps(&agg_pad.caps().unwrap())?;
         let duration = RgbdMux::get_duration_from_fps(&framerate);

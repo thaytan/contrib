@@ -277,7 +277,6 @@ impl RgbdDemux {
                     }
                 }
                 gst_debug!(CAT, "Answering Caps Query with: {:?}", sink_caps_candidate);
-                caps_query.set_result(&sink_caps_candidate);
                 true
             }
             gst::QueryView::AcceptCaps(ref mut caps_query) => {
@@ -710,7 +709,7 @@ impl RgbdDemux {
     /// * `main_buffer` - The buffer that was received on the sink pad.
     fn sink_chain(
         &self,
-        pad: &gst::Pad,
+        _: &gst::Pad,
         element: &RgbdDemuxObject,
         mut main_buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
@@ -724,11 +723,6 @@ impl RgbdDemux {
             obj: element,
             "Pushing buffers to their corresponding pads",
         );
-        let elem_src_pads = element.src_pads();
-        let elem_src_pads: Vec<String> = elem_src_pads
-            .iter()
-            .map(|pad| pad.name().to_string())
-            .collect();
 
         // Go through all buffers in order to extract them and push to the corresponding src pads
         let src_pads = self.src_pads.read().unwrap();
