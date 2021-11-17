@@ -139,14 +139,6 @@ impl ObjectSubclass for RgbdDemux {
                     |this, element| this.sink_event(pad, element, event),
                 )
             })
-            .query_function(|pad, parent, query| {
-                Self::catch_panic_pad_function(
-                    parent,
-                    || false,
-                    |this, element| this.sink_query(pad, element, query),
-                )
-            })
-            .flags(gst::PadFlags::PROXY_CAPS)
             .build();
 
         Self {
@@ -227,108 +219,6 @@ impl ElementImpl for RgbdDemux {
 }
 
 impl RgbdDemux {
-    fn sink_query(
-        &self,
-        pad: &gst::Pad,
-        element: &RgbdDemuxObject,
-        query: &mut gst::QueryRef,
-    ) -> bool {
-        gst_log!(CAT, obj: pad, "Handling query {:?}", query);
-        match query.view_mut() {
-            gst::QueryView::Caps(ref mut caps_query) => {
-                let src_pads = element.src_pads();
-                let src_pads = src_pads.iter();
-
-                let streams_n_caps = src_pads
-                    .clone()
-                    .map(|pad| (pad.name().to_string(), pad.allowed_caps()))
-                    .map(|(s, c)| (s.trim_start_matches("src_").to_string(), c));
-
-                // Build a caps with
-                // - streams: from src_pads
-                // - framerate: ?? intersection from src_caps?!
-                // - {}_format:
-                // - {}_width:
-                // - {}_height:
-
-                let mut sink_caps_candidate = gst::Caps::new_simple("video/rgbd", &[]);
-                let sink_caps_candidate_s =
-                    sink_caps_candidate.make_mut().structure_mut(0).unwrap();
-
-                for (pad_name, pad_caps) in streams_n_caps.clone() {
-                    if let Some(mut caps) = pad_caps {
-                        // Get the superset of all caps' structures
-                        caps.simplify();
-                        // On new caps set stream specific fields, e.g. depth_format=GRAY16_LE
-                        if let Some(structure) = caps.structure(0) {
-                            if let Ok(format) = structure.value("format") {
-                                sink_caps_candidate_s
-                                    .set_value(&format!("{}_format", pad_name), format.clone());
-                            }
-                            if let Ok(height) = structure.value("height") {
-                                sink_caps_candidate_s
-                                    .set_value(&format!("{}_height", pad_name), height.clone());
-                            }
-                            if let Ok(width) = structure.value("width") {
-                                sink_caps_candidate_s
-                                    .set_value(&format!("{}_width", pad_name), width.clone());
-                            }
-                        }
-                    }
-                }
-                gst_debug!(CAT, "Answering Caps Query with: {:?}", sink_caps_candidate);
-                true
-            }
-            gst::QueryView::AcceptCaps(ref mut caps_query) => {
-                let src_pads = element.src_pads();
-                let src_pads = src_pads.iter();
-
-                let streams_n_caps = src_pads
-                    .clone()
-                    .map(|pad| (pad.name().to_string(), pad.allowed_caps()))
-                    .map(|(s, c)| (s.trim_start_matches("src_").to_string(), c));
-
-                // Build a caps with
-                // - streams: from src_pads
-                // - framerate: ?? intersection from src_caps?!
-                // - {}_format:
-                // - {}_width:
-                // - {}_height:
-
-                let mut sink_caps_candidate = gst::Caps::new_simple("video/rgbd", &[]);
-                let sink_caps_candidate_s =
-                    sink_caps_candidate.make_mut().structure_mut(0).unwrap();
-
-                for (pad_name, pad_caps) in streams_n_caps.clone() {
-                    if let Some(mut caps) = pad_caps {
-                        // Get the superset of all caps' structures
-                        caps.simplify();
-                        // On new caps set stream specific fields, e.g. depth_format=GRAY16_LE
-                        if let Some(structure) = caps.structure(0) {
-                            if let Ok(format) = structure.value("format") {
-                                sink_caps_candidate_s
-                                    .set_value(&format!("{}_format", pad_name), format.clone());
-                            }
-                            if let Ok(height) = structure.value("height") {
-                                sink_caps_candidate_s
-                                    .set_value(&format!("{}_height", pad_name), height.clone());
-                            }
-                            if let Ok(width) = structure.value("width") {
-                                sink_caps_candidate_s
-                                    .set_value(&format!("{}_width", pad_name), width.clone());
-                            }
-                        }
-                    }
-                }
-                let caps = caps_query.caps().copy();
-                caps_query.set_result(caps.can_intersect(&sink_caps_candidate));
-                true
-            }
-
-            _ => pad.query_default(Some(element), query),
-        }
-    }
-
     /// Called whenever an event is received at the sink pad. CAPS and stream start events will
     /// be handled locally, all other events are send further downstream.
     /// # Arguments
@@ -619,6 +509,7 @@ impl RgbdDemux {
                 "Pad `{}` was already created during previous CAPS negotiation with upstream element",
                 new_src_pad_name
             );
+
             // Check if the pad requires new CAPS re-negotiation with downstream element
             let existing_pad = src_pads.get_mut(stream_name).unwrap();
             if let Some(current_caps) = &existing_pad.pad.current_caps() {
@@ -635,10 +526,12 @@ impl RgbdDemux {
         }
 
         // Create the src pad based on template
-        let pad = gst::Pad::from_template(
+        let pad = gst::Pad::builder_with_template(
             &element.pad_template("src_%s").unwrap(),
             Some(new_src_pad_name),
-        );
+        )
+        .flags(gst::PadFlags::FIXED_CAPS)
+        .build();
 
         // Add the pad to the element
         element.add_pad(&pad).unwrap();
@@ -693,7 +586,7 @@ impl RgbdDemux {
         gst_debug!(CAT, "Pushing a new caps event for {} stream", stream_name);
         pad_handle
             .pad
-            .push_event(gst::event::Caps::builder(&new_pad_caps).build());
+            .push_event(gst::event::Caps::new(&new_pad_caps));
 
         // Activate the pad
         pad_handle
@@ -779,8 +672,10 @@ impl RgbdDemux {
             gst_warning!(
                 CAT,
                 obj: element,
-                "Cannot push buffer tagged as {} because no corresponding pad was created. Please check that upstream 'video/rgbd' CAPS contain all streams that are attached to the main buffer.",
-                tag_title
+                "Cannot push buffer tagged as {} because no corresponding pad was \
+                 created. Caps: {:?}",
+                tag_title,
+                self.sink_pad.current_caps(),
             );
             Ok(gst::FlowSuccess::Ok)
         }

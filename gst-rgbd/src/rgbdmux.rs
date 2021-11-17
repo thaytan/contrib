@@ -73,6 +73,7 @@ impl AggregatorImpl for RgbdMux {
 
         self.parent_sink_event(aggregator, aggregator_pad, event)
     }
+
     /// The default implementation parses `sink_%d` no matter what specified in the template.
     /// We request pads with `sink_%s` such as sink_depth. The default impl produces a `sink_0` pad from that.
     fn create_new_pad(
@@ -82,7 +83,8 @@ impl AggregatorImpl for RgbdMux {
         req_name: Option<&str>,
         _caps: Option<&gst::Caps>,
     ) -> Option<AggregatorPad> {
-        if let Some((true, req_name)) = req_name.map(|p| (p.starts_with("sink_"), p)) {
+        let req_name = req_name?;
+        if req_name.starts_with("sink_") {
             gst::Pad::from_template(templ, Some(req_name))
                 .downcast()
                 .ok()
@@ -107,6 +109,8 @@ impl AggregatorImpl for RgbdMux {
             .downcast_ref::<gst_base::AggregatorPad>()
             .unwrap();
 
+        let caps = agg_pad.caps().ok_or(gst::FlowError::NotNegotiated)?;
+
         let segment: gst::FormattedSegment<gst::ClockTime> = agg_pad.segment().downcast().unwrap();
         let segment_start = segment.position().or_else(|| segment.start());
 
@@ -119,10 +123,9 @@ impl AggregatorImpl for RgbdMux {
         );
 
         let position_running_time = segment.to_running_time(segment_start).unwrap();
-        let duration = RgbdMux::get_duration_from_fps(
-            &RgbdMux::get_framerate_from_caps(&agg_pad.caps().unwrap()).unwrap(),
-        )
-        .unwrap();
+        let duration =
+            RgbdMux::get_duration_from_fps(&RgbdMux::get_framerate_from_caps(&caps).unwrap())
+                .unwrap();
 
         // Analyse all sinkpads for buffers, eos.
         // Notice if all pads have received an EOS message.
@@ -221,14 +224,60 @@ impl AggregatorImpl for RgbdMux {
         aggregator: &RgbdMuxObject,
         _caps: &gst::Caps,
     ) -> Result<gst::Caps, gst::FlowError> {
-        gst_debug!(CAT, "Updating src CAPS");
+        // Join all the pad names to create the 'streams' section of the CAPS
+        let sink_pads = aggregator.sink_pads();
+        let sink_pads = sink_pads
+            .iter()
+            .filter_map(|pad| pad.downcast_ref::<gst_base::AggregatorPad>());
 
-        // if no sink pads are present, we're not ready to negotiate CAPS, otherwise do the negotiation
-        if aggregator.sink_pads().is_empty() {
-            Err(gst_base::AGGREGATOR_FLOW_NEED_DATA) // we're not ready to decide on CAPS yet
-        } else {
-            self.get_current_downstream_caps(aggregator)
+        if sink_pads.clone().count() == 0 {
+            gst_debug!(CAT, "No sink pads yet");
+            return Err(gst::FlowError::NotNegotiated);
         }
+        if sink_pads.clone().any(|pad| pad.current_caps().is_none()) {
+            gst_debug!(CAT, "Not all sink pads have caps");
+            return Err(gst::FlowError::NotNegotiated);
+        }
+
+        let sink_pad_caps = sink_pads.clone().map(|pad| pad.current_caps().unwrap());
+        let sink_pad_names = sink_pads.clone().map(|pad| pad.name());
+
+        // Find the lowest framerate defined across all the caps of our sinkpads
+        // The framerate is the lowest framerate found across all sinkpads,
+        // since we will drop all frames if one frame is missing
+        let min_framerate = sink_pad_caps
+            .clone()
+            .filter_map(|caps| {
+                let structure = caps.structure(0).unwrap();
+                structure.get::<gst::Fraction>("framerate").ok()
+            })
+            .min();
+        if min_framerate.is_none() {
+            gst_debug!(CAT, "None of the sink pads had a framerate");
+            return Err(gst::FlowError::NotNegotiated);
+        }
+
+        let streams: Vec<SendValue> = sink_pad_names
+            .clone()
+            .map(|s| s.trim_start_matches("sink_").to_send_value())
+            .collect();
+
+        let mut downstream_caps = gst::Caps::new_simple(
+            "video/rgbd",
+            &[
+                ("streams", &gst::Array::from_owned(streams)),
+                ("framerate", &min_framerate.unwrap()),
+            ],
+        );
+
+        let mut_caps = downstream_caps.make_mut().structure_mut(0).unwrap();
+
+        // Map the caps into their corresponding stream formats
+        for (caps, pad_name) in sink_pad_caps.zip(sink_pad_names) {
+            self.compose_elementary_caps_to_rgbd_caps(&caps, &pad_name, mut_caps)
+        }
+
+        Ok(downstream_caps.to_owned())
     }
 
     /// Called when the element needs to know the running time of the next rendered buffer for live pipelines.
@@ -243,87 +292,6 @@ impl AggregatorImpl for RgbdMux {
         nt
     }
 
-    /// Called whenever a query is received at one of the sink pads.
-    /// CAPS query augmented to use formats for the individual video streams based on requests from the downstream element.
-    /// # Arguments
-    /// * `aggregator` - The element that represents the `rgbdmux` in GStreamer.
-    /// * `aggregator_pad` - The pad that received the query.
-    /// * `query` - The query that should be handled.
-    fn sink_query(
-        &self,
-        aggregator: &RgbdMuxObject,
-        aggregator_pad: &gst_base::AggregatorPad,
-        query: &mut gst::QueryRef,
-    ) -> bool {
-        #[allow(clippy::single_match)]
-        match query.view_mut() {
-            gst::QueryView::Caps(mut caps_query) => {
-                gst_debug!(
-                    CAT,
-                    "Caps query on sink pad: {}. Caps: {:?}",
-                    aggregator_pad.name().to_string(),
-                    caps_query
-                );
-                let stream_name = aggregator_pad.name();
-                let stream_name = stream_name.trim_start_matches("sink_");
-
-                let src_pads = aggregator.src_pads();
-                let agg_pad = src_pads[0]
-                    .downcast_ref::<gst_base::AggregatorPad>()
-                    .unwrap();
-
-                let mut src_caps_candidate = gst::Caps::new_simple("video/x-raw", &[]);
-                let src_caps_candidate = src_caps_candidate.make_mut();
-                let src_caps_candidate_structure = src_caps_candidate.structure_mut(0).unwrap();
-
-                if let Some(allowed_src_caps) = agg_pad.allowed_caps() {
-                    gst_debug!(CAT, "Allowed src caps are:\n\n{}\n", allowed_src_caps);
-                    let allowed_src_caps_structure = allowed_src_caps.structure(0).unwrap();
-
-                    if let Ok(stream_format_list_src) =
-                        allowed_src_caps_structure.value(&format!("{}_format", stream_name))
-                    {
-                        src_caps_candidate_structure
-                            .set_value("format", stream_format_list_src.clone());
-                    };
-                    if let Ok(stream_format_list_src) =
-                        allowed_src_caps_structure.value(&format!("{}_height", stream_name))
-                    {
-                        src_caps_candidate_structure
-                            .set_value("height", stream_format_list_src.clone());
-                    };
-                    if let Ok(stream_format_list_src) =
-                        allowed_src_caps_structure.value(&format!("{}_width", stream_name))
-                    {
-                        src_caps_candidate_structure
-                            .set_value("width", stream_format_list_src.clone());
-                    };
-                }
-
-                if let Some(filter) = caps_query.filter() {
-                    let out_caps = src_caps_candidate.intersect(&filter);
-                    gst_debug!(
-                                CAT,
-                                "constructed sink caps are:\n\n{}\n\nfilter is:\n\n{}\n\nIntersected caps are:\n\n{}\n",
-                                src_caps_candidate,
-                                filter,
-                                out_caps
-                            );
-                    caps_query.set_result(&out_caps);
-                    true
-                } else {
-                    gst_debug!(CAT, "No filter, answer is:\n{:?}", src_caps_candidate);
-                    caps_query.set_result(&src_caps_candidate.copy());
-                    false
-                }
-            }
-            _ => {
-                // Let parent handle all other queries
-                self.parent_sink_query(aggregator, aggregator_pad, query)
-            }
-        }
-    }
-
     /// Called when the src caps have been negotiated
     /// We are setting the latency here.
     fn negotiated_src_caps(
@@ -333,8 +301,10 @@ impl AggregatorImpl for RgbdMux {
     ) -> Result<(), gst::LoggableError> {
         let framerate = RgbdMux::get_framerate_from_caps(caps).unwrap();
         let duration = RgbdMux::get_duration_from_fps(&framerate).unwrap();
+
         gst_debug!(CAT, "Setting latency to {}ms", duration.mseconds());
         aggregator.set_latency(duration, duration);
+
         gst_debug!(CAT, "Negotiated src caps are: {}", caps);
         self.parent_negotiated_src_caps(aggregator, caps)
     }
@@ -465,6 +435,7 @@ impl RgbdMux {
             .get::<gst::Fraction>("framerate")
             .map_err(|e| gst::error_msg!(gst::CoreError::Caps, ["{}", e]))
     }
+
     /// Converts a framerate specified as a fraction in seconds to a gst::ClockTime
     /// # Arguments
     /// * `framerate` - fraction specified in seconds 30fps -> 30/1
@@ -481,7 +452,6 @@ impl RgbdMux {
     /// * position_running_time - The current position defined by the aggregator's src_pad.segment
     /// * duration - The inverse of the negotiated framerate for the aggregator's src caps
     /// * sink_pad - The pad on which to check and pop buffers
-
     fn drop_out_of_range_buffers_on_pad(
         &self,
         position_running_time: &gst::ClockTime,
@@ -508,9 +478,8 @@ impl RgbdMux {
                 || buffer_running_time >= (position_running_time + duration)
             {
                 sink_pad.drop_buffer();
-                gst_debug!(CAT, "Buffer out of range, dropping it");
+                gst_info!(CAT, "Dropped buffer: {}", sink_pad.name(),);
             } else {
-                gst_debug!(CAT, "Buffer in range");
                 // This buffer is in range, lets return;
                 break;
             }
@@ -623,7 +592,7 @@ impl RgbdMux {
         let gap_event = gst::event::Gap::new(pts, duration);
 
         // And send it downstream
-        if aggregator.send_event(gap_event) {
+        if agg_pad.push_event(gap_event) {
             gst_debug!(CAT, obj: aggregator, "Sending of GAP event was successful");
             Ok(())
         } else {
@@ -676,89 +645,6 @@ impl RgbdMux {
                 }
             }
         }
-    }
-
-    /// Get the current downstream CAPS. The downstream CAPS are generated based on the current sink
-    /// pads on the muxer.
-    /// # Arguments
-    /// * `element` - The element that represents the `rgbdmux`.
-    fn get_current_downstream_caps(
-        &self,
-        aggregator: &RgbdMuxObject,
-    ) -> Result<gst::Caps, gst::FlowError> {
-        // Join all the pad names to create the 'streams' section of the CAPS
-        let sink_pads = aggregator.sink_pads();
-        let sink_pads = sink_pads
-            .iter()
-            .filter_map(|pad| pad.downcast_ref::<gst_base::AggregatorPad>());
-
-        let sink_pad_names: Vec<String> = sink_pads
-            .clone()
-            .map(|pad| pad.name().to_string())
-            .collect();
-        let streams: Vec<SendValue> = sink_pad_names
-            .iter()
-            .map(|s| s.trim_start_matches("sink_").to_send_value())
-            .collect();
-
-        // Find the lowest framerate defined across all the caps of our sinkpads
-        // The framerate is the lowest framerate found across all sinkpads,
-        // since we will drop all frames if one frame is missing
-        let min_framerate = sink_pads
-            .clone()
-            .filter_map(|pad| {
-                let caps = pad.caps()?;
-                let structure = caps.structure(0)?;
-                structure.get::<gst::Fraction>("framerate").ok()
-            })
-            .min();
-        if min_framerate.is_none() {
-            gst_warning!(
-                CAT,
-                "Sinkpads' caps do not contain any framerate. Might be too early."
-            );
-            return Err(gst_base::AGGREGATOR_FLOW_NEED_DATA);
-        }
-
-        let mut downstream_caps = gst::Caps::new_simple(
-            "video/rgbd",
-            &[
-                ("streams", &gst::Array::from_owned(streams)),
-                ("framerate", &min_framerate.unwrap()),
-            ],
-        );
-
-        let mut_caps = downstream_caps
-            .make_mut()
-            .structure_mut(0)
-            .expect("rgbdmux: Could not get mutable CAPS");
-
-        // Map the caps into their corresponding stream formats
-        for (caps, pad_name) in sink_pads
-            // Only handle pads with caps
-            .filter_map(|agg_pad| {
-                agg_pad
-                    .current_caps()
-                    .map(|c| (c, agg_pad.name().to_string()))
-            })
-        {
-            gst_info!(
-                CAT,
-                obj: aggregator,
-                "mut_caps were found to be: {:?}.",
-                mut_caps
-            );
-            // Add the elementary caps to the main caps
-            self.compose_elementary_caps_to_rgbd_caps(&caps, &pad_name, mut_caps)
-        }
-        gst_info!(
-            CAT,
-            obj: aggregator,
-            "stream_caps were found to be: {:?}.",
-            downstream_caps
-        );
-
-        Ok(downstream_caps.to_owned())
     }
 }
 
