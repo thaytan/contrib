@@ -49,7 +49,7 @@ fn plugin_init(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
 }
 
 plugin_define!(
-    gstrgbdsrc,
+    rgbdsrc,
     env!("CARGO_PKG_DESCRIPTION"),
     plugin_init,
     env!("CARGO_PKG_VERSION"),
