@@ -34,7 +34,7 @@ lazy_static! {
 }
 
 /// Default value for to `distribute-timestamps` property
-const DEFAULT_DISTRIBUTE_TIMESTAMPS: bool = false;
+const DEFAULT_DISTRIBUTE_TIMESTAMPS: bool = true;
 
 /// A struct that identifies a stream.
 struct StreamIdentifier {
