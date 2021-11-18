@@ -66,9 +66,6 @@ struct RealsenseSrcInternals {
     state: State,
     /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`, otherwise empty.
     camera_meta_serialised: Vec<u8>,
-    /// The time at which the first frame was captured. Used to calculate the timestamp of
-    /// all subsequent frames.
-    timestamp_start: Option<gst::ClockTime>,
     /// Handle to the device. Valid only if `serial` is specified.
     device: Option<Device>,
 }
@@ -78,7 +75,6 @@ impl Default for RealsenseSrcInternals {
         Self {
             state: State::Stopped,
             camera_meta_serialised: Vec::default(),
-            timestamp_start: None,
             device: None,
         }
     }
@@ -132,6 +128,8 @@ impl BaseSrcImpl for RealsenseSrc {
         gst_info!(CAT, obj: base_src, "Streaming started");
 
         base_src.set_format(gst::Format::Time);
+        base_src.set_property("do-timestamp", &true).unwrap();
+
         // Chain up parent implementation
         self.parent_start(base_src)
     }
@@ -270,23 +268,7 @@ impl PushSrcImpl for RealsenseSrc {
     /// Create a new buffer that will be pushed downstream.
     /// # Arguments
     /// * `push_src` - Representation of `realsensesrc` element.
-    fn create(&self, push_src: &Self::Type) -> Result<gst::Buffer, gst::FlowError> {
-        let timestamp = {
-            let running_time = push_src
-                .current_clock_time()
-                .unwrap_or(gst::ClockTime::ZERO);
-
-            let mut internals = self.internals.lock().unwrap();
-            let offset = if let Some(offset) = internals.timestamp_start {
-                offset
-            } else {
-                internals.timestamp_start = Some(running_time);
-                running_time
-            };
-
-            running_time - offset
-        };
-
+    fn create(&self, _push_src: &Self::Type) -> Result<gst::Buffer, gst::FlowError> {
         let duration = {
             let settings = self.settings.read().unwrap();
             gst::ClockTime::from_nseconds(
@@ -334,7 +316,6 @@ impl PushSrcImpl for RealsenseSrc {
                 frame,
                 &stream_id.to_string(),
                 is_stream_main,
-                timestamp,
                 duration,
             )
             .map_err(|_| gst::FlowError::Error)?;
@@ -349,7 +330,7 @@ impl PushSrcImpl for RealsenseSrc {
                 .unwrap()
                 .camera_meta_serialised
                 .clone();
-            self.attach_camera_meta(&mut output_buffer, camera_meta, timestamp, duration)
+            self.attach_camera_meta(&mut output_buffer, camera_meta, duration)
                 .map_err(|_| gst::FlowError::Error)?;
         }
 
@@ -712,14 +693,10 @@ impl RealsenseSrc {
         buffer: &mut gst::BufferRef,
         frame_meta: Vec<u8>,
         tag: &str,
-        timestamp: gst::ClockTime,
         duration: gst::ClockTime,
     ) -> Result<(), ErrorMessage> {
         // If we were able to read some metadata add it to the buffer
         let mut frame_meta_buffer = gst::buffer::Buffer::from_slice(frame_meta);
-
-        buffer.set_pts(timestamp);
-        buffer.set_dts(timestamp);
         buffer.set_duration(duration);
 
         // Attach the meta buffer and tag it adequately
@@ -746,7 +723,6 @@ impl RealsenseSrc {
         frame: &Frame,
         tag: &str,
         is_buffer_main: bool,
-        timestamp: gst::ClockTime,
         duration: gst::ClockTime,
     ) -> Result<(), ErrorMessage> {
         // Extract the frame data into a new buffer
@@ -757,8 +733,6 @@ impl RealsenseSrc {
 
         // Newly allocated buffer is mutable, no need for error handling
         let buffer_mut_ref = buffer.get_mut().unwrap();
-        buffer_mut_ref.set_pts(timestamp);
-        buffer_mut_ref.set_dts(timestamp);
         buffer_mut_ref.set_duration(duration);
 
         // Where the buffer is placed depends whether this is the first stream that is enabled
@@ -794,7 +768,6 @@ impl RealsenseSrc {
                 ))?,
                 md,
                 tag,
-                timestamp,
                 duration,
             )?;
         }
@@ -1293,7 +1266,6 @@ impl RealsenseSrc {
         &self,
         output_buffer: &mut gst::Buffer,
         camera_meta: Vec<u8>,
-        timestamp: gst::ClockTime,
         duration: gst::ClockTime,
     ) -> Result<(), ErrorMessage> {
         // Form a gst buffer out of mutable slice
@@ -1307,8 +1279,6 @@ impl RealsenseSrc {
             ]
         ))?;
 
-        buffer_mut_ref.set_pts(timestamp);
-        buffer_mut_ref.set_dts(timestamp);
         buffer_mut_ref.set_duration(duration);
 
         // Attach the camera_meta buffer and tag it adequately
@@ -1444,29 +1414,13 @@ impl ElementImpl for RealsenseSrc {
         static PAD_TEMPLATES: Lazy<[gst::PadTemplate; 1]> = Lazy::new(|| {
             let src_caps = gst::Caps::new_simple(
                 "video/rgbd",
-                &[
-                    // List of available streams meant for indicating their respective priority
-                    (
-                        "streams",
-                        &format! {"{},{},{},{},{},{},{},{},{}",
-                        StreamId::Depth,
-                        format!{"{}meta", StreamId::Depth},
-                        StreamId::Infra1,
-                        format!{"{}meta", StreamId::Infra1},
-                        StreamId::Infra2,
-                        format!{"{}meta", StreamId::Infra2},
-                        StreamId::Color,
-                        format!{"{}meta", StreamId::Color},
-                        STREAM_ID_CAMERAMETA},
+                &[(
+                    "framerate",
+                    &gst::FractionRange::new(
+                        gst::Fraction::new(MIN_FRAMERATE, 1),
+                        gst::Fraction::new(MAX_FRAMERATE, 1),
                     ),
-                    (
-                        "framerate",
-                        &gst::FractionRange::new(
-                            gst::Fraction::new(MIN_FRAMERATE, 1),
-                            gst::Fraction::new(MAX_FRAMERATE, 1),
-                        ),
-                    ),
-                ],
+                )],
             );
             [gst::PadTemplate::new(
                 "src",
