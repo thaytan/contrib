@@ -17,7 +17,7 @@
 use glib::{ParamFlags, ParamSpec};
 use gst::subclass::prelude::*;
 use gst::{prelude::*, TagList};
-use gst_depth_meta::{rgbd, BufferMeta};
+use gst_depth_meta::rgbd;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::{Mutex, RwLock};
@@ -519,6 +519,7 @@ impl RgbdDemux {
                     existing_pad.pad.mark_reconfigure();
 
                     // Prepare the pad for streaming again, i.e. send events and activate it
+                    existing_pad.pad.set_active(true).unwrap();
                     self.prepare_new_pad(existing_pad, stream_name, new_pad_caps);
                 }
             }
@@ -535,6 +536,7 @@ impl RgbdDemux {
 
         // Add the pad to the element
         element.add_pad(&pad).unwrap();
+        pad.set_active(true).unwrap();
 
         let mut send_pad = self.pad_to_send_tags_on.lock().unwrap();
         if stream_name != "dddqmeta" && send_pad.is_none() {
@@ -587,12 +589,6 @@ impl RgbdDemux {
         pad_handle
             .pad
             .push_event(gst::event::Caps::new(&new_pad_caps));
-
-        // Activate the pad
-        pad_handle
-            .pad
-            .set_active(true)
-            .expect("rgbdmux: Could not activate new src pad");
     }
 
     /// Called whenever a new buffer is passed to the sink pad. This function splits the buffer in
@@ -604,13 +600,14 @@ impl RgbdDemux {
         &self,
         _: &gst::Pad,
         element: &RgbdDemuxObject,
-        mut main_buffer: gst::Buffer,
+        main_buffer: gst::Buffer,
     ) -> Result<gst::FlowSuccess, gst::FlowError> {
         // Distribute the timestamp of the main buffer to the auxiliary buffers, if enabled
-        if self.settings.read().unwrap().distribute_timestamps {
-            Self::timestamp_aux_buffers_from_main(main_buffer.make_mut());
-        }
+        let distrubute_timestamps = self.settings.read().unwrap().distribute_timestamps;
 
+        let common_pts = main_buffer.pts();
+        let common_dts = main_buffer.dts();
+        let common_duration = main_buffer.duration();
         gst_trace!(
             CAT,
             obj: element,
@@ -621,9 +618,19 @@ impl RgbdDemux {
         let src_pads = self.src_pads.read().unwrap();
 
         let mut flow_combiner = self.flow_combiner.lock().unwrap();
-        for buffer in rgbd::get_all_buffers(main_buffer) {
-            flow_combiner
-                .update_flow(self.push_buffer_to_corresponding_pad(element, &src_pads, buffer))?;
+        for mut buffer in rgbd::get_all_buffers(main_buffer) {
+            let buffer = buffer.make_mut();
+            if distrubute_timestamps {
+                buffer.set_dts(common_dts);
+                buffer.set_pts(common_pts);
+                buffer.set_duration(common_duration);
+            }
+
+            flow_combiner.update_flow(self.push_buffer_to_corresponding_pad(
+                element,
+                &src_pads,
+                buffer.copy(),
+            ))?;
         }
         Ok(gst::FlowSuccess::Ok)
     }
@@ -719,27 +726,6 @@ impl RgbdDemux {
         gst_debug!(CAT, "Pushing stream start event for all streams");
         for (stream_name, mut src_pad) in self.src_pads.write().unwrap().iter_mut() {
             Self::push_stream_start(&mut src_pad, &stream_name, stream_identifier);
-        }
-    }
-
-    /// Timestamps all auxiliary buffers with the timestamps found in the given `main_buffer`.
-    /// # Arguments
-    /// * `main_buffer` - A reference to the main `video/rgbd` buffer.
-    fn timestamp_aux_buffers_from_main(main_buffer: &mut gst::BufferRef) {
-        // Get timestamp of the main buffer
-        let common_pts = main_buffer.pts();
-        let common_dts = main_buffer.dts();
-        let common_duration = main_buffer.duration();
-
-        // Go through all auxiliary buffers
-        for mut meta in main_buffer.iter_meta_mut::<BufferMeta>() {
-            // Make the buffer mutable so that we can edit its timestamps
-            let additional_buffer = meta.buffer_mut();
-
-            // Distribute the timestamp of the main buffer to the auxiliary buffers
-            additional_buffer.set_pts(common_pts);
-            additional_buffer.set_dts(common_dts);
-            additional_buffer.set_duration(common_duration);
         }
     }
 
