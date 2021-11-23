@@ -207,7 +207,7 @@ pub fn remove_aux_buffers_with_tags(
     main_buffer.foreach_meta_mut(|meta| {
         if let Some(meta) = meta.as_ref().downcast_ref::<BufferMeta>() {
             let auxiliary_buffer = meta.buffer();
-            let tag = match get_tag(&auxiliary_buffer) {
+            let tag = match get_tag(auxiliary_buffer) {
                 Err(_) => return Ok(true),
                 Ok(tag) => tag,
             };

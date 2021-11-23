@@ -374,13 +374,13 @@ impl RealsenseSrc {
                     .map_err(|e| gst::error_msg!(gst::LibraryError::Settings, ["{}", e]))?;
 
                 // Enable device with the given serial number and device configuration
-                config.enable_device(&serial)
+                config.enable_device(serial)
                     .map_err(|e| gst::error_msg!(LibraryError::Settings, ["{}", e]))?;
                 Ok(config)
             }
             // Stream from rosbag
             (None, Some(rosbag)) => {
-                config.enable_device_from_file_repeat_option(&rosbag, settings.loop_rosbag)
+                config.enable_device_from_file_repeat_option(rosbag, settings.loop_rosbag)
                     .map_err(|e| gst::error_msg!(gst::LibraryError::Settings, ["{}", e]))?;
                 Ok(config)
             }
@@ -471,7 +471,7 @@ impl RealsenseSrc {
 
             // Load JSON if `json-location` is defined
             if let Some(json_location) = &settings.json_location {
-                Self::load_json(&device, &json_location)?;
+                Self::load_json(&device, json_location)?;
             }
 
             // Store in internals, so that the device can be hardware reset after stream is over

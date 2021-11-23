@@ -350,7 +350,7 @@ impl RgbdDemux {
         for stream_name in streams.iter() {
             // Determine the appropriate caps for the stream
             let new_pad_caps =
-                self.extract_stream_caps(stream_name, &rgbd_caps, common_framerate)?;
+                self.extract_stream_caps(stream_name, rgbd_caps, common_framerate)?;
 
             self.create_new_src_pad(
                 element,
@@ -588,7 +588,7 @@ impl RgbdDemux {
         gst_debug!(CAT, "Pushing a new caps event for {} stream", stream_name);
         pad_handle
             .pad
-            .push_event(gst::event::Caps::new(&new_pad_caps));
+            .push_event(gst::event::Caps::new(new_pad_caps));
     }
 
     /// Called whenever a new buffer is passed to the sink pad. This function splits the buffer in
@@ -725,7 +725,7 @@ impl RgbdDemux {
     fn push_stream_start_on_all_pads(&self, stream_identifier: &StreamIdentifier) {
         gst_debug!(CAT, "Pushing stream start event for all streams");
         for (stream_name, mut src_pad) in self.src_pads.write().unwrap().iter_mut() {
-            Self::push_stream_start(&mut src_pad, &stream_name, stream_identifier);
+            Self::push_stream_start(&mut src_pad, stream_name, stream_identifier);
         }
     }
 

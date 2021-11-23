@@ -161,7 +161,7 @@ impl AggregatorImpl for RgbdMux {
                 aggregator,
                 duration,
                 position_running_time,
-                &sink_pad,
+                sink_pad,
             )?;
             has_all_buffers_in_range = has_all_buffers_in_range && buffer_in_range;
         }
