@@ -1383,9 +1383,9 @@ impl RealsenseSrc {
 
         // Hardware reset the device if it was used during streaming
         if let Some(device) = &internals.device {
-            device
-                .hardware_reset()
-                .map_err(|e| gst::error_msg!(LibraryError::Settings, ["{}", e]))?;
+            if let Err(err) = device.hardware_reset() {
+                gst_warning!(CAT, "Could not perform a hardware reset: {}", err);
+            }
         }
 
         *internals = RealsenseSrcInternals::default();
@@ -1401,9 +1401,10 @@ impl ElementImpl for RealsenseSrc {
                 "Realsense Source",
                 "Source/RGB-D/Realsense",
                 "Stream `video/rgbd` from a RealSense device",
-                "Niclas Overby <niclas.overby@aivero.com>,
-                 Andrej Orsula <andrej.orsula@aivero.com>,
-                 Tobias Morell <tobias.morell@aivero.com>",
+                "Niclas Overby <niclas.overby@aivero.com>, \
+                 Andrej Orsula <andrej.orsula@aivero.com>, \
+                 Tobias Morell <tobias.morell@aivero.com>, \
+                 Jimmi Christensen <jimmi.christensen@aivero.com>",
             )
         });
 
