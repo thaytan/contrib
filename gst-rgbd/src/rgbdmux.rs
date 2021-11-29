@@ -159,8 +159,8 @@ impl AggregatorImpl for RgbdMux {
         for sink_pad in sink_pads.clone() {
             let buffer_in_range = self.drop_out_of_range_buffers_on_pad(
                 aggregator,
-                duration,
                 position_running_time,
+                duration,
                 sink_pad,
             )?;
             has_all_buffers_in_range = has_all_buffers_in_range && buffer_in_range;
