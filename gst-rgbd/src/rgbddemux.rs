@@ -360,6 +360,8 @@ impl RgbdDemux {
                 &new_pad_caps,
             );
         }
+
+        element.no_more_pads();
         Ok(())
     }
 
