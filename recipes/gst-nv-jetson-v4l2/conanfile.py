@@ -14,7 +14,6 @@ class GstNvJetsonV4l2(GstRecipe):
     default_options = ("jetson=TX2",)
     exports_sources = {"patches/*"}
     build_requires = ("pkgconf/[^1.6.3]",)
-    requires = ("libglvnd/[^1.2.0]",)
 
     def requirements(self):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
