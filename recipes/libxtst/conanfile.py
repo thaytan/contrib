@@ -10,8 +10,6 @@ class LibxtstRecipe(Recipe):
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "libxext/[^1.3.4]",
-        "libxfixes/[^5.0.3]",
         "libxi/[^1.7.1]",
     )
 
