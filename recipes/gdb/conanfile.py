@@ -5,9 +5,6 @@ class GdbRecipe(Recipe):
     description = "The GNU Debugger"
     license = "GPL"
     build_requires = ("texinfo/[^6.6]",)
-    requires = (
-        "readline/[^8.0]",
-    )
 
     def requirements(self):
         self.requires(f"python/[^3]")
