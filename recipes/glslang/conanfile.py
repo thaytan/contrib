@@ -1,7 +1,7 @@
 from build import *
 
 
-class Glslang(Recipe):
+class Glslang(PythonRecipe):
     description = "OpenGL and OpenGL ES shader front end and validator"
     license = "BSD"
     build_requires = (
