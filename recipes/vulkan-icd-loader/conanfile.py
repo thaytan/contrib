@@ -7,7 +7,6 @@ class VulkanIcdLoader(Recipe):
     build_requires = (
         "cc/[^1.0.0]",
         "cmake/[^3.18.1]",
-        "libx11/[^1.6.0]",
         "xorgproto/[^2020.1]",
         "libxrandr/[^1.5.2]",
         "libxcb/[^1.14]",

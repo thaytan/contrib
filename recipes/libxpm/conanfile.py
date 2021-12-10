@@ -10,7 +10,6 @@ class LibxpmRecipe(Recipe):
         "xorg-util-macros/[^1.19.1]",
     )
     requires = (
-        "libx11/[^1.6.8]",
         "libxext/[^1.3.4]",
     )
 

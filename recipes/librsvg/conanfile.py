@@ -15,9 +15,6 @@ class Librsvg(Recipe):
         ("gdk-pixbuf2-no-librsvg/[^2.42.6]", "private"),
         ("libxml2/[^2.9.10]", "private"),
         ("shared-mime-info/[^2.0]", "private"),
-        # ("libx11/[^1.6.8]", "private")
-        # ("libpng/[^1.6.37]", "private")
-        # ("libjpeg-turbo/[^2.0.5]", "private")
     )
 
     def source(self):
