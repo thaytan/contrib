@@ -23,6 +23,7 @@ jobs:
     strategy:
       matrix:
         image_name:
+          - bionic-x86_64-dispatch
           - bionic-x86_64
           - bionic-x86_64-bootstrap
           - bionic-armv8
