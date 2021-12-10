@@ -12,7 +12,6 @@ class Librsvg(Recipe):
         "gtk-doc/[^1.33.2]",
     )
     requires = (
-        "pango/[^1.48.4]",
         ("gdk-pixbuf2-no-librsvg/[^2.42.6]", "private"),
         ("libxml2/[^2.9.10]", "private"),
         ("shared-mime-info/[^2.0]", "private"),
