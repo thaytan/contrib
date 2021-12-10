@@ -16,7 +16,6 @@ class LibglvndRecipe(Recipe):
     def requirements(self):
         if self.options.x11:
             self.requires("libxext/[^1.3.4]", "private")
-            self.requires("libx11/[^1.6.12]", "private")
             self.requires("xorgproto/[^2020.1]", "private")
 
     def source(self):
