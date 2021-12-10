@@ -11,7 +11,6 @@ class GlfwcRecipe(Recipe):
 
     def requirements(self):
         if self.options.x11:
-            self.requires("libx11/[^1.6.8]")
             self.requires("libxrandr/[^1.5.2]")
             self.requires("libxinerama/[^1.1.4]")
             self.requires("libxcursor/[^1.2.0]")
