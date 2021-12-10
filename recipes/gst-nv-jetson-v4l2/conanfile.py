@@ -7,7 +7,7 @@ mapper = {
 }
 
 
-class GstNvJetsonV4l2(Recipe):
+class GstNvJetsonV4l2(GstRecipe):
     description = "NVIDIA jetson v4l2 element"
     license = "LGPL"
     options = {"jetson": ["Nano", "TX2", "Xavier"]}
