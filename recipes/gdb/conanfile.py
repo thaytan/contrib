@@ -6,7 +6,6 @@ class GdbRecipe(Recipe):
     license = "GPL"
     build_requires = ("texinfo/[^6.6]",)
     requires = (
-        "ncurses/[^6.1]",
         "readline/[^8.0]",
     )
 
