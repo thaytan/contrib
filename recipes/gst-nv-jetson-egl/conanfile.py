@@ -10,7 +10,7 @@ class GstNvJetsonEgl(GstRecipe):
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
     )
-    requires = ("mesa/[^19.2.0]",)
+    requires = ("mesa/[>=19.2.0]",)
 
     def requirements(self):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
