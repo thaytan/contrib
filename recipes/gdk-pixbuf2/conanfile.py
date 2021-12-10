@@ -24,9 +24,12 @@ class GdkPixbuf2(Recipe):
     )
     requires = (
         "shared-mime-info/[^2.0]",
-        "pango/[^1.48.4]",
         "libtiff/[^4.3.0rc1]",
     )
+
+    def requirements(self):
+        if self.name != "gdk-pixbuf2":
+            self.requires("pango/[^1.48.4]")
 
     def source(self):
         self.get(f"https://github.com/GNOME/gdk-pixbuf/archive/{self.version}.tar.gz")
