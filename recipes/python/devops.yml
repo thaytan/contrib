@@ -1,4 +1,4 @@
 - version: 3.9.6
 - version: 3.8.5
   profiles:
-    - linux-x86_64_python_3.8
+    - linux-x86_64-python_3.8
