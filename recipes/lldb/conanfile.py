@@ -13,12 +13,12 @@ class Lldb(PythonRecipe):
         "swig/[^4.0.2]",
     )
     requires = (
-        "llvm/[^11.0.1]",
         "libedit/20190324-3.1",
         "python-six/[^1.15.0]",
     )
 
     def requirements(self):
+        self.requires(f"llvm/[^{self.settings.compiler.version}]")
         self.requires(f"python/[~{self.settings.python}]")
 
     def source(self):
