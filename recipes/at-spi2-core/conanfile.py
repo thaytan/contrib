@@ -3,7 +3,7 @@ from build import *
 
 class AtSpi2CoreRecipe(Recipe):
     description = "Protocol definitions and daemon for D-Bus at-spi"
-    license = "GPL"
+    license = "LGPL"
     build_requires = ("cc/[^1.0.0]", "meson/[>=0.55.3]")
     requires = (
         "glib/[^2.66.1]",

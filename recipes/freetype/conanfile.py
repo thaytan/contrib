@@ -3,7 +3,7 @@ from build import *
 
 class FreetypeRecipe(Recipe):
     description = "FreeType is a software library to render fonts"
-    license = "GPL"
+    license = "FTL"
     build_requires = (
         "cc/[^1.0.0]",
         "autotools/[^1.0.0]",

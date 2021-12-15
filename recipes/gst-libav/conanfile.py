@@ -3,7 +3,7 @@ from build import *
 
 class GstLibavRecipe(GstRecipe):
     description = "GStreamer plugin for the libav* library (former FFmpeg)"
-    license = "GPL"
+    license = "LGPL"
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[>=0.55.3]",

@@ -3,7 +3,7 @@ from build import *
 
 class PangoRecipe(Recipe):
     description = "A library for layout and rendering of text"
-    license = "GPL"
+    license = "LGPL"
     options = {
         "shared": [True, False],
         "introspection": [True, False],

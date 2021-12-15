@@ -75,7 +75,7 @@ class GstPluginsBadRecipe(GstRecipe):
             self.build_requires("orc/[^0.4.31]")
 
     def requirements(self):
-
+        
         if self.options.srtp:
             self.requires("libsrtp/[^2.2.0]")
         if self.options.opencv:
@@ -115,5 +115,10 @@ class GstPluginsBadRecipe(GstRecipe):
         if self.settings.arch == "x86_64":
             opts["msdk"] = self.options.msdk
             opts["nvcodec"] = self.options.nvcodec
+
+        if self.options.x265:
+            self.license = "GPL"
+            opts["gpl"] = "enabled"
+
 
         self.meson(opts, source_folder)
