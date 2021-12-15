@@ -91,45 +91,10 @@ class GstPluginsBadRecipe(GstRecipe):
             self.requires("x265/[>=2.7]")
 
     def source(self):
-        git = tools.Git(folder="gst-plugins-bad")
-        if "1.18" in self.settings.gstreamer:
-            git = tools.Git(folder=self.src)
-            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-plugins-bad.git", "master")
-
-            # Pick a random cutoff date close to HEAD on origin/master and try to build
-            git.run("checkout 316ddddc160de4f1e5546ef1d70d21bce5459fea")
-
-            # Build it for 1.18 by undoing some 1.19 specifics:
-            # 9b082e7 undoes the requirement on gst 1.19
-            # 6adf7df Fails to build - webp: allow per feature registration
-            # 4f16edf Fails to build - srtp: allow per feature registration
-            # a216a1f Fails to build - dtls: allow per feature registration
-            # 42a8702 Fails to build - x265: allow per feature registration
-            git.run(
-                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" '
-                + "revert --no-edit "
-                + "9b082e7467797a6e1c5626a67f7ffc5d0248eccd "
-                + "4f16edf0d07e5fd42221d5e3727c6d5aa548cdb7 "
-                + "6adf7dff71b2808e8b5fbef7bf45f1ae50ae1b34 "
-                + "a216a1f2cf84b66601524be347ac4b45a995b044 "
-                + "42a87029190d8b13c8e2040e8b73147765bfd7a1 "
-            )
-            # x265enc: add negative DTS support  https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/commit/c5fda68403b74911d0b2e2ab2b1e58c52ab3dad7
-            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" ' + "cherry-pick -x " + "08323f382c61bc7b529ec2eee8f719ffb7fedb95 ")
-
-        elif int(str(self.settings.gstreamer).split(".")[1]) == 19:
-            git = tools.Git(folder=self.src)
-            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-plugins-bad.git", f"{self.version}")
-
-            # Build current 1.19 tag and apply
-            # x265: Fix a deadlock when failing to create the x265enc. https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/commit/08323f382c61bc7b529ec2eee8f719ffb7fedb95
-            # x265enc: add negative DTS support  https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/commit/c5fda68403b74911d0b2e2ab2b1e58c52ab3dad7
-            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" ' + "cherry-pick -x " + "08323f382c61bc7b529ec2eee8f719ffb7fedb95 " + "c5fda68403b74911d0b2e2ab2b1e58c52ab3dad7 ")
-
-        elif int(str(self.settings.gstreamer).split(".")[1]) > 19:
-            self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/archive/{self.version}/gst-plugins-bad-{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
 
     def build(self):
+        source_folder = os.path.join(self.src, "subprojects", "gst-plugins-bad")
         opts = {
             "closedcaption": self.options.closedcaption,
             "debugutils": self.options.debugutils,
@@ -151,4 +116,4 @@ class GstPluginsBadRecipe(GstRecipe):
             opts["msdk"] = self.options.msdk
             opts["nvcodec"] = self.options.nvcodec
 
-        self.meson(opts)
+        self.meson(opts, source_folder)

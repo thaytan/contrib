@@ -38,12 +38,13 @@ class GstRecipe(GstRecipe):
         self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
 
     def build(self):
+        source_folder = os.path.join(self.src, "subprojects", "gstreamer")
         opts = {
             "check": True,
             "tools": True,
             "introspection": self.options.introspection,
         }
-        self.meson(opts)
+        self.meson(opts, source_folder)
 
     def package_info(self):
         self.env_info.GST_PLUGIN_SCANNER = os.path.join(self.package_folder, "bin", "gstreamer-1.0", "gst-plugin-scanner")

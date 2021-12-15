@@ -43,22 +43,10 @@ class GstPluginsBaseRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        if int(str(self.settings.gstreamer).split(".")[1]) == 19:
-            git = tools.Git(folder=self.src)
-            git.clone("https://gitlab.freedesktop.org/GStreamer/gst-plugins-base.git", f"{self.version}")
-
-            git.run(
-                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" ' + "cherry-pick -x " + "4aa72cea4f99c9c47f5d88f294942b8db4a60aa0 " + "acf98372a3dbc04c23e0d3139dad1c295eedeac2 " + "ebb6b9778af00afe60bd308a27c5ddb8df932d68 "
-            )
-
-            # https://gitlab.freedesktop.org/gstreamer/gst-plugins-base/-/merge_requests/1249/commits
-            # smartencoder: clean up and extend accepted formats 4aa72cea4f99c9c47f5d88f294942b8db4a60aa0
-            # smartencoder: Respect user `stream-format` when specified acf98372a3dbc04c23e0d3139dad1c295eedeac2
-            # encoding-profile: ignore more encoding private fields ebb6b9778af00afe60bd308a27c5ddb8df932d68
-        else:
-            self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-plugins-base/-/archive/{self.version}/gst-plugins-base-{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
 
     def build(self):
+        source_folder = os.path.join(self.src, "subprojects", "gst-plugins-base")
         opts = {
             "gl_platform": "egl",
             "introspection": self.options.introspection,
@@ -81,4 +69,4 @@ class GstPluginsBaseRecipe(GstRecipe):
             "audiomixer": True,
             "videorate": True,
         }
-        self.meson(opts)
+        self.meson(opts, source_folder)
