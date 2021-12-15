@@ -10,6 +10,7 @@ generate-config:
   artifacts:
     paths:
       - generated-config.yml
+      - build_order.json
 
 child-pipeline:
   stage: test
