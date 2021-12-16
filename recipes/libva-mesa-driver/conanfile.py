@@ -15,10 +15,10 @@ class LibvaMesaDriverRecipe(Recipe):
         )
 
     def build(self):
-        args = [
-            f"-Ddriverdir={os.path.join(self.package_folder, 'lib', 'dri')}",
-        ]
-        self.meson(args)
+        opts = {
+            "driverdir": os.path.join(self.package_folder, 'lib', 'dri'),
+        }
+        self.meson(opts)
 
     def package_info(self):
         self.env_info.LIBVA_DRIVERS_PATH.append(
