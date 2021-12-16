@@ -6,7 +6,7 @@ class GstSvtHevcRecipe(GstRecipe):
     license = "LGPL"
     build_requires = (
         "cc/[^1.0.0]",
-        "meson/[^0.51.2]",
+        "meson/[>=0.51.2]",
     )
     requires = (
         "svt-hevc/[^1.4.3]",
