@@ -8,7 +8,7 @@ class OpenmpRecipe(Recipe):
         "cc/[^1.0.0]",
         "cmake/[^3.18.4]",
         "libffi/[^3.3]",
-        "elfutils/[^0.179]",
+        "elfutils/[>=0.179]",
         "perl/[^5.30.0]",
     )
 
