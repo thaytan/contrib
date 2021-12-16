@@ -37,18 +37,20 @@ class GstVaapiRecipe(GstRecipe):
         self.requires(f"gst-plugins-bad/[~{self.settings.gstreamer}]")
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gstreamer-vaapi/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
 
     def build(self):
-        opts = {}
-        opts["with_drm"] = self.options.drm
-        opts["with_egl"] = self.options.egl
-        opts["with_encoders"] = self.options.encoders
-        opts["with_glx"] = self.options.glx
-        opts["with_x11"] = self.options.x11
-        opts["with_wayland"] = self.options.wayland
-        opts["tests"] = self.options.tests
-        self.meson(opts)
+        source_folder = os.path.join(self.src, "subprojects", "gstreamer-vaapi")
+        opts = {
+            "with_drm": self.options.drm,
+            "with_egl": self.options.egl,
+            "with_encoders": self.options.encoders,
+            "with_glx": self.options.glx,
+            "with_x11": self.options.x11,
+            "with_wayland": self.options.wayland,
+            "tests": self.options.tests,
+        }
+        self.meson(opts, source_folder)
 
     def package(self):
         super().package()
