@@ -14,4 +14,9 @@ class GstPythonRecipe(GstRecipe):
         self.requires(f"gst/[~{self.settings.gstreamer}]")
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gst-python/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
+
+    def build(self):
+        source_folder = os.path.join(self.src, "subprojects", "gst-python")
+        self.meson({}, source_folder)
+

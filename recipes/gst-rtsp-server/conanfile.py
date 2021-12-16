@@ -29,17 +29,14 @@ class GstRtspServerRecipe(GstRecipe):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
-        if "1.19" in self.version:
-            git = tools.Git(folder=f"{self.name}-{self.version}.src")
-            git.clone("https://gitlab.freedesktop.org/gstreamer/gstreamer.git", "main")
-            git.run("checkout 14d636b224f3f00779ccb165750c29f8b69eb34d")
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
 
     def build(self):
-        opts = {}
-        opts["examples"] = self.options.examples
-        opts["tests"] = self.options.tests
-        opts["introspection"] = self.options.introspection
-        opts["rtspclientsink"] = self.options.rtspclientsink
-        self.meson(
-            opts=opts, source_folder=os.path.join(self.src, "subprojects", "gst-rtsp-server")
-        )
+        source_folder=os.path.join(self.src, "subprojects", "gst-rtsp-server")
+        opts = {
+            "examples": self.options.examples,
+            "tests": self.options.tests,
+            "introspection": self.options.introspection,
+            "rtspclientsink": self.options.rtspclientsink,
+        }
+        self.meson(opts, source_folder)

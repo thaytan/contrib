@@ -14,4 +14,9 @@ class GstLibavRecipe(GstRecipe):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gst-libav/archive/{self.version}.tar.gz")
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
+
+    def build(self):
+        source_folder = os.path.join(self.src, "subprojects", "gst-libav")
+        self.meson({}, source_folder)
+

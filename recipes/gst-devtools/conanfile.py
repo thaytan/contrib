@@ -29,16 +29,10 @@ class GstDevtoolsRecipe(GstRecipe):
         self.requires(f"gst-plugins-base/[~{self.settings.gstreamer}]")
 
     def source(self):
-        if int(str(self.settings.gstreamer).split(".")[1]) >= 18:
-            self.get(
-                f"https://gitlab.freedesktop.org/gstreamer/gst-devtools/-/archive/{self.version}/gst-devtools-{self.version}.tar.bz2"
-            )
-        else:
-            self.get(
-                f"https://gitlab.com/aivero/public/gstreamer/gst-devtools-mirror/-/archive/{self.version}/gst-devtools-mirror-{self.version}.tar.gz"
-            )
+        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
 
     def build(self):
+        source_folder = os.path.join(self.src, "subprojects", "gst-devtools")
         opts = {
             "debug_viewer": False,
             "doc": self.options.gtk_doc,
@@ -47,4 +41,4 @@ class GstDevtoolsRecipe(GstRecipe):
             "tests": self.options.tests,
             "validate": True,
         }
-        self.meson(opts)
+        self.meson(opts, source_folder)
