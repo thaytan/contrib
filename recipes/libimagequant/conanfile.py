@@ -6,7 +6,7 @@ class LibimagequantRecipe(Recipe):
     license = "BSD"
     build_requires = (
         "autotools/1.0.0",
-        "openmp/[^11.0.0]",
+        "openmp/[>=11.0.0]",
     )
 
     def source(self):
@@ -15,6 +15,7 @@ class LibimagequantRecipe(Recipe):
     def build(self):
         os.environ["DESTDIR"] = self.package_folder
         args = [
+            f"--prefix={self.package_folder}",
             "--with-openmp",
         ]
         self.autotools(args)
