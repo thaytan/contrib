@@ -63,12 +63,13 @@ build_time_vars = {{
   "LD": os.environ.get("LD", ""),
   "STRIP": os.environ.get("STRIP", ""),
   "OBJCOPY": os.environ.get("OBJCOPY", ""),
-  "srcdir": "python.{}.src",
-  "EXT_SUFFIX": ".cpython-{}{}-{}-linux-gnu.so",
+  "srcdir": "python.{0}.src",
+  "EXT_SUFFIX": ".cpython-{1}{2}-{3}-linux-gnu.so",
   "CFLAGS": "",
   "CCSHARED": "",
   "LDSHARED": "",
   "LDFLAGS": "",
+  "LDLIBRARY": "libpython{1}.{2}.so"
 }}
 '''.format(self.version, self.version[0], self.version[2], arch))
 
