@@ -5,6 +5,7 @@ class GlmRecipe(Recipe):
     description = "OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications."
     license = "MIT"
     exports_sources = ["glm.pc"]
+    requires = ("cmake/[^3.18.4]")
 
     def source(self):
         self.get(f"https://github.com/g-truc/glm/releases/download/{self.version}/glm-{self.version}.zip")
