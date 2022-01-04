@@ -9,7 +9,7 @@ class GstRecipe(GstRecipe):
     requires = ("rust-libstd/[^1.0.0]",)
 
     def requirements(self):
-        self.requires(f"gst/[~{self.settings.gstreamer}]")
+        self.requires(f"gst-plugins-bad/[~{self.settings.gstreamer}]")
 
     def source(self):
         self.get(f"https://github.com/centricular/webrtcsink/archive/{self.version}.tar.gz")
