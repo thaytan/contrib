@@ -3,7 +3,7 @@ stages:
   - test
 
 generate-config:
-  image: aivero/conan:bionic-x86_64-dispatch
+  image: aivero/conan:focal-x86_64
   tags: [x86_64]
   stage: build
   script:
