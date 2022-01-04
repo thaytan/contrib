@@ -1,4 +1,4 @@
-# docker build -f bionic-x86_64.Dockerfile .
+# docker build -f bionic-x86_64-gitlab.Dockerfile .
 FROM denoland/deno:bin-1.14.3 AS deno
 FROM ubuntu:bionic AS builder
 RUN apt update && \
