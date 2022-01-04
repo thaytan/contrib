@@ -20,31 +20,28 @@ class RustcRecipe(Recipe):
     )
 
     def source(self):
-        self.get(
-            f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz"
-        )
+        self.get(f"https://static.rust-lang.org/dist/rustc-{self.version}-src.tar.gz")
 
     def build(self):
         os.environ["RUSTFLAGS"] = "-g -Clinker-plugin-lto -Copt-level=2"
-        arch = {
-            "x86_64": "x86_64",
-            "armv8": "aarch64"
-        }[str(self.settings.arch)]
+        arch = {"x86_64": "x86_64", "armv8": "aarch64"}[str(self.settings.arch)]
         triple = f"{arch}-unknown-linux-gnu"
         args = [
             f"--host={triple}",
             f"--target={triple}",
             f'--prefix="{self.package_folder}"',
+            f'--sysconfdir="{self.package_folder}/etc"',
             f"--llvm-root={self.deps_cpp_info['llvm'].rootpath}",
+            "--release-channel=stable",
+            "--set=llvm.thin-lto=true",
+            "--tools=src,cargo,rustfmt,clippy,rust-analyzer",
             "--enable-option-checking",
             "--enable-llvm-link-shared",
             "--enable-locked-deps",
             "--enable-extended",
-            "--tools=src,cargo,rustfmt,clippy,rust-analyzer",
-            "--disable-docs",
             "--enable-vendor",
-            "--release-channel=stable",
-            "--set=llvm.thin-lto=true",
+            "--disable-docs",
+            "--disable-compiler-docs",
         ]
         self.exe("./configure", args)
         self.exe("python x.py install")
