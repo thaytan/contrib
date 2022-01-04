@@ -1,4 +1,3 @@
-# docker build -f bionic-armv8-gitlab.Dockerfile .
 FROM lukechannings/deno:v1.14.3 AS deno
 FROM arm64v8/ubuntu:bionic AS builder
 RUN apt update && \
