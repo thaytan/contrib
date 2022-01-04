@@ -4,6 +4,7 @@ stages:
 
 generate-config:
   image: aivero/conan:bionic-x86_64-dispatch
+  tags: [x86_64]
   stage: build
   script:
     - deno run --unstable --allow-all --import-map https://gitlab.com/aivero/cicd/-/raw/master/import_map.json https://gitlab.com/aivero/cicd/-/raw/master/lib/es6_global/src/GenerateConfig.js
