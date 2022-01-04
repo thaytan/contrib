@@ -25,16 +25,13 @@ jobs:
         image_name:
           - bionic-x86_64-dispatch
           - bionic-x86_64
-          - bionic-x86_64-gitlab
           - bionic-x86_64-bootstrap
           - bionic-armv8
-          - bionic-armv8-gitlab
           - bionic-armv8-bootstrap
-          - alpine-x86_64
-          - alpine-x86_64-bootstrap
-          - alpine-armv8
-          - alpine-armv8-bootstrap
-
+          - focal-x86_64
+          - focal-x86_64-bootstrap
+          - focal-armv8
+          - focal-armv8-bootstrap
     steps:
       - uses: actions/checkout@v2
 
