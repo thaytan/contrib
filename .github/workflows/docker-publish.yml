@@ -25,8 +25,10 @@ jobs:
         image_name:
           - bionic-x86_64-dispatch
           - bionic-x86_64
+          - bionic-x86_64-gitlab
           - bionic-x86_64-bootstrap
           - bionic-armv8
+          - bionic-armv8-gitlab
           - bionic-armv8-bootstrap
           - alpine-x86_64
           - alpine-x86_64-bootstrap
