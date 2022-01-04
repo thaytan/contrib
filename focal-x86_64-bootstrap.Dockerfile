@@ -8,5 +8,5 @@ COPY --from=builder /usr/local/bin/conan /usr/local/bin/conan
 COPY --from=builder /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages
 COPY --from=deno /deno /usr/bin/deno
 RUN apt update && \
-  apt install --no-install-recommends -y make clang clang++ libc6-dev cmake git gawk bison python3-minimal python3-pkg-resources python3-distutils && \
+  apt install --no-install-recommends -y make clang libc6-dev cmake git gawk bison python3-minimal python3-pkg-resources python3-distutils && \
   rm -rf /var/lib/apt/lists/*
