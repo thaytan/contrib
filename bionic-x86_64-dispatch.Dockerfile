@@ -13,5 +13,5 @@ RUN apt update && \
   apt install --no-install-recommends -y libc6-dev libatomic1 python3-minimal python3-pkg-resources ruby ca-certificates git git-lfs  && \
   rm -rf /var/lib/apt/lists/*
 RUN DEBIAN_FRONTEND=noninteractive gem install -f asciidoctor-pdf --pre
-RUN conan config install https://codeload.github.com/aivero/conan-config/zip/master -sf conan-config-master
+RUN conan config install https://github.com/aivero/conan-config/archive/refs/heads/gitlab.zip -sf conan-config-gitlab
 RUN conan config set general.default_profile=linux-x86_64
