@@ -3,7 +3,7 @@ FROM denoland/deno:bin-1.14.3 AS deno
 FROM ubuntu:bionic AS builder
 RUN apt update && \
   apt install --no-install-recommends -y python3-pip python3-setuptools && \
-  pip3 install --upgrade conan
+  pip3 install --upgrade conan MarkupSafe==2.0.1
 
 FROM ubuntu:bionic
 COPY --from=builder /usr/local/bin/conan /usr/local/bin/conan
