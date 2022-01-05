@@ -132,7 +132,6 @@ class LlvmRecipe(Recipe):
 
         # Stage 0 build (lld, clang, ar)
         targets = [
-            "install-cxx",
             "install-compiler-rt",
             "install-clang",
             "install-clang-cpp",
