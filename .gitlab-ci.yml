@@ -1,7 +1,16 @@
 stages:
+  - init
   - build
   - test
-
+alias-creator:
+  image: aivero/conan:focal-x86_64
+  tags: [x86_64]
+  stage: init
+  script:
+    - python3 scripts/upload_aliases.py
+  except:
+    changes:
+      - "*"
 generate-config:
   image: aivero/conan:focal-x86_64
   tags: [x86_64]
