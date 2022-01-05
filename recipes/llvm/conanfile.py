@@ -184,7 +184,7 @@ class LlvmRecipe(Recipe):
         libcxx_lib = os.path.join(stage0_folder, "lib")
         os.environ["LIBRARY_PATH"] = libcxx_lib
         os.environ["CFLAGS"] = cflags
-        os.environ["CXXLAGS"] = cflags
+        os.environ["CXXLAGS"] = f"{cflags} -stdlib=libstdc++"
         os.environ["LDFLAGS"] = cflags
 
         # Stage 1 build (cxx, cxxabi)
