@@ -1,8 +1,8 @@
-diff --git a/tools/ges-launcher.c b/tools/ges-launcher.c
+diff --git a/subprojects/gst-editing-services/tools/ges-launcher.c b/subprojects/gst-editing-services/tools/ges-launcher.c
 index aa0b711b..fcd40af2 100644
---- a/tools/ges-launcher.c
-+++ b/tools/ges-launcher.c
-@@ -1590,6 +1590,30 @@ _startup (GApplication * application)
+--- a/subprojects/gst-editing-services/tools/ges-launcher.c
++++ b/subprojects/gst-editing-services/tools/ges-launcher.c
+@@ -1593,6 +1593,30 @@ _startup (GApplication * application)
      goto done;
    }
  

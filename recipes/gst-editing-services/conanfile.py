@@ -49,23 +49,17 @@ class GstEditingServicesRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        git = tools.Git(folder="gst-editing-services")
-        if int(str(self.settings.gstreamer).split(".")[1]) == 19:
-            git = tools.Git(folder=self.src)
-            git.clone("https://gitlab.freedesktop.org/gstreamer/gst-editing-services.git", "master")
+        git = tools.Git(folder=f"{self.name}-{self.version}.src")
+        version = self.version
+        if version == "1.20.0":
+            version = "428a9a6c012bde4ddd93d37818558351013afe65"
 
-            # Pick a HEAD on 2/Sept/2021: 
-            # https://gitlab.freedesktop.org/gstreamer/gst-editing-services/-/commit/0ec4893c8e06e80a5cc3b8f71e781de71e527163
-            git.run("checkout 0ec4893c8e06e80a5cc3b8f71e781de71e527163")
-
-            self.patch("ges_launch_custom_config.patch")
-
-        elif int(str(self.settings.gstreamer).split(".")[1]) > 19:
-            self.get(f"https://gitlab.freedesktop.org/gstreamer/gst-editing-services/-/archive/{self.version}/gst-editing-services-{self.version}.tar.gz")
-        else:
-            raise (f"GStreamer version {self.settings.gstreamer} not supported")
+        git.clone("https://gitlab.freedesktop.org/gstreamer/gstreamer.git")
+        git.checkout(version)
+        self.patch("ges_launch_custom_config.patch")
 
     def build(self):
+        source_folder = os.path.join(self.src, "subprojects", "gst-editing-services")
         opts = {
             "doc": self.options.doc,
             "examples": self.options.examples,
@@ -80,4 +74,4 @@ class GstEditingServicesRecipe(GstRecipe):
             # TODO: take this from options!!!
             "validate": False,
         }
-        self.meson(opts)
+        self.meson(opts, source_folder)

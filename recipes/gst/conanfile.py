@@ -26,7 +26,9 @@ class GstRecipe(GstRecipe):
 
     def validate(self):
         if str(self.settings.gstreamer) not in str(self.version):
-            raise ConanInvalidConfiguration(f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}")
+            raise ConanInvalidConfiguration(
+                f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}"
+            )
 
     def build_requirements(self):
         if self.options.introspection:
@@ -35,7 +37,11 @@ class GstRecipe(GstRecipe):
             )
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
+        version = self.version
+        if version == "1.20.0":
+            version = "428a9a6c012bde4ddd93d37818558351013afe65"
+
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
 
     def build(self):
         source_folder = os.path.join(self.src, "subprojects", "gstreamer")
@@ -47,4 +53,6 @@ class GstRecipe(GstRecipe):
         self.meson(opts, source_folder)
 
     def package_info(self):
-        self.env_info.GST_PLUGIN_SCANNER = os.path.join(self.package_folder, "bin", "gstreamer-1.0", "gst-plugin-scanner")
+        self.env_info.GST_PLUGIN_SCANNER = os.path.join(
+            self.package_folder, "bin", "gstreamer-1.0", "gst-plugin-scanner"
+        )

@@ -61,7 +61,9 @@ class GstPluginsBadRecipe(GstRecipe):
 
     def validate(self):
         if str(self.settings.gstreamer) not in str(self.version):
-            raise ConanInvalidConfiguration(f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}")
+            raise ConanInvalidConfiguration(
+                f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}"
+            )
 
     def build_requirements(self):
         #     # This will SemVer match PATH changes, but not MINOR or MAJOR changes
@@ -75,7 +77,6 @@ class GstPluginsBadRecipe(GstRecipe):
             self.build_requires("orc/[^0.4.31]")
 
     def requirements(self):
-        
         if self.options.srtp:
             self.requires("libsrtp/[^2.2.0]")
         if self.options.opencv:
@@ -91,7 +92,11 @@ class GstPluginsBadRecipe(GstRecipe):
             self.requires("x265/[>=2.7]")
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
+        version = self.version
+        if version == "1.20.0":
+            version = "428a9a6c012bde4ddd93d37818558351013afe65"
+
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
 
     def build(self):
         source_folder = os.path.join(self.src, "subprojects", "gst-plugins-bad")
@@ -119,6 +124,5 @@ class GstPluginsBadRecipe(GstRecipe):
         if self.options.x265:
             self.license = "GPL"
             opts["gpl"] = "enabled"
-
 
         self.meson(opts, source_folder)

@@ -36,14 +36,20 @@ class GstPluginsBaseRecipe(GstRecipe):
 
     def validate(self):
         if str(self.settings.gstreamer) not in str(self.version):
-            raise ConanInvalidConfiguration(f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}")
+            raise ConanInvalidConfiguration(
+                f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}"
+            )
 
     def build_requirements(self):
         if self.options.introspection:
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        self.get(f"https://github.com/GStreamer/gstreamer/archive/{self.version}.tar.gz")
+        version = self.version
+        if version == "1.20.0":
+            version = "428a9a6c012bde4ddd93d37818558351013afe65"
+
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
 
     def build(self):
         source_folder = os.path.join(self.src, "subprojects", "gst-plugins-base")

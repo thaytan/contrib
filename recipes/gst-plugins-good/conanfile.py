@@ -56,7 +56,9 @@ class GstPluginsGoodRecipe(GstRecipe):
 
     def validate(self):
         if str(self.settings.gstreamer) not in str(self.version):
-            raise ConanInvalidConfiguration(f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}")
+            raise ConanInvalidConfiguration(
+                f"GStreamer version specified in devops.yml ({self.version}) is not compatible with version specified in profile: {self.settings.gstreamer}"
+            )
 
     def configure(self):
         if self.settings.hardware == "rpi":
@@ -82,12 +84,21 @@ class GstPluginsGoodRecipe(GstRecipe):
 
     def source(self):
         git = tools.Git(folder=f"{self.name}-{self.version}.src")
-        git.clone("https://gitlab.freedesktop.org/GStreamer/gstreamer.git", self.version)
-        git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-Support-any-tag.patch')
+        version = self.version
+        if version == "1.20.0":
+            version = "428a9a6c012bde4ddd93d37818558351013afe65"
+
+        git.clone("https://gitlab.freedesktop.org/gstreamer/gstreamer.git")
+        git.checkout(version)
+        git.run(
+            '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-Support-any-tag.patch'
+        )
 
         # Add our own custom changes
         if self.options.aivero_rvl_matroska:
-            git.run('-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch')
+            git.run(
+                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch'
+            )
 
     def build(self):
         source_folder = os.path.join(self.src, "subprojects", "gst-plugins-good")
