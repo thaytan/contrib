@@ -13,7 +13,6 @@ class LinuxHeadersRecipe(Recipe):
     def build(self):
         arch = {"x86_64": "x86_64", "armv8": "arm64"}[str(self.settings.arch)]
         args = [
-            "LLVM=1",
             f"ARCH={arch}",
             f'INSTALL_HDR_PATH="{self.package_folder}"',
         ]
