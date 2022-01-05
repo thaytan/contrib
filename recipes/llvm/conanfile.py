@@ -163,8 +163,12 @@ class LlvmRecipe(Recipe):
         if self.settings.libc == "musl":
             cflags = "-static"
 
-        os.environ["CFLAGS"] = cflags
+        # Use system libstdc++ to bootstrap libcxx
+        libcxx_lib = os.path.join("usr", "lib", f"{arch}-linux-gnu")
+        os.environ["LIBRARY_PATH"] = libcxx_lib
         os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libstdc++"
+
+        os.environ["CFLAGS"] = cflags
         os.environ["LDFLAGS"] = cflags
 
         # Stage 1 build (cxx, cxxabi)
