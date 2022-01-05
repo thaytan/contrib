@@ -9,7 +9,7 @@ generate-config:
   script:
     - deno run --unstable --allow-all --import-map https://gitlab.com/aivero/cicd/-/raw/master/import_map.json https://gitlab.com/aivero/cicd/-/raw/master/lib/es6_global/src/GenerateConfig.js
   variables:
-    MODE: git
+    mode: git
   artifacts:
     paths:
       - generated-config.yml
