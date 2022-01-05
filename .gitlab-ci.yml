@@ -9,8 +9,7 @@ alias-creator:
   script:
     - python3 scripts/upload_aliases.py
   except:
-    branches
-      - master
+    - master
 generate-config:
   image: aivero/conan:focal-x86_64
   tags: [x86_64]
