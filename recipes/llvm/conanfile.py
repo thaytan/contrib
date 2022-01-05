@@ -222,8 +222,6 @@ class LlvmRecipe(Recipe):
         targets = [
             "install-cxx",
             "install-compiler-rt",
-            "install-cxx",
-            "install-compiler-rt",
             "install-libclang",
             "install-clang",
             "install-clang-cpp",
