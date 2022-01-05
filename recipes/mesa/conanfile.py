@@ -21,7 +21,6 @@ class MesaRecipe(Recipe):
         "python-mako/[^1.1.0]",
     )
     requires = (
-        ("llvm/[^12.0.0]", "private"),
         "libglvnd/[^1.3.2]",
         "zlib/[^1.2.11]",
         "expat/[^2.2.7]",
@@ -29,6 +28,7 @@ class MesaRecipe(Recipe):
     )
 
     def requirements(self):
+        self.requires(f"llvm/[^{self.settings.compiler.version}]", "private")
         if self.options.x11:
             self.requires("libxrandr/[^1.5.2]")
             self.requires("libxdamage/[^1.1.5]")
