@@ -1,4 +1,1 @@
 - version: '3.40.1'
-- version: '3.40.1'
-  profiles:
-    - linux-x86_64-python_3.8

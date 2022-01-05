@@ -1,6 +1,2 @@
 - version: '12.0.1'
   debugPkg: true
-- version: '12.0.1'
-  debugPkg: true
-  profiles:
-    - linux-x86_64-python_3.8
