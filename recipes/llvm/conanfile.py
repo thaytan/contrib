@@ -164,9 +164,10 @@ class LlvmRecipe(Recipe):
             cflags = "-static"
 
         # Use system libstdc++ to bootstrap libcxx
-        libcxx_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
-        os.environ["LIBRARY_PATH"] = libcxx_lib
-        os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libstdc++"
+        libstdcxx_inc = "/usr/include/c++/9"
+        libstdcxx_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
+        os.environ["LIBRARY_PATH"] = libstdcxx_lib
+        os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libstdc++ -idirafter {libstdcxx_inc}"
 
         os.environ["CFLAGS"] = cflags
         os.environ["LDFLAGS"] = cflags
