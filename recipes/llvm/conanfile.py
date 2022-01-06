@@ -165,10 +165,11 @@ class LlvmRecipe(Recipe):
 
         # Use system libstdc++ to bootstrap libcxx
         libcxx_inc = "/usr/include/c++/9"
-        libcxxarch_inc = f"/usr/include/{arch}-linux-gnu/c++/9"
-        gcc_inc = f"/usr/lib/gcc/{arch}-linux-gnu/9/include"
+        libcxx_arch_inc = f"/usr/include/{arch}-linux-gnu/c++/9"
         libc_inc = "/usr/include"
-        libstdcxx_inc = f"-idirafter {libcxx_inc} -idirafter {libcxxarch_inc} -idirafter {gcc_inc} -idirafter {libc_inc}"
+        libc_arch_inc = f"/usr/include/{arch}-linux-gnu"
+        gcc_inc = f"/usr/lib/gcc/{arch}-linux-gnu/9/include"
+        libstdcxx_inc = f"-idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} -idirafter {libc_inc} -idirafter {libc_arch_inc} -idirafter {gcc_inc} "
         libstdcxx_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
         libpthread_lib = f"/usr/lib/{arch}-linux-gnu"
         os.environ["LIBRARY_PATH"] = f"{libstdcxx_lib}:{libpthread_lib}"
