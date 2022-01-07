@@ -163,20 +163,25 @@ class LlvmRecipe(Recipe):
         if self.settings.libc == "musl":
             cflags = "-static"
 
-        # Use system libstdc++ to bootstrap libcxx
+        os.environ["LDFLAGS"] = cflags
+
+        # Use system incs and libs to bootstrap libcxx
+        # Keep this order of includes!
         libcxx_inc = "/usr/include/c++/9"
         libcxx_arch_inc = f"/usr/include/{arch}-linux-gnu/c++/9"
-        libc_inc = "/usr/include"
-        libc_arch_inc = f"/usr/include/{arch}-linux-gnu"
         gcc_inc = f"/usr/lib/gcc/{arch}-linux-gnu/9/include"
-        libstdcxx_inc = f"-idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} -idirafter {libc_inc} -idirafter {libc_arch_inc} -idirafter {gcc_inc} "
-        libstdcxx_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
-        libpthread_lib = f"/usr/lib/{arch}-linux-gnu"
-        os.environ["LIBRARY_PATH"] = f"{libstdcxx_lib}:{libpthread_lib}"
+        libc_arch_inc = f"/usr/include/{arch}-linux-gnu"
+        libc_inc = "/usr/include"
+
+        cflags = f" {cflags} -nostdinc -idirafter {gcc_inc} -idirafter {libc_arch_inc} -idirafter {libc_inc} "
+        os.environ["CFLAGS"] = cflags
+        cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} {cflags} "
         os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libstdc++ -H {libstdcxx_inc}"
 
-        os.environ["CFLAGS"] = cflags
-        os.environ["LDFLAGS"] = cflags
+        libgcc_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
+        system_lib = f"/usr/lib/{arch}-linux-gnu"
+        os.environ["LIBRARY_PATH"] = f"{libgcc_lib}:{system_lib}"
+
 
         # Stage 1 build (cxx, cxxabi)
         self.cmake(
