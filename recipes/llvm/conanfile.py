@@ -175,8 +175,8 @@ class LlvmRecipe(Recipe):
 
         cflags = f" {cflags} -nostdinc -idirafter {gcc_inc} -idirafter {libc_arch_inc} -idirafter {libc_inc} "
         os.environ["CFLAGS"] = cflags
-        cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} {cflags} "
-        os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libstdc++ -H {libstdcxx_inc}"
+        cxxflags = f" -stdlib=libstdc++ -H -nostdinc++ -idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} {cflags} "
+        os.environ["CXXFLAGS"] = cxxflags
 
         libgcc_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
         system_lib = f"/usr/lib/{arch}-linux-gnu"
