@@ -173,7 +173,7 @@ class LlvmRecipe(Recipe):
         libstdcxx_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
         libpthread_lib = f"/usr/lib/{arch}-linux-gnu"
         os.environ["LIBRARY_PATH"] = f"{libstdcxx_lib}:{libpthread_lib}"
-        os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libstdc++ {libstdcxx_inc}"
+        os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libstdc++ -H {libstdcxx_inc}"
 
         os.environ["CFLAGS"] = cflags
         os.environ["LDFLAGS"] = cflags
