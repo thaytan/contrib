@@ -82,10 +82,6 @@ class LlvmRecipe(Recipe):
         defs["CLANG_DEFAULT_UNWINDLIB"] = "libgcc"
         defs["CLANG_ENABLE_STATIC_ANALYZER"] = True
 
-        # libcxx
-        defs["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
-        defs["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
-
         # compiler-rt options
         defs["COMPILER_RT_BUILD_SANITIZERS"] = False
         defs["COMPILER_RT_BUILD_XRAY"] = False
@@ -168,15 +164,15 @@ class LlvmRecipe(Recipe):
         # Use system incs and libs to bootstrap libcxx
         # Keep this order of includes!
         #libcxx_inc = "/usr/include/c++/9"
-        libcxx_arch_inc = f"/usr/include/{arch}-linux-gnu/c++/9"
-        gcc_inc = f"/usr/lib/gcc/{arch}-linux-gnu/9/include"
-        libc_arch_inc = f"/usr/include/{arch}-linux-gnu"
-        libc_inc = "/usr/include"
+        #libcxx_arch_inc = f"/usr/include/{arch}-linux-gnu/c++/9"
+        #gcc_inc = f"/usr/lib/gcc/{arch}-linux-gnu/9/include"
+        #libc_arch_inc = f"/usr/include/{arch}-linux-gnu"
+        #libc_inc = "/usr/include"
 
-        cflags = f" {cflags} -nostdinc -idirafter {gcc_inc} -idirafter {libc_arch_inc} -idirafter {libc_inc} "
+        #cflags = f" {cflags} -nostdinc -idirafter {gcc_inc} -idirafter {libc_arch_inc} -idirafter {libc_inc} "
         os.environ["CFLAGS"] = cflags
         #cxxflags = f" -stdlib=libstdc++ -H -nostdinc++ -idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} {cflags} "
-        cxxflags = f" -stdlib=libstdc++ -H {cflags} "
+        cxxflags = f" -H {cflags} "
         os.environ["CXXFLAGS"] = cxxflags
 
         libgcc_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
@@ -202,6 +198,10 @@ class LlvmRecipe(Recipe):
         # Install stage 2 to package directory
         defs["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
+        # libcxx
+        defs["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
+        defs["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
+
         # Use stage 1 libs and incs
         ldflags = ""
         # GVN causes segmentation fault during recursion higher than 290
@@ -212,7 +212,7 @@ class LlvmRecipe(Recipe):
         clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
         clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
         libc_inc = self.env["LIBC_INCLUDE_PATH"]
-        os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
+        os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libc++ -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
         os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
         os.environ["LIBRARY_PATH"] = libcxx_lib
 
