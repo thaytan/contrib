@@ -165,13 +165,13 @@ class LlvmRecipe(Recipe):
         # Keep this order of includes!
         libcxx_inc = "/usr/include/c++/9"
         libcxx_arch_inc = f"/usr/include/{arch}-linux-gnu/c++/9"
-        gcc_inc = f"/usr/lib/gcc/{arch}-linux-gnu/9/include"
+        clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
         libc_arch_inc = f"/usr/include/{arch}-linux-gnu"
         libc_inc = "/usr/include"
 
-        cflags = f" {cflags} -nostdinc -idirafter {gcc_inc} -idirafter {libc_arch_inc} -idirafter {libc_inc} "
+        cflags = f" {cflags} -nostdinc -idirafter {clang_inc} -idirafter {libc_arch_inc} -isystem {libc_inc} "
         os.environ["CFLAGS"] = cflags
-        cxxflags = f" -stdlib=libstdc++ -H -nostdinc++ -idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} {cflags} "
+        cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} {cflags} "
         os.environ["CXXFLAGS"] = cxxflags
 
         libgcc_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
