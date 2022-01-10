@@ -30,6 +30,7 @@ class GlibcRecipe(Recipe):
                 "libresolv.so",
                 "libutil.so",
                 "libatomic.so.1",
+                "libpthread.so",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
