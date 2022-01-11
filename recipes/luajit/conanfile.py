@@ -15,5 +15,6 @@ class LuajitRecipe(Recipe):
     def build(self):
         args = [
             f"PREFIX={self.package_folder}",
+            f"DEFAULT_CC={self.env['CC']}",
         ]
         self.make(args)
