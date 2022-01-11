@@ -10,7 +10,7 @@ class LuajitRecipe(Recipe):
     )
 
     def source(self):
-        self.get(f"https://luajit.org/download/LuaJIT-{self.version}.tar.gz")
+        self.get(f"https://github.com/openresty/luajit2/archive/refs/tags/v{self.version}.tar.gz")
 
     def build(self):
         args = [
