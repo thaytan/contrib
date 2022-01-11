@@ -82,6 +82,10 @@ class LlvmRecipe(Recipe):
         defs["CLANG_DEFAULT_UNWINDLIB"] = "libgcc"
         defs["CLANG_ENABLE_STATIC_ANALYZER"] = True
 
+        # libcxx
+        defs["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
+        defs["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
+
         # compiler-rt options
         defs["COMPILER_RT_BUILD_SANITIZERS"] = False
         defs["COMPILER_RT_BUILD_XRAY"] = False
@@ -113,6 +117,7 @@ class LlvmRecipe(Recipe):
 
         # Stage 0 build (lld, clang, ar)
         targets = [
+            "install-cxx",
             "install-compiler-rt",
             "install-clang",
             "install-clang-cpp",
@@ -159,25 +164,11 @@ class LlvmRecipe(Recipe):
         if self.settings.libc == "musl":
             cflags = "-static"
 
-        os.environ["LDFLAGS"] = cflags
-
-        # Use system incs and libs to bootstrap libcxx
-        # Keep this order of includes!
-        libcxx_inc = "/usr/include/c++/9"
-        libcxx_arch_inc = f"/usr/include/{arch}-linux-gnu/c++/9"
-        clang_inc = os.path.join(stage0_folder, "lib", "clang", self.version, "include")
-        libc_arch_inc = f"/usr/include/{arch}-linux-gnu"
-        libc_inc = "/usr/include"
-
-        cflags = f" {cflags} -nostdinc -idirafter {clang_inc} -idirafter {libc_arch_inc} -isystem {libc_inc} "
+        libcxx_lib = os.path.join(stage0_folder, "lib")
+        os.environ["LIBRARY_PATH"] = libcxx_lib
         os.environ["CFLAGS"] = cflags
-        cxxflags = f" -nostdinc++ -idirafter {libcxx_inc} -idirafter {libcxx_arch_inc} {cflags} "
-        os.environ["CXXFLAGS"] = cxxflags
-
-        libgcc_lib = f"/usr/lib/gcc/{arch}-linux-gnu/9"
-        system_lib = f"/usr/lib/{arch}-linux-gnu"
-        os.environ["LIBRARY_PATH"] = f"{libgcc_lib}:{system_lib}"
-
+        os.environ["CXXLAGS"] = cflags
+        os.environ["LDFLAGS"] = cflags
 
         # Stage 1 build (cxx, cxxabi)
         self.cmake(
@@ -197,10 +188,6 @@ class LlvmRecipe(Recipe):
         # Install stage 2 to package directory
         defs["CMAKE_INSTALL_PREFIX"] = self.package_folder
 
-        # libcxx
-        defs["CLANG_DEFAULT_CXX_STDLIB"] = "libc++"
-        defs["CLANG_DEFAULT_RTLIB"] = "compiler-rt"
-
         # Use stage 1 libs and incs
         ldflags = ""
         # GVN causes segmentation fault during recursion higher than 290
@@ -211,7 +198,7 @@ class LlvmRecipe(Recipe):
         clang_inc = os.path.join(stage1_folder, "lib", "clang", self.version, "include")
         clang_lib = os.path.join(stage1_folder, "lib", "clang", self.version, "lib", "linux")
         libc_inc = self.env["LIBC_INCLUDE_PATH"]
-        os.environ["CXXFLAGS"] = f"{cflags} -stdlib=libc++ -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
+        os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
         os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
         os.environ["LIBRARY_PATH"] = libcxx_lib
 
