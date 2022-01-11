@@ -11,4 +11,4 @@ class IslRecipe(Recipe):
     requires = ("gmp/[^6.2.0]",)
 
     def source(self):
-        self.get(f"http://isl.gforge.inria.fr/isl-{self.version}.tar.xz")
+        self.get(f"https://libisl.sourceforge.io/isl-{self.version}.tar.bz2")
