@@ -8,6 +8,9 @@ class IntelMediaSdkRecipe(Recipe):
         "cc/[^1.0.0]",
         "cmake/[^3.8.4]",
     )
+    requires = (
+        "libva/[^2.10.0]",
+    )
 
     def source(self):
         self.get(f"https://github.com/Intel-Media-SDK/MediaSDK/archive/intel-mediasdk-{self.version}.tar.gz")
