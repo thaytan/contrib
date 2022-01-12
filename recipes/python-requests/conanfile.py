@@ -1,7 +1,7 @@
 from build import *
 
 
-class PythonRequestsRecipe(Recipe):
+class PythonRequestsRecipe(PythonRecipe):
     description = "Python Requests module"
     license = "Apache"
     build_requires = (
