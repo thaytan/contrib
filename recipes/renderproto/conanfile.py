@@ -8,7 +8,7 @@ class RenderprotoRecipe(Recipe):
 
     def source(self):
         self.get(f"https://xorg.freedesktop.org/releases/individual/proto/renderproto-{self.version}.tar.gz")
-        with tools.chdir(f"{self.name}-{self.version}"):
+        with tools.chdir(self.src):
             os.remove("config.guess")
             os.remove("config.sub")
             tools.download("http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD", "config.guess")
