@@ -1,16 +1,17 @@
 from build import *
 
 
-class PythonPillowRecipe(Recipe):
+class PythonPillowRecipe(PythonRecipe):
     description = "Python Image Library"
     license = "BSD"
-    settings = "build_type", "compiler",    "python"
     build_requires = (
         "cc/[^1.0.0]",
         "pkgconf/[^1.6.3]",
         "python-setuptools/[^50.3.0]",
         "zlib/[^1.2.11]",
-        "libjpeg-turbo/[^2.0.4]",
+    )
+    requires = (
+        "openjpeg2/[^2.4.0]",
     )
 
     def requirements(self):
