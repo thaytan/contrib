@@ -24,7 +24,7 @@ class GdkPixbuf2(Recipe):
     )
     requires = (
         "shared-mime-info/[^2.0]",
-        "libtiff/[^4.3.0rc1]",
+        "libtiff/[^4.3.0]",
     )
 
     def requirements(self):
