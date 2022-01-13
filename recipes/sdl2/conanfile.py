@@ -9,7 +9,14 @@ class Sdl2Recipe(Recipe):
         "cmake/[^3.18.4]",
         "libxcb/[^1.13.1]",
         "libxext/[^1.3.4]",
+        "xorgproto/[^2020.1]",
     )
 
     def source(self):
         self.get(f"https://www.libsdl.org/release/SDL2-{self.version}.tar.gz")
+
+
+    def build(self):
+        for req in ["libxext", "libxcb", "xorgproto", "libx11"]:
+            os.environ["CFLAGS"] += f" -I{os.path.join(self.deps_cpp_info[req].rootpath, 'include')}"
+        self.cmake()
