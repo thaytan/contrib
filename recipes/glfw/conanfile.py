@@ -6,7 +6,6 @@ class GlfwcRecipe(Recipe):
     license = "ZLIB"
     options = {"x11": [True, False]}
     default_options = ("x11=True",)
-    exports = "fix-x11-exts.patch"
     build_requires = ("cc/[^1.0.0]", "cmake/[^3.15.3]")
 
     def requirements(self):
@@ -18,9 +17,10 @@ class GlfwcRecipe(Recipe):
 
     def source(self):
         self.get(f"https://github.com/glfw/glfw/archive/{self.version}.tar.gz")
-        self.patch("fix-x11-exts.patch")
 
     def build(self):
+        for req in ["libxext", "libxcb", "xorgproto", "libx11", "libxrender", "libxi", "libxfixes"]:
+            os.environ["CFLAGS"] += f" -I{os.path.join(self.deps_cpp_info[req].rootpath, 'include')}"
         defs = {
             "BUILD_SHARED_LIBS": True,
             "GLFW_BUILD_EXAMPLES": False,
