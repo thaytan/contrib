@@ -1,0 +1,51 @@
+diff --git a/builder/FindFunctions.cmake b/builder/FindFunctions.cmake
+index b1a2031..397dca9 100644
+--- a/builder/FindFunctions.cmake
++++ b/builder/FindFunctions.cmake
+@@ -200,10 +200,6 @@ function( make_library name variant type )
+   set_target_properties( ${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BIN_DIR}/${CMAKE_BUILD_TYPE} FOLDER ${folder} )
+   set_target_properties( ${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIB_DIR}/${CMAKE_BUILD_TYPE} FOLDER ${folder} )
+ 
+-  if( Linux )
+-    target_link_libraries( ${target} "-lgcc" )
+-  endif()
+-
+   set( target ${target} PARENT_SCOPE )
+ endfunction()
+ 
+@@ -278,7 +274,7 @@ function( make_executable name variant )
+   endforeach()
+ 
+   if( Linux )
+-    target_link_libraries( ${target} "-Xlinker --end-group -lgcc" )
++    target_link_libraries( ${target} "-Xlinker --end-group" )
+   endif()
+ 
+   set( target ${target} PARENT_SCOPE )
+diff --git a/builder/FindMFX.cmake b/builder/FindMFX.cmake
+index 8798a3e..a123a76 100644
+--- a/builder/FindMFX.cmake
++++ b/builder/FindMFX.cmake
+@@ -96,8 +96,4 @@ if (NOT API_FLAGS STREQUAL "")
+     add_definitions(${API_FLAGS})
+ endif()
+ 
+-message(STATUS "Enabling API ${major_vers}.${minor_vers} feature set with flags ${API_FLAGS}")
+-
+-if( Linux )
+-  set( MFX_LDFLAGS "-Wl,--default-symver" )
+-endif()
++message(STATUS "Enabling API ${major_vers}.${minor_vers} feature set with flags ${API_FLAGS}")
+\ No newline at end of file
+diff --git a/builder/FindPackages.cmake b/builder/FindPackages.cmake
+index 1cd9312..61525c2 100644
+--- a/builder/FindPackages.cmake
++++ b/builder/FindPackages.cmake
+@@ -151,7 +151,6 @@ function(configure_libmfx_target target)
+   endif()
+ 
+   set(SCOPE_CFLAGS ${SCOPE_CFLAGS} PARENT_SCOPE)
+-  set(SCOPE_LINKFLAGS "${SCOPE_LINKFLAGS} -Wl,--default-symver" PARENT_SCOPE)
+   set(SCOPE_LIBS ${SCOPE_LIBS} mfx PARENT_SCOPE)
+ endfunction()
+ 
