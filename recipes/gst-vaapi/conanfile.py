@@ -29,7 +29,7 @@ class GstVaapiRecipe(GstRecipe):
         "meson/[>=0.55.3]",
     )
     requires = (
-        "intel-vaapi-driver/[^2.4.1]",
+        "intel-media-driver/[^21.4.3]",
         "eudev/[^3.2.9]",
     )
 
