@@ -10,7 +10,8 @@ class PythonRequestsRecipe(PythonRecipe):
     )
 
     def requirements(self):
-        self.requires(f"python/[^3]")
+        self.requires(f"python/[~{self.settings.python}]")
+
 
     def source(self):
         self.get(f"https://github.com/psf/requests/archive/v{self.version}.tar.gz")
