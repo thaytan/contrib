@@ -12,6 +12,9 @@ class GiDocgen(PythonRecipe):
         "python-markdown/[^3.3.6]",
         "python-typogrify/[^2.0.7]",
         "python-smartypants/[^2.0.1]",
+        "python-jinja/[^3.0.0]",
+        "python-toml/[>=0.10.2]",
+        "python-pygments/[^2.11.2]",
     )
 
     def source(self):
