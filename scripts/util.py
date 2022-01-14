@@ -56,6 +56,8 @@ def find_instances():
     for devops_path in devops_paths:
         with open(devops_path, "r") as devops_file:
             conf = yaml.safe_load(devops_file)
+            if conf is None:
+                continue
             for instance in conf:
                 # If version is in sha commit format
                 if not instance or "version" not in instance:

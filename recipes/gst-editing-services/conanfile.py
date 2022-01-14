@@ -49,13 +49,11 @@ class GstEditingServicesRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        git = tools.Git(folder=f"{self.name}-{self.version}.src")
         version = self.version
         if version == "1.20.0":
             version = "428a9a6c012bde4ddd93d37818558351013afe65"
 
-        git.clone("https://gitlab.freedesktop.org/gstreamer/gstreamer.git")
-        git.checkout(version)
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
         self.patch("ges_launch_custom_config.patch")
 
     def build(self):

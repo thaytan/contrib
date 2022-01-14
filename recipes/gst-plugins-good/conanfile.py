@@ -83,22 +83,16 @@ class GstPluginsGoodRecipe(GstRecipe):
             self.requires("libjpeg-turbo/[^2.0.3]")
 
     def source(self):
-        git = tools.Git(folder=f"{self.name}-{self.version}.src")
         version = self.version
         if version == "1.20.0":
             version = "428a9a6c012bde4ddd93d37818558351013afe65"
 
-        git.clone("https://gitlab.freedesktop.org/gstreamer/gstreamer.git")
-        git.checkout(version)
-        git.run(
-            '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-Support-any-tag.patch'
-        )
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
+        self.patch("0001-matroska-Support-any-tag.patch")
 
         # Add our own custom changes
         if self.options.aivero_rvl_matroska:
-            git.run(
-                '-c user.email="cicd@civero.com" -c user.name="Chlorine Cadmium" am -3 ../0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch'
-            )
+            self.patch("0001-matroska-add-support-for-custom-video-rvl-depth-map-.patch")
 
     def build(self):
         source_folder = os.path.join(self.src, "subprojects", "gst-plugins-good")
