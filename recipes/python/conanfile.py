@@ -72,6 +72,7 @@ build_time_vars = {{
   "LDLIBRARY": "libpython{1}.{2}.so",
   "LIBPL": os.path.join(os.environ.get("PYTHONHOME", ""), "lib", "python{1}-{2}", "config-{1}-{2}-{3}-linux-gnu"),
   "LIBDIR": os.path.join(os.environ.get("PYTHONHOME", ""), "lib"),
+  "SHLIB_SUFFIX": ".so",
 }}
 '''.format(self.version, self.version[0], self.version[2], arch))
 
