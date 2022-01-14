@@ -23,6 +23,6 @@ class SharedMimeInfoRecipe(Recipe):
 
     def build(self):
         opts = {
-            "update-mimedb": False,
+            "update-mimedb": True,
         }
         self.meson(opts)
