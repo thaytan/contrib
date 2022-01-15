@@ -1,7 +1,7 @@
 from build import *
 
 
-class Sdl2Recipe(Recipe):
+class Sdl2(Recipe):
     description = "A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
     license = "MIT"
     build_requires = (
