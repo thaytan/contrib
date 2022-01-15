@@ -1,7 +1,7 @@
 from build import *
 
 
-class Gtk3Recipe(Recipe):
+class Gtk3(Recipe):
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL"
     options = {
