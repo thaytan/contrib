@@ -1,7 +1,7 @@
 from build import *
 
 
-class XtransRecipe(Recipe):
+class Xtrans(Recipe):
     description = "X transport library"
     license = "MIT"
     build_requires = (
