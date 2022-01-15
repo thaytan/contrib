@@ -1,7 +1,7 @@
 from build import *
 
 
-class AtkRecipe(Recipe):
+class Atk(Recipe):
     description = "GObject-based multi-platform GUI toolkit"
     license = "LGPL"
     options = {
