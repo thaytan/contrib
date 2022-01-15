@@ -1,7 +1,7 @@
 from build import *
 
 
-class WgetRecipe(Recipe):
+class Wget(Recipe):
     description = "Network utility to retrieve files from the Web"
     license = "GPL"
     build_requires = (
