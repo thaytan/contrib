@@ -19,7 +19,7 @@ class X265(Recipe):
     )
 
     def source(self):
-        self.get(f"https://github.com/videolan/x265/archive/{self.version}.tar.gz")
+        self.get(f"https://bitbucket.org/multicoreware/x265_git/downloads/x265_{self.version}.tar.gz")
         self.patch("no-integrated-as.patch")
 
     def build(self):
