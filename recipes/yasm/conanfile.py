@@ -1,7 +1,7 @@
 from build import *
 
 
-class YasmRecipe(Recipe):
+class Yasm(Recipe):
     description = "Yasm is a complete rewrite of the NASM assembler under the new BSD License"
     license = "BSD"
     build_requires = (
