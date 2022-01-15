@@ -1,7 +1,7 @@
 from build import *
 
 
-class XorgProtoRecipe(Recipe):
+class Xorgproto(Recipe):
     description = "combined X.Org X11 Protocol headers"
     license = "custom"
     build_requires = (
