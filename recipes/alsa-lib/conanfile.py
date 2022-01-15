@@ -1,7 +1,7 @@
 from build import *
 
 
-class AlsaLibRecipe(Recipe):
+class AlsaLib(Recipe):
     description = "An alternative implementation of Linux sound support"
     license = "LGPL"
     build_requires = (
