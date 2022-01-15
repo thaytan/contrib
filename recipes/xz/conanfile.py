@@ -1,7 +1,7 @@
 from build import *
 
 
-class XzRecipe(Recipe):
+class Xz(Recipe):
     description = "Library and command line tools for XZ and LZMA compressed files"
     license = "LGPL"
     build_requires = (
