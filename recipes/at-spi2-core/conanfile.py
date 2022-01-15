@@ -1,7 +1,7 @@
 from build import *
 
 
-class AtSpi2CoreRecipe(Recipe):
+class AtSpi2Core(Recipe):
     description = "Protocol definitions and daemon for D-Bus at-spi"
     license = "LGPL"
     build_requires = ("cc/[^1.0.0]", "meson/[>=0.55.3]")
