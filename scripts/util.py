@@ -23,7 +23,6 @@ def find_parent_branch():
     if exit_code != 0:
         raise Exception(output)
     branches = output.split("\n")
-    print(branches)
 
     # Get current branch
     (exit_code, output) = call("git", ["rev-parse", "--abbrev-ref", "HEAD"], ret_exit_code=True)
