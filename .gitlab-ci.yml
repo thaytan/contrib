@@ -6,6 +6,8 @@ alias-creator:
   image: aivero/conan:focal-x86_64
   tags: [x86_64]
   stage: init
+  variables:
+    GIT_DEPTH: 0
   script:
     - python3 scripts/upload_aliases.py
   except:
