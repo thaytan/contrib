@@ -112,12 +112,10 @@ def create_alias(ins, commit, branch, parent_branch, fetch_repo, public_repo=Non
         # Fallback to HEAD commit hash
         sha = commit
     call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"])
-    if public_repo and not proprietary:
-        print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {public_repo}")
-        call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", public_repo])
-    if internal_repo and proprietary:
-        print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {internal_repo}")
-        call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", internal_repo])
+
+    repo = internal_repo if proprietary else public_repo
+    print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {repo}")
+    call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", repo])
 
 
 def create_aliases(commit, branch, parent_branch, fetch_repo, public_repo=None, internal_repo=None):
@@ -126,11 +124,14 @@ def create_aliases(commit, branch, parent_branch, fetch_repo, public_repo=None, 
 
 
 @background
-def remove_alias(ins, branch, repo):
+def remove_alias(ins, branch, public_repo, internal_repo):
+    name = ins[0]
+    proprietary = ins[1]
+    repo = internal_repo if proprietary else public_repo
     print(f"Removing alias: {ins[0]}/{branch}")
     call("conan", ["remove", f"{ins[0]}/{branch}", "-f", "-r", repo])
 
 
-def remove_aliases(branch, repo):
+def remove_aliases(branch, public_repo, internal_repo):
     for ins in find_instances():
-        remove_alias(ins, branch, repo)
+        remove_alias(ins, branch, public_repo, internal_repo)
