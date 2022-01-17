@@ -9,6 +9,7 @@ import pathlib
 
 def find_parent_branch():
     branches = call("git", ["show-branch"]).split("\n")
+    print(branches)
     cur_branch = call("git", ["rev-parse", "--abbrev-ref", "HEAD"])[:-1]
 
     line = list(filter(lambda l: "*" in l and cur_branch not in l, branches))[0]
