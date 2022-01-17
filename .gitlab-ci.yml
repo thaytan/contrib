@@ -7,7 +7,6 @@ alias-creator:
   tags: [x86_64]
   stage: init
   variables:
-    GIT_STRATEGY: none
     GIT_DEPTH: 0
     GIT_FETCH_EXTRA_FLAGS: --depth 50
   script:
