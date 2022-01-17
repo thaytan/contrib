@@ -8,12 +8,32 @@ import asyncio
 import pathlib
 
 def find_parent_branch():
-    branches = call("git", ["show-branch"]).split("\n")
+    # Fetch all branches
+    (exit_code, output) = call("git", ["config", "remote.origin.fetch", '"+refs/heads/*:refs/remotes/origin/*"'], ret_exit_code=True)
+    if exit_code != 0:
+        raise Exception(output)
+
+    # Fetch 
+    (exit_code, output) = call("git", ["fetch", "--unshallow"], ret_exit_code=True)
+    if exit_code != 0:
+        raise Exception(output)
+
+    # Get branch data
+    (exit_code, output) = call("git", ["show-branch", "-a"], ret_exit_code=True)
+    if exit_code != 0:
+        raise Exception(output)
+    branches = output.split("\n")
     print(branches)
-    cur_branch = call("git", ["rev-parse", "--abbrev-ref", "HEAD"])[:-1]
+
+    # Get current branch
+    (exit_code, output) = call("git", ["rev-parse", "--abbrev-ref", "HEAD"], ret_exit_code=true)
+    if exit_code != 0:
+        raise Exception(output)
+    cur_branch = output[:-1]
+    print(cur_branch)
 
     line = list(filter(lambda l: "*" in l and cur_branch not in l, branches))[0]
-    match = re.search("\[(.*)\]", line)
+    match = re.search("\[origin/(.*)\]", line)
 
     if match:
         return match[1]
