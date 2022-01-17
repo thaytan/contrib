@@ -16,7 +16,7 @@ print(f"Uploading public to: {public_repo}")
 internal_repo = os.environ["CONAN_REPO_INTERNAL"]
 print(f"Uploading internal to: {internal_repo}")
 
-util.setup_conan((fetch_repo, [public_repo, internal_repo]))
+util.setup_conan((fetch_repo, public_repo, internal_repo))
 
 util.create_aliases(
     commit,
