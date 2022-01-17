@@ -7,6 +7,16 @@ import re
 import asyncio
 import pathlib
 
+def file_contains(file, strings):
+    if strings is str:
+        strings = [strings]
+    with open(file, "r", encoding="utf-8") as f:
+        content = f.read()
+        for string in strings:
+            if not string in content:
+                return False
+    return True
+
 
 def background(f):
     def wrapped(*args, **kwargs):
@@ -65,12 +75,16 @@ def find_instances():
                         name = instance["name"]
                     else:
                         name = os.path.basename(os.path.dirname(devops_path))
-                    yield name
+                    conanfile = os.path.join(os.path.dirname(devops_path), "conanfile.py")
+                    proprietary = os.path.exists(conanfile) and file_contains(conanfile, '= "Proprietary"')
+                    yield (name, proprietary)
 
 
 # Create alias from newest commit hash to branch
 @background
-def create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo=None):
+def create_alias(ins, commit, branch, old_branch, fetch_repo, public_repo=None, internal_repo=None):
+    name = ins[0]
+    proprietary = ins[1]
     match = None
     # Find hash locally
     (exit_code, output) = call("conan", ["get", f"{name}/{old_branch}"], ret_exit_code=True)
@@ -87,22 +101,25 @@ def create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo=None)
         # Fallback to HEAD commit hash
         sha = commit
     call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"])
-    if upload_repo:
-        print(f"Uploading alias: {name}/{branch} to {name}/{sha}")
-        call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", upload_repo])
+    if public_repo and not proprietary:
+        print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {public_repo}")
+        call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", public_repo])
+    if internal_repo and proprietary:
+        print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {internal_repo}")
+        call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", internal_repo])
 
 
-def create_aliases(commit, branch, old_branch, fetch_repo, upload_repo=None):
-    for name in find_instances():
-        create_alias(name, commit, branch, old_branch, fetch_repo, upload_repo)
+def create_aliases(commit, branch, old_branch, fetch_repo, public_repo=None, internal_repo=None):
+    for ins in find_instances():
+        create_alias(ins, commit, branch, old_branch, fetch_repo, public_repo, internal_repo)
 
 
 @background
-def remove_alias(name, branch, repo):
-    print(f"Removing alias: {name}/{branch}")
-    call("conan", ["remove", f"{name}/{branch}", "-f", "-r", repo])
+def remove_alias(ins, branch, repo):
+    print(f"Removing alias: {ins[0]}/{branch}")
+    call("conan", ["remove", f"{ins[0]}/{branch}", "-f", "-r", repo])
 
 
 def remove_aliases(branch, repo):
-    for name in find_instances():
-        remove_alias(name, branch, repo)
+    for ins in find_instances():
+        remove_alias(ins, branch, repo)
