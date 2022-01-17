@@ -14,7 +14,7 @@ def find_parent_branch():
         raise Exception(output)
 
     # Fetch 
-    (exit_code, output) = call("git", ["fetch"], ret_exit_code=True)
+    (exit_code, output) = call("git", ["fetch", "--unshallow"], ret_exit_code=True)
     if exit_code != 0:
         raise Exception(output)
 
