@@ -7,7 +7,7 @@ import re
 import asyncio
 import pathlib
 
-def find_parent_branch():
+def git_init():
     # Fetch all branches
     (exit_code, output) = call("git", ["config", "remote.origin.fetch", '"+refs/heads/*:refs/remotes/origin/*"'], ret_exit_code=True)
     if exit_code != 0:
@@ -18,6 +18,23 @@ def find_parent_branch():
     if exit_code != 0:
         raise Exception(output)
 
+
+def get_commit():
+    if "CI_COMMIT_SHA" in os.environ:
+        return os.environ["CI_COMMIT_SHA"]
+    branch = get_branch()
+    (exit_code, output) = call("git", ["show-ref", branch, "--heads", "--tag", "-s"], ret_exit_code=True)
+    return output[:-1]
+
+
+def get_branch():
+    if "CI_COMMIT_REF_NAME" in os.environ:
+        return os.environ["CI_COMMIT_REF_NAME"]
+    (exit_code, output) = call("git", ["rev-parse", "--abbrev-ref", "HEAD"], ret_exit_code=True)
+    return output[:-1]
+
+
+def find_parent_branch():
     # Get branch data
     (exit_code, output) = call("git", ["show-branch", "-a"], ret_exit_code=True)
     if exit_code != 0:
@@ -39,7 +56,7 @@ def find_parent_branch():
 
 
 def file_contains(file, strings):
-    if strings is str:
+    if isinstance(strings, str):
         strings = [strings]
     with open(file, "r", encoding="utf-8") as f:
         content = f.read()
@@ -76,7 +93,7 @@ def call(cmd, args, show=False, ret_exit_code=False):
     return fulloutput
 
 
-def setup_conan(repos):
+def setup_init(repos):
     call("conan", ["config", "install", os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
     for repo in repos:
         call("conan", ["user", os.environ["CONAN_LOGIN_USERNAME"], "-p", os.environ["CONAN_LOGIN_PASSWORD"], "-r", repo])
@@ -131,11 +148,13 @@ def create_alias(ins, commit, branch, parent_branch, fetch_repo, public_repo=Non
     else:
         # Fallback to HEAD commit hash
         sha = commit
+    print(f"Creating alias: {name}/{branch} to {name}/{sha}")
     call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"])
 
     repo = internal_repo if proprietary else public_repo
-    print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {repo}")
-    call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", repo])
+    if repo:
+        print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {repo}")
+        call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", repo])
 
 
 def create_aliases(commit, branch, parent_branch, fetch_repo, public_repo=None, internal_repo=None):

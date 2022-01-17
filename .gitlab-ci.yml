@@ -10,7 +10,7 @@ alias-creator:
     GIT_DEPTH: 0
     GIT_FETCH_EXTRA_FLAGS: --depth 50
   script:
-    - python3 scripts/upload_aliases.py
+    - python3 scripts/create_aliases.py
   except:
     - master
 generate-config:
