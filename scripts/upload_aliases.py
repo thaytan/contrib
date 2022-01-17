@@ -7,8 +7,8 @@ process = subprocess.Popen(["git", "show-ref", branch, "--heads", "--tag", "-s"]
 commit = process.communicate()[0].strip()
 
 print(f"Branch: {branch}")
-old_branch = os.environ["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"]
-print(f"Target Branch: {old_branch}")
+parent_branch = util.get_parent_branch()
+print(f"Parent Branch: {parent_branch}")
 fetch_repo = os.environ["CONAN_REPO_ALL"]
 print(f"Fetching from: {fetch_repo}")
 public_repo = os.environ["CONAN_REPO_PUBLIC"]
@@ -21,7 +21,7 @@ util.setup_conan((fetch_repo, [public_repo, internal_repo]))
 util.create_aliases(
     commit,
     branch,
-    old_branch,
+    parent_branch,
     fetch_repo,
     public_repo,
     internal_repo,

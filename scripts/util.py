@@ -7,6 +7,17 @@ import re
 import asyncio
 import pathlib
 
+def find_parent_branch():
+    branches = call("git", ["show-branch"]).split("\n")
+    cur_branch = call("git", ["rev-parse", "--abbrev-ref", "HEAD"])[:-1]
+
+    line = list(filter(lambda l: "*" in l and cur_branch not in l, branches))[0]
+    match = re.search("\[(.*)\]", line)
+
+    if match:
+        return match[1]
+
+
 def file_contains(file, strings):
     if strings is str:
         strings = [strings]
@@ -82,17 +93,17 @@ def find_instances():
 
 # Create alias from newest commit hash to branch
 @background
-def create_alias(ins, commit, branch, old_branch, fetch_repo, public_repo=None, internal_repo=None):
+def create_alias(ins, commit, branch, parent_branch, fetch_repo, public_repo=None, internal_repo=None):
     name = ins[0]
     proprietary = ins[1]
     match = None
     # Find hash locally
-    (exit_code, output) = call("conan", ["get", f"{name}/{old_branch}"], ret_exit_code=True)
+    (exit_code, output) = call("conan", ["get", f"{name}/{parent_branch}"], ret_exit_code=True)
     if exit_code == 0:
         match = re.search('alias = ".*/(.*)"\n', output)
     # Then try finding hash from remote
     if not match:
-        (exit_code, output) = call("conan", ["get", "-r", fetch_repo, f"{name}/{old_branch}"], ret_exit_code=True)
+        (exit_code, output) = call("conan", ["get", "-r", fetch_repo, f"{name}/{parent_branch}"], ret_exit_code=True)
         if exit_code == 0:
             match = re.search('alias = ".*/(.*)"\n', output)
     if match:
@@ -109,9 +120,9 @@ def create_alias(ins, commit, branch, old_branch, fetch_repo, public_repo=None, 
         call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", internal_repo])
 
 
-def create_aliases(commit, branch, old_branch, fetch_repo, public_repo=None, internal_repo=None):
+def create_aliases(commit, branch, parent_branch, fetch_repo, public_repo=None, internal_repo=None):
     for ins in find_instances():
-        create_alias(ins, commit, branch, old_branch, fetch_repo, public_repo, internal_repo)
+        create_alias(ins, commit, branch, parent_branch, fetch_repo, public_repo, internal_repo)
 
 
 @background
