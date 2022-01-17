@@ -15,7 +15,7 @@ alias-creator:
     - master
 generate-config:
   image: aivero/conan:focal-x86_64
-  tags: [x86_64]
+  tags: [x86_64,aws]
   stage: build
   script:
     - echo "CI_PIPELINE_SOURCE ${CI_PIPELINE_SOURCE}"
