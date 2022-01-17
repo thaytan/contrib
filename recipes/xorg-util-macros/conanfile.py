@@ -1,7 +1,7 @@
 from build import *
 
 
-class XorgUtilMacrosRecipe(Recipe):
+class XorgUtilMacros(Recipe):
     description = "X.Org Autotools macros"
     license = "custom"
     build_requires = ("autotools/[^1.0.0]",)

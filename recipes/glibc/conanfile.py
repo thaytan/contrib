@@ -6,7 +6,7 @@ class GlibcRecipe(Recipe):
     license = "GPL"
     options = {}
     default_options = {}
-    requires = "linux-headers/[^5.4.50]"
+    requires = "linux-headers/[^5.4.90]"
 
     def source(self):
         self.get(f"https://ftp.gnu.org/gnu/glibc/glibc-{self.version}.tar.xz")
@@ -30,21 +30,18 @@ class GlibcRecipe(Recipe):
                 "libresolv.so",
                 "libutil.so",
                 "libatomic.so.1",
+                "libpthread.so",
                 "crt1.o",
                 "crti.o",
                 "crtn.o",
                 "Scrt1.o",
                 "libc_nonshared.a",
-                "libpthread_nonshared.a",
             ]
-            if arch == "x86_64":
-                libs.append("libmvec_nonshared.a")
             for lib in libs:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{lib}", lib)
             # Copy and fix linker scripts from glibc-dev
             ld_scripts = [
                 "libc.so",
-                "libpthread.so",
             ]
             # libm.so is not a linker script on aarch64
             if arch == "x86_64":
@@ -53,7 +50,7 @@ class GlibcRecipe(Recipe):
                 os.symlink("libm.so.6", "libm.so")
             for ld_script in ld_scripts:
                 shutil.copy2(f"/usr/lib/{arch}-linux-gnu/{ld_script}", ld_script)
-                tools.replace_path_in_file(ld_script, f"/usr/lib/{arch}-linux-gnu/", "")
+                tools.replace_path_in_file(ld_script, f"/usr/lib/{arch}-linux-gnu/", "", strict=False)
                 tools.replace_path_in_file(ld_script, f"/lib/{arch}-linux-gnu/", "")
             # Copy base glibc and fix linker scripts
             libs = [
@@ -74,7 +71,7 @@ class GlibcRecipe(Recipe):
                 shutil.copy2(f"/lib/{arch}-linux-gnu/{lib}", lib)
                 for ld_script in ld_scripts:
                     tools.replace_path_in_file(ld_script, f"/lib/{arch}-linux-gnu/{lib}", lib, strict=False)
-            # Copy files from libgcc-7-dev
+            # Copy files from libgcc-9-dev
             libs = [
                 "libgcc_s.so",
                 "libgcc.a",
@@ -83,7 +80,7 @@ class GlibcRecipe(Recipe):
                 "crtend.o",
             ]
             for lib in libs:
-                shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/7/{lib}", lib)
+                shutil.copy2(f"/usr/lib/gcc/{arch}-linux-gnu/9/{lib}", lib)
             # Copy linker lib
             if arch == "x86_64":
                 lib = "ld-linux-x86-64.so.2"

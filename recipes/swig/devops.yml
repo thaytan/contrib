@@ -1,4 +1,1 @@
 - version: '4.0.2'
-- version: '4.0.2'
-  profiles:
-    - linux-x86_64-python_3.8

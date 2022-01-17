@@ -6,8 +6,8 @@ class IntelMediaDriverRecipe(Recipe):
     license = "MIT"
     build_requires = ("cc/[^1.0.0]", "cmake/[^3.18.4]")
     requires = (
-        "intel-gmmlib/[^20.3.2]",
-        "libva/[^2.10.0]",
+        "intel-gmmlib/[^21.3.5]",
+        "libva/[^2.13.0]",
         "libpciaccess/[^0.16]",
     )
 

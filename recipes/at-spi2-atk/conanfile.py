@@ -1,7 +1,7 @@
 from build import *
 
 
-class AtSpi2AtkRecipe(Recipe):
+class AtSpi2Atk(Recipe):
     description = "A GTK+ module that bridges ATK to D-Bus at-spi"
     license = "LGPL"
     build_requires = (

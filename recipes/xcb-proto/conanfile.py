@@ -1,7 +1,7 @@
 from build import *
 
 
-class XcbProtoRecipe(Recipe):
+class XcbProto(Recipe):
     description = "XML-XCB protocol descriptions"
     license = "MIT"
     build_requires = (

@@ -1,4 +1,1 @@
-- version: '2.8.1'
-- version: '2.8.1'
-  profiles:
-    - linux-x86_64-python_3.8
+- version: '2.11.2'

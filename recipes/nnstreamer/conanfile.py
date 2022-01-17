@@ -10,6 +10,8 @@ class GstNnstreamer(GstRecipe):
     build_requires = (
         "cc/[^1.0.0]",
         "meson/[>=0.57.2]",
+        "flex/[^2.6.4]",
+        "bison/[^3.7.6]"
     )
 
     def requirements(self):

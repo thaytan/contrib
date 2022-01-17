@@ -8,6 +8,11 @@ class IntelMediaSdkRecipe(Recipe):
         "cc/[^1.0.0]",
         "cmake/[^3.8.4]",
     )
+    requires = (
+        "libva/[^2.13.0]",
+    )
+    exports_sources = ("lld-linking.patch")
 
     def source(self):
         self.get(f"https://github.com/Intel-Media-SDK/MediaSDK/archive/intel-mediasdk-{self.version}.tar.gz")
+        self.patch("lld-linking.patch")

@@ -1,7 +1,7 @@
 from build import *
 
 
-class YarnRecipe(Recipe):
+class Yarn(Recipe):
     description = "Fast, reliable, and secure dependency management"
     license = "BSD"
     build_requires = ("npm/[>=7.0.5]",)

@@ -1,6 +1,7 @@
 from build import *
 
 CONFIG_MAK = """
+PROFILE=
 CFLAGS={}
 LDFLAGS=-ldl
 INSTALL_SYMLINKS=1

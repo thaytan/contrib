@@ -1,7 +1,7 @@
 from build import *
 
 
-class ZlibRecipe(Recipe):
+class Zlib(Recipe):
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
     license = "custom"
     build_requires = (

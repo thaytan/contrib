@@ -1,7 +1,7 @@
 from build import *
 
 
-class XmltoRecipe(Recipe):
+class Xmlto(Recipe):
     description = "Convert xml to many other formats"
     license = "GPL"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")

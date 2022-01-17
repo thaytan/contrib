@@ -9,7 +9,7 @@ class LibcRecipe(Recipe):
 
     def requirements(self):
         if self.settings.libc == "glibc":
-            self.requires("glibc/[~2.27]")
+            self.requires("glibc/[~2.31]")
         if self.settings.libc == "musl":
             self.requires("musl/[~1.2.1]")
         if self.settings.libc == "bionic":

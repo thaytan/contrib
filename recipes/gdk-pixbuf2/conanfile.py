@@ -2,7 +2,7 @@ from build import *
 
 
 class GdkPixbuf2(Recipe):
-    librsvg_version = "2.50.4"
+    librsvg_version = "2.53.0"
     description = "An image loading library"
     license = "LGPL"
     options = {
@@ -18,17 +18,18 @@ class GdkPixbuf2(Recipe):
         "rust/[^1.0.0]",
         "meson/[>=0.55.3]",
         "autotools/[^1.0.0]",
-        "gtk-doc/[^1.33.2]",
         "gobject-introspection/[^1.66.1]",
         "gettext/[^0.21]",
+        "python-docutils/[>=0.16]",
+        "gi-docgen/[^2021.8]",
     )
     requires = (
         "shared-mime-info/[^2.0]",
-        "libtiff/[^4.3.0rc1]",
+        "libtiff/[^4.3.0]",
     )
 
     def requirements(self):
-        if self.name != "gdk-pixbuf2":
+        if self.name == "gdk-pixbuf2":
             self.requires("pango/[^1.48.4]")
 
     def source(self):

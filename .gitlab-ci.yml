@@ -1,15 +1,24 @@
 stages:
+  - init
   - build
   - test
-
+alias-creator:
+  image: aivero/conan:focal-x86_64
+  tags: [x86_64]
+  stage: init
+  variables:
+    GIT_DEPTH: 0
+    GIT_FETCH_EXTRA_FLAGS: --depth 50
+  script:
+    - python3 scripts/create_aliases.py
+  except:
+    - master
 generate-config:
   image: aivero/conan:focal-x86_64
   tags: [x86_64]
   stage: build
   script:
     - deno run --unstable --allow-all --import-map https://gitlab.com/aivero/cicd/-/raw/master/import_map.json https://gitlab.com/aivero/cicd/-/raw/master/lib/es6_global/src/GenerateConfig.js
-  variables:
-    MODE: git
   artifacts:
     paths:
       - generated-config.yml

@@ -1,7 +1,7 @@
 from build import *
 
 
-class PythonRequestsRecipe(Recipe):
+class PythonRequestsRecipe(PythonRecipe):
     description = "Python Requests module"
     license = "Apache"
     build_requires = (
@@ -10,7 +10,8 @@ class PythonRequestsRecipe(Recipe):
     )
 
     def requirements(self):
-        self.requires(f"python/[^3]")
+        self.requires(f"python/[~{self.settings.python}]")
+
 
     def source(self):
         self.get(f"https://github.com/psf/requests/archive/v{self.version}.tar.gz")

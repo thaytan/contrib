@@ -5,7 +5,8 @@ class Elfutils(Recipe):
     description = "Handle ELF object files and DWARF debugging information"
     license = "LGPL"
     build_requires = (
-        "cc/[^1.0.0]"
+        "cc/[^1.0.0]",
+        "autotools/[^1.0.0]",
     )
     requires = (
         "zlib/[^1.2.11]"
