@@ -19,6 +19,12 @@ def git_init():
         raise Exception(output)
 
 
+def conan_init(repos):
+    call("conan", ["config", "install", os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
+    for repo in repos:
+        call("conan", ["user", os.environ["CONAN_LOGIN_USERNAME"], "-p", os.environ["CONAN_LOGIN_PASSWORD"], "-r", repo])
+
+
 def get_commit():
     if "CI_COMMIT_SHA" in os.environ:
         return os.environ["CI_COMMIT_SHA"]
@@ -92,11 +98,6 @@ def call(cmd, args, show=False, ret_exit_code=False):
         raise RuntimeError(fulloutput)
     return fulloutput
 
-
-def setup_init(repos):
-    call("conan", ["config", "install", os.environ["CONAN_CONFIG_URL"], "-sf", os.environ["CONAN_CONFIG_DIR"]])
-    for repo in repos:
-        call("conan", ["user", os.environ["CONAN_LOGIN_USERNAME"], "-p", os.environ["CONAN_LOGIN_PASSWORD"], "-r", repo])
 
 
 def find_branches():
