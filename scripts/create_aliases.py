@@ -1,5 +1,6 @@
 import util
 import os
+import sys
 import subprocess
 
 # Init git and conan in CICD
@@ -22,6 +23,9 @@ else:
 
 branch = util.get_branch()
 print(f"Branch: {branch}")
+if branch == util.get_default_branch():
+    print("Skipping default branch")
+    sys.exit(0)
 commit = util.get_commit()
 print(f"Commit: {commit}")
 parent_branch = util.find_parent_branch()

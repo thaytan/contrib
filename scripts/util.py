@@ -40,6 +40,12 @@ def get_branch():
     return output[:-1]
 
 
+def get_default_branch():
+    if "CI_DEFAULT_BRANCH" in os.environ:
+        return os.environ["CI_DEFAULT_BRANCH"]
+    return "master"
+
+
 def find_parent_branch():
     # Get branch data
     (exit_code, output) = call("git", ["show-branch", "-a"], ret_exit_code=True)
