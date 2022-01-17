@@ -8,6 +8,16 @@ import asyncio
 import pathlib
 
 def find_parent_branch():
+    # Fetch all branches
+    (exit_code, output) = call("git", ["config", "remote.origin.fetch", '"+refs/heads/*:refs/remotes/origin/*"'], ret_exit_code=True)
+    if exit_code != 0:
+        raise Exception(output)
+
+    # Fetch 
+    (exit_code, output) = call("git", ["fetch"], ret_exit_code=True)
+    if exit_code != 0:
+        raise Exception(output)
+
     # Get branch data
     (exit_code, output) = call("git", ["show-branch", "-a"], ret_exit_code=True)
     if exit_code != 0:
