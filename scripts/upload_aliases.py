@@ -7,7 +7,7 @@ process = subprocess.Popen(["git", "show-ref", branch, "--heads", "--tag", "-s"]
 commit = process.communicate()[0].strip()
 
 print(f"Branch: {branch}")
-parent_branch = util.get_parent_branch()
+parent_branch = util.find_parent_branch()
 print(f"Parent Branch: {parent_branch}")
 fetch_repo = os.environ["CONAN_REPO_ALL"]
 print(f"Fetching from: {fetch_repo}")
