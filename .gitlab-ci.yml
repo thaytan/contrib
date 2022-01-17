@@ -8,6 +8,7 @@ alias-creator:
   stage: init
   variables:
     GIT_DEPTH: 0
+    GIT_FETCH_EXTRA_FLAGS: --single-branch
   script:
     - python3 scripts/upload_aliases.py
   except:
