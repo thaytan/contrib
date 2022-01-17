@@ -4,7 +4,7 @@ stages:
   - test
 alias-creator:
   image: aivero/conan:focal-x86_64
-  tags: [x86_64]
+  tags: [x86_64,aws]
   stage: init
   variables:
     GIT_DEPTH: 0
