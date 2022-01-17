@@ -1,7 +1,7 @@
 from build import *
 
 
-class CairoRecipe(Recipe):
+class Cairo(Recipe):
     description = "2D graphics library with support for multiple output devices"
     license = "LGPL"
     options = {

@@ -1,7 +1,7 @@
 from build import *
 
 
-class PerlRecipe(Recipe):
+class Perl(Recipe):
     description = "A highly capable, feature-rich programming language"
     license = "GPL"
     build_requires = (

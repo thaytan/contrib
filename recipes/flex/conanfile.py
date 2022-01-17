@@ -1,7 +1,7 @@
 from build import *
 
 
-class FlexRecipe(Recipe):
+class Flex(Recipe):
     description = "Flex, the fast lexical analyzer generator"
     license = "BSD"
     build_requires = (

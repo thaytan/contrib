@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxtstRecipe(Recipe):
+class Libxtst(Recipe):
     description = "X11 Testing Resource extension library"
     license = "custom"
     build_requires = (

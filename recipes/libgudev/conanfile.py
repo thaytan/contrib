@@ -1,7 +1,7 @@
 from build import *
 
 
-class GLibRecipe(Recipe):
+class GLib(Recipe):
     description = "libgudev, a library providing GObject bindings for libudev"
     license = "LGPL"
     build_requires = ("cc/[^1.0.0]", "meson/[>=0.55.3]")

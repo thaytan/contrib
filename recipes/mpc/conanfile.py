@@ -1,7 +1,7 @@
 from build import *
 
 
-class MpcRecipe(Recipe):
+class Mpc(Recipe):
     description = "Library for the arithmetic of complex numbers with arbitrarily high precision"
     license = "LGPL"
     build_requires = (

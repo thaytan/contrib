@@ -1,7 +1,7 @@
 from build import *
 
 
-class GperfRecipe(Recipe):
+class Gperf(Recipe):
     description = "A portable, high level programming interface to various calling conventions"
     license = "GPL"
     build_requires = (

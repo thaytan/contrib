@@ -1,7 +1,7 @@
 from build import *
 
 
-class AndroidNdkRecipe(Recipe):
+class AndroidNdk(Recipe):
     description = "Android NDK"
     license = "Apache"
     options = {}

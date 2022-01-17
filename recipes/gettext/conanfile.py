@@ -1,7 +1,7 @@
 from build import *
 
 
-class GettextRecipe(Recipe):
+class Gettext(Recipe):
     description = "GNU internationalization library"
     license = "GPL"
     build_requires = (

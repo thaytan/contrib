@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibglvndRecipe(Recipe):
+class Libglvnd(Recipe):
     description = "The GL Vendor-Neutral Dispatch library"
     license = "custom"
     options = {

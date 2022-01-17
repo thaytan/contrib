@@ -1,7 +1,7 @@
 from build import *
 
 
-class GraphvizRecipe(Recipe):
+class Graphviz(Recipe):
     description = "Graph Visualization Tools"
     license = "EPL"
     build_requires = (

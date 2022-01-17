@@ -1,7 +1,7 @@
 from build import *
 
 
-class CaCertificatesRecipe(Recipe):
+class CaCertificates(Recipe):
     description = "Common CA certificates PEM files from Mozilla"
     license = "MPL"
     options = {}

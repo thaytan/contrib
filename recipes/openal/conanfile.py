@@ -1,7 +1,7 @@
 from build import *
 
 
-class OpenalRecipe(Recipe):
+class Openal(Recipe):
     description = "Cross-platform 3D audio library, software implementation"
     license = "custom"
     build_requires = ("cc/[^1.0.0]", "cmake/[^3.18.4]")

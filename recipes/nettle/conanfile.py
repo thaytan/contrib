@@ -1,7 +1,7 @@
 from build import *
 
 
-class NettleRecipe(Recipe):
+class Nettle(Recipe):
     description = "A low-level cryptographic library"
     license = "GPL"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")

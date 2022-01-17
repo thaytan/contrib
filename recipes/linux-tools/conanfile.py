@@ -1,7 +1,7 @@
 from build import *
 
 
-class LinuxToolsRecipe(Recipe):
+class LinuxTools(Recipe):
     description = "Linux tools"
     license = "GPL"
 

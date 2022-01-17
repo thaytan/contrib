@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibVpxRecipe(Recipe):
+class LibVpx(Recipe):
     description = "WebM VP8/VP9 Codec SDK"
     license = "BSD"
     build_requires = (

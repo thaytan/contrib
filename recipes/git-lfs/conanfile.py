@@ -1,6 +1,6 @@
 from build import *
 
-class GitLFSRecipe(Recipe):
+class GitLFS(Recipe):
     description = " Git extension for versioning large files "
     license = "MIT"
     build_requires = (

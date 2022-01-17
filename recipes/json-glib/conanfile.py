@@ -1,7 +1,7 @@
 from build import *
 
 
-class JsonGlibBaseRecipe(Recipe):
+class JsonGlibBase(Recipe):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "GPL"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class Libtasn1Recipe(Recipe):
+class Libtasn1(Recipe):
     description = "The ASN.1 library used in GNUTLS"
     license = "GPL"
     build_requires = (

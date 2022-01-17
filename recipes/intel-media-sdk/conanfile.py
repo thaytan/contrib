@@ -1,7 +1,7 @@
 from build import *
 
 
-class IntelMediaSdkRecipe(Recipe):
+class IntelMediaSdk(Recipe):
     description = "API to access hardware-accelerated video on Intel Gen graphics hardware platforms"
     license = "MIT"
     build_requires = (

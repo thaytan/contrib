@@ -1,7 +1,7 @@
 from build import *
 
 
-class CMakeRecipe(Recipe):
+class CMake(Recipe):
     description = "A cross-platform open-source make system"
     license = "custom"
     options = {}

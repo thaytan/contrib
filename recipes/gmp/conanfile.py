@@ -1,7 +1,7 @@
 from build import *
 
 
-class GmpRecipe(Recipe):
+class Gmp(Recipe):
     description = "A free library for arbitrary precision arithmetic"
     license = "GPL"
     build_requires = (

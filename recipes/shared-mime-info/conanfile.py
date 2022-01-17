@@ -1,7 +1,7 @@
 from build import *
 
 
-class SharedMimeInfoRecipe(Recipe):
+class SharedMimeInfo(Recipe):
     description = "Freedesktop.org Shared MIME Info"
     license = "GPL"
     build_requires = (

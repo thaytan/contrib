@@ -1,7 +1,7 @@
 from build import *
 
 
-class CurlRecipe(Recipe):
+class Curl(Recipe):
     description = "An URL retrieval utility and library"
     license = "MIT"
     build_requires = (

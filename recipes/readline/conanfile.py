@@ -1,7 +1,7 @@
 from build import *
 
 
-class ReadlineRecipe(Recipe):
+class Readline(Recipe):
     description = "GNU readline library"
     license = "GPL"
     build_requires = (

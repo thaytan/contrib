@@ -1,7 +1,7 @@
 from build import *
 
 
-class MakeRecipe(Recipe):
+class Make(Recipe):
     description = "GNU make utility to maintain groups of programs"
     license = "GPL"
     build_requires = "cc/[^1.0.0]"

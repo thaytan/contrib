@@ -1,7 +1,7 @@
 from build import *
 
 
-class GnutlsRecipe(Recipe):
+class Gnutls(Recipe):
     description = "A library which provides a secure layer over a reliable transport layer"
     license = "custom"
     build_requires = (

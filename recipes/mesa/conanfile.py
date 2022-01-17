@@ -1,7 +1,7 @@
 from build import *
 
 
-class MesaRecipe(Recipe):
+class Mesa(Recipe):
     description = "An open-source implementation of the OpenGL specification"
     license = "custom"
     options = {

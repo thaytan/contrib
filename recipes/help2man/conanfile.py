@@ -1,7 +1,7 @@
 from build import *
 
 
-class Help2ManRecipe(Recipe):
+class Help2Man(Recipe):
     description = "Conversion tool to create man files"
     license = "GPL"
     build_requires = (

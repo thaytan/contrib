@@ -1,7 +1,7 @@
 from build import *
 
 
-class LinuxHeadersRecipe(Recipe):
+class LinuxHeaders(Recipe):
     description = "Linux headers"
     license = "GPL"
     options = {}

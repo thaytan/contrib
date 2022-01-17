@@ -1,7 +1,7 @@
 from build import *
 
 
-class GLibRecipe(Recipe):
+class GLib(Recipe):
     description = "GLib provides the core application building blocks for libraries and applications written in C"
     license = "LGPL"
     build_requires = ("cc/[^1.0.0]", "meson/[>=0.55.3]")

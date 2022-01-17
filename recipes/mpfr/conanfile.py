@@ -1,7 +1,7 @@
 from build import *
 
 
-class MpfrRecipe(Recipe):
+class Mpfr(Recipe):
     description = "Multiple-precision floating-point library"
     license = "LGPL"
     build_requires = (

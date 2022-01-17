@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibeditRecipe(Recipe):
+class Libedit(Recipe):
     description = "System V Release 4.0 curses emulation library"
     license = "BSDBBBBB"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")

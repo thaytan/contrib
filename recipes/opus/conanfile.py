@@ -1,7 +1,7 @@
 from build import *
 
 
-class OpusRecipe(Recipe):
+class Opus(Recipe):
     description = "Modern audio compression for the internet"
     license = "BSD"
     build_requires = (

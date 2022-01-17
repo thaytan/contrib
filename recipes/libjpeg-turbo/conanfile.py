@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibjpegTurboRecipe(Recipe):
+class LibjpegTurbo(Recipe):
     description = "JPEG image codec with accelerated baseline compression and decompression"
     license = "custom"
     build_requires = (

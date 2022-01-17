@@ -1,7 +1,7 @@
 from build import *
 
 
-class RenderprotoRecipe(Recipe):
+class Renderproto(Recipe):
     description = "X11 Render extension wire protocol"
     license = "MIT"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")

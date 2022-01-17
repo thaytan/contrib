@@ -1,7 +1,7 @@
 from build import *
 
 
-class GlmRecipe(Recipe):
+class Glm(Recipe):
     description = "OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications."
     license = "MIT"
     exports_sources = ["glm.pc"]

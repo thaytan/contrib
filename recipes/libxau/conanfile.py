@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxauRecipe(Recipe):
+class Libxau(Recipe):
     description = "X11 authorisation library"
     license = "MIT"
     build_requires = (

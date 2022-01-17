@@ -1,7 +1,7 @@
 from build import *
 
 
-class CapnprotoRecipe(Recipe):
+class Capnproto(Recipe):
     description = "Cap'n Proto serialization/RPC system"
     license = "MIT"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxkbcommonRecipe(Recipe):
+class Libxkbcommon(Recipe):
     description = "Keymap handling library for toolkits and window systems"
     license = "MIT"
     build_requires = (

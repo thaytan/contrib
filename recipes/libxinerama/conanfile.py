@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxineramaRecipe(Recipe):
+class Libxinerama(Recipe):
     description = "X11 Xinerama extension library"
     license = "custom"
     build_requires = (

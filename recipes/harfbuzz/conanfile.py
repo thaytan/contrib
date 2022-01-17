@@ -1,7 +1,7 @@
 from build import *
 
 
-class HarfbuzzRecipe(Recipe):
+class Harfbuzz(Recipe):
     description = "HarfBuzz text shaping engine"
     license = "MIT"
     build_requires = (

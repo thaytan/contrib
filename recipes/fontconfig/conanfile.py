@@ -1,7 +1,7 @@
 from build import *
 
 
-class FontconfigRecipe(Recipe):
+class Fontconfig(Recipe):
     description = "A library for configuring and customizing font access"
     license = "MIT"
     build_requires = (

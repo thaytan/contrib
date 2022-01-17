@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibcRecipe(Recipe):
+class Libc(Recipe):
     description = "Virtual libc"
     license = "MIT"
     options = {}

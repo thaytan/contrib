@@ -1,7 +1,7 @@
 from build import *
 
 
-class CoreutilsRecipe(Recipe):
+class Coreutils(Recipe):
     description = "The basic file, shell and text manipulation utilities of the GNU operating system"
     license = "GPL"
 

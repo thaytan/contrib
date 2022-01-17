@@ -1,7 +1,7 @@
 from build import *
 
 
-class AutoconfArchiveRecipe(Recipe):
+class AutoconfArchive(Recipe):
     description = "A collection of freely re-usable Autoconf macros"
     license = "GPL"
     build_requires = (

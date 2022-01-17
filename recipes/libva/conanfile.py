@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibvaRecipe(Recipe):
+class Libva(Recipe):
     description = "Libva is an implementation for VA-API (Video Acceleration API)"
     license = "MIT"
     options = {"x11": [True, False], "wayland": [True, False]}

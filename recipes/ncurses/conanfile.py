@@ -1,7 +1,7 @@
 from build import *
 
 
-class NcursesRecipe(Recipe):
+class Ncurses(Recipe):
     description = "System V Release 4.0 curses emulation library"
     license = "MIT"
     build_requires = (

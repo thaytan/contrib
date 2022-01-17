@@ -1,7 +1,7 @@
 from build import *
 
 
-class PkgconfRecipe(Recipe):
+class Pkgconf(Recipe):
     description = "Package compiler and linker metadata toolkit"
     license = "custom"
     build_requires = (

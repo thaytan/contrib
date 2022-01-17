@@ -1,7 +1,7 @@
 from build import *
 
 
-class FribidiRecipe(Recipe):
+class Fribidi(Recipe):
     description = "The Free Implementation of the Unicode Bidirectional Algorithm"
     license = "LGPL"
     build_requires = (

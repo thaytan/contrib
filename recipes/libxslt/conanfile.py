@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxsltRecipe(Recipe):
+class Libxslt(Recipe):
     description = "XML stylesheet transformation library"
     license = "custom"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")

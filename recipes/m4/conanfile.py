@@ -1,7 +1,7 @@
 from build import *
 
 
-class M4Recipe(Recipe):
+class M4(Recipe):
     description = "The GNU macro processor"
     license = "GPL"
     build_requires = (

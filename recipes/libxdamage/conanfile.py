@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxdamageRecipe(Recipe):
+class Libxdamage(Recipe):
     description = "X11 damaged region extension library"
     license = "custom"
     build_requires = (

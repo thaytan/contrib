@@ -1,7 +1,7 @@
 from build import *
 
 
-class Bzip2Recipe(Recipe):
+class Bzip2(Recipe):
     description = "A high-quality data compression program"
     license = "custom"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class FileRecipe(Recipe):
+class File(Recipe):
     description = "File type identification utility"
     license = "custom"
 

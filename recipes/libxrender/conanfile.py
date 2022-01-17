@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxrenderRecipe(Recipe):
+class Libxrender(Recipe):
     description = "X Rendering Extension client library"
     license = "MIT"
     build_requires = (

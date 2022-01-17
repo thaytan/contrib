@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibarchiveRecipe(Recipe):
+class Libarchive(Recipe):
     description = "Multi-format archive and compression library"
     license = "BSD"
     build_requires = (

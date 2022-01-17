@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxrandrRecipe(Recipe):
+class Libxrandr(Recipe):
     description = "X11 RandR extension library"
     license = "MIT"
     build_requires = (

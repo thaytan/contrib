@@ -1,7 +1,7 @@
 from build import *
 
 
-class PngquantRecipe(Recipe):
+class Pngquant(Recipe):
     description = "Command-line utility to quantize PNGs down to 8-bit paletted PNGs"
     license = "BSD"
     build_requires = ("autotools/1.0.0",)

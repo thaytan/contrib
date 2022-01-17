@@ -1,7 +1,7 @@
 from build import *
 
 
-class BisonRecipe(Recipe):
+class Bison(Recipe):
     description = "Bison is a general-purpose parser generator"
     license = "GPL"
     build_requires = (

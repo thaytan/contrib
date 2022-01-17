@@ -1,7 +1,7 @@
 from build import *
 
 
-class NodeGypRecipe(Recipe):
+class NodeGyp(Recipe):
     description = "Node.js native addon build tool"
     license = "MIT"
     requires = ("nodejs/[>=16.6.1]",)

@@ -1,7 +1,7 @@
 from build import *
 
 
-class PixmanRecipe(Recipe):
+class Pixman(Recipe):
     description = "Image processing and manipulation library"
     license = "custom"
     build_requires = (

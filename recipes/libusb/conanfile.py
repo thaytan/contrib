@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibUSBRecipe(Recipe):
+class LibUSB(Recipe):
     description = "A cross-platform library to access USB devices"
     license = "LGPL"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class OpensslRecipe(Recipe):
+class Openssl(Recipe):
     description = "TLS/SSL and crypto library"
     license = "BSD"
     build_requires = (

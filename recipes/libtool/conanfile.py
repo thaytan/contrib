@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibtoolRecipe(Recipe):
+class Libtool(Recipe):
     description = "A generic library support script"
     license = "GPL"
     exports = "libtool-prefix-fix.patch"

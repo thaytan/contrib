@@ -1,7 +1,7 @@
 from build import *
 
 
-class DbusRecipe(Recipe):
+class Dbus(Recipe):
     description = "Freedesktop.org message bus system"
     license = "GPL"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class DirenvRecipe(Recipe):
+class Direnv(Recipe):
     description = "A shell extension that manages your environment"
     license = "MIT"
     build_requires = (

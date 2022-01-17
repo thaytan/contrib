@@ -1,7 +1,7 @@
 from build import *
 
 
-class PythonCythonRecipe(Recipe):
+class PythonCython(Recipe):
     description = "Python to C compiler"
     license = "Apache"
     settings = "build_type", "compiler",    "python"

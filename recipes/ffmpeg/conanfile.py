@@ -1,7 +1,7 @@
 from build import *
 
 
-class FFMpegRecipe(Recipe):
+class FFMpeg(Recipe):
     description = "A complete, cross-platform solution to record, convert and stream audio and video"
     license = "LGPL"
     settings = Recipe.settings

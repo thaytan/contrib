@@ -1,7 +1,7 @@
 from build import *
 
 
-class RustcRecipe(Recipe):
+class Rustc(Recipe):
     description = "Systems programming language focused on safety, speed and concurrency"
     license = "MIT"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class AutotoolsRecipe(Recipe):
+class Autotools(Recipe):
     description = "A suite of programming tools 'designed' to assist in making source code"
     license = "GPL"
     requires = (

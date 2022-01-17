@@ -1,7 +1,7 @@
 from build import *
 
 
-class GoRecipe(Recipe):
+class Go(Recipe):
     description = "Core compiler tools for the Go programming language"
     license = "BSD"
 

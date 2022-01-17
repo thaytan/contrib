@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxpmRecipe(Recipe):
+class Libxpm(Recipe):
     description = "X11 pixmap library"
     license = "custom"
     build_requires = (

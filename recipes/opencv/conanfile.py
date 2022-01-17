@@ -1,7 +1,7 @@
 from build import *
 
 
-class OpenCVRecipe(Recipe):
+class OpenCV(Recipe):
     description = "OpenCV is an open source computer vision and machine learning software library."
     license = "BSD"
     build_requires = (

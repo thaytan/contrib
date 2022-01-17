@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibpthreadStubsRecipe(Recipe):
+class LibpthreadStubs(Recipe):
     description = "Library with weak aliases for pthread functions"
     license = "MIT"
     build_requires = (

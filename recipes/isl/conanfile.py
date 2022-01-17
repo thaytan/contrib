@@ -1,7 +1,7 @@
 from build import *
 
 
-class IslRecipe(Recipe):
+class Isl(Recipe):
     description = "Library for manipulating sets and relations of integer points bounded by linear constraints"
     license = "MIT"
     build_requires = (

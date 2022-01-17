@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibimagequantRecipe(Recipe):
+class Libimagequant(Recipe):
     description = "Library for high-quality conversion of RGBA images to 8-bit indexed-color (palette) images"
     license = "BSD"
     build_requires = (

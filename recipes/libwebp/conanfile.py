@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibwebpRecipe(Recipe):
+class Libwebp(Recipe):
     description = "library to encode and decode images in WebP format"
     license = "BSD"
     build_requires = (

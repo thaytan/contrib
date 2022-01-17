@@ -1,7 +1,7 @@
 from build import *
 
 
-class OrcRecipe(Recipe):
+class Orc(Recipe):
     description = "Optimized Inner Loop Runtime Compiler"
     license = "LGPL"
     build_requires = (

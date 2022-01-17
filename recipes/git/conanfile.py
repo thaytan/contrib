@@ -8,7 +8,7 @@ INSTALL_SYMLINKS=1
 """
 
 
-class GitRecipe(Recipe):
+class Git(Recipe):
     description = "The fast distributed version control system"
     license = "GPL"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class TexinfoRecipe(Recipe):
+class Texinfo(Recipe):
     description = "GNU documentation system for on-line information and printed output"
     license = "GPL"
     build_requires = (

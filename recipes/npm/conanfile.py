@@ -1,7 +1,7 @@
 from build import *
 
 
-class NpmRecipe(Recipe):
+class Npm(Recipe):
     description = "A package manager for javascript"
     license = "MIT"
     requires = ("nodejs/[>=16.6.1]",)

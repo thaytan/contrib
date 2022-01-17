@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibsslRecipe(Recipe):
+class Libssl(Recipe):
     description = "Virtual libssl"
     license = "MIT"
     options = {}

@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibatomicRecipe(Recipe):
+class Libatomic(Recipe):
     description = "GNU libatomic"
     license = "GPL"
     options = {}

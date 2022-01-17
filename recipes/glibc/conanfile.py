@@ -1,7 +1,7 @@
 from build import *
 
 
-class GlibcRecipe(Recipe):
+class Glibc(Recipe):
     description = "GNU C Library"
     license = "GPL"
     options = {}

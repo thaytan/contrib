@@ -1,7 +1,7 @@
 from build import *
 
 
-class NinjaRecipe(Recipe):
+class Ninja(Recipe):
     description = "Small build system with a focus on speed"
     license = "Apache"
     build_requires = ("cmake-bootstrap/[^3.18.4]",)

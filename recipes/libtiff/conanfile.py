@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibtiffRecipe(Recipe):
+class Libtiff(Recipe):
     description = "Library for manipulation of TIFF images"
     license = "custom"
     build_requires = (

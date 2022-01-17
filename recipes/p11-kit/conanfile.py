@@ -1,7 +1,7 @@
 from build import *
 
 
-class P11KitRecipe(Recipe):
+class P11Kit(Recipe):
     description = "Loads and enumerates PKCS#11 modules"
     license = "BSD"
     build_requires = (

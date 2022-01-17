@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibpngRecipe(Recipe):
+class Libpng(Recipe):
     description = "A collection of routines used to create PNG format graphics files"
     license = "custom"
     build_requires = (

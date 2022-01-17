@@ -1,7 +1,7 @@
 from build import *
 
 
-class SvtHevcRecipe(Recipe):
+class SvtHevc(Recipe):
     description = "The Scalable Video Technology for HEVC Encoder"
     license = "BSD"
     build_requires = (

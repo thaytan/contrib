@@ -1,7 +1,7 @@
 from build import *
 
 
-class NodejsRecipe(Recipe):
+class Nodejs(Recipe):
     description = "Evented I/O for V8 javascript"
     license = "MIT"
     build_requires = (

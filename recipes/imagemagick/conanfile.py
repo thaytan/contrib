@@ -1,7 +1,7 @@
 from build import *
 
 
-class ImagemagickRecipe(Recipe):
+class Imagemagick(Recipe):
     description = "An image viewing/manipulation program"
     license = "ImageMagick"
     build_requires = ("cc/[^1.0.0]", "autotools/[^1.0.0]")

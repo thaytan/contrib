@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibuuidRecipe(Recipe):
+class Libuuid(Recipe):
     description = "Portable uuid C library"
     license = "BSD"
     build_requires = (

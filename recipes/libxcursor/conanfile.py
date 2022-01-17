@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxcursorRecipe(Recipe):
+class Libxcursor(Recipe):
     description = "X cursor management library"
     license = "custom"
     build_requires = (

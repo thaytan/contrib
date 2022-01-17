@@ -1,7 +1,7 @@
 from build import *
 
 
-class AutomakeRecipe(Recipe):
+class Automake(Recipe):
     description = "A GNU tool for automatically creating Makefiles"
     license = "GPL"
     exports = "automake-include-fix.patch"

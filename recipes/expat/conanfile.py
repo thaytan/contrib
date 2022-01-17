@@ -1,7 +1,7 @@
 from build import *
 
 
-class ExpatRecipe(Recipe):
+class Expat(Recipe):
     description = "An XML parser library"
     license = "MIT"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class TclRecipe(Recipe):
+class Tcl(Recipe):
     description = "The Tcl scripting language"
     license = "custom"
     build_requires = (

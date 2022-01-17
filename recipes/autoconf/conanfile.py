@@ -1,7 +1,7 @@
 from build import *
 
 
-class AutoconfRecipe(Recipe):
+class Autoconf(Recipe):
     description = "A GNU tool for automatically configuring source code"
     license = "GPL"
     exports = "m4-include.patch"

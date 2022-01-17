@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibxextRecipe(Recipe):
+class Libxext(Recipe):
     description = "X11 miscellaneous extensions library"
     license = "custom"
     build_requires = (

@@ -1,7 +1,7 @@
 from build import *
 
 
-class LibdrmRecipe(Recipe):
+class Libdrm(Recipe):
     description = "Direct Rendering Manager headers and kernel modules"
     license = "MIT"
     build_requires = (

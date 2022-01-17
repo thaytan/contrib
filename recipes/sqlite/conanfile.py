@@ -6,7 +6,7 @@ def conv_version(version):
     return version[0] + format(version[1], "0<3") + format(version[2], "0<3")
 
 
-class SqliteRecipe(Recipe):
+class Sqlite(Recipe):
     description = "A C library that implements an SQL database engine"
     license = "custom"
     build_requires = (

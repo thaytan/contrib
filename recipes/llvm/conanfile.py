@@ -1,7 +1,7 @@
 from build import *
 
 
-class LlvmRecipe(Recipe):
+class Llvm(Recipe):
     description = "Collection of modular and reusable compiler and toolchain technologies"
     license = "custom"
     exports = ("disable-system-libs.patch",)

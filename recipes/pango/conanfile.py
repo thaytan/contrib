@@ -1,7 +1,7 @@
 from build import *
 
 
-class PangoRecipe(Recipe):
+class Pango(Recipe):
     description = "A library for layout and rendering of text"
     license = "LGPL"
     options = {
