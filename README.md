@@ -36,26 +36,7 @@ Please adhere to the following standards:
 # Install Conan (Requires Python 3 and pip)
 pip3 install conan
 # Install Conan config
-conan config install https://github.com/aivero/conan-config.git
+conan config install https://gitlab.com/aivero/open-source/conan-config.git
 # Set arch specific profile
 conan config set general.default_profile=linux-x86_64
 ```
-
-# Step-by-Step
-
-1. Make sure you have [rust](https://www.rust-lang.org/) and [GStreamer](https://gstreamer.freedesktop.org/documentation/installing/index.html?gi-language=c) installed on your system.
-2. Clone the project: `https://github.com/aivero/contrib.git` and `cd contrib`
-3. Create a new branch for you feature, please use a meaningful name: `git checkout -b my-branch-name`
-4. Implement you changes, please try to keep you commits small.
-5. Commit you changes: `git add src/your-files` and `git commit`. Please try to give the commits a meaningful commit subject and message.
-6. Push changes to your feature branch: `git push --set-upstream origin my-branch-name` .
-7. Open a merge request
-   1. Navigate to https://github.com/aivero/contrib in a browser
-   2. Click _Merge Requests_ on the right-hand side panel
-   3. Click _New merge request_
-   4. Select you newly added branch as source and master as target.
-   5. Click _Compare branches and continue_
-   6. Give your merge request a meaningful name. Please prepend the name with _WIP:_ if you're not done with the changes yet.
-   7. Describe the changes you've made, and optimally how to test them.
-   8. Submit the merge request.
-8. Thank you for contributing. We'll review your changes as soon as possible.
