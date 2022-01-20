@@ -87,8 +87,13 @@ def find_parent_branch():
 
     branches = output.split("\n")
     line = list(filter(lambda l: l.startswith("*") and cur_branch not in l, branches))[0]
-    match = re.search("\[origin/([^~]*).*\]", line)
+    print(line)
 
+    match = re.search("\[origin/([^^~]*).*\]", line)
+    if match:
+        return match[1]
+
+    match = re.search("\[([^^~]*).*\]", line)
     if match:
         return match[1]
 
