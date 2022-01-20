@@ -7,7 +7,7 @@ generate-config:
   stage: build
   variables:
     GIT_DEPTH: 0
-    GIT_FETCH_EXTRA_FLAGS: --depth 50
+    GIT_FETCH_EXTRA_FLAGS: --prune --depth 50
     GIT_SUBMODULE_STRATEGY: recursive
   script:
     - python3 scripts/create_aliases.py
