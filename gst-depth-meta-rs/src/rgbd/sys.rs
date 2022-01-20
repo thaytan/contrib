@@ -19,8 +19,8 @@
 #![allow(dead_code)]
 
 extern crate glib_sys;
-extern crate gstreamer_sys as gst_sys;
-extern crate gstreamer_video_sys as gst_video_sys;
+extern crate gst_sys;
+extern crate gst_video_sys;
 
 pub type BufferMeta = _BufferMeta;
 pub type TagsMeta = _TagsMeta;

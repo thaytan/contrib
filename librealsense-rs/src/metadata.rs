@@ -42,7 +42,7 @@ pub enum MetadataAttribute {
         rs2::rs2_frame_metadata_value_RS2_FRAME_METADATA_LOW_LIGHT_COMPENSATION as isize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Metadata {
     pub frame_counter: Option<i64>,
     pub frame_timestamp: Option<i64>,
@@ -73,42 +73,6 @@ pub struct Metadata {
     pub manual_white_balance: Option<i64>,
     pub power_line_frequency: Option<i64>,
     pub low_light_compensation: Option<i64>,
-}
-
-impl Default for Metadata {
-    fn default() -> Self {
-        Self {
-            frame_counter: None,
-            frame_timestamp: None,
-            sensor_timestamp: None,
-            actual_exposure: None,
-            gain_level: None,
-            auto_exposure: None,
-            white_balance: None,
-            time_of_arrival: None,
-            temperature: None,
-            backend_timestamp: None,
-            actual_fps: None,
-            laser_power: None,
-            laser_power_mode: None,
-            exposure_priority: None,
-            exposure_roi_left: None,
-            exposure_roi_right: None,
-            exposure_roi_top: None,
-            exposure_roi_bottom: None,
-            brightness: None,
-            contrast: None,
-            saturation: None,
-            sharpness: None,
-            auto_white_balance_temperature: None,
-            backlight_compensation: None,
-            hue: None,
-            gamma: None,
-            manual_white_balance: None,
-            power_line_frequency: None,
-            low_light_compensation: None,
-        }
-    }
 }
 
 impl Metadata {

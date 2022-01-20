@@ -14,13 +14,12 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use glib::SendValue;
 use gst::{subclass::prelude::*, Event};
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
+use gst_base::AggregatorPad;
 use gst_depth_meta::buffer::BufferMeta;
 use gst_depth_meta::rgbd;
-use gstreamer_base::AggregatorPad;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
@@ -269,15 +268,14 @@ impl AggregatorImpl for RgbdMux {
         let sink_pad_caps = sink_pads.clone().map(|pad| pad.current_caps().unwrap());
         let sink_pad_names = sink_pads.clone().map(|pad| pad.name());
 
-        let streams: Vec<SendValue> = sink_pad_names
+        let streams = sink_pad_names
             .clone()
-            .map(|s| s.trim_start_matches("sink_").to_send_value())
-            .collect();
+            .map(|s| s.trim_start_matches("sink_").to_send_value());
 
         let mut downstream_caps = gst::Caps::new_simple(
             "video/rgbd",
             &[
-                ("streams", &gst::Array::from_owned(streams)),
+                ("streams", &gst::Array::from_values(streams)),
                 ("framerate", &min_framerate.unwrap()),
             ],
         );
@@ -443,7 +441,7 @@ impl RgbdMux {
     /// * Some(duration) - if could convert the fraction to its duration
     /// * None - if the numerator was zero
     fn get_duration_from_fps(framerate: gst::Fraction) -> Option<gst::ClockTime> {
-        gst::ClockTime::SECOND.mul_div_floor(*framerate.denom() as u64, *framerate.numer() as u64)
+        gst::ClockTime::SECOND.mul_div_floor(framerate.denom() as u64, framerate.numer() as u64)
     }
 
     /// Pops / removes all buffers from a given pad that are outside of the range
@@ -645,6 +643,7 @@ impl RgbdMux {
     }
 }
 
+impl GstObjectImpl for RgbdMux {}
 impl ObjectImpl for RgbdMux {
     fn constructed(&self, obj: &Self::Type) {
         self.parent_constructed(obj);

@@ -3,20 +3,12 @@ use libk4a_sys::*;
 use crate::error::{K4aError, Result};
 
 /// Struct representation of `Resolution`.
+#[derive(Default)]
 pub struct Resolution {
     /// Width of image in pixels.
     pub width: i32,
     /// Height of image in pixels.
     pub height: i32,
-}
-
-impl Default for Resolution {
-    fn default() -> Self {
-        Self {
-            width: 0,
-            height: 0,
-        }
-    }
 }
 
 /// Converts `ColorResolution` into `Resolution` for color [`Image`](../image/struct.Image.html).

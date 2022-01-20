@@ -73,7 +73,7 @@ pub trait ElementSignalExtension {
     /// Connect to `update-sdp` signal of `element`, which will call `callback`
     /// when this signal is emited. This function exists, as a wrapper over some
     /// ugly code to aquire the sdp message as a mutable borrow.
-    fn connect_update_sdp<F>(&self, f: F) -> Result<SignalHandlerId, BoolError>
+    fn connect_update_sdp<F>(&self, f: F) -> SignalHandlerId
     where
         F: Fn(&Self, &mut SDPMessageRef) + Send + Sync + 'static;
 }
@@ -83,7 +83,7 @@ where
     T: IsA<gst::Element>,
     Option<T>: for<'a> FromValue<'a>,
 {
-    fn connect_update_sdp<F>(&self, f: F) -> Result<SignalHandlerId, BoolError>
+    fn connect_update_sdp<F>(&self, f: F) -> SignalHandlerId
     where
         F: Fn(&Self, &mut SDPMessageRef) + Send + Sync + 'static,
     {
@@ -113,7 +113,7 @@ pub trait ElementFactoryExtension {
 impl ElementFactoryExtension for ElementFactory {
     fn make_with(elem: &str, props: &[(&str, &dyn ToValue)]) -> Result<Element, BoolError> {
         let res = ElementFactory::make(elem, None)?;
-        res.set_properties(props)?;
+        res.set_properties(props);
         Ok(res)
     }
 }

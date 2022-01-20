@@ -21,6 +21,7 @@ use gst::prelude::*;
 use gst::*;
 
 /// Options for the `add_iter` function which extends what the function does.
+#[derive(Default, Copy, Clone)]
 pub struct Add {
     /// All elements added will also be linked in order `E1 ! E2 ! ... EN`
     pub link: bool,
@@ -30,17 +31,6 @@ pub struct Add {
     pub ghost_sink: bool,
     /// Will take the last and ghost its src pads to the bins src pad.
     pub ghost_src: bool,
-}
-
-impl Default for Add {
-    fn default() -> Self {
-        Self {
-            link: false,
-            sync: false,
-            ghost_sink: false,
-            ghost_src: false,
-        }
-    }
 }
 
 impl Add {
@@ -94,15 +84,10 @@ impl Add {
 }
 
 /// Options for the `remove_iter` function which extends what the function does.
+#[derive(Default, Copy, Clone)]
 pub struct Remove {
     /// Set the state of every element removed to `gst::State::Null`
     pub null: bool,
-}
-
-impl Default for Remove {
-    fn default() -> Self {
-        Self { null: false }
-    }
 }
 
 impl Remove {

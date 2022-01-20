@@ -22,17 +22,18 @@ use std::convert::TryFrom;
 /// Represents the Azure Kinect's color format and is used here to implement it as a GStreamer property.
 /// It is a small wrapper around the libk4a::ImageFormat enum, storing only the
 /// K4A_IMAGE_FORMAT_COLOR_* part of it.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, Enum)]
 #[repr(u32)]
-#[genum(type_name = "GstK4aColorFormat")]
+#[allow(clippy::upper_case_acronyms)]
+#[enum_type(name = "GstK4aColorFormat")]
 pub enum K4aColorFormat {
-    #[genum(name = "MJPG", nick = "mjpg")]
+    #[enum_value(name = "MJPG", nick = "mjpg")]
     MJPG = 0,
-    #[genum(name = "NV12 (720p only)", nick = "nv12")]
+    #[enum_value(name = "NV12 (720p only)", nick = "nv12")]
     NV12 = 1,
-    #[genum(name = "YUV2 (720p only)", nick = "yuv2")]
+    #[enum_value(name = "YUV2 (720p only)", nick = "yuv2")]
     YUV2 = 2,
-    #[genum(name = "BGRA32", nick = "bgra32")]
+    #[enum_value(name = "BGRA32", nick = "bgra32")]
     BGRA32 = 3,
 }
 
@@ -67,21 +68,21 @@ impl From<K4aColorFormat> for libk4a::ImageFormat {
 }
 
 /// Represents the Azure Kinect's color resolution and is used here to implement it as a GStreamer property.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, Enum)]
 #[repr(u32)]
-#[genum(type_name = "GstK4aColorResolution")]
+#[enum_type(name = "GstK4aColorResolution")]
 pub enum K4aColorResolution {
-    #[genum(name = "720p: 720p resolution", nick = "720p")]
+    #[enum_value(name = "720p: 720p resolution", nick = "720p")]
     C720p = 0,
-    #[genum(name = "1080p: 1080p resolution", nick = "1080p")]
+    #[enum_value(name = "1080p: 1080p resolution", nick = "1080p")]
     C1080p = 1,
-    #[genum(name = "1440p: 1440p resolution", nick = "1440p")]
+    #[enum_value(name = "1440p: 1440p resolution", nick = "1440p")]
     C1440p = 2,
-    #[genum(name = "1536p: 1536p resolution", nick = "1536p")]
+    #[enum_value(name = "1536p: 1536p resolution", nick = "1536p")]
     C1536p = 3,
-    #[genum(name = "2160p: 2160p resolution", nick = "2160p")]
+    #[enum_value(name = "2160p: 2160p resolution", nick = "2160p")]
     C2160p = 4,
-    #[genum(name = "3072p: 3072p resolution", nick = "3072p")]
+    #[enum_value(name = "3072p: 3072p resolution", nick = "3072p")]
     C3072p = 5,
 }
 
@@ -121,17 +122,17 @@ impl From<K4aColorResolution> for libk4a::ColorResolution {
 }
 
 /// Represents the Azure Kinect's depth mode and is used here to implement it as a GStreamer property.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, Enum)]
 #[repr(u32)]
-#[genum(type_name = "GstK4aDepthMode")]
+#[enum_type(name = "GstK4aDepthMode")]
 pub enum K4aDepthMode {
-    #[genum(name = "NFOV 2x2 Binned", nick = "nfov_2x2_binned")]
+    #[enum_value(name = "NFOV 2x2 Binned", nick = "nfov_2x2_binned")]
     Nfov2x2Binned,
-    #[genum(name = "NFOV Unbinned", nick = "nfov_unbinned")]
+    #[enum_value(name = "NFOV Unbinned", nick = "nfov_unbinned")]
     NfovUnbinned,
-    #[genum(name = "WFOV 2x2 Binned", nick = "wfov_2x2_binned")]
+    #[enum_value(name = "WFOV 2x2 Binned", nick = "wfov_2x2_binned")]
     Wfov2x2Binned,
-    #[genum(name = "WFOV unbinned", nick = "wfov_unbinned")]
+    #[enum_value(name = "WFOV unbinned", nick = "wfov_unbinned")]
     WfovUnbinned,
 }
 
@@ -168,15 +169,15 @@ impl From<K4aDepthMode> for libk4a::DepthMode {
 
 /// The Azure Kinect does not have a floating framerate, as with other cameras. We therefore
 /// represent it as an enum here. This enum is used to implement it as a GStreamer property.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, GEnum)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy, Enum)]
 #[repr(u32)]
-#[genum(type_name = "GstK4aFramerate")]
+#[enum_type(name = "GstK4aFramerate")]
 pub enum K4aFramerate {
-    #[genum(name = "5 FPS", nick = "5fps")]
+    #[enum_value(name = "5 FPS", nick = "5fps")]
     FPS5,
-    #[genum(name = "15 FPS", nick = "15fps")]
+    #[enum_value(name = "15 FPS", nick = "15fps")]
     FPS15,
-    #[genum(name = "30 FPS", nick = "30fps")]
+    #[enum_value(name = "30 FPS", nick = "30fps")]
     FPS30,
 }
 

@@ -3,6 +3,7 @@
 use crate::generated_bindings::*;
 
 type k4a_hardware_version = k4a_hardware_version_t;
+#[allow(clippy::derivable_impls)]
 impl Default for k4a_hardware_version {
     fn default() -> Self {
         k4a_hardware_version {
@@ -17,6 +18,7 @@ impl Default for k4a_hardware_version {
 }
 
 type k4a_version = k4a_version_t;
+#[allow(clippy::derivable_impls)]
 impl Default for k4a_version {
     fn default() -> Self {
         k4a_version {

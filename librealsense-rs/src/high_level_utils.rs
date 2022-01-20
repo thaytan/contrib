@@ -119,7 +119,7 @@ pub fn set_default_visual_preset(sensor: &mut Sensor) -> Result<(), Error> {
         "SR300" => RS2_SR300_VISUAL_PRESET_DEFAULT as u32,
         "D400" => RS2_RS400_VISUAL_PRESET_DEFAULT as u32,
         "L500" => RS2_L500_VISUAL_PRESET_DEFAULT as u32,
-        product_line @ _ => {
+        product_line => {
             return Err(Error::new(
                 &format!("Product line \"{}\" is unknown.", product_line),
                 "Sensor::set_default_visual_preset()",

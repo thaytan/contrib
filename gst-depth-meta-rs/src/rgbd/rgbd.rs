@@ -3,6 +3,9 @@ use crate::tags::TagsMeta;
 use crate::RgbdError;
 use gst::CoreError;
 
+use core::ops::ControlFlow::*;
+use gst::buffer::BufferMetaForeachAction::*;
+
 /// Fill the `main_buffer` with `buffer` and mark it appropriately with `tag`.
 ///
 /// # Arguments
@@ -163,9 +166,9 @@ pub fn get_tag(buffer: &gst::BufferRef) -> Result<String, gst::ErrorMessage> {
 pub fn clear_tags(buffer: &mut gst::BufferRef) {
     buffer.foreach_meta_mut(|meta| {
         if meta.as_ref().downcast_ref::<TagsMeta>().is_some() {
-            Ok(false)
+            Continue(Remove)
         } else {
-            Ok(true)
+            Continue(Keep)
         }
     });
 }
@@ -208,18 +211,18 @@ pub fn remove_aux_buffers_with_tags(
         if let Some(meta) = meta.as_ref().downcast_ref::<BufferMeta>() {
             let auxiliary_buffer = meta.buffer();
             let tag = match get_tag(auxiliary_buffer) {
-                Err(_) => return Ok(true),
+                Err(_) => return Continue(Keep),
                 Ok(tag) => tag,
             };
 
             if tags.contains(&&*tag) {
                 // Remove buffers with the corresponding tags
-                Ok(false)
+                Continue(Remove)
             } else {
-                Ok(true)
+                Continue(Keep)
             }
         } else {
-            Ok(true)
+            Continue(Keep)
         }
     });
 
@@ -240,7 +243,7 @@ pub fn remove_aux_buffers_with_tags(
 pub fn get_video_info(
     caps: &gst::StructureRef,
     stream_name: &str,
-) -> Result<gstreamer_video::VideoInfo, gst::ErrorMessage> {
+) -> Result<gst_video::VideoInfo, gst::ErrorMessage> {
     let framerate = caps
         .get::<gst::Fraction>("framerate")
         .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?;
@@ -254,7 +257,7 @@ pub fn get_video_info(
         .get::<&str>(&format!("{}_format", stream_name))
         .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?;
 
-    gstreamer_video::VideoInfo::builder(
+    gst_video::VideoInfo::builder(
         stream_format
             .parse()
             .map_err(|e| gst::error_msg!(CoreError::Caps, ["{}", e]))?,

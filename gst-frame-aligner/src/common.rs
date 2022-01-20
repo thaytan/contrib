@@ -53,8 +53,8 @@ impl From<glib::BoolError> for GstFrameAlignerError {
         Self::new(format!("A glib::BoolError occurred: {:?}", e))
     }
 }
-impl From<gstreamer_depth_meta::RgbdError> for GstFrameAlignerError {
-    fn from(e: gstreamer_depth_meta::RgbdError) -> Self {
+impl From<gst_depth_meta::RgbdError> for GstFrameAlignerError {
+    fn from(e: gst_depth_meta::RgbdError) -> Self {
         Self::new(format!("A RgbdError occurred: {:?}", e))
     }
 }

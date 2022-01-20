@@ -14,7 +14,7 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-use glib::{ParamFlags, ParamSpec};
+use glib::*;
 use gst::subclass::prelude::*;
 use gst::{prelude::*, TagList};
 use gst_depth_meta::rgbd;
@@ -726,8 +726,8 @@ impl RgbdDemux {
     /// unlocked when calling this function.
     fn push_stream_start_on_all_pads(&self, stream_identifier: &StreamIdentifier) {
         gst_debug!(CAT, "Pushing stream start event for all streams");
-        for (stream_name, mut src_pad) in self.src_pads.write().unwrap().iter_mut() {
-            Self::push_stream_start(&mut src_pad, stream_name, stream_identifier);
+        for (stream_name, src_pad) in self.src_pads.write().unwrap().iter_mut() {
+            Self::push_stream_start(src_pad, stream_name, stream_identifier);
         }
     }
 
@@ -743,10 +743,11 @@ impl RgbdDemux {
     }
 }
 
+impl GstObjectImpl for RgbdDemux {}
 impl ObjectImpl for RgbdDemux {
     fn properties() -> &'static [glib::ParamSpec] {
         static PROPERTIES: Lazy<[glib::ParamSpec; 1]> = Lazy::new(|| {
-            [ParamSpec::new_boolean(
+            [ParamSpecBoolean::new(
                 "distribute-timestamps",
                 "Distribute Timestamps",
                 "If enabled, timestamps of the main buffers will be distributed to the

@@ -15,10 +15,10 @@
 
 extern crate glib;
 #[macro_use]
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
-extern crate gstreamer_depth_meta as gst_depth_meta;
-extern crate gstreamer_video as gst_video;
+extern crate gst;
+extern crate gst_base;
+extern crate gst_depth_meta;
+extern crate gst_video;
 #[macro_use]
 extern crate lazy_static;
 use std::sync::Once;

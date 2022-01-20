@@ -13,9 +13,9 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
-extern crate gstreamer_sys as gst_sys;
+extern crate gst;
+extern crate gst_base;
+extern crate gst_sys;
 
 extern crate capnp;
 #[allow(clippy::all)]

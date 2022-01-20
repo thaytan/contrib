@@ -10,11 +10,11 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-glib = "0.14.2"
-gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
-gstreamer = "0.17.1"
-gstreamer-base = "0.17.0"
-gstreamer-video = "0.17.0"
+glib = "0.15"
+gst-depth-meta = { path = "../gst-depth-meta-rs" }
+gst = { package = "gstreamer", version = "0.18" }
+gst-base = { package = "gstreamer-base", version = "0.18" }
+gst-video = { package = "gstreamer-video", version = "0.18" }
 lazy_static = "1.4.0"
 nalgebra = { version = "0.29.0", features = ["serde-serialize"] }
 serde = "1.0.120"

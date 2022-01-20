@@ -21,7 +21,7 @@ use crate::common::*;
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
 use gst_base::subclass::prelude::*;
-use gstreamer_depth_meta::rgbd;
+use gst_depth_meta::rgbd;
 use na::*;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -60,8 +60,6 @@ struct FrameAlignerState {
     k_depth: Matrix3<f32>,
     /// * `translation` - Struct that holds the translation matrix.
     translation: Matrix3x1<f32>,
-    /// * `dump` - Bool that tells the element whether or not to write the curent pointcloud frame to file.
-    dump: bool,
 }
 /// A struct representation of the `framealigner` element. The algorithm used in this element is
 /// loosely based on https://www.codefull.org/2016/03/align-depth-and-color-frames-depth-and-rgb-registration/.
@@ -309,17 +307,17 @@ impl ObjectSubclass for FrameAligner {
                 k_color: Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                 k_depth: Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                 translation: Matrix3x1::new(0.0, 0.0, 0.0),
-                dump: false,
             }),
         }
     }
 }
 
+impl GstObjectImpl for FrameAligner {}
 impl ObjectImpl for FrameAligner {
     fn properties() -> &'static [glib::ParamSpec] {
         static PROPERTIES: Lazy<[glib::ParamSpec; 2]> = Lazy::new(|| {
             [
-                glib::ParamSpec::new_float(
+                glib::ParamSpecFloat::new(
                     "depth-factor",
                     "depth-factor",
                     "The `depth_factor` to apply to the depth maps",
@@ -328,7 +326,7 @@ impl ObjectImpl for FrameAligner {
                     DEFAULT_DEPTH_FACTOR,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_string(
+                glib::ParamSpecString::new(
                     "calib-file",
                     "calib-file",
                     "Calibration file from where to read the camera parameters",

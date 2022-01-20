@@ -30,12 +30,12 @@ impl TagsMeta {
     /// * `meta_tags` - The TagsList that should be added as metadata.
     /// # Example
     /// ```
-    /// use gstreamer_depth_meta::tags::TagsMeta;
-    /// gstreamer::init().unwrap();
-    /// let mut main_buffer = gstreamer::Buffer::new();
-    /// let mut tags = gstreamer::tags::TagList::new();
+    /// use gst_depth_meta::tags::TagsMeta;
+    /// gst::init().unwrap();
+    /// let mut main_buffer = gst::Buffer::new();
+    /// let mut tags = gst::tags::TagList::new();
     /// tags.get_mut().unwrap()
-    ///     .add::<gstreamer::tags::Title>(&"example-tag", gstreamer::TagMergeMode::Append);
+    ///     .add::<gst::tags::Title>(&"example-tag", gst::TagMergeMode::Append);
     /// TagsMeta::add(
     ///    main_buffer.make_mut(),
     ///    &mut tags,
@@ -127,7 +127,7 @@ mod tests {
         let tags_meta = TagsMeta::add(buffer.make_mut(), &mut tags);
 
         // Act
-        tags_meta.remove();
+        let _ = tags_meta.remove();
 
         // Assert
         for i in buffer.iter_meta::<TagsMeta>() {

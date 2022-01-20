@@ -11,13 +11,13 @@ readme = "README.md"
 build = "build.rs"
 
 [dependencies]
-glib = "0.14.2"
-gstreamer = "0.17.1"
-gstreamer-base = { version = "0.17.0", features = ["v1_18"] }
+glib = "0.15"
+gst = { package = "gstreamer", version = "0.18" }
+gst-base = { package = "gstreamer-base", version = "0.18", features = ["v1_18"] }
 lazy_static = "1.4.0"
 once_cell = "1"
 
-gstreamer-depth-meta = { path = "../gst-depth-meta-rs" }
+gst-depth-meta = { path = "../gst-depth-meta-rs" }
 gst-util = { path = "../gst-util" }
 
 [build-dependencies]

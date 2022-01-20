@@ -31,10 +31,10 @@ impl BufferMeta {
     /// * `meta_buffer` - The buffer that should be added as metadata.
     /// # Example
     /// ```
-    /// use gstreamer_depth_meta::buffer::BufferMeta;
-    /// gstreamer::init().unwrap();
-    /// let mut main_buffer = gstreamer::Buffer::new();
-    /// let mut meta_buffer = gstreamer::Buffer::from_slice([10,9,8,7]);
+    /// use gst_depth_meta::buffer::BufferMeta;
+    /// gst::init().unwrap();
+    /// let mut main_buffer = gst::Buffer::new();
+    /// let mut meta_buffer = gst::Buffer::from_slice([10,9,8,7]);
     /// BufferMeta::add(
     ///    main_buffer.make_mut(),
     ///    &mut meta_buffer,
@@ -169,7 +169,7 @@ mod tests {
         let buffer_meta = BufferMeta::add(buffer.make_mut(), &mut meta_buffer);
 
         // Act
-        buffer_meta.remove();
+        let _ = buffer_meta.remove();
 
         // Assert
         //assert_eq!(s, true);

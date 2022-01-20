@@ -23,11 +23,12 @@ use std::{
 
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
+use gst_base::subclass::base_src::CreateSuccess;
 use gst_base::subclass::prelude::*;
 
 use camera_meta::Distortion;
+use gst::{ErrorMessage, LibraryError};
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
-use gstreamer::{ErrorMessage, LibraryError};
 use rs2::{
     device::Device, frame::Frame, high_level_utils::StreamInfo, processing::ProcessingBlock,
 };
@@ -128,7 +129,7 @@ impl BaseSrcImpl for RealsenseSrc {
         gst_info!(CAT, obj: base_src, "Streaming started");
 
         base_src.set_format(gst::Format::Time);
-        base_src.set_property("do-timestamp", &true).unwrap();
+        base_src.set_property("do-timestamp", &true);
 
         // Chain up parent implementation
         self.parent_start(base_src)
@@ -198,11 +199,10 @@ impl BaseSrcImpl for RealsenseSrc {
             if settings.attach_camera_meta {
                 selected_streams.push("camerameta".to_string());
             }
-            let selected_streams: Vec<glib::SendValue> =
-                selected_streams.iter().map(|s| s.to_send_value()).collect();
+            let selected_streams = selected_streams.iter().map(|s| s.to_send_value());
 
             // Finally add the streams to the caps
-            s.set("streams", &gst::Array::from_owned(selected_streams));
+            s.set("streams", &gst::Array::from_values(selected_streams));
 
             // Fixate the framerate
             s.fixate_field_nearest_fraction("framerate", settings.streams.framerate);
@@ -268,7 +268,11 @@ impl PushSrcImpl for RealsenseSrc {
     /// Create a new buffer that will be pushed downstream.
     /// # Arguments
     /// * `push_src` - Representation of `realsensesrc` element.
-    fn create(&self, _push_src: &Self::Type) -> Result<gst::Buffer, gst::FlowError> {
+    fn create(
+        &self,
+        _push_src: &Self::Type,
+        _buffer: Option<&mut gst::BufferRef>,
+    ) -> Result<CreateSuccess, gst::FlowError> {
         let duration = {
             let settings = self.settings.read().unwrap();
             gst::ClockTime::from_nseconds(
@@ -334,7 +338,7 @@ impl PushSrcImpl for RealsenseSrc {
                 .map_err(|_| gst::FlowError::Error)?;
         }
 
-        Ok(output_buffer)
+        Ok(CreateSuccess::NewBuffer(output_buffer))
     }
 }
 
@@ -1436,6 +1440,7 @@ impl ElementImpl for RealsenseSrc {
     }
 }
 
+impl GstObjectImpl for RealsenseSrc {}
 impl ObjectImpl for RealsenseSrc {
     fn constructed(&self, obj: &Self::Type) {
         self.parent_constructed(obj);
@@ -1445,7 +1450,7 @@ impl ObjectImpl for RealsenseSrc {
     fn properties() -> &'static [glib::ParamSpec] {
         static PROPERTIES: Lazy<[glib::ParamSpec; 18]> = Lazy::new(|| {
             [
-                glib::ParamSpec::new_string(
+                glib::ParamSpecString::new(
                     "serial",
                     "Serial Number",
                     "Serial number of a realsense device. If unchanged or empty,
@@ -1453,7 +1458,7 @@ impl ObjectImpl for RealsenseSrc {
                     None,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_string(
+                glib::ParamSpecString::new(
                     "rosbag-location",
                     "Rosbag File Location",
                     "Location of a rosbag file to play from. If unchanged or empty, physical
@@ -1461,7 +1466,7 @@ impl ObjectImpl for RealsenseSrc {
                     None,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_string(
+                glib::ParamSpecString::new(
                     "json-location",
                     "JSON File Location",
                     "Location of a JSON file to load the RealSense device configuration from.
@@ -1471,35 +1476,35 @@ impl ObjectImpl for RealsenseSrc {
                     None,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-depth",
                     "Enable Depth",
                     "Enables depth stream.",
                     DEFAULT_ENABLE_DEPTH,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-infra1",
                     "Enable Infra1",
                     "Enables infra1 stream.",
                     DEFAULT_ENABLE_INFRA1,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-infra2",
                     "Enable Infra2",
                     "Enables infra2 stream.",
                     DEFAULT_ENABLE_INFRA2,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-color",
                     "Enable Color",
                     "Enables color stream.",
                     DEFAULT_ENABLE_COLOR,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_int(
+                glib::ParamSpecInt::new(
                     "depth-width",
                     "Depth Width",
                     "Width of the depth and infra1/infra2 frames.",
@@ -1508,7 +1513,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_DEPTH_WIDTH,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_int(
+                glib::ParamSpecInt::new(
                     "depth-height",
                     "Depth Height",
                     "Height of the depth and infra1/infra2 frames.",
@@ -1517,7 +1522,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_DEPTH_HEIGHT,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_int(
+                glib::ParamSpecInt::new(
                     "color-width",
                     "Color Width",
                     "Width of the color frame.",
@@ -1526,7 +1531,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_COLOR_WIDTH,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_int(
+                glib::ParamSpecInt::new(
                     "color-height",
                     "Color Height",
                     "Height of the color frame.",
@@ -1535,7 +1540,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_COLOR_HEIGHT,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_int(
+                glib::ParamSpecInt::new(
                     "framerate",
                     "Framerate",
                     "Common framerate of the selected streams.",
@@ -1544,7 +1549,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_FRAMERATE,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "loop-rosbag",
                     "Loop Rosbag",
                     "Enables looping of playing from rosbag recording specified by
@@ -1553,7 +1558,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_LOOP_ROSBAG,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_uint(
+                glib::ParamSpecUInt::new(
                     "wait-for-frames-timeout",
                     "Wait For Frames Timeout",
                     "Timeout used while waiting for frames from a RealSense device in
@@ -1563,7 +1568,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_PIPELINE_WAIT_FOR_FRAMES_TIMEOUT,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "include-per-frame-metadata",
                     "Include Per Frame Metadata",
                     "Attempts to include librealsense2's per-frame metadata as an additional
@@ -1572,7 +1577,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_ENABLE_METADATA,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "real-time-rosbag-playback",
                     "Real Time Rosbag Playback",
                     "Determines whether to stream from the file the same way it was recorded.
@@ -1582,7 +1587,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_REAL_TIME_ROSBAG_PLAYBACK,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "attach-camera-meta",
                     "Attach Camera Meta",
                     "If enabled, `video/rgbd` will also contain the meta associated with
@@ -1590,7 +1595,7 @@ impl ObjectImpl for RealsenseSrc {
                     DEFAULT_ATTACH_CAMERA_META,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_string(
+                glib::ParamSpecString::new(
                     "align-to",
                     "The stream to align to",
                     "The name of the stream to align to (target). Supported values are 'depth'

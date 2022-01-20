@@ -10,9 +10,9 @@ edition = "2018"
 readme = "README.md"
 
 [dependencies]
-glib = "0.14.2"
-gst = { package = "gstreamer", version = "0.17" }
-gst_sdp = { package = "gstreamer-sdp", version = "0.17" }
+glib = "0.15"
+gst = { package = "gstreamer", version = "0.18" }
+gst_sdp = { package = "gstreamer-sdp", version = "0.18" }
 
 [build-dependencies]
 gst-plugin-version-helper = "0.2.0"

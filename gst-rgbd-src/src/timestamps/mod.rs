@@ -13,8 +13,8 @@
 // Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 // Boston, MA 02110-1301, USA.
 
-extern crate gstreamer as gst;
-extern crate gstreamer_base as gst_base;
+extern crate gst;
+extern crate gst_base;
 
 pub mod rgbd_timestamps;
 pub mod timestamp_internals;

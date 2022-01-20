@@ -26,6 +26,7 @@ use camera_meta::Distortion;
 
 use gst::subclass::prelude::*;
 use gst_base::prelude::*;
+use gst_base::subclass::base_src::CreateSuccess;
 use gst_base::subclass::prelude::*;
 use gst_depth_meta::{camera_meta, camera_meta::*, rgbd};
 use libk4a::calibration::Calibration;
@@ -249,9 +250,8 @@ impl BaseSrcImpl for K4aSrc {
             caps.fixate_field_nearest_fraction("framerate", stream_properties.framerate);
 
             // Finally add the streams to the caps
-            let selected_streams: Vec<glib::SendValue> =
-                selected_streams.iter().map(|s| s.to_send_value()).collect();
-            caps.set("streams", &gst::Array::from_owned(selected_streams));
+            let selected_streams = selected_streams.iter().map(|s| s.to_send_value());
+            caps.set("streams", &gst::Array::from_values(selected_streams));
         }
 
         // Chain up parent implementation with modified caps
@@ -265,7 +265,11 @@ impl BaseSrcImpl for K4aSrc {
 }
 
 impl PushSrcImpl for K4aSrc {
-    fn create(&self, push_src: &Self::Type) -> Result<gst::Buffer, gst::FlowError> {
+    fn create(
+        &self,
+        push_src: &Self::Type,
+        _buffer: Option<&mut gst::BufferRef>,
+    ) -> Result<CreateSuccess, gst::FlowError> {
         // Lock the internals
         let internals = &mut self
             .internals
@@ -323,7 +327,7 @@ impl PushSrcImpl for K4aSrc {
             self.attach_camera_meta(push_src.upcast_ref(), &mut output_buffer, camera_meta)?;
         }
 
-        Ok(output_buffer)
+        Ok(CreateSuccess::NewBuffer(output_buffer))
     }
 }
 
@@ -871,7 +875,7 @@ impl K4aSrc {
         );
 
         // Create extrinsics and insert the appropriate transformations
-        let extrinsics = Self::extract_extrinsics(settings.desired_streams, &calibration);
+        let extrinsics = Self::extract_extrinsics(settings.desired_streams, calibration);
 
         // K4A Depth is always in millimetres (0.001), due to its DEPTH16 K4A format.
         CameraMeta::new(intrinsics, extrinsics, 0.001)
@@ -1143,6 +1147,7 @@ impl ElementImpl for K4aSrc {
     }
 }
 
+impl GstObjectImpl for K4aSrc {}
 impl ObjectImpl for K4aSrc {
     fn constructed(&self, obj: &Self::Type) {
         // Chain up parent implementation
@@ -1159,7 +1164,7 @@ impl ObjectImpl for K4aSrc {
     fn properties() -> &'static [glib::ParamSpec] {
         static PROPERTIES: Lazy<[glib::ParamSpec; 16]> = Lazy::new(|| {
             [
-                glib::ParamSpec::new_string(
+                glib::ParamSpecString::new(
                     "serial",
                     "Serial Number",
                     "Serial number of a K4A device. If unchanged or empty, `recording-location`
@@ -1169,7 +1174,7 @@ impl ObjectImpl for K4aSrc {
                     None,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_string(
+                glib::ParamSpecString::new(
                     "recording-location",
                     "Recording File Location",
                     "Location of a recording file to play from. If unchanged or empty, physical
@@ -1179,14 +1184,14 @@ impl ObjectImpl for K4aSrc {
                     None,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-depth",
                     "Enable Depth",
                     "Enables depth stream.",
                     DEFAULT_ENABLE_DEPTH,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-ir",
                     "Enable IR",
                     "Enables IR stream. If enabled and `enable-depth` is set to false, the IR
@@ -1195,14 +1200,14 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_ENABLE_IR,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-color",
                     "Enable Color",
                     "Enables color stream.",
                     DEFAULT_ENABLE_COLOR,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "enable-imu",
                     "Enable IMU",
                     "Enables IMU stream.",
@@ -1212,7 +1217,7 @@ impl ObjectImpl for K4aSrc {
                 // Note: It is possible to convert the color format also when streaming from Playback
                 // by the use of `k4a_playback_set_color_conversion()` (not tested). However, the decision
                 // is to use GStreamer conversion for such purposes instead.
-                glib::ParamSpec::new_enum(
+                glib::ParamSpecEnum::new(
                     "color-format",
                     "Color Format",
                     "Format of the color stream, applicable only when streaming from device",
@@ -1220,7 +1225,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_COLOR_FORMAT as i32,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_enum(
+                glib::ParamSpecEnum::new(
                     "color-resolution",
                     "Color Resolution",
                     "Resolution of the color stream, applicable only when streaming from device",
@@ -1228,7 +1233,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_COLOR_RESOLUTION as i32,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_enum(
+                glib::ParamSpecEnum::new(
                     "depth-mode",
                     "Depth Mode",
                     "Depth capture mode configuration, applicable only when streaming from
@@ -1237,7 +1242,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_DEPTH_MODE as i32,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_enum(
+                glib::ParamSpecEnum::new(
                     "framerate",
                     "Framerate",
                     "Common framerate of the selected video streams, applicable only when
@@ -1246,7 +1251,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_FRAMERATE as i32,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_int(
+                glib::ParamSpecInt::new(
                     "get-capture-timeout",
                     "Get Capture Timeout",
                     "Timeout used while waiting for capture from a K4A device in milliseconds.
@@ -1256,7 +1261,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_GET_CAPTURE_TIMEOUT,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "loop-recording",
                     "Loop recording",
                     "Enables looping of playing from recording recording specified by
@@ -1266,7 +1271,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_LOOP_RECORDING,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "real-time-playback",
                     "Real Time Playback",
                     "Determines whether to stream from a recording at the same rate as it was
@@ -1278,7 +1283,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_REAL_TIME_PLAYBACK,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "rectify-depth",
                     "Rectify Depth",
                     "Enables rectification of the depth frames. This produces a depth image where
@@ -1290,7 +1295,7 @@ impl ObjectImpl for K4aSrc {
                     DEFAULT_RECTIFY_DEPTH,
                     glib::ParamFlags::READWRITE,
                 ),
-                glib::ParamSpec::new_boolean(
+                glib::ParamSpecBoolean::new(
                     "attach-camera-meta",
                     "Attach Camera Meta",
                     "If enabled, `video/rgbd` will also contain the meta associated with K4A
