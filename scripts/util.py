@@ -6,6 +6,7 @@ import sys
 import re
 import asyncio
 import pathlib
+import functools
 
 
 def git_init():
@@ -81,21 +82,39 @@ def find_parent_branch():
     print(cur_branch)
 
     # Get branch data
-    (exit_code, output) = call("git", ["show-branch", "-a", cur_branch], ret_exit_code=True)
+    (exit_code, output) = call("git", ["branch", "-a"], ret_exit_code=True)
     if exit_code != 0:
         raise Exception(output)
 
-    branches = output.split("\n")
-    line = list(filter(lambda l: l.startswith("*") and cur_branch not in l, branches))[0]
-    print(line)
+    print(output)
+    all_branches = output[:-1].split("\n")
+    branches = map(
+        lambda l: l.strip(),
+        filter(lambda l: not l.startswith("*") and not l.endswith(f"/{cur_branch}"), all_branches),
+    )
 
-    match = re.search("\[origin/([^^~]*).*\]", line)
-    if match:
-        return match[1]
+    def get_merge_base(branch):
+        print(cur_branch)
+        print(branch)
+        (exit_code, output) = call("git", ["merge-base", cur_branch, branch], ret_exit_code=True)
+        if exit_code != 0:
+            raise Exception(output)
 
-    match = re.search("\[([^^~]*).*\]", line)
-    if match:
-        return match[1]
+        merge_base = output[:-1]
+
+        (exit_code, output) = call(
+            "git", ["rev-list", "--count", f"{cur_branch}...{merge_base}"], ret_exit_code=True
+        )
+        if exit_code != 0:
+            raise Exception(output)
+        commits_to_merge_base = output[:-1]
+
+        return [int(commits_to_merge_base), merge_base, branch]
+
+    return functools.reduce(
+        lambda a, b: a if a[0] < b[0] else b,
+        map(get_merge_base, branches),
+    )[2]
 
 
 def file_contains(file, strings):
