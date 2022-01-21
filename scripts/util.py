@@ -86,7 +86,6 @@ def find_parent_branch():
     if exit_code != 0:
         raise Exception(output)
 
-    print(output)
     all_branches = output[:-1].split("\n")
     branches = map(
         lambda l: l.strip(),
@@ -94,8 +93,6 @@ def find_parent_branch():
     )
 
     def get_merge_base(branch):
-        print(cur_branch)
-        print(branch)
         (exit_code, output) = call("git", ["merge-base", cur_branch, branch], ret_exit_code=True)
         if exit_code != 0:
             raise Exception(output)
@@ -111,10 +108,12 @@ def find_parent_branch():
 
         return [int(commits_to_merge_base), merge_base, branch]
 
-    return functools.reduce(
+    parent_branch = functools.reduce(
         lambda a, b: a if a[0] < b[0] else b,
         map(get_merge_base, branches),
     )[2]
+    print(parent_branch)
+    return parent_branch
 
 
 def file_contains(file, strings):
