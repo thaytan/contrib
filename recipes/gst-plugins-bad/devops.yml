@@ -1,10 +1,12 @@
 - version: 1.20.0
   profiles: ["linux-x86_64", "linux-armv8"]
 - version: 1.20.0
-  options:
-    x265: True
+  conan:
+    options:
+      x265: True
   profiles: ["linux-x86_64"]
 - version: 1.20.0
-  options:
-    nvcodec: True
+  conan:
+    options:
+      nvcodec: True
   profiles: ["linux-x86_64"]
