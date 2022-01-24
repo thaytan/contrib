@@ -17,7 +17,7 @@ generate-config:
       - generated-config.yml
       - build_order.json
       - lock.bundle
-      - *.lock
+      - "*.lock"
 
 child-pipeline:
   stage: test
