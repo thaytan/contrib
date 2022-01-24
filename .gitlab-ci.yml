@@ -11,7 +11,7 @@ generate-config:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
     - python3 scripts/create_aliases.py
-    - deno run --unstable --allow-all --import-map https://gitlab.com/aivero/open-source/cicd/-/raw/master/import_map.json https://gitlab.com/aivero/open-source/cicd/-/raw/master/lib/es6_global/src/GenerateConfig.js
+    - deno run --unstable --allow-all --import-map https://gitlab.com/aivero/open-source/cicd/-/raw/stable/import_map.json https://gitlab.com/aivero/open-source/cicd/-/raw/stable/lib/es6_global/src/GenerateConfig.js
   artifacts:
     paths:
       - generated-config.yml
