@@ -1,0 +1,47 @@
+name: Docker
+
+on:
+  push:
+    # Publish `master` as Docker `latest` image.
+    branches:
+      - master
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+  
+  workflow_dispatch: ~
+
+jobs:
+  push:
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'push'
+
+    strategy:
+      matrix:
+        image_name:
+          - focal-x86_64
+          - focal-x86_64-bootstrap
+          - focal-armv8
+          - focal-armv8-bootstrap
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install qemu-user-static
+        run: sudo apt update && sudo apt install qemu-user-static
+        if: ${{ contains(matrix.image_name, 'armv8') }}
+
+      - name: Build image
+        run: docker build . --file ${{ matrix.image_name }}.Dockerfile --tag aivero/conan:${{ matrix.image_name }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: aivero
+          password: ${{ secrets.DOCKER_CONAN_TOKEN }}
+
+      - name: Push image
+        run: docker push aivero/conan:${{ matrix.image_name }}
