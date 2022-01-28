@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+cur=$(dirname $0)
+
+
+p=$cur/../recipes/$1
+mkdir $p
+$cur/generate-recipe $1 > $p/conanfile.py
+$cur/generate-recipe -c $1 > $p/devops.yml
