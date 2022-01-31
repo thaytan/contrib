@@ -75,11 +75,10 @@ def find_parent_branch():
 
     # Get branch data
     output = call(["git", "branch", "-a"])
-
     all_branches = output[:-1].split("\n")
     branches = map(
         lambda l: l.strip(),
-        filter(lambda l: not l.startswith("*") and not l.endswith(f"/{cur_branch}"), all_branches),
+        filter(lambda l: not l.startswith("*") and not (l.startswith("remotes/") or l.endswith(cur_branch)), all_branches),
     )
 
     def get_merge_base(branch):
