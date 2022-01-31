@@ -75,10 +75,7 @@ def get_default_branch():
 
 def find_parent_branch():
     # Get current branch
-    (exit_code, output) = call("git", ["rev-parse", "--abbrev-ref", "HEAD"], ret_exit_code=True)
-    if exit_code != 0:
-        raise Exception(output)
-    cur_branch = output[:-1]
+    cur_branch = util.get_branch()
     print(cur_branch)
 
     # Get branch data
@@ -109,7 +106,7 @@ def find_parent_branch():
         return [int(commits_to_merge_base), merge_base, branch]
 
     parent_branch = functools.reduce(
-        lambda a, b: a if a[0] < b[0] and a[2] != f"remotes/origin/{branch}" else b,
+        lambda a, b: a if a[0] < b[0] else b,
         map(get_merge_base, branches),
     )[2]
     print(parent_branch)
