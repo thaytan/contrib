@@ -85,6 +85,7 @@ def find_parent_branch():
     print(f"Filtered branches: {branches}")
 
     def get_merge_base(branch):
+        print(f"Comparing {branch}")
         output = call(["git", "merge-base", cur_branch, branch])
 
         merge_base = output[:-1]
