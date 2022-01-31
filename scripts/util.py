@@ -11,24 +11,16 @@ import functools
 
 def git_init():
     # Fetch all branches
-    (exit_code, output) = call(
-        "git",
-        ["config", "remote.origin.fetch", '"+refs/heads/*:refs/remotes/origin/*"'],
-        ret_exit_code=True,
-    )
-    if exit_code != 0:
-        raise Exception(output)
+    call(["git", "config", "remote.origin.fetch", '"+refs/heads/*:refs/remotes/origin/*"'])
 
     # Fetch
-    (exit_code, output) = call("git", ["fetch", "--unshallow"], ret_exit_code=True)
-    if exit_code != 0:
-        raise Exception(output)
+    call(["git", "fetch", "--unshallow"])
 
 
 def conan_init(repos):
     call(
-        "conan",
         [
+            "conan",
             "config",
             "install",
             os.environ["CONAN_CONFIG_URL"],
@@ -38,8 +30,8 @@ def conan_init(repos):
     )
     for repo in repos:
         call(
-            "conan",
             [
+                "conan",
                 "user",
                 os.environ["CONAN_LOGIN_USERNAME"],
                 "-p",
@@ -54,8 +46,8 @@ def get_commit():
     if "CI_COMMIT_SHA" in os.environ:
         return os.environ["CI_COMMIT_SHA"]
     branch = get_branch()
-    (exit_code, output) = call(
-        "git", ["show-ref", branch, "--heads", "--tag", "-s"], ret_exit_code=True
+    output = call(
+        ["git", "show-ref", branch, "--heads", "--tag", "-s"]
     )
     return output[:-1]
 
@@ -63,7 +55,7 @@ def get_commit():
 def get_branch():
     if "CI_COMMIT_REF_NAME" in os.environ:
         return os.environ["CI_COMMIT_REF_NAME"]
-    (exit_code, output) = call("git", ["rev-parse", "--abbrev-ref", "HEAD"], ret_exit_code=True)
+    output = call(["git", "rev-parse", "--abbrev-ref", "HEAD"])
     return output[:-1]
 
 
@@ -79,9 +71,7 @@ def find_parent_branch():
     print(cur_branch)
 
     # Get branch data
-    (exit_code, output) = call("git", ["branch", "-a"], ret_exit_code=True)
-    if exit_code != 0:
-        raise Exception(output)
+    output = call(["git", "branch", "-a"])
 
     all_branches = output[:-1].split("\n")
     branches = map(
@@ -90,17 +80,13 @@ def find_parent_branch():
     )
 
     def get_merge_base(branch):
-        (exit_code, output) = call("git", ["merge-base", cur_branch, branch], ret_exit_code=True)
-        if exit_code != 0:
-            raise Exception(output)
+        output = call(["git", "merge-base", cur_branch, branch])
 
         merge_base = output[:-1]
 
-        (exit_code, output) = call(
-            "git", ["rev-list", "--count", f"{cur_branch}...{merge_base}"], ret_exit_code=True
+        output = call(
+            ["git", "rev-list", "--count", f"{cur_branch}...{merge_base}"]
         )
-        if exit_code != 0:
-            raise Exception(output)
         commits_to_merge_base = output[:-1]
 
         return [int(commits_to_merge_base), merge_base, branch]
@@ -131,8 +117,8 @@ def background(f):
     return wrapped
 
 
-def call(cmd, args, show=False, ret_exit_code=False):
-    child = subprocess.Popen([cmd] + args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def call(cmd, show=False, ret_exit_code=False):
+    child = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     fulloutput = b""
     while True:
         output = child.stdout.readline()
@@ -152,7 +138,7 @@ def call(cmd, args, show=False, ret_exit_code=False):
 
 
 def find_branches():
-    reflog = call("git", ["reflog"])
+    reflog = call(["git", "reflog"])
     match = re.search("^.*from (.*) to (.*)\n", reflog)
     return (match[2], match[1])
 
@@ -191,13 +177,13 @@ def create_alias(
     proprietary = ins[1]
     match = None
     # Find hash locally
-    (exit_code, output) = call("conan", ["get", f"{name}/{parent_branch}"], ret_exit_code=True)
+    (exit_code, output) = call(["conan", "get", f"{name}/{parent_branch}"], ret_exit_code=True)
     if exit_code == 0:
         match = re.search('alias = ".*/(.*)"\n', output)
     # Then try finding hash from remote
     if not match:
         (exit_code, output) = call(
-            "conan", ["get", "-r", fetch_repo, f"{name}/{parent_branch}"], ret_exit_code=True
+            ["conan", "get", "-r", fetch_repo, f"{name}/{parent_branch}"], ret_exit_code=True
         )
         if exit_code == 0:
             match = re.search('alias = ".*/(.*)"\n', output)
@@ -207,12 +193,12 @@ def create_alias(
         # Fallback to HEAD commit hash
         sha = commit
     print(f"Creating alias: {name}/{branch} to {name}/{sha}")
-    call("conan", ["alias", f"{name}/{branch}", f"{name}/{sha}"])
+    call(["conan", "alias", f"{name}/{branch}", f"{name}/{sha}"])
 
     repo = internal_repo if proprietary else public_repo
     if repo:
         print(f"Uploading alias: {name}/{branch} to {name}/{sha} to {repo}")
-        call("conan", ["upload", f"{name}/{branch}", "--all", "-c", "-r", repo])
+        call(["conan", "upload", f"{name}/{branch}", "--all", "-c", "-r", repo])
 
 
 def create_aliases(commit, branch, parent_branch, fetch_repo, public_repo=None, internal_repo=None):
@@ -226,7 +212,7 @@ def remove_alias(ins, branch, public_repo, internal_repo):
     proprietary = ins[1]
     repo = internal_repo if proprietary else public_repo
     print(f"Removing alias: {ins[0]}/{branch}")
-    call("conan", ["remove", f"{ins[0]}/{branch}", "-f", "-r", repo])
+    call(["conan", "remove", f"{ins[0]}/{branch}", "-f", "-r", repo])
 
 
 def remove_aliases(branch, public_repo, internal_repo):
