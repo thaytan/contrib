@@ -75,7 +75,7 @@ def get_default_branch():
 
 def find_parent_branch():
     # Get current branch
-    cur_branch = util.get_branch()
+    cur_branch = get_branch()
     print(cur_branch)
 
     # Get branch data
