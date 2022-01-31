@@ -86,7 +86,10 @@ def find_parent_branch():
 
     def get_merge_base(branch):
         print(f"Comparing {branch}")
-        output = call(["git", "merge-base", cur_branch, branch])
+        (exit_code, output) = call(["git", "merge-base", cur_branch, branch], ret_exit_code=True)
+        if exit_code != 0:
+            print(f"Failed with output:\n{output}")
+            return [99999, "00000000000", branch]
 
         merge_base = output[:-1]
 
