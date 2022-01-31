@@ -10,6 +10,9 @@ import functools
 
 
 def git_init():
+    # git checkout branch
+    call(["git", "checkout", "-B", os.environ["CI_BUILD_REF_NAME"], os.environ["CI_BUILD_REF"]])
+
     # Fetch all branches
     call(["git", "config", "remote.origin.fetch", '"+refs/heads/*:refs/remotes/origin/*"'])
 
