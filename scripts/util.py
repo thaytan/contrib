@@ -109,7 +109,7 @@ def find_parent_branch():
         return [int(commits_to_merge_base), merge_base, branch]
 
     parent_branch = functools.reduce(
-        lambda a, b: a if a[0] < b[0] else b,
+        lambda a, b: a if a[0] < b[0] and a[2] != f"remotes/origin/{branch}" else b,
         map(get_merge_base, branches),
     )[2]
     print(parent_branch)
