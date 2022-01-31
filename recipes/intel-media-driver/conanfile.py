@@ -16,6 +16,9 @@ class IntelMediaDriver(Recipe):
             f"https://github.com/intel/media-driver/archive/intel-media-{self.version}.tar.gz"
         )
 
+    def package(self):
+        self.copy("iHD_drv_video.so",src="media_driver")
+
     def build(self):
         os.environ["CPATH"] += ":" + ":".join(
             self.deps_cpp_info["libx11"].include_paths +
