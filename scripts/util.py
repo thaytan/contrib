@@ -58,8 +58,9 @@ def get_commit():
 def get_branch():
     if "CI_COMMIT_REF_NAME" in os.environ:
         return os.environ["CI_COMMIT_REF_NAME"]
-    output = call(["git", "rev-parse", "--abbrev-ref", "HEAD"])
-    return output[:-1]
+    output = call(["git", "rev-parse", "--abbrev-ref", "HEAD"])[:-1]
+    # Conan has a 50 char limit for versions
+    return output[:50] 
 
 
 def get_default_branch():
@@ -106,6 +107,8 @@ def find_parent_branch():
     )[2]
     if parent_branch.startswith("remotes/origin/"):
         parent_branch = parent_branch[15:]
+    # Conan has a 50 char limit for versions
+    parent_branch = parent_branch[:50] 
     print(parent_branch)
     return parent_branch
 
