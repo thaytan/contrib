@@ -22,6 +22,7 @@ generate-config:
 child-pipeline:
   stage: test
   trigger:
+    strategy: depend
     include:
       - artifact: generated-config.yml
         job: generate-config
