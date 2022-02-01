@@ -4,9 +4,5 @@
   conan:
     options:
       x265: True
-  profiles: ["linux-x86_64"]
-- version: 1.20.0
-  conan:
-    options:
-      nvcodec: True
-  profiles: ["linux-x86_64"]
+  profiles: ["linux-x86_64-dev"]
+
