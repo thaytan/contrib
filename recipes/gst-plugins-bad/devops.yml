@@ -1,5 +1,4 @@
 - version: 1.20.0
-  profiles: ["linux-x86_64", "linux-armv8"]
-- version: 1.20.0
-  profiles: ["linux-x86_64-dev"]
+  profiles: ["linux-x86_64", "linux-x86_64-dev", "linux-armv8"]
+
 
