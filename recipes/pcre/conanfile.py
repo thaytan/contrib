@@ -16,3 +16,14 @@ class Pcre(Recipe):
 
     def source(self):
         self.get(f"https://sourceforge.net/projects/pcre/files/pcre/{self.version}/pcre-{self.version}.tar.bz2")
+    
+    def build(self):
+        args = [
+            "--enable-unicode-properties",
+            "--enable-pcre16",
+            "--enable-pcre32",
+            "--enable-jit",
+            "--enable-pcregrep-libz",
+            "--enable-pcregrep-libbz2",
+        ]
+        self.autotools(args)
