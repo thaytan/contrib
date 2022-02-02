@@ -9,10 +9,12 @@ class Gnutls(Recipe):
         "make/[^4.3]",
         "zlib/[^1.2.11]",
         "pkgconf/[^1.7.3]",
+    )
+    requires = (
+        "p11-kit/[^0.23.21]",
         "nettle/[^3.6]",
         "libtasn1/[^4.16.0]",
     )
-    requires = ("p11-kit/[^0.23.21]",)
 
     def source(self):
         self.get(f"https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-{self.version}.tar.xz")
