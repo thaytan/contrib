@@ -6,7 +6,7 @@ class Libpsl(Recipe):
     license = "MIT"
     build_requires = (
         "cc/[^1.0.0]",
-        "autotools/[^1.0.0]",
+        "meson/[>=0.57.2]",
         "libxslt/[^1.1.34]",
     )
 
