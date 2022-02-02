@@ -11,7 +11,7 @@ class Vala(Recipe):
     requires = (
         "autotools/[^1.0.0]",
         "autoconf-archive/[^2019.01.06]",
-        "gobject-introspection/[^1.66.1]",
+        "gobject-introspection/[^1.70.1]",
         "cc/[^1.0.0]",
         "graphviz/[^2.42.1]",
     )
