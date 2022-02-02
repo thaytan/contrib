@@ -17,5 +17,6 @@ class GLib(Recipe):
         opts = {
             "man": False,
             "gtk_doc": False,
+            "tests": False,
         }
         self.meson(opts)
