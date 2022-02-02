@@ -25,3 +25,7 @@ class Vala(Recipe):
         self.exe(f"sh autogen.sh --prefix={self.package_folder}")
         self.exe("make")
         self.exe("make install")
+
+    def package_info(self):
+        # TODO: hardcoded version
+        self.env_info.LD_LIBRARY_PATH += os.path.join(self.package_folder, "lib", "vala-0.56")
