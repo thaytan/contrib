@@ -6,7 +6,7 @@ class Pcre(Recipe):
     license = "BSD"
     build_requires = (
         "cc/[^1.0.0]",
-        "cmake/[^3.18.4]",
+        "autotools/[^1.0.0]",
     )
     requires = (
         "readline/[^8.1]",
