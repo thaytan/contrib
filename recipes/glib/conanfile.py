@@ -7,7 +7,7 @@ class GLib(Recipe):
     build_requires = ("cc/[^1.0.0]", "meson/[>=0.55.3]")
     requires = (
         "libffi/[^3.3]",
-        "zlib/[^1.2.11]",
+        "pcre/[^8.45]",
     )
 
     def source(self):
@@ -17,6 +17,5 @@ class GLib(Recipe):
         opts = {
             "man": False,
             "gtk_doc": False,
-            "internal_pcre": False,
         }
         self.meson(opts)
