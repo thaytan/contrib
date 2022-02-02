@@ -28,4 +28,4 @@ class Vala(Recipe):
 
     def package_info(self):
         # TODO: hardcoded version
-        self.env_info.LD_LIBRARY_PATH += os.path.join(self.package_folder, "lib", "vala-0.56")
+        self.env_info.LD_LIBRARY_PATH += [os.path.join(self.package_folder, "lib"), os.path.join(self.package_folder, "lib", "vala-0.56")]
