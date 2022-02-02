@@ -3,3 +3,8 @@
   mode: docker
   docker:
     dockerfile: docker/Dockerfile
+- 
+  version: '3.9'
+  mode: docker
+  docker:
+    dockerfile: docker/3-9.Dockerfile
