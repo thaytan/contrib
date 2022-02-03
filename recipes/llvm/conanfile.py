@@ -29,10 +29,10 @@ class Llvm(Recipe):
 
         # LLVM build options
         if self.settings.arch == "x86_64":
-            defs["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly;AArch64;NVPTX;AMDGPU"
+            defs["LLVM_TARGETS_TO_BUILD"] = "X86"
             arch = "x86_64"
         elif self.settings.arch == "armv8":
-            defs["LLVM_TARGETS_TO_BUILD"] = "AArch64;NVPTX"
+            defs["LLVM_TARGETS_TO_BUILD"] = "AArch64"
             arch = "aarch64"
         if self.settings.libc == "musl":
             abi = "musl"
@@ -201,6 +201,14 @@ class Llvm(Recipe):
         os.environ["CXXFLAGS"] = f"{cflags} -idirafter {libcxx_inc} -idirafter {clang_inc} -idirafter {libc_inc}"
         os.environ["LDFLAGS"] = f"{cflags} {ldflags} -L{clang_lib} -L{libcxx_lib}"
         os.environ["LIBRARY_PATH"] = libcxx_lib
+
+        # Enable additional targets
+        if self.settings.arch == "x86_64":
+            defs["LLVM_TARGETS_TO_BUILD"] = "X86;WebAssembly;AArch64;NVPTX;AMDGPU"
+            arch = "x86_64"
+        elif self.settings.arch == "armv8":
+            defs["LLVM_TARGETS_TO_BUILD"] = "AArch64;NVPTX"
+            arch = "aarch64"
 
         targets = [
             "install-cxx",
