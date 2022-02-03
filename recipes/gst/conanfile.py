@@ -22,7 +22,7 @@ class GstRecipe(GstRecipe):
         "bison/[^3.7.2]",
         "flex/[^2.6.4]",
     )
-    requires = ("glib/[^2.66.1]",)
+    requires = ("glib/[^2.70.3]",)
 
     def validate(self):
         if str(self.settings.gstreamer) not in str(self.version):
