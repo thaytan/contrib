@@ -11,8 +11,17 @@ class Libsoup3(Recipe):
         "vala/[^0.55.1]"
     )
     requires = (
-        "glib/[^2.70.3]",
+        "glib-networking/[^2.70.1]",
+        "libnghttp2/[^1.46.0]",
+        "libpsl/[>=0.21.1]"
     )
 
     def source(self):
         self.get(f"https://gitlab.gnome.org/GNOME/libsoup/-/archive/{self.version}/libsoup-{self.version}.tar.gz")
+
+    def build(self):
+        opts = {
+            "introspection": True,
+            "tls_check": False,
+        }
+        self.meson(opts)
