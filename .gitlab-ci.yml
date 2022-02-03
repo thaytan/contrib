@@ -5,6 +5,8 @@ generate-config:
   image: aivero/conan:focal-x86_64
   tags: [x86_64,aws]
   stage: build
+  rules:
+    - if: '$PACKAGE_MANAGER_SET == null && $CI_PIPELINE_SOURCE != "merge_request_event"'
   variables:
     GIT_DEPTH: 0
     GIT_FETCH_EXTRA_FLAGS: --prune --depth 50
@@ -21,6 +23,8 @@ generate-config:
 
 child-pipeline:
   stage: test
+  rules:
+    - if: '$PACKAGE_MANAGER_SET == null && $CI_PIPELINE_SOURCE != "merge_request_event"'
   trigger:
     strategy: depend
     include:
