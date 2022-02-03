@@ -1,0 +1,12 @@
+- 
+  name: rabbitmq-broker
+  version: '3.8.12'
+  mode: docker
+  docker:
+    file: 3.8.Dockerfile
+- 
+  name: rabbitmq-broker
+  version: '3.9'
+  mode: docker
+  docker:
+    file: 3.9.Dockerfile
