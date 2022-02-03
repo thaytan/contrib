@@ -23,6 +23,5 @@ class Libsoup3(Recipe):
     def build(self):
         opts = {
             "introspection": True,
-            "tls_check": False,
         }
         self.meson(opts)
