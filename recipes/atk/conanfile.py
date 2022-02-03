@@ -13,7 +13,7 @@ class Atk(Recipe):
         "meson/[>=0.55.3]",
         "gettext/[^0.21]",
     )
-    requires = ("glib/[^2.66.1]",)
+    requires = ("glib/[^2.70.3]",)
 
     def build_requirements(self):
         if self.options.introspection:

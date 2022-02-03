@@ -6,7 +6,7 @@ class GLib(Recipe):
     license = "LGPL"
     build_requires = ("cc/[^1.0.0]", "meson/[>=0.55.3]")
     requires = (
-        "glib/[^2.66.1]",
+        "glib/[^2.70.3]",
         "eudev/[^3.2.9]",
     )
 

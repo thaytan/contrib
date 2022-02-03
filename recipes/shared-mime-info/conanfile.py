@@ -13,7 +13,7 @@ class SharedMimeInfo(Recipe):
         "xmlto/[^0.0.28]",
     )
     requires = (
-        "glib/[^2.62.0]",
+        "glib/[^2.70.3]",
         "libxml2/[^2.9.9]",
     )
 

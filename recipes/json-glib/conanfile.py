@@ -11,7 +11,7 @@ class JsonGlibBase(Recipe):
         "gobject-introspection/[>=1.59.3]",
     )
     requires = (
-        "glib/[^2.62.0]",
+        "glib/[^2.70.3]",
     )
 
     def source(self):

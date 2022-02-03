@@ -13,7 +13,7 @@ class GtkDoc(Recipe):
     requires = (
         "python-pygments/[^2.8.1]",
         "libxslt/[^1.1.34]",
-        "glib/[^2.66.1]",
+        "glib/[^2.70.3]",
     )
 
     def source(self):

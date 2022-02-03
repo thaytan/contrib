@@ -9,7 +9,7 @@ class Graphene(Recipe):
         "meson/[>=0.55.3]",
         "gobject-introspection/[^1.66.1]",
     )
-    requires = ("glib/[^2.66.1]",)
+    requires = ("glib/[^2.70.3]",)
 
     def source(self):
         self.get(f"https://github.com/ebassi/graphene/archive/refs/tags/{self.version}.tar.gz")

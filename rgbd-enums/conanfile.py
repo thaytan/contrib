@@ -7,5 +7,5 @@ class RgbdEnums(GstRustProject):
         "rust/[^1.0.0]",
     )
     requires = (
-        "glib/[^2.66.1]",
+        "glib/[^2.70.3]",
     )

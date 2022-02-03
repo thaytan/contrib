@@ -10,7 +10,7 @@ class Libgee(Recipe):
         "gobject-introspection/[^1.69.0]",
     )
     requires = (
-        "glib/[^2.68.4]",
+        "glib/[^2.70.3]",
     )
 
     def source(self):

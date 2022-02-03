@@ -20,7 +20,7 @@ class Cairo(Recipe):
         "gobject-introspection/[^1.66.1]",
     )
     requires = (
-        "glib/[^2.66.1]",
+        "glib/[^2.70.3]",
         "pixman/[^0.40.0]",
         "fontconfig/[^2.13.92]",
     )
