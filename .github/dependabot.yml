@@ -4,3 +4,5 @@ updates:
     directory: "/gst-depth-meta-rs"
     schedule:
       interval: "daily"
+    pull-request-branch-name:
+      separator: "-"
