@@ -7,3 +7,4 @@ graph_info.json
 __pycache__
 target/
 *.mkv
+generated-config.yml
