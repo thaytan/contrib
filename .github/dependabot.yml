@@ -1,7 +1,7 @@
 version: 2
 updates:
-  - package-ecosystem: "cargo"
-    directory: "/gst-depth-meta-rs"
+  - directory: "/gst-depth-meta-rs"
+    package-ecosystem: "cargo"
     schedule:
       interval: "daily"
     pull-request-branch-name:
