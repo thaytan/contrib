@@ -13,7 +13,8 @@ class Libsoup3(Recipe):
     requires = (
         "glib-networking/[^2.70.1]",
         "libnghttp2/[^1.46.0]",
-        "libpsl/[>=0.21.1]"
+        "libpsl/[>=0.21.1]",
+        "sqlite/[^3.30.1]",
     )
 
     def source(self):
