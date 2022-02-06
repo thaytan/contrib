@@ -27,6 +27,7 @@ pub(crate) mod camera_meta_capnp {
 
 mod common;
 
+pub mod dddq_roi_tags;
 pub mod camera_meta;
 pub mod rgbd;
 
