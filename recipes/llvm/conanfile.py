@@ -1,5 +1,5 @@
 from build import *
-
+import multiprocessing
 
 class Llvm(Recipe):
     description = "Collection of modular and reusable compiler and toolchain technologies"
@@ -28,7 +28,7 @@ class Llvm(Recipe):
         defs = {}
 
         # Enable parallel linking
-        defs["LLVM_PARALLEL_LINK_JOBS"] = "1"
+        defs["LLVM_PARALLEL_LINK_JOBS"] = multiprocessing.cpu_count()
 
         # LLVM build options
         if self.settings.arch == "x86_64":
