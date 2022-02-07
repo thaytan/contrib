@@ -27,6 +27,9 @@ class Llvm(Recipe):
         source_folder = os.path.join(self.src, "llvm")
         defs = {}
 
+        # Enable parallel linking
+        defs["LLVM_PARALLEL_LINK_JOBS"] = True
+
         # LLVM build options
         if self.settings.arch == "x86_64":
             defs["LLVM_TARGETS_TO_BUILD"] = "X86"
