@@ -23,7 +23,6 @@ class ZigBootstrap(Recipe):
     def package_info(self):
         self.env_info.CC = os.path.join(self.package_folder, "bin", "cc")
         self.env_info.CXX = os.path.join(self.package_folder, "bin", "c++")
-        self.env_info.CPP = os.path.join(self.package_folder, "bin", "cc")
         self.env_info.AS = os.path.join(self.package_folder, "bin", "cc")
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
