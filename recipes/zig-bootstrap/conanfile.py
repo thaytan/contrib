@@ -11,7 +11,7 @@ class ZigBootstrap(Recipe):
     
     def package(self):
         os.mkdir(os.path.join(self.package_folder, "bin"))
-        for exe in ("cc", "c++", "ar", "ranlib"):
+        for exe in ("cc", "c++", "ar", "ranlib", "ld.lld"):
             exe_path = os.path.join(self.package_folder, "bin", exe)
             with open(exe_path, "w") as exe_file:
                 exe_file.write("#!/usr/bin/env sh\n")
@@ -26,3 +26,4 @@ class ZigBootstrap(Recipe):
         self.env_info.AS = os.path.join(self.package_folder, "bin", "cc")
         self.env_info.AR = os.path.join(self.package_folder, "bin", "ar")
         self.env_info.RANLIB = os.path.join(self.package_folder, "bin", "ranlib")
+        self.env_info.LD = os.path.join(self.package_folder, "bin", "ld.lld")
