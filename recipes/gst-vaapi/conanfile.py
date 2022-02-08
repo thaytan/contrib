@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstVaapiRecipe(GstRecipe):
+class GstVaapi(GstRecipe):
     description = "Hardware-accelerated video decoding, encoding and processing on Intel graphics through VA-API"
     license = "LGPL"
     options = {
@@ -37,11 +37,7 @@ class GstVaapiRecipe(GstRecipe):
         self.requires(f"gst-plugins-bad/[~{self.settings.gstreamer}]")
 
     def source(self):
-        version = self.version
-        if version == "1.20.0":
-            version = "428a9a6c012bde4ddd93d37818558351013afe65"
-
-        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{self.version}.tar.gz")
 
     def build(self):
         source_folder = os.path.join(self.src, "subprojects", "gstreamer-vaapi")

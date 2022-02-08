@@ -1,7 +1,7 @@
 from build import *
 
 
-class GstEditingServicesRecipe(GstRecipe):
+class GstEditingServices(GstRecipe):
     description = " This is a high-level library for facilitating the creation of audio/video non-linear editors."
     license = "LGPL"
     exports = "*.patch"
@@ -49,11 +49,7 @@ class GstEditingServicesRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        version = self.version
-        if version == "1.20.0":
-            version = "428a9a6c012bde4ddd93d37818558351013afe65"
-
-        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{self.version}.tar.gz")
         self.patch("ges_launch_custom_config.patch")
 
     def build(self):

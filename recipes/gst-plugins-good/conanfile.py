@@ -2,7 +2,7 @@ from build import *
 from conans.errors import ConanInvalidConfiguration
 
 
-class GstPluginsGoodRecipe(GstRecipe):
+class GstPluginsGood(GstRecipe):
     description = "Plug-ins is a set of plugins that we consider to have good quality code and correct functionality"
     license = "LGPL"
     # If set to true, select version highest semver matching version from devops.yml
@@ -83,11 +83,7 @@ class GstPluginsGoodRecipe(GstRecipe):
             self.requires("libjpeg-turbo/[^2.0.3]")
 
     def source(self):
-        version = self.version
-        if version == "1.20.0":
-            version = "428a9a6c012bde4ddd93d37818558351013afe65"
-
-        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{self.version}.tar.gz")
         self.patch("0001-matroska-Support-any-tag.patch")
 
         # Add our own custom changes

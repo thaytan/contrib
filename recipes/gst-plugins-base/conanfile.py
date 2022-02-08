@@ -2,7 +2,7 @@ from build import *
 from conans.errors import ConanInvalidConfiguration
 
 
-class GstPluginsBaseRecipe(GstRecipe):
+class GstPluginsBase(GstRecipe):
     description = "A well-groomed and well-maintained collection of GStreamer plugins and elements"
     license = "LGPL"
     options = {
@@ -45,11 +45,7 @@ class GstPluginsBaseRecipe(GstRecipe):
             self.build_requires("gobject-introspection/[^1.66.1]")
 
     def source(self):
-        version = self.version
-        if version == "1.20.0":
-            version = "428a9a6c012bde4ddd93d37818558351013afe65"
-
-        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{version}.tar.gz")
+        self.get(f"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/{self.version}.tar.gz")
 
     def build(self):
         source_folder = os.path.join(self.src, "subprojects", "gst-plugins-base")
