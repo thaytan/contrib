@@ -10,6 +10,8 @@ class CMake(Recipe):
     def build_requirements(self):
         if self.name == "cmake":
             self.build_requires(f"cmake-bootstrap/{self.version}")
+        else:
+            self.build_requires(f"zig-bootstrap/[^0.9.0]")
 
     def requirements(self):
         if self.name == "cmake":
