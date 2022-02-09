@@ -27,7 +27,6 @@ variables:
     name: $DEPENDABOT_IMAGE
     entrypoint: [""]
   variables:
-    GIT_STRATEGY: none
     RAILS_ENV: production
     SECRET_KEY_BASE: key
     PACKAGE_MANAGER: $CI_JOB_NAME
