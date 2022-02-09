@@ -32,5 +32,4 @@ child-pipeline:
         job: generate-config
 
 include:
-  - project: 'dependabot-gitlab/dependabot-standalone'
-    file: '.gitlab-ci.yml'
+  - file: '.gitlab/dependabot-gitlab-ci.yml'
