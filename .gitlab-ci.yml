@@ -31,5 +31,4 @@ child-pipeline:
       - artifact: generated-config.yml
         job: generate-config
 
-include:
-  - file: '.gitlab/dependabot-gitlab-ci.yml'
+include: '/.gitlab/dependabot-gitlab-ci.yml'
