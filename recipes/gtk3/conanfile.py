@@ -18,6 +18,7 @@ class Gtk3(Recipe):
         "cc/[^1.0.0]",
         "meson/[>=0.55.3]",
         "gettext/[^0.21]",
+        "wayland-protocols/[^1.25]",
     )
     requires = (
         "libepoxy/[^1.5.4]",
@@ -41,9 +42,8 @@ class Gtk3(Recipe):
 
     def build(self):
         opts = {
-            "wayland_backend": False,
+            "wayland_backend": True,
             "tracker3": False,
-            "color": True,
             "gtk_doc": False,
             "man": False,
         }
