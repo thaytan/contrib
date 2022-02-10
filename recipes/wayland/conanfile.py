@@ -17,10 +17,10 @@ class Wayland(Recipe):
 
     def source(self):
         self.get(f"https://wayland.freedesktop.org/releases/wayland-{self.version}.tar.xz")
-        self.patch("disable-tests.patch")
 
     def build(self):
         opts = {
             "documentation": False,
+            "tests": False,
         }
         self.meson(opts)
