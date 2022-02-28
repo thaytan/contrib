@@ -8,12 +8,13 @@ generate-config:
   rules:
     - if: '$PACKAGE_MANAGER_SET == null && $CI_PIPELINE_SOURCE != "merge_request_event"'
   variables:
+    CICD_BRANCH: stable
     GIT_DEPTH: 0
     GIT_FETCH_EXTRA_FLAGS: --prune --depth 50
     GIT_SUBMODULE_STRATEGY: recursive
   script:
     - python3 scripts/create_aliases.py
-    - deno run --unstable --allow-all --import-map https://gitlab.com/aivero/open-source/cicd/-/raw/stable/import_map.json https://gitlab.com/aivero/open-source/cicd/-/raw/stable/lib/es6/src/GenerateConfig.js
+    - deno run --unstable --allow-all --import-map https://gitlab.com/aivero/open-source/cicd/-/raw/$CICD_BRANCH/import_map.json https://gitlab.com/aivero/open-source/cicd/-/raw/$CICD_BRANCH/lib/es6/src/GenerateConfig.js
   artifacts:
     paths:
       - generated-config.yml
