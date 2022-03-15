@@ -18,7 +18,10 @@ use std::{
     collections::HashMap,
     convert::TryFrom,
     convert::TryInto,
-    sync::{Mutex, RwLock},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex, RwLock,
+    },
 };
 
 use gst::subclass::prelude::*;
@@ -59,12 +62,16 @@ pub struct RealsenseSrc {
     internals: Mutex<RealsenseSrcInternals>,
     /// Align processing block that either aligns `depth -> color` or `all streams -> depth`.
     align_processing_block: Mutex<Option<ProcessingBlock>>,
+    // Flag signifying that the GstBaseSrc::unlock() method has been called and the create() method should terminate ASAP
+    unlock: AtomicBool,
+    tags_sent: AtomicBool,
 }
 
 /// Internals of the element that are under Mutex.
 struct RealsenseSrcInternals {
     /// Current state of the RealSense pipeline.
     state: State,
+    camera_meta: Option<CameraMeta>,
     /// Contains CameraMeta serialised with Cap'n Proto. Valid only if `attach-camera-meta=true`, otherwise empty.
     camera_meta_serialised: Vec<u8>,
     /// Handle to the device. Valid only if `serial` is specified.
@@ -75,6 +82,7 @@ impl Default for RealsenseSrcInternals {
     fn default() -> Self {
         Self {
             state: State::Stopped,
+            camera_meta: None,
             camera_meta_serialised: Vec::default(),
             device: None,
         }
@@ -103,6 +111,8 @@ impl ObjectSubclass for RealsenseSrc {
             settings: RwLock::new(Settings::default()),
             internals: Mutex::new(RealsenseSrcInternals::default()),
             align_processing_block: Mutex::new(None),
+            unlock: AtomicBool::new(false),
+            tags_sent: AtomicBool::new(false),
         }
     }
 }
@@ -112,6 +122,7 @@ impl BaseSrcImpl for RealsenseSrc {
     /// # Arguments
     /// * `base_src` - Representation of `realsensesrc` element.
     fn start(&self, base_src: &Self::Type) -> Result<(), gst::ErrorMessage> {
+        self.unlock_stop(base_src)?;
         // Specify log severity level for RealSense
         rs2::log::log_to_console(rs2::rs2_log_severity::RS2_LOG_SEVERITY_ERROR).map_err(|e| {
             gst::error_msg!(
@@ -139,9 +150,9 @@ impl BaseSrcImpl for RealsenseSrc {
     /// # Arguments
     /// * `base_src` - Representation of `realsensesrc` element.
     fn stop(&self, base_src: &Self::Type) -> Result<(), gst::ErrorMessage> {
+        self.unlock(base_src)?;
         // Reset internals
         self.stop_rs_and_reset()?;
-
         // Chain up parent implementation
         self.parent_stop(base_src)
     }
@@ -249,7 +260,7 @@ impl BaseSrcImpl for RealsenseSrc {
                 };
                 gst_debug!(CAT, obj: base_src, "Returning latency {}", latency);
                 // Return latency
-                q.set(base_src.is_live(), latency, gst::ClockTime::NONE);
+                q.set(base_src.is_live(), latency, latency);
                 true
             }
             _ => BaseSrcImplExt::parent_query(self, base_src, query),
@@ -262,6 +273,18 @@ impl BaseSrcImpl for RealsenseSrc {
     fn is_seekable(&self, _base_src: &Self::Type) -> bool {
         false
     }
+
+    // Informs the loop in create that we shall not further wait on librealsense to get_frameset
+    fn unlock(&self, element: &Self::Type) -> Result<(), gst::ErrorMessage> {
+        self.unlock.store(true, Ordering::Relaxed);
+        self.parent_unlock(element)
+    }
+
+    // Cancels the above notification
+    fn unlock_stop(&self, element: &Self::Type) -> Result<(), gst::ErrorMessage> {
+        self.unlock.store(false, Ordering::Relaxed);
+        self.parent_unlock_stop(element)
+    }
 }
 
 impl PushSrcImpl for RealsenseSrc {
@@ -270,7 +293,7 @@ impl PushSrcImpl for RealsenseSrc {
     /// * `push_src` - Representation of `realsensesrc` element.
     fn create(
         &self,
-        _push_src: &Self::Type,
+        push_src: &Self::Type,
         _buffer: Option<&mut gst::BufferRef>,
     ) -> Result<CreateSuccess, gst::FlowError> {
         let duration = {
@@ -338,6 +361,13 @@ impl PushSrcImpl for RealsenseSrc {
                 .map_err(|_| gst::FlowError::Error)?;
         }
 
+        if !self.tags_sent.swap(true, Ordering::Acquire) {
+            if let Some(camera_meta) = self.internals.lock().unwrap().camera_meta.clone() {
+                let src_pad = push_src.static_pad("src").unwrap();
+                Self::send_pipeline_tags(&camera_meta, &src_pad)
+                    .map_err(|_| gst::FlowError::Error)?;
+            }
+        }
         Ok(CreateSuccess::NewBuffer(output_buffer))
     }
 }
@@ -532,23 +562,23 @@ impl RealsenseSrc {
             "RealSense stream source has the following calibration:\n{:?}",
             camera_meta
         );
+        {
+            let mut internals = self.internals.lock().unwrap();
 
-        let mut internals = self.internals.lock().unwrap();
+            // Update state and get access to pipeline
+            internals.state = State::Started { pipeline };
 
-        // Update state and get access to pipeline
-        internals.state = State::Started { pipeline };
-
-        Self::send_pipeline_tags(&camera_meta, &self.instance().static_pad("src").unwrap())?;
-
-        // Setup camera meta for transport, if enabled
-        if settings.attach_camera_meta {
-            // Serialise the CameraMeta
-            internals.camera_meta_serialised = camera_meta.serialise().map_err(|e| {
-                gst::error_msg!(
-                    gst::LibraryError::Settings,
-                    ["Cannot serialise camera meta{}", e]
-                )
-            })?
+            // Setup camera meta for transport, if enabled
+            internals.camera_meta = Some(camera_meta.clone());
+            if settings.attach_camera_meta {
+                // Serialise the CameraMeta
+                internals.camera_meta_serialised = camera_meta.serialise().map_err(|e| {
+                    gst::error_msg!(
+                        gst::LibraryError::Settings,
+                        ["Cannot serialise camera meta{}", e]
+                    )
+                })?
+            }
         }
 
         // Create align processing block if enabled
@@ -597,9 +627,11 @@ impl RealsenseSrc {
         gst_info!(CAT, "Sending metadata as tags:{:#?}", serialised_meta);
 
         let tags = gst::TagList::new_single::<CameraMetaTag>(&serialised_meta.as_str());
-        if !pad.push_event(gst::event::Tag::new(tags)) {
-            gst_warning!(CAT, "Could not send metadata tag");
-        }
+        // Tags need to be send (a) after the segment event AND (b) before the first buffer is being pushed.
+        // Storing the sticky event on the pad is the least ugly way to ensure that happens. (slomo suggestion)
+        // fixme: Change to a yet to be created `gst_base_src_set_tags` API
+        pad.store_sticky_event(&gst::event::Tag::new(tags))
+            .map_err(|e| gst::error_msg!(gst::StreamError::Failed, ["{}", e]))?;
         Ok(())
     }
 
@@ -655,13 +687,25 @@ impl RealsenseSrc {
                 unreachable!("RealSense pipeline is not yet initialised");
             }
         };
+        let mut waited = gst::ClockTime::from_nseconds(0);
 
         // Wait for frameset, i.e. rs2::Frame with multiple Frames attached to it
-        let frames = pipeline
-            .wait_for_frameset(self.settings.read().unwrap().wait_for_frames_timeout)
-            .map_err(|_| gst::FlowError::Eos)?;
-
-        Ok(frames)
+        // Wait 10ms and check (a) if unlock() has been called and (b) we get a frameset or (c) we exceeded the max timeout
+        // Allows for terminating the pipeline quicker that the `wait_for_frames_timeout`
+        loop {
+            if self.unlock.load(Ordering::Relaxed) {
+                return Err(gst::FlowError::Flushing);
+            }
+            match pipeline.wait_for_frameset(10) {
+                Ok(frameset) => return Ok(frameset),
+                _ => waited += gst::ClockTime::from_mseconds(10),
+            }
+            let timeout = self.settings.read().unwrap().wait_for_frames_timeout;
+            let timeout = gst::ClockTime::from_mseconds(timeout.into());
+            if waited > timeout {
+                return Err(gst::FlowError::CustomError);
+            }
+        }
     }
 
     /// Attempt to read the metadata from the given frame and serialize it using CapnProto. If this
