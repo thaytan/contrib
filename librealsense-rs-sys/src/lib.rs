@@ -19,7 +19,7 @@ mod tests {
     #[test]
     fn log_test() {
         unsafe {
-            let error = 0 as *mut *mut crate::rs2_error;
+            let error = std::ptr::null_mut::<*mut crate::rs2_error>();
             crate::rs2_log_to_console(crate::rs2_log_severity::RS2_LOG_SEVERITY_ERROR, error);
         }
     }

@@ -1,8 +1,8 @@
 diff --git a/Cargo.lock b/Cargo.lock
-index d2177c0..1e4930e 100644
+index 11a1b3e..a1a8de1 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
-@@ -1819,6 +1819,7 @@ name = "webrtcsink"
+@@ -1823,6 +1823,7 @@ name = "webrtcsink"
  version = "0.1.0"
  dependencies = [
   "anyhow",
@@ -11,7 +11,7 @@ index d2177c0..1e4930e 100644
   "async-tungstenite",
   "clap",
 diff --git a/plugins/Cargo.toml b/plugins/Cargo.toml
-index 13494d0..6fbc381 100644
+index 015c4e1..c71e7e3 100644
 --- a/plugins/Cargo.toml
 +++ b/plugins/Cargo.toml
 @@ -21,6 +21,7 @@ anyhow = "1"
