@@ -25,6 +25,7 @@ RUN echo "local_enable=YES" >> /etc/vsftpd/vsftpd.conf \
 
 ADD vsftpd/docker-entrypoint.sh /
 RUN chown $USER_NAME:$USER_NAME /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 VOLUME /./${USER_NAME}
 
 EXPOSE 2121 21 10090-10100
