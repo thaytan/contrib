@@ -1,4 +1,4 @@
-FROM balenalib/generic-alpine:3.15
+FROM balenalib/aarch64-alpine:3.15
 RUN apk add --no-cache chrony=4.1-r0
 
 RUN mkdir -p /var/lib/chrony/drift && chown -R chrony:chrony /var/lib/chrony/drift
