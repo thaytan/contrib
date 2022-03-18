@@ -11,4 +11,4 @@ RUN mkdir -p ~/.docker/cli-plugins/ && curl -SL https://github.com/docker/compos
 ARG BALENA_CLI_VERSION=v13.1.13
 WORKDIR /balena
 RUN wget https://github.com/balena-io/balena-cli/releases/download/${BALENA_CLI_VERSION}/balena-cli-${BALENA_CLI_VERSION}-linux-x64-standalone.zip -O balena.zip && unzip balena.zip && mv balena-cli/balena . && chmod +x balena && rm -rf balena-cli balena.zip
-ENV PATH=$PATH:/balena/balena
+ENV PATH=$PATH:/balena
