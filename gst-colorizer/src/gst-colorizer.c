@@ -25,6 +25,7 @@ static GType gst_colorizer_preset_get_type(void) {
 
   static const GEnumValue presets[] = {
       {GST_COLORIZER_PRESET_JET, "Apply jet color map to image", "jet"},
+      {GST_COLORIZER_PRESET_HSV, "Convert gray to Hue of HSV and then to RGB", "hsv"},
       {0, NULL, NULL},
   };
 
@@ -46,13 +47,17 @@ static GstFlowReturn gst_colorizer_transform_gray16(GstColorizer *filter,
   for (guint i = 0; i < width * height; i++) {
     guint16 gray = in[i];
     // Check if the value is to be truncated (i.e. too near or too far), if so set it to pitch black
-    if (gray <= filter->near_cut || gray > filter->far_cut) {
+    if (gray <= filter->near_cut) {
         out[i * 3 + 0] = 0;
         out[i * 3 + 1] = 0;
         out[i * 3 + 2] = 0;
     }
-    // Otherwise apply its color scheme
-    else {
+    else if (gray > filter->far_cut) {
+        out[i * 3 + 0] = filter->far_cut;
+        out[i * 3 + 1] = filter->far_cut;
+        out[i * 3 + 2] = filter->far_cut;
+    } else {
+        // Otherwise apply its color scheme
         out[i * 3 + 0] = filter->table[gray * 3 + 0];
         out[i * 3 + 1] = filter->table[gray * 3 + 1];
         out[i * 3 + 2] = filter->table[gray * 3 + 2];
@@ -97,6 +102,76 @@ double clamp(double v) {
   return t > 1.0 ? 1.0 : t;
 }
 
+typedef struct {
+    double r; /* R,G,B are from 0 to 1 */
+    double g;
+    double b;
+} rgb_color;
+
+typedef struct {
+    double h;       /* Angle from 0 to 360 in degrees */
+    double s;       // a fraction between 0 and 1
+    double v;       // a fraction between 0 and 1
+} hsv_color;
+
+rgb_color hsv2rgb(const hsv_color *in)
+{
+    double      hh, p, q, t, ff;
+    long        i;
+    rgb_color   out;
+
+    if(in->s <= 0.0) {       // < is bogus, just shuts up warnings
+        out.r = in->v;
+        out.g = in->v;
+        out.b = in->v;
+        return out;
+    }
+    hh = in->h;
+    if(hh >= 360.0) hh = 0.0;
+    hh /= 60.0;
+    i = (long)hh;
+    ff = hh - i;
+    p = in->v * (1.0 - in->s);
+    q = in->v * (1.0 - (in->s * ff));
+    t = in->v * (1.0 - (in->s * (1.0 - ff)));
+
+    switch(i) {
+    case 0:
+        out.r = in->v;
+        out.g = t;
+        out.b = p;
+        break;
+    case 1:
+        out.r = q;
+        out.g = in->v;
+        out.b = p;
+        break;
+    case 2:
+        out.r = p;
+        out.g = in->v;
+        out.b = t;
+        break;
+
+    case 3:
+        out.r = p;
+        out.g = q;
+        out.b = in->v;
+        break;
+    case 4:
+        out.r = t;
+        out.g = p;
+        out.b = in->v;
+        break;
+    case 5:
+    default:
+        out.r = in->v;
+        out.g = p;
+        out.b = q;
+        break;
+    }
+    return out;
+}
+
 void generate_map(GstColorizer *filter, GstColorizerPreset preset) {
   if (filter->table) {
     free(filter->table);
@@ -115,6 +190,18 @@ void generate_map(GstColorizer *filter, GstColorizerPreset preset) {
       filter->table[i * 3 + 0] = red;
       filter->table[i * 3 + 1] = green;
       filter->table[i * 3 + 2] = blue;
+    }
+  } else if (preset == GST_COLORIZER_PRESET_HSV) {
+    filter->table = calloc(3 * filter->far_cut, sizeof(guint8));
+    for (guint16 i = filter->near_cut; i < filter->far_cut; i++) {
+      double hue = ((double)(i - filter->near_cut) /
+                    (filter->far_cut - filter->near_cut - 1)) * 360.0;
+      hsv_color hsv = { hue, 1.0, 1.0 };
+      rgb_color rgb = hsv2rgb(&hsv);
+
+      filter->table[i * 3 + 0] = clamp(rgb.r) * 255.0;
+      filter->table[i * 3 + 1] = clamp(rgb.g) * 255.0;
+      filter->table[i * 3 + 2] = clamp(rgb.b) * 255.0;
     }
   } else {
     g_assert_not_reached();

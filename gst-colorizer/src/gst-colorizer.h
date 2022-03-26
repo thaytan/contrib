@@ -41,12 +41,14 @@ typedef struct _GstColorizerClass GstColorizerClass;
  * GstColorizerPreset:
  * @GST_CLUT_PRESET_NONE: Do nothing preset (default)
  * @GST_CLUT_PRESET_JET: Apply jet color map to image
+ * @GST_CLUT_PRESET_HSV: Apply HSV conversion to image
  *
  * The lookup table to use to convert grayscale to the given color palette
  */
 typedef enum {
   GST_COLORIZER_PRESET_NONE,
   GST_COLORIZER_PRESET_JET,
+  GST_COLORIZER_PRESET_HSV,
 } GstColorizerPreset;
 
 /**
